@@ -1,0 +1,11 @@
+---
+const { id, click, isActive } = Astro.props;
+---
+
+<button
+  onclick={click}
+  id={id}
+  class={`${isActive ? "bg-primary-200/10" : ""} text-xs hover:shadow-md hover:-translate-y-0.5 hover:border-dashed capitalize rounded-lg px-2 py-1 border border-primary-200/50 hover:border-primary-100 duration-200 hover:bg-primary-200/10`}
+>
+  <slot />
+</button>

@@ -1,0 +1,23 @@
+---
+import db from "@/db";
+import Titulo1 from "../atomos/Titulo1.astro";
+import ContenedorUltimasCuotas from "./ContenedorUltimasCuotas"
+import FormularioDeBusqueda from "./FormularioDeBusqueda";
+import { eq } from "drizzle-orm";
+const { user } = Astro.locals;
+import {clientes as Cliente} from '@/db/schema/clientes.sql'
+const clientes = await db
+  .select()
+  .from(Cliente)
+  .where(eq(Cliente.usuarioId, user.id));
+---
+
+<div class="relative flex flex-col w-full h-full p-3">
+  <div>
+    <Titulo1>Pagar Cuota</Titulo1>
+   
+  </div>
+  <div>
+    <ContenedorUltimasCuotas client:visible userId={user.id} />
+  </div>
+</div>

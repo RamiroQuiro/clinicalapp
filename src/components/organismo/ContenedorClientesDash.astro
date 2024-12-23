@@ -1,0 +1,46 @@
+---
+import db from "@/db";
+import { clientes } from "@/db/schema/clientes.sql";
+import { eq } from "drizzle-orm";
+
+
+const { user } = Astro.props;
+
+let nClientes = 0;
+let consultaClientes = [];
+try {
+  consultaClientes = await db
+    .select()
+    .from(clientes)
+    .where(eq(clientes.usuarioId, user.id));
+  //   console.log("culsont ->", consultaClientes);
+  nClientes = consultaClientes.length;
+} catch (error) {
+  console.log(error);
+}
+---
+
+<div
+  class="md:w-4/12 w-full py text-white  pb-3 bg-primary-200 flex-col text-sm border-2 border-primary-100/50 rounded-lg max-h-72 flex items-stretch"
+>
+  <div class="px-3 py-1.">
+    <h3 class="text-base font-semibold w-full">{nClientes} Clientes</h3>
+  </div>
+  <div class="w-full flex flex-col items-start overflow-y-auto">
+    {
+      consultaClientes
+        ?.sort((a, b) => {if (a.nombre > b.nombre) {return 1;}if (a.nombre < b.nombre) {return -1;}})
+        .map((cliente) => (
+          <a
+            href={`dashboard/clientes/${cliente.id}`}
+            class=" cursor-pointer w-full flex items-center justify-evenly hover:bg-gray-50/30 hover:text-white bg-primary-bg-claro border-b border-primary-400 px-3 py-1 duration-150 text-primary-texto"
+          >
+            <h3 class=" w-full  capitalize">
+              {cliente.nombre} {cliente.apellido}
+            </h3>{" "}
+            <span class=" text-xs w-1/2">DNI: {cliente.dni}</span>
+          </a>
+        ))
+    }
+  </div>
+</div>

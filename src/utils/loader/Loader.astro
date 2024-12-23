@@ -1,0 +1,68 @@
+---
+
+---
+
+<div
+  class="loaderr fixed print:hidden top-0 left-0 w-full h-full items- cursor-wait justify-center z-30 bg-gray-900/50 backdrop-blur-sm"
+>
+  <span class="loader m-auto"></span>
+</div>
+<style>
+  .loaderr {
+    display: none;
+  }
+
+  .loader {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .loader:after {
+    content: "";
+    position: absolute;
+    left: 50;
+    top: 20;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: #E2F397;
+  }
+
+.loader:before , .loader:after{
+  content: '';
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.3) inset;
+}
+.loader:after {
+  box-shadow: 0 2px 0 #E2F397 inset;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  0% {  transform: rotate(0)}
+  100% { transform: rotate(360deg)}
+}
+  @keyframes colorBallMoveX {
+    0% {
+      background-position: 0% 0;
+      transform: translate(-15px, -50%);
+    }
+    15%,
+    25% {
+      background-position: 0% 0;
+      transform: translate(0px, -50%);
+    }
+    75%,
+    85% {
+      background-position: 100% 0;
+      transform: translate(50px, -50%);
+    }
+    100% {
+      background-position: 100% 0;
+      transform: translate(65px, -50%);
+    }
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+import Table from "../../../components/tablaComponentes/Table";
+
+
+const handleEdit = (id) => {
+  console.log("Editar fila con id:", id);
+  // Aquí puedes abrir un modal o redirigir a una página de edición.
+};
+
+const handleDelete = (id) => {
+  if (confirm("¿Estás seguro de eliminar este elemento?")) {
+    console.log("Eliminar fila con id:", id);
+    // Aquí puedes realizar la acción para eliminar el elemento (por ejemplo, llamando a una API).
+  }
+};
+
+const handleAtender = (id) => {
+  console.log("Atender fila con id:", id);
+  // Aquí puedes marcar como atendido o realizar otra acción.
+};
+const columnas = [
+  {
+    label: "nombre y apellido",
+    id: 1,
+    selector: (row) => row.nombre,
+  },
+  {
+    label: "DNI",
+    id: 2,
+    selector: (row) => row.dni,
+  },
+  {
+    label: "edad",
+    id: 4,
+    selector: (row) => row.edad,
+  },
+  {
+    label: "sexo",
+    id: 5,
+    selector: (row) => row.sexo,
+  },
+  {
+    label: "celular",
+    id: 6,
+    selector: (row) => row.celular,
+  },
+  {
+    label: "Acciones",
+    id: 7,
+    selector: (row) => (
+      `<div className="flex gap-x-2">
+        <button
+          className="bg-blue-500 text-white px-2 py-1 rounded"
+          onClick={() => handleEdit(row.id)}
+        >
+          Editar
+        </button>
+        <button
+          className="bg-red-500 text-white px-2 py-1 rounded"
+          onClick={() => handleDelete(row.id)}
+        >
+          Eliminar
+        </button>
+        <button
+          className="bg-green-500 text-white px-2 py-1 rounded"
+          onClick={() => handleAtender(row.id)}
+        >
+          Atender
+        </button>
+      </div>`
+    ),}
+];
+let arrayBody = [
+  {
+    nombreApellidos: "Juan Perez",
+    dni: 12345678,
+    edad: 23,
+    sexo: "masculino",
+    celular: 123456789,
+  },
+];
+
+
+---
+
+<div class="w-full overflow-x-auto my-5">
+  <Table columnas={columnas} arrayBody={arrayBody} client:load />
+</div>

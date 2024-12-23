@@ -1,0 +1,25 @@
+---
+import Button1 from "../atomos/Button1.astro";
+import DialogModal from "../atomos/DialogModal.astro";
+
+const { id, open } = Astro.props;
+---
+
+<Button1 id={id}>{open}</Button1>
+
+<DialogModal>
+  <div class="relative flex flex-col w-full h-full p-3 print:hidden">
+    <slot name="main" />
+    <form method="dialog">
+      <slot name="close" />
+    </form>
+  </div>
+</DialogModal>
+<script define:vars={{ id }}>
+  const btnModal = document.getElementById(id);
+  const modal = document.querySelector(".modal");
+  btnModal.addEventListener("click", (e) => {
+    modal.showModal();
+    // e.showModal()
+  });
+</script>

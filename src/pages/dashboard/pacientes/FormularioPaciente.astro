@@ -1,0 +1,83 @@
+---
+import Button1 from "../../../components/atomos/Button1.astro";
+import FormCont from "../../../components/atomos/FormCont.astro";
+import Titulo1 from "../../../components/atomos/Titulo1.astro";
+import ContenedorBoton from "../../../components/moleculas/ContenedorBoton.astro";
+import ContenedorInputForm from "../../../components/moleculas/ContenedorInputForm.astro";
+const { user } = Astro.props;
+---
+
+<FormCont id="formularioCliente" title="Nuevo Cliente">
+
+  <div id={user.id} data-user-id class="flex md:flex-row items-center gap-2 w-full justify-normal">
+    <ContenedorInputForm
+      label="nombre"
+      type="text"
+      name="nombre"
+      styleInput=""
+    />
+    <ContenedorInputForm
+      label="apellido"
+      type="text"
+      name="apellido"
+      styleInput=""
+    />
+  </div>
+
+  <ContenedorInputForm label="dni" type="number" name="dni" />
+  <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
+    <ContenedorInputForm label="email" type="email" name="email" />
+    <ContenedorInputForm label="celular" type="text" name="cel" />
+  </div>
+  <ContenedorInputForm label="direccion" type="text" name="direccion" />
+  <ContenedorBoton>
+    
+    <Button1 type="submit">agregar</Button1>
+  </ContenedorBoton>
+</FormCont>
+
+<script >
+import { showToast } from "../../../utils/toast/toastShow";
+
+
+
+  const formulario = document.getElementById("formularioCliente");
+  const userId=document.querySelector('[data-user-id]')
+  const btnCerrrarModal=document.getElementById('cerrarModal')
+  formulario.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    formData.append("userId", userId.id);
+    const data = Object.fromEntries(formData.entries());
+
+// console.log(data)
+if (!data.nombre || !data.apellido || !data.dni || !data.cel || !data.direccion) {
+  showToast('complete todo los datos',{background:'bg-red-600'})
+  btnCerrrarModal.click()
+  return
+}
+    try {
+      const response = await fetch("/api/pacientes/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const dataJson = await response.json();
+      console.log(dataJson);
+      
+      if (dataJson.status == 200) {
+        window.location.reload();
+      }
+      if (dataJson.status == 400) {
+          btnCerrrarModal.click()
+        showToast(dataJson.msg,{background:'bg-red-600'})
+      }
+      // console.log(response)
+    } catch (error) {
+      console.log(error);
+    }
+  });
+</script>

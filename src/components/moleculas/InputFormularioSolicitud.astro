@@ -1,0 +1,12 @@
+---
+
+const {label,name,type,id}=Astro.props
+---
+
+
+<div class="relative w-full my-2 group">
+    <label  for={id} class=" top-0 left-0 duration-300 ring-0 valid:ring-0 py-1  focus:outline-none outline-none z-20 text-xs text-primary-100/80   ">
+    <slot/>
+    </label> 
+    <input type={type} name={name} id={id} class="bg-gray-100 peer z-10 w-full  left-0 px-1 py-1 text-sm rounded shadow valid:ring-0   outline-none   focus:outline-none">
+</div>

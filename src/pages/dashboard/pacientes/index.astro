@@ -1,0 +1,35 @@
+---
+import MainDashboard from "../../../components/atomos/MainDashboard.astro";
+import ContenedorDiv1 from "../../../components/moleculas/ContenedorDiv1.astro";
+import ButtonPdf from "../../../components/atomos/ButtonPdf";
+import LayoutDash from "../../../components/layouts/LayoutDash.astro";
+import FormularioBusqueda from "../../../components/organismo/FormularioDeBusqueda";
+import ContenedorModal from "../../../components/organismo/ContenedeorModal.astro";
+import FormularioCliente from "./FormularioPaciente.astro";
+import Button2 from "../../../components/atomos/Button2.astro";
+import ConfeccionTabla from "./ConfeccionTabla.astro";
+let user = {
+id: '321321321' ,
+  title: "CLIENTES",
+  nombreApellido:"ramiro quiroga"
+};
+---
+
+<LayoutDash>
+  <MainDashboard title="Pacientes">
+ 
+    <ContenedorDiv1>
+      <div class="w-full flex justify-between items-center gap-x-5">
+        <FormularioBusqueda
+          placeholder={"Busqueda de pacientes..."}
+          client:load
+        />
+        <ContenedorModal open="Crear ">
+          <FormularioCliente user={user} />
+        </ContenedorModal>
+        <Button2>pdf</Button2>
+      </div>
+      <ConfeccionTabla />
+    </ContenedorDiv1>
+  </MainDashboard>
+</LayoutDash>

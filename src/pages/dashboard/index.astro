@@ -1,0 +1,25 @@
+---
+import MainDashboard from "../../components/atomos/MainDashboard.astro";
+import LayoutDash from "../../components/layouts/LayoutDash.astro";
+import db from "../../db";
+import { users } from "../../db/schema";
+try {
+  const data=await db.select().from(users);
+  console.log(data);
+} catch (error) {
+console.log(error);   
+  
+}
+
+---
+
+<LayoutDash>
+  <MainDashboard title="Dashboard">
+    <div slot="header" class="w-full flex justify-center -mt-8 items-center h-full text-white">
+     
+    </div>
+    <div class="">
+        hola men
+    </div>
+  </MainDashboard>
+</LayoutDash>

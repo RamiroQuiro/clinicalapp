@@ -1,0 +1,49 @@
+---
+import Button2 from "../atomos/Button2.astro";
+
+const { pathname } = Astro.url;
+const local = Astro.locals;
+
+const fecha = Date();
+const { idPrestamo, idCliente } = Astro.params;
+const { dataCliente, userData } = Astro.props;
+let id = null;
+if (pathname?.includes("cuota")) {
+  id = idPrestamo;
+}
+
+// const user=Astro.locals
+
+// console.log(user)
+---
+
+<nav
+  class="fixed bg-primary-bg-componentes md:w-[95%]  w-full md:right-0  text-sm text-primary-texto  md:h-10 flex  z-30 items-center justify-center"
+>
+  <div
+    class="w-full flex flex-col md:flex-row md:m-0   h-full items-center justify-center "
+  >
+    <div
+      class="md:flex hidden items-center md:justify-start justify-between gap-3 md:px-20 w-full md:w-2/3"
+    >
+      <span class="text-sm font- md:ml-10">
+        {
+          new Date().toLocaleDateString("es-AR", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })
+        }
+      </span>
+    </div>
+    <div
+      class="flex items-center md:justify-end justify-evenly gap-2 md:pr-5 w-full flex-shrink"
+    >
+
+      <form method="post" action="/api/auth/signout">
+        <Button2>Sign out</Button2>
+      </form>
+    </div>
+  </div>
+</nav>
+
