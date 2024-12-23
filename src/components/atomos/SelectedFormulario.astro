@@ -1,5 +1,14 @@
 ---
-const { options, name, labelOption, defaultSelect } = Astro.props;
+import type { optionsSelectInputType } from "../../types";
+
+
+interface SelectPorps{
+  options:optionsSelectInputType[],
+  name:string,
+  labelOption?:string,
+  defaultSelect:boolean,
+}
+const { options, name, labelOption, defaultSelect } = Astro.props as SelectPorps;
 ---
 
 <select

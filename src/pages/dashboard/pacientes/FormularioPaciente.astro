@@ -1,6 +1,7 @@
 ---
 import Button1 from "../../../components/atomos/Button1.astro";
 import FormCont from "../../../components/atomos/FormCont.astro";
+import SelectedFormulario from "../../../components/atomos/SelectedFormulario.astro";
 import Titulo1 from "../../../components/atomos/Titulo1.astro";
 import ContenedorBoton from "../../../components/moleculas/ContenedorBoton.astro";
 import ContenedorInputForm from "../../../components/moleculas/ContenedorInputForm.astro";
@@ -27,7 +28,10 @@ const { user } = Astro.props;
     />
   </div>
 
+  <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
   <ContenedorInputForm label="dni" type="number" name="dni" />
+<SelectedFormulario options={[{id:1,value:"masculino"},{id:2,value:"fenemino"}]} name="sexo"/>
+</div>
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
     <ContenedorInputForm label="email" type="email" name="email" />
     <ContenedorInputForm label="celular" type="text" name="celular" />
@@ -82,10 +86,16 @@ const { user } = Astro.props;
       });
 
       const result = await response.json(); // Leer respuesta JSON
-      if (response.ok) {
+      if (result.code==400){
+        erroresShow.textContent = result.msg;
+        return;
+      }else  if (result.code==200) {
         erroresShow.textContent = "Paciente creado exitosamente.";
         window.location.reload();
-      } else {
+      } 
+      
+      
+      else {
         // Manejo explícito de errores por status
         erroresShow.textContent =
           result.message || "Error al crear el paciente.";

@@ -8,13 +8,14 @@ import {
 
 export const pacientes = sqliteTable("pacientes", {
   id: text("id").primaryKey().unique(),
-  email: text("email").notNull().unique(),
   nombre: text("nombre").notNull(),
   userId: text("userId").notNull(),
   apellido: text("apellido").notNull(),
   dni: integer("dni", { mode: "number" }).unique(),
+  email: text("email"),
   srcPhoto: text("srcPhoto"),
   celular: text("celular"),
+  sexo:text('sexo'),
   direccion: text("direccion"),
   ciudad: text("ciudad"),
   provincia: text("provincia"),

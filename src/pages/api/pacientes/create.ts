@@ -2,7 +2,8 @@ import { APIRoute } from "astro";
 import { generateId } from "lucia";
 import db from "../../../db";
 import { pacientes } from "../../../db/schema";
-import { pacienteType } from "../../../types/index";
+import { pacienteType, type responseAPIType } from "../../../types/index";
+import { eq } from "drizzle-orm";
 
 export const POST: APIRoute = async ({ request }) => {
   const data: pacienteType = await request.json();
@@ -13,9 +14,20 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-
-
   try {
+    const isUser = await db
+      .select()
+      .from(pacientes)
+      .where(eq(pacientes.dni, data.dni));
+
+    if (isUser[0]) {
+      const response: responseAPIType = {
+        code: 400,
+        msg: "DNI ya registrado con un paciente",
+      };
+      return new Response(JSON.stringify(response));
+    }
+
     const id = generateId(10);
     const createPaciente = await db.insert(pacientes).values({
       nombre: data.nombre,
@@ -24,33 +36,22 @@ export const POST: APIRoute = async ({ request }) => {
       userId: data.userId,
       apellido: data.apellido,
       celular: data.celular,
+      sexo:data.sexo,
       id,
       created_at: new Date().toISOString(),
     });
 
-
-  
-    return new Response(
-      JSON.stringify({
-        message: "Paciente creado con éxito",
-        paciente: createPaciente,
-      }),
-      {
-        headers: { "content-type": "application/json" },
-      }
-    );
+    const response: responseAPIType = {
+      code: 200,
+      msg: "Paciente creado con éxito",
+    };
+    return new Response(JSON.stringify(response), {
+      headers: { "content-type": "application/json" },
+    });
   } catch (error) {
-
     console.error(error);
-    if (error.rawCode==2067) {
-        return new Response("datos ya usados en otro user", {
-            status: 550,
-            statusText:"datos ya usados en otro paciente"
-          });    
-    }
     return new Response("error", {
       status: 500,
     });
   }
-
 };

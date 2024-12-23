@@ -1,6 +1,30 @@
 ---
+import { eq } from "drizzle-orm";
 import Table from "../../../components/tablaComponentes/Table";
+import db from "../../../db";
+import { pacientes} from "../../../db/schema";
+import type { pacienteType } from "../../../types";
+const {user}=Astro.props
 
+
+let pacientesData=[]
+try {
+  const dataDB:pacienteType[]=await db.select().from(pacientes).where(eq(pacientes.userId,user.id))
+  console.log('datos traidos de la base de datos ', dataDB)
+  pacientesData= dataDB.map(paciente=>{
+      return {
+        href:`/dashboard/pacientes/${paciente.id}`,
+          id:paciente.id,
+          nombreApellido:`${paciente.nombre}  ${paciente.apellido} `,
+          dni:paciente.dni,
+          edad:paciente.edad,
+          sexo:paciente.sexo,
+          celular:paciente.celular
+      }
+  })
+} catch (error) {
+  console.log(error)
+}
 
 const handleEdit = (id) => {
   console.log("Editar fila con id:", id);
@@ -84,5 +108,5 @@ let arrayBody = [
 ---
 
 <div class="w-full overflow-x-auto my-5">
-  <Table columnas={columnas} arrayBody={arrayBody} client:load />
+  <Table columnas={columnas} arrayBody={pacientesData} client:load />
 </div>

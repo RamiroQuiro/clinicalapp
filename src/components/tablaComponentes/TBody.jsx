@@ -49,7 +49,7 @@ export default function TBody({ arrayBody, onClickFila }) {
     <tbody>
       {arrayBody.length === 0 ? (
         <tr>
-          <td colSpan={Object.keys(arrayBody[0] || {}).length + 1} className="text-center">
+          <td colSpan={Object.keys(arrayBody[0] || {}).length + 1} className="text-center text-xs font-semibold">
             No hay elementos para mostrar
           </td>
         </tr>

@@ -4,6 +4,7 @@ export type pacienteType={
     email:string,
     nombre:string,
     apellido:string,
+    sexo:string,
     dni:number,
     srcPhoto?:string,
     celular?:string,
@@ -15,4 +16,18 @@ export type pacienteType={
     created_at:string,
     deleted_at?:string
 
+}
+
+
+export type responseAPIType={
+    msg:string,
+    code?:number,
+    status?:string,
+    baody?:string
+}
+
+export type optionsSelectInputType={
+    id:number,
+    value:string,
+    name?:string
 }
