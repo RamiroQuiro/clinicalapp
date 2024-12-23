@@ -1,0 +1,71 @@
+---
+import { eq } from "drizzle-orm";
+import MainDashboard from "../../../../components/atomos/MainDashboard.astro";
+import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
+import db from "../../../../db";
+import { pacientes } from "../../../../db/schema";
+import type { pacienteType } from "../../../../types";
+import NavAtencionMedica from "../../../../components/organismo/NavAtencionMedica.astro";
+import Button2 from "../../../../components/atomos/Button2.astro";
+import ContenedorAtencion from "../../../../components/moleculas/ContenedorAtencion.astro";
+const { pacienteId } = Astro.params;
+let pacienteData: pacienteType = {};
+
+try {
+  pacienteData = (
+    await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
+  ).at(0);
+} catch (error) {
+  console.log(error);
+}
+---
+
+<LayoutDash>
+  <MainDashboard>
+    <NavAtencionMedica pacienteData={pacienteData} />
+    <div
+      class="flex items-center justify-between bg-rd-400 w-full gap-x-5 gap-y-3"
+    >
+      <div class="flex-1 w-full flex items-center justify-normal p-3 border-x">
+        <ContenedorAtencion>
+          <h3 class="text-sm">signos vitales</h3>
+          <div class="flex item-center">
+            <div></div>
+            <div></div>
+          </div>
+          <div class="flex item-center">
+            <div></div>
+            <div></div>
+          </div>
+          <div class="flex item-center">
+            <div></div>
+            <div></div>
+          </div>
+          <div class="flex item-center">
+            <div></div>
+            <div></div>
+          </div>
+          <div class="flex item-center">
+            <div></div>
+            <div></div>
+          </div>
+        </ContenedorAtencion>
+      </div>
+      <div class="flex-[2] w-full flex items-center justify-normal p-3 border-x">
+        <ContenedorAtencion>
+          <div
+            class="w-full p-2 border-b border-gray-500/50 flex items-center justify-between"
+          >
+            <h3 class="text-xs font-semibold uppercase">motivo de consulta</h3>
+            <Button2>guardar</Button2>
+          </div>
+          <textarea
+            class="flex-1 w-full text-sm p-2 text-primary-texto outline-none ring-0"
+            rows="10"
+            name=""
+            id=""></textarea>
+        </ContenedorAtencion>
+      </div>
+    </div>
+  </MainDashboard>
+</LayoutDash>

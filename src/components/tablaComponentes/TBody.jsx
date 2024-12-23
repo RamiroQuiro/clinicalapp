@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import Tr from "./Tr";
 import { useStore } from "@nanostores/react";
-import { columnSelectTable, filtrosBusquedaPrestamos } from "../../context/store";
+import {
+  columnSelectTable,
+  filtrosBusquedaPrestamos,
+} from "../../context/store";
 
 export default function TBody({ arrayBody, onClickFila }) {
   const $columnSelectTable = useStore(columnSelectTable);
@@ -13,23 +16,23 @@ export default function TBody({ arrayBody, onClickFila }) {
     document.location.href = href;
   };
 
-//   botonera de acciones
+  //   botonera de acciones
   const renderActions = (data) => (
     <div className="flex gap-2 justify-center items-center text-xs">
       <button
         className="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-        onClick={()=>onClick(data.href)}
+        onClick={() => (document.location.href = data.href)}
       >
-        Ver paciente
+        ficha
       </button>
       <button
         className="bg-primary-200 text-white  px-1 py-0.5 rounded hover:bg-primary-200/80 duration-150"
         onClick={(e) => {
           e.stopPropagation();
-          alert(`Editar: ${data.id}`);
+          document.location.href = `/dashboard/consultas/aperturaPaciente/${data.id}`;
         }}
       >
-        Informe
+        atender
       </button>
       <button
         className="bg-primary-400 text-white  px-1 py-0.5 rounded hover:bg-primary-400/80 duration-150"
@@ -43,13 +46,14 @@ export default function TBody({ arrayBody, onClickFila }) {
     </div>
   );
 
-
-
   return (
     <tbody>
       {arrayBody.length === 0 ? (
         <tr>
-          <td colSpan={Object.keys(arrayBody[0] || {}).length + 1} className="text-center text-xs font-semibold">
+          <td
+            colSpan={Object.keys(arrayBody[0] || {}).length + 1}
+            className="text-center text-xs font-semibold"
+          >
             No hay elementos para mostrar
           </td>
         </tr>

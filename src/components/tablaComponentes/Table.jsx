@@ -3,7 +3,7 @@ import THead from './THead'
 import TBody from './TBody'
 import { reportPDF } from '../../context/store'
 
-export default function Table({ columnas,arrayBody, styleTable }) {
+export default function Table({ columnas,arrayBody, styleTable,renderAction }) {
 
     const onClick=(e)=>{
       
@@ -17,7 +17,7 @@ export default function Table({ columnas,arrayBody, styleTable }) {
             className={`${styleTable} items-center bg-transparent w-full border-collapse rounded-md  overflow-hidden`}
         >
            <THead columnas={columnas} arrayBody={arrayBody}/>
-           <TBody onClickFila={onClick} arrayBody={arrayBody}/>
+           <TBody onClickFila={onClick} arrayBody={arrayBody} />
         </table>
     )
 }
