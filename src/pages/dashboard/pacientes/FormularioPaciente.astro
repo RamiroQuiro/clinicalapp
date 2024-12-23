@@ -8,8 +8,11 @@ const { user } = Astro.props;
 ---
 
 <FormCont id="formularioCliente" title="Nuevo Cliente">
-
-  <div id={user.id} data-user-id class="flex md:flex-row items-center gap-2 w-full justify-normal">
+  <div
+    id={user.id}
+    data-user-id
+    class="flex md:flex-row items-center gap-2 w-full justify-normal"
+  >
     <ContenedorInputForm
       label="nombre"
       type="text"
@@ -27,23 +30,25 @@ const { user } = Astro.props;
   <ContenedorInputForm label="dni" type="number" name="dni" />
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
     <ContenedorInputForm label="email" type="email" name="email" />
-    <ContenedorInputForm label="celular" type="text" name="cel" />
+    <ContenedorInputForm label="celular" type="text" name="celular" />
   </div>
   <ContenedorInputForm label="direccion" type="text" name="direccion" />
   <ContenedorBoton>
-    
-    <Button1 type="submit">agregar</Button1>
+    <Button1 type="submit">Agregar</Button1>
   </ContenedorBoton>
+  <div class="h-6 text-center w-full">
+    <p
+      id="errores"
+      class="text-xs font-semibold tracking-wider text-primary-400"
+    >
+    </p>
+  </div>
 </FormCont>
 
-<script >
-import { showToast } from "../../../utils/toast/toastShow";
-
-
-
+<script>
   const formulario = document.getElementById("formularioCliente");
-  const userId=document.querySelector('[data-user-id]')
-  const btnCerrrarModal=document.getElementById('cerrarModal')
+  const userId = document.querySelector("[data-user-id]");
+  const erroresShow = document.getElementById("errores");
   formulario.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -51,12 +56,22 @@ import { showToast } from "../../../utils/toast/toastShow";
     formData.append("userId", userId.id);
     const data = Object.fromEntries(formData.entries());
 
-// console.log(data)
-if (!data.nombre || !data.apellido || !data.dni || !data.cel || !data.direccion) {
-  showToast('complete todo los datos',{background:'bg-red-600'})
-  btnCerrrarModal.click()
-  return
-}
+    // Validación del formulario
+    const camposRequeridos = [
+      "nombre",
+      "apellido",
+      "dni",
+      "celular",
+      "direccion",
+    ];
+    const camposFaltantes = camposRequeridos.filter((campo) => !data[campo]);
+
+    if (camposFaltantes.length > 0) {
+      erroresShow.textContent =
+        "Por favor, complete todos los campos requeridos.";
+      return;
+    }
+
     try {
       const response = await fetch("/api/pacientes/create", {
         method: "POST",
@@ -65,19 +80,19 @@ if (!data.nombre || !data.apellido || !data.dni || !data.cel || !data.direccion)
         },
         body: JSON.stringify(data),
       });
-      const dataJson = await response.json();
-      console.log(dataJson);
-      
-      if (dataJson.status == 200) {
+
+      const result = await response.json(); // Leer respuesta JSON
+      if (response.ok) {
+        erroresShow.textContent = "Paciente creado exitosamente.";
         window.location.reload();
+      } else {
+        // Manejo explícito de errores por status
+        erroresShow.textContent =
+          result.message || "Error al crear el paciente.";
       }
-      if (dataJson.status == 400) {
-          btnCerrrarModal.click()
-        showToast(dataJson.msg,{background:'bg-red-600'})
-      }
-      // console.log(response)
     } catch (error) {
-      console.log(error);
+      console.error("Error al enviar los datos:", error);
+      erroresShow.textContent = "Error de conexión al servidor.";
     }
   });
 </script>

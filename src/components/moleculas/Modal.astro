@@ -8,7 +8,7 @@ const { id, open } = Astro.props;
 <Button1 id={id}>{open}</Button1>
 
 <DialogModal>
-  <div class="relative flex flex-col w-full h-full p-3 print:hidden">
+  <div class="relative flex flex-col w-full h-full p-3 print:hidden modal">
     <slot name="main" />
     <form method="dialog">
       <slot name="close" />
@@ -23,3 +23,9 @@ const { id, open } = Astro.props;
     // e.showModal()
   });
 </script>
+
+<style>
+  .modal {
+  z-index: 1000; /* Ajusta si es necesario */
+}
+</style>

@@ -3,7 +3,7 @@ export type pacienteType={
     userId:string,
     email:string,
     nombre:string,
-    apelido:string,
+    apellido:string,
     dni:number,
     srcPhoto?:string,
     celular?:string,
