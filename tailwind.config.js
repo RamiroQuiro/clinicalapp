@@ -12,7 +12,7 @@ export default {
           500: "#9BE32B",
           600: "#2B60E3",
           "bg-claro": "#E9E9F1",
-          "bg-componentes": "#FFFFFF",
+          "bg-componentes": "#F3F3F3",
           resaltado: "#E3D32B",
           texto: "#4F4F4F",
           error: "#BF0404",

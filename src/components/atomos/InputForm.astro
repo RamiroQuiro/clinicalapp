@@ -1,4 +1,14 @@
 ---
+interface StringProps{
+    type: "string",
+    name: "string",
+    id: "string",
+    style: "string",
+    value: "string",
+    disabled: "boolean",
+    placeholder: "string"
+}
+
 const {type,name,id,style,value,disabled,placeholder}=Astro.props
 
 let hoy = new Date().toISOString().split('T')[0];

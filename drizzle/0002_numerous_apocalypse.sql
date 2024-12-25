@@ -1,1 +1,0 @@
-ALTER TABLE `pacientes` ADD `userId` text NOT NULL;

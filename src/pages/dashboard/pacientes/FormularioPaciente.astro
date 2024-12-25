@@ -1,6 +1,7 @@
 ---
 import Button1 from "../../../components/atomos/Button1.astro";
 import FormCont from "../../../components/atomos/FormCont.astro";
+import InputDate from "../../../components/atomos/InputDate";
 import SelectedFormulario from "../../../components/atomos/SelectedFormulario.astro";
 import Titulo1 from "../../../components/atomos/Titulo1.astro";
 import ContenedorBoton from "../../../components/moleculas/ContenedorBoton.astro";
@@ -37,6 +38,10 @@ const { user } = Astro.props;
     <ContenedorInputForm label="celular" type="text" name="celular" />
   </div>
   <ContenedorInputForm label="direccion" type="text" name="direccion" />
+  <div class="text-xs text-left flex flex-col items-start gap-">
+    <p>Fecha de Nacimiento</p>
+    <InputDate label="Fecha de Nacimiento"name="fNacimiento"  client:load/>
+  </div>
   <ContenedorBoton>
     <Button1 type="submit">Agregar</Button1>
   </ContenedorBoton>

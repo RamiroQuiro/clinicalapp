@@ -13,6 +13,7 @@ export const pacientes = sqliteTable("pacientes", {
   apellido: text("apellido").notNull(),
   dni: integer("dni", { mode: "number" }).unique(),
   email: text("email"),
+  fNacimiento:text('fNacimiento').notNull().default(sql`(current_timestamp)`),
   srcPhoto: text("srcPhoto"),
   celular: text("celular"),
   sexo:text('sexo'),

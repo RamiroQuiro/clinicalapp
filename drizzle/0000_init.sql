@@ -24,6 +24,46 @@ CREATE TABLE `historiaClinica` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `historiaClinica_id_unique` ON `historiaClinica` (`id`);--> statement-breakpoint
+CREATE TABLE `pacientes` (
+	`id` text PRIMARY KEY NOT NULL,
+	`nombre` text NOT NULL,
+	`userId` text NOT NULL,
+	`apellido` text NOT NULL,
+	`dni` integer,
+	`email` text,
+	`fNacimiento` text DEFAULT (current_timestamp) NOT NULL,
+	`srcPhoto` text,
+	`celular` text,
+	`sexo` text,
+	`direccion` text,
+	`ciudad` text,
+	`provincia` text,
+	`pais` text,
+	`updated_at` text,
+	`created_at` text DEFAULT (current_timestamp) NOT NULL,
+	`deleted_at` text
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `pacientes_id_unique` ON `pacientes` (`id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `pacientes_dni_unique` ON `pacientes` (`dni`);--> statement-breakpoint
+CREATE TABLE `users` (
+	`id` text PRIMARY KEY NOT NULL,
+	`email` text NOT NULL,
+	`nombre` text NOT NULL,
+	`apellido` text NOT NULL,
+	`password` text NOT NULL,
+	`dni` integer,
+	`srcPhoto` text,
+	`celular` text,
+	`direccion` text,
+	`ciudad` text,
+	`provincia` text,
+	`pais` text,
+	`created_at` text DEFAULT (current_timestamp) NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `users_id_unique` ON `users` (`id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
 CREATE TABLE `medicamentos` (
 	`id` text PRIMARY KEY NOT NULL,
 	`nombre` text NOT NULL,
@@ -72,13 +112,4 @@ CREATE TABLE `turnos` (
 	`activo` integer DEFAULT true
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `turnos_id_unique` ON `turnos` (`id`);--> statement-breakpoint
-ALTER TABLE `pacientes` ADD `nombre` text NOT NULL;--> statement-breakpoint
-ALTER TABLE `pacientes` ADD `apellido` text NOT NULL;--> statement-breakpoint
-ALTER TABLE `pacientes` ADD `updated_at` text;--> statement-breakpoint
-ALTER TABLE `pacientes` ADD `deleted_at` text;--> statement-breakpoint
-ALTER TABLE `pacientes` DROP COLUMN `nombreApellido`;--> statement-breakpoint
-ALTER TABLE `pacientes` DROP COLUMN `password`;--> statement-breakpoint
-ALTER TABLE `users` ADD `nombre` text NOT NULL;--> statement-breakpoint
-ALTER TABLE `users` ADD `apellido` text NOT NULL;--> statement-breakpoint
-ALTER TABLE `users` DROP COLUMN `nombreApellido`;
+CREATE UNIQUE INDEX `turnos_id_unique` ON `turnos` (`id`);

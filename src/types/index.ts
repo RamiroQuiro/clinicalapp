@@ -6,6 +6,7 @@ export type pacienteType={
     apellido:string,
     sexo:string,
     dni:number,
+    fNacimiento:string,
     srcPhoto?:string,
     celular?:string,
     direccion?:string,
