@@ -18,7 +18,7 @@ export default function TBody({ arrayBody, onClickFila }) {
 
   //   botonera de acciones
   const renderActions = (data) => (
-    <div className="flex gap-2 justify-center items-center text-xs">
+    <div className="flex gap-2 pr-5 justify-end items-center text-xs">
       <button
         className="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
         onClick={() => (document.location.href = data.href)}

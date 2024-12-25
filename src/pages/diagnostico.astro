@@ -1,0 +1,31 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+
+
+      <!-- Input de búsqueda -->
+      <input
+      type="text"
+      class="ctw-input"
+      autocomplete="off"
+      data-ctw-ino="1"
+      placeholder="Escriba aquí para buscar en el índice"
+    />
+    <!-- Div para mostrar los resultados -->
+    <div class="ctw-window" data-ctw-ino="1"></div>
+</Layout>
+
+
+<script src="https://icdcdn.who.int/embeddedct/icd11ect-1.7.1.js"></script>
+<script>
+  const mySettings = {
+    // Usar la API de pruebas (desarrollo)
+    apiServerUrl: "https://icd11restapi-developer-test.azurewebsites.net",
+    language: "es", // Idioma español
+  };
+
+  // Configurar el handler
+  ECT.Handler.configure(mySettings);
+</script>

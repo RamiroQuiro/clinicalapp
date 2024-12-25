@@ -20,6 +20,15 @@ export type pacienteType={
 }
 
 
+export type DiagnosticosTypes={
+    id?: number,
+    diagnostico: string,
+    observacion:string,
+    pacienteId?:string,
+    userId?:string,
+}
+
+
 export type responseAPIType={
     msg:string,
     code?:number,

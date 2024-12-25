@@ -94,21 +94,12 @@ const columnas = [
       </div>`
     ),}
 ];
-let arrayBody = [
-  {
-    nombreApellidos: "Juan Perez",
-    dni: 12345678,
-    edad: 23,
-    sexo: "masculino",
-    celular: 123456789,
-  },
-];
 
 
 
 
 ---
 
-<div class="w-full overflow-x-auto my-5">
+<div class="w-10/12 overflow-x-auto my-5">
   <Table columnas={columnas} arrayBody={pacientesData} client:load />
 </div>

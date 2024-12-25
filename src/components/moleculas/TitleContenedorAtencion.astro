@@ -12,5 +12,5 @@ const {labelButton, labelH3}=Astro.props as StringProps
 class="w-full p-2 border-b border-gray-500/50 flex items-center justify-between"
 >
 <h3 class="text-xs font-semibold uppercase">{labelH3}</h3>
-<Button2>{labelButton}</Button2>
+{labelButton&&<Button2>{labelButton}</Button2>}
 </div>
