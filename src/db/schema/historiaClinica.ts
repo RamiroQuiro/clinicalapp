@@ -5,11 +5,12 @@ export const historiaClinica = sqliteTable("historiaClinica", {
   id: text("id").primaryKey().unique(),
   pacienteId: text("pacienteId").notNull(),
   fecha: text("fecha").notNull(),
-  userId:text('userId').notNull(),
-  motivoConsulta:text('motivoConsulta').notNull(),
-  diagnostico:text('diagnostico').notNull(),
-  tratamiento:text('tratamiento').notNull(),
-  observaciones:text('observaciones').notNull(),
+  userId: text("userId").notNull(),
+  motivoConsulta: text("motivoConsulta"),
+  diagnostico: text("diagnostico"),
+  tratamiento: text("tratamiento"),
+  estado: text("estado").default("pediente"),
+  observaciones: text("observaciones"),
   updated_at: text("updated_at"),
   created_at: text("created_at")
     .notNull()

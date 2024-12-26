@@ -1,8 +1,7 @@
-import { generateId } from "lucia";
 import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import db from "../../../../db";
-import { historiaClinica } from "../../../../db/schema/historiaClinica";
+import { signosVitales } from "../../../../db/schema/signosVitales";
 
 type MotivoConsultaType = {
   id: string;
@@ -14,16 +13,15 @@ type MotivoConsultaType = {
 
 export const POST: APIRoute = async ({ request }) => {
   const data = await request.formData();
-//   console.log("este es el enpoint", data);
-  const motivoConsulta = data.get("motivoConsulta");
+  console.log("este es el enpoint", data);
   const hcId = data.get("hcId");
+  const peso= data.get('peso')
+  const imc=data.get('imc')
+  const temperatura=data.get('temperatura')
+  const tensionArterial=data.get('tensionArterial')
   try {
-    const isExtis = (
-      await db
-        .select()
-        .from(historiaClinica)
-        .where(eq(historiaClinica.id, hcId))
-    ).at(0);
+    const isExtis = (await db.select().from(signosVitales).where(eq(signosVitales.historiaClinicaId, hcId))).at(0);
+    console.log('exite hc?',isExtis)
     if (!isExtis) {
       return new Response(
         JSON.stringify({
@@ -32,18 +30,17 @@ export const POST: APIRoute = async ({ request }) => {
         })
       );
     }
-    const updateHC = await db
-      .update(historiaClinica)
-      .set({
-        motivoConsulta,
-      })
-      .where(historiaClinica.id, hcId);
-
-    console.log(updateHC);
+const updateHC=await db.update(signosVitales).set({
+    peso:peso,
+    imc,
+    temperatura,
+    tensionArterial
+}).where(eq(signosVitales.historiaClinicaId,hcId))
+    console.log(updateHC)
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "Motivo de consulta creado correctamente",
+        msg: "signos guardador correctamente",
       })
     );
   } catch (error) {

@@ -4,16 +4,18 @@ import Table from "../../../components/tablaComponentes/Table";
 import db from "../../../db";
 import { pacientes} from "../../../db/schema";
 import type { pacienteType } from "../../../types";
+import { generateId } from "lucia";
 const {user}=Astro.props
 
 
 let pacientesData=[]
 try {
   const dataDB:pacienteType[]=await db.select().from(pacientes).where(eq(pacientes.userId,user.id))
-  console.log('datos traidos de la base de datos ', dataDB)
+  const idHC=generateId(15)
+
   pacientesData= dataDB.map(paciente=>{
       return {
-        href:`/dashboard/pacientes/${paciente.id}`,
+        href:`/dashboard/consultas/aperturaPaciente/${paciente.id}/${idHC}`,
           id:paciente.id,
           nombreApellido:`${paciente.nombre}  ${paciente.apellido} `,
           dni:paciente.dni,

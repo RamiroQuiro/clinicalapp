@@ -1,6 +1,6 @@
 
 
-const ContenedorSignosVitales = ({ svg, medida, label }) => {
+const ContenedorSignosVitales = ({ svg, medida, label,name }) => {
   
   
   return (
@@ -11,7 +11,7 @@ const ContenedorSignosVitales = ({ svg, medida, label }) => {
   </div>
   <div className="flex items-center w-4/12 bg gap-x-2">
     <div className="w-10">
-      <input className="border border-gray-500/50 w-full p-2 text-xs font-bold rounded-lg outline-none ring-0" type="number" name="pesoCorporal" />
+      <input className="border border-gray-500/50 w-full p-2 text-xs font-bold rounded-lg outline-none ring-0" type="number" name={name} />
     </div>
     <span className="text-xs tracking-tighter font-light">{medida}</span>
   </div>

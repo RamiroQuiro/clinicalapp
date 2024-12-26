@@ -1,0 +1,107 @@
+---
+import { eq } from "drizzle-orm";
+import MainDashboard from "../../../../../components/atomos/MainDashboard.astro";
+import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
+import db from "../../../../../db";
+import { pacientes } from "../../../../../db/schema";
+import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
+import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
+import type { pacienteType } from "../../../../../types";
+import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
+import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
+import ContenedorSignosVitales from "../../../../../components/moleculas/ContenedorSignosVitales";
+import DiagnosticoContenedor from "../../../../../components/organismo/DiagnosticosContenedor";
+import MedicamentosAtencion from "../../../../../components/organismo/MedicamentosAtencion";
+import MotivoConsulta from "./MotivoConsulta.astro";
+import { undefined } from "astro:schema";
+import { historiaClinica } from "../../../../../db/schema/historiaClinica";
+import SignosVitalesForm from "./SignosVitalesForm.astro";
+import { signosVitales } from "../../../../../db/schema/signosVitales";
+import { generateId } from "lucia";
+const { pacienteId, hcId } = Astro.params;
+let pacienteData: pacienteType = {
+  id: "",
+  userId: "",
+  email: "",
+  nombre: "",
+  apellido: "",
+  fNacimiento: "",
+  dni: 0,
+  sexo: "",
+  celular: "",
+  direccion: "",
+};
+
+const dataIds = {
+  hcId,
+  userId: "",
+  pacienteId,
+};
+// tengo q implemtar type para historiClinica
+let isExistHC: {};
+try {
+  pacienteData = (
+    await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
+  ).at(0);
+
+  dataIds.userId = pacienteData.userId;
+  // console.log(pacienteData)
+  if (pacienteData == undefined) {
+    return;
+  } else {
+    isExistHC = (
+      await db
+        .select()
+        .from(historiaClinica)
+        .where(eq(historiaClinica.id, hcId))
+    ).at(0);
+    console.log("historia clinica", isExistHC);
+    if (isExistHC == undefined) {
+      const createHistoriaClinica = await db.insert(historiaClinica).values({
+        id: hcId,
+        pacienteId,
+        fecha: new Date(),
+        userId: pacienteData.userId,
+      });
+      const idSignosVitales = generateId(15);
+      const createSignosVitales = await db.insert(signosVitales).values({
+        id: idSignosVitales,
+        historiaClinicaId: hcId,
+        pacienteId,
+        userId:pacienteData.userId
+      });
+    }
+  }
+} catch (error) {
+  console.log(error);
+}
+---
+
+<LayoutDash>
+  <MainDashboard>
+    <NavAtencionMedica pacienteData={pacienteData} />
+    <Div1Atencion>
+      <Div2Atencion estilo="flex-1">
+        <SignosVitalesForm dataIds={dataIds} />
+      </Div2Atencion>
+      <Div2Atencion estilo="flex-[2]">
+        <MotivoConsulta
+          isExistHC={isExistHC ? isExistHC : ""}
+          dataIds={dataIds}
+        />
+      </Div2Atencion>
+    </Div1Atencion>
+    <Div1Atencion>
+      <Div2Atencion estilo="w-1/2 flex-1">
+        <ContenedorAtencion labelH3="diagnostico">
+          <DiagnosticoContenedor client:load />
+        </ContenedorAtencion>
+      </Div2Atencion>
+      <Div2Atencion estilo="w-1/2 flex-1">
+        <ContenedorAtencion labelH3="Medicación">
+          <MedicamentosAtencion client:load />
+        </ContenedorAtencion>
+      </Div2Atencion>
+    </Div1Atencion>
+  </MainDashboard>
+</LayoutDash>

@@ -29,7 +29,7 @@ export default function TBody({ arrayBody, onClickFila }) {
         className="bg-primary-200 text-white  px-1 py-0.5 rounded hover:bg-primary-200/80 duration-150"
         onClick={(e) => {
           e.stopPropagation();
-          document.location.href = `/dashboard/consultas/aperturaPaciente/${data.id}`;
+          document.location.href = data.href;
         }}
       >
         atender
