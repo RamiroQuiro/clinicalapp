@@ -1,0 +1,38 @@
+---
+import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
+import MedicamentosAtencion from "../../../../../components/organismo/MedicamentosAtencion";
+
+const {dataIds}=Astro.props
+---
+<ContenedorAtencion labelH3="Medicación"  labelButton="guardar" idButton="guardarMedicacion">
+    <MedicamentosAtencion  client:load />
+  </ContenedorAtencion>
+
+
+  <script >
+import { atencion } from "../../../../../context/store";
+
+    const btnEnviar = document.getElementById("guardarMedicacion");
+    const formulario = document.getElementById("motivoConsulta");
+  
+   atencion.subscribe((state)=>{
+    console.log('este es conendor de medicamentos ->',state)
+   })
+    console.log('estoy en el contenedor medicamento',atencionStore)
+    btnEnviar.addEventListener("click", async (event) => {
+      event.preventDefault(); // Evita el envío del formulario por defecto
+      
+      
+      try {
+        const response = await fetch("/api/pacientes/atencion/medicamentos", {
+          method: "POST",
+          body: 'formData', // No necesitas establecer manualmente "Content-Type"
+        });
+        const result = await response.json();
+        console.log(result);
+      } catch (error) {
+        console.error("Error al enviar el motivo de consulta:", error);
+      }
+    });
+  </script>
+  

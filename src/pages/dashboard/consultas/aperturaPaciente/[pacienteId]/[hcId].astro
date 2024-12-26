@@ -18,6 +18,7 @@ import { historiaClinica } from "../../../../../db/schema/historiaClinica";
 import SignosVitalesForm from "./SignosVitalesForm.astro";
 import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
+import MedicacionContainar from "./MedicacionContainar.astro";
 const { pacienteId, hcId } = Astro.params;
 let pacienteData: pacienteType = {
   id: "",
@@ -52,7 +53,11 @@ try {
     isExistHC = (
       await db
         .select()
-        .from(historiaClinica).rightJoin(signosVitales,eq(historiaClinica.id,signosVitales.historiaClinicaId))
+        .from(historiaClinica)
+        .rightJoin(
+          signosVitales,
+          eq(historiaClinica.id, signosVitales.historiaClinicaId)
+        )
         .where(eq(historiaClinica.id, hcId))
     ).at(0);
     console.log("historia clinica", isExistHC);
@@ -68,21 +73,26 @@ try {
         id: idSignosVitales,
         historiaClinicaId: hcId,
         pacienteId,
-        userId:pacienteData.userId
+        userId: pacienteData.userId,
       });
     }
   }
 } catch (error) {
   console.log(error);
 }
+
+// usar contexto para guardar al termiarn la consulta, o guardar con un boton en cada campo a llenar
 ---
 
-<LayoutDash>
-  <MainDashboard>
+<LayoutDash >
+  <MainDashboard userId={dataIds.userId}>
     <NavAtencionMedica pacienteData={pacienteData} />
     <Div1Atencion>
       <Div2Atencion estilo="flex-1">
-        <SignosVitalesForm dataIds={dataIds} isExistHC={isExistHC ? isExistHC.signosVitales : ""}/>
+        <SignosVitalesForm
+          dataIds={dataIds}
+          isExistHC={isExistHC ? isExistHC.signosVitales : ""}
+        />
       </Div2Atencion>
       <Div2Atencion estilo="flex-[2]">
         <MotivoConsulta
@@ -93,14 +103,16 @@ try {
     </Div1Atencion>
     <Div1Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
-        <ContenedorAtencion labelH3="diagnostico">
+        <ContenedorAtencion
+          labelH3="diagnostico"
+          labelButton="guardar"
+          idButton="guardarDiagnosticos"
+        >
           <DiagnosticoContenedor client:load />
         </ContenedorAtencion>
       </Div2Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
-        <ContenedorAtencion labelH3="Medicación">
-          <MedicamentosAtencion client:load />
-        </ContenedorAtencion>
+        <MedicacionContainar />
       </Div2Atencion>
     </Div1Atencion>
   </MainDashboard>

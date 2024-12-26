@@ -13,8 +13,8 @@ type MotivoConsultaType = {
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const data = await request.json();
-  console.log("este es el enpoint", data);
+  const data = await request.formData();
+//   console.log("este es el enpoint", data);
   const motivoConsulta = data.get("motivoConsulta");
   const hcId = data.get("hcId");
   try {
@@ -32,14 +32,14 @@ export const POST: APIRoute = async ({ request }) => {
         })
       );
     }
-    // const updateHC = await db
-    //   .update(historiaClinica)
-    //   .set({
-    //     motivoConsulta,
-    //   })
-    //   .where(historiaClinica.id, hcId);
+    const updateHC = await db
+      .update(historiaClinica)
+      .set({
+        motivoConsulta,
+      })
+      .where(historiaClinica.id, hcId);
 
-    // console.log(updateHC);
+    console.log(updateHC);
     return new Response(
       JSON.stringify({
         status: 200,

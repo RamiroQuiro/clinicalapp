@@ -1,10 +1,12 @@
 ---
 
-const {title}=Astro.props
+const {title,userId,pacienteId,hcId}=Astro.props
 
 ---
 
 <main
+id="containerAtencion"
+data-userid={userId}
   class="absolute  top-10 md:right-0 z-50 w-[91vw] bg-primary-bg-componentes rounded-tl-xl border-1 border-primary-100/50 overflow-hidden   print:hidden flex flex-col items-center justify-start"
 >
 <header class="w-full h-20 bg-gradient-to-b from-primary-100/80 via-primary-100/40 to-transparent">
@@ -17,3 +19,17 @@ const {title}=Astro.props
     <slot />
 </div>
 </main>
+
+<script>
+import { atencion } from "../../context/store";
+
+const dataset=document.getElementById('containerAtencion')
+const iduser=dataset?.dataset.userid
+
+const statePrev=atencion.get()
+  atencion.set({...statePrev,
+    dataIds:{...statePrev.dataIds,
+      userId:iduser
+    }
+  })
+</script>

@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import ContenedorAgregarDiagnostico from '../moleculas/ContenedorAgregarDiagnostico'
 import BotonMas from '../atomos/BotonMas'
 import MedicamentosAgregar from '../moleculas/MedicamentosAgregar'
+import { atencion } from '../../context/store'
+import { useStore } from '@nanostores/react'
 
 
 export default function MedicamentosAtencion() {
@@ -13,6 +15,7 @@ export default function MedicamentosAtencion() {
 
     })
     const [arrayMedicamentos, setArrayMedicamentos] = useState([])
+const $atencionStore=useStore(atencion)
 
     const handleChange = (e) => {
         setMedicamento({
@@ -30,6 +33,7 @@ export default function MedicamentosAtencion() {
             duracion: ''
 
         }))
+         atencion.set({...$atencionStore,medicamento:[...$atencionStore.diagnostico,medicamento]})
     }
 
 

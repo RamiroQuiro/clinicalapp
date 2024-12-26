@@ -1,21 +1,26 @@
 import React, { useState } from 'react'
 import ContenedorAgregarDiagnostico from '../moleculas/ContenedorAgregarDiagnostico'
 import BotonMas from '../atomos/BotonMas'
-
+import { useStore } from '@nanostores/react'
+import {atencion} from '../../context/store'
 
 export default function DiagnosticosContenedor() {
     const [diagnostico, setDiagnostico] = useState({
         diagnostico: '',
         observaciones: ''
     })
+    const $atencionStore=useStore(atencion)
+
+    console.log('contexto atencion en diagnosticoContenedor->',$atencionStore)
     const [arrayDiagnosticos, setArrayDiagnosticos] = useState([])
+
+
 
     const handleChange = (e) => {
         setDiagnostico({
             ...diagnostico,
             [e.target.name]: e.target.value
         })
-        console.log(diagnostico)
     }
     const handleAddDiagnostico = (e) => {
         e.preventDefault()
@@ -24,6 +29,7 @@ export default function DiagnosticosContenedor() {
             diagnostico: '',
             observaciones: ''
         }))
+        atencion.set({...$atencionStore,diagnostico:[...$atencionStore.diagnostico,diagnostico]})
     }
 
 
