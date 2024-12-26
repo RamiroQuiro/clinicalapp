@@ -35,7 +35,7 @@ const signosVitales = [
   },
 ];
 
-const {dataIds}=Astro.props
+const {dataIds,isExistHC}=Astro.props
 
 ---
 <ContenedorAtencion labelButton="guardar" labelH3="signos vitales"   idButton="guardarSignosVitales">
@@ -44,6 +44,7 @@ const {dataIds}=Astro.props
       signosVitales?.map((signo, i) => (
         <ContenedorSignosVitales
           svg={signo.svg}
+          value={isExistHC[signo.name]}
           medida={signo.medida}
           label={signo.label}
           name={signo.name}

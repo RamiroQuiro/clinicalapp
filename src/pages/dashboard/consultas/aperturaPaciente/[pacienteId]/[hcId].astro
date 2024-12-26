@@ -52,7 +52,7 @@ try {
     isExistHC = (
       await db
         .select()
-        .from(historiaClinica)
+        .from(historiaClinica).rightJoin(signosVitales,eq(historiaClinica.id,signosVitales.historiaClinicaId))
         .where(eq(historiaClinica.id, hcId))
     ).at(0);
     console.log("historia clinica", isExistHC);
@@ -82,11 +82,11 @@ try {
     <NavAtencionMedica pacienteData={pacienteData} />
     <Div1Atencion>
       <Div2Atencion estilo="flex-1">
-        <SignosVitalesForm dataIds={dataIds} />
+        <SignosVitalesForm dataIds={dataIds} isExistHC={isExistHC ? isExistHC.signosVitales : ""}/>
       </Div2Atencion>
       <Div2Atencion estilo="flex-[2]">
         <MotivoConsulta
-          isExistHC={isExistHC ? isExistHC : ""}
+          isExistHC={isExistHC ? isExistHC.historiaClinica : ""}
           dataIds={dataIds}
         />
       </Div2Atencion>
