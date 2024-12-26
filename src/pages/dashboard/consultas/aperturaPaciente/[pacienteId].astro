@@ -82,12 +82,13 @@ const signosVitales = [
         </ContenedorAtencion>
       </Div2Atencion>
       <Div2Atencion estilo="flex-[2]">
-        <ContenedorAtencion labelButton="guardar" labelH3="motivo de consulta">
+        <ContenedorAtencion idButton="guardarMotivo" labelButton="guardar" labelH3="motivo de consulta">
           <textarea
             class="flex-1 w-full text-sm p-2 text-primary-texto outline-none ring-0"
             rows="10"
-            name=""
-            id=""></textarea>
+            name="motivoConsulta"
+            
+            id="motivoConsulta"></textarea>
         </ContenedorAtencion>
       </Div2Atencion>
     </Div1Atencion>
@@ -98,10 +99,39 @@ const signosVitales = [
         </ContenedorAtencion>
       </Div2Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
-        <ContenedorAtencion  labelH3="diagnostico">
+        <ContenedorAtencion  labelH3="Medicación">
           <MedicamentosAtencion client:load />
         </ContenedorAtencion>
       </Div2Atencion>
     </Div1Atencion>
   </MainDashboard>
 </LayoutDash>
+
+
+<script>
+
+const btnEnviar=document.getElementById('guardarMotivo')
+const contenedorMotivoConsulta=document.getElementById('motivoConsulta')
+let consulta=''
+contenedorMotivoConsulta?.addEventListener('change',(e)=>consulta=+e.target.value)
+console.log(consulta)
+btnEnviar.addEventListener('click',async()=>{
+
+  try {
+    
+    const fetching=await fetch('/api/pacientes/atencion/motivoConsulta',
+      {
+        method:'POST',
+        body:JSON.stringify({
+          msg:consulta
+        })
+      }
+      
+    )
+
+  } catch ( error) {
+    console.log(error)
+  }
+
+})
+</script>

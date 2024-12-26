@@ -2,16 +2,17 @@
 import TitleContenedorAtencion from "./TitleContenedorAtencion.astro";
 
 interface StringProps{
-    labelButton: "string",
-    labelH3: "string"
+    labelButton: string,
+    labelH3: string,
+    idButton:string
 }
 
-const {labelButton, labelH3}=Astro.props as StringProps
+const {labelButton, labelH3,idButton}=Astro.props as StringProps
 ---
 
 <div
   class="bg-primary-bg-claro w-full pb-4 rounded-lg border flex items-start justify-normal flex-col overflow-hidden shadow-sm"
 >
-<TitleContenedorAtencion labelButton={labelButton} labelH3={labelH3}/>
+<TitleContenedorAtencion id={idButton} labelButton={labelButton} labelH3={labelH3}/>
   <slot />
 </div>

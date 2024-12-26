@@ -1,16 +1,18 @@
 ---
-import Button2 from "../atomos/Button2.astro"
-interface StringProps{
-    labelButton: "string",
-    labelH3: "string"
+import Button2 from "../atomos/Button2.astro";
+interface StringProps {
+  labelButton: string;
+  labelH3: string;
+  id:string
 }
 
-const {labelButton, labelH3}=Astro.props as StringProps
+const { labelButton, labelH3 ,id} = Astro.props as StringProps;
+console.log(id)
 ---
 
 <div
-class="w-full p-2 border-b border-gray-500/50 flex items-center justify-between"
+  class="w-full p-2 border-b border-gray-500/50 flex items-center justify-between"
 >
-<h3 class="text-xs font-semibold uppercase">{labelH3}</h3>
-{labelButton&&<Button2>{labelButton}</Button2>}
+  <h3 class="text-xs font-semibold uppercase">{labelH3}</h3>
+  {labelButton && <Button2 id={id}>{labelButton}</Button2>}
 </div>

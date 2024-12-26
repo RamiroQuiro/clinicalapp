@@ -40,7 +40,7 @@ export default function MedicamentosAtencion() {
                 <div className='flex flex-col relative items-start w-full  gap-2 justify-between '>
 
                     <ContenedorAgregarDiagnostico value={medicamento.medicamento} name='medicamento' type={'text'} handleChange={handleChange} >
-                        Medicanto
+                        Medicamento
                     </ContenedorAgregarDiagnostico>
                     <div className="flex   items-center justify-normal flex- gap-2">
                         <MedicamentosAgregar name="dosis" label={'Dosis'} handleChange={handleChange} />

@@ -6,7 +6,7 @@ export const historiaClinica = sqliteTable("historiaClinica", {
   pacienteId: text("pacienteId").notNull(),
   fecha: text("fecha").notNull(),
   userId:text('userId').notNull(),
-  motivoConsult:text('motivoConsulta').notNull(),
+  motivoConsulta:text('motivoConsulta').notNull(),
   diagnostico:text('diagnostico').notNull(),
   tratamiento:text('tratamiento').notNull(),
   observaciones:text('observaciones').notNull(),
