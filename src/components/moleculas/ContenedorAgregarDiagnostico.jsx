@@ -4,7 +4,7 @@ export default function ContenedorAgregarDiagnostico({ value,children, name, typ
     return (
 
 
-        <div className="relative w-full  group">
+        <div className=" w-full  group">
             <label for={id} className=" top-0 left-0 duration-300 ring-0 valid:ring-0 py-1  focus:outline-none outline-none z-20 text-xs text-primary-texto   ">
                 {children}
             </label>

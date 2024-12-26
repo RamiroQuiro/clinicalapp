@@ -4,11 +4,14 @@ import MainDashboard from "../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
 import db from "../../../../db";
 import { pacientes } from "../../../../db/schema";
+import Div1Atencion from "../../../../components/atomos/Div1Atencion.astro";
+import Div2Atencion from "../../../../components/atomos/Div2Atencion.astro";
 import type { pacienteType } from "../../../../types";
 import NavAtencionMedica from "../../../../components/organismo/NavAtencionMedica.astro";
 import ContenedorAtencion from "../../../../components/moleculas/ContenedorAtencion.astro";
 import ContenedorSignosVitales from "../../../../components/moleculas/ContenedorSignosVitales";
 import DiagnosticoContenedor from "../../../../components/organismo/DiagnosticosContenedor";
+import MedicamentosAtencion from "../../../../components/organismo/MedicamentosAtencion";
 const { pacienteId } = Astro.params;
 let pacienteData: pacienteType = {
   id: "",
@@ -63,10 +66,8 @@ const signosVitales = [
 <LayoutDash>
   <MainDashboard>
     <NavAtencionMedica pacienteData={pacienteData} />
-    <div
-      class="flex items-stretch justify-between bg-rd-400 w-full gap-x-5 gap-y-3"
-    >
-      <div class="flex-1 w-full flex items-stretch justify-normal p-3 border-x">
+    <Div1Atencion>
+      <Div2Atencion estilo="flex-1">
         <ContenedorAtencion labelButton="guardar" labelH3="signos vitales">
           {
             signosVitales?.map((signo, i) => (
@@ -74,16 +75,13 @@ const signosVitales = [
                 svg={signo.svg}
                 medida={signo.medida}
                 label={signo.label}
-                key={i}
-                class:load
+                client:load
               />
             ))
           }
         </ContenedorAtencion>
-      </div>
-      <div
-        class="flex-[2] w-full flex items-stretch justify-normal p-3 border-x"
-      >
+      </Div2Atencion>
+      <Div2Atencion estilo="flex-[2]">
         <ContenedorAtencion labelButton="guardar" labelH3="motivo de consulta">
           <textarea
             class="flex-1 w-full text-sm p-2 text-primary-texto outline-none ring-0"
@@ -91,19 +89,19 @@ const signosVitales = [
             name=""
             id=""></textarea>
         </ContenedorAtencion>
-      </div>
-    </div>
-    <div class="flex items-stretch justify-between w-full gap-x-5 gap-y-3">
-      <div class=" w-full flex items-stretch justify-normal p-3 border-x">
-        <ContenedorAtencion  labelH3="diagnostico">
+      </Div2Atencion>
+    </Div1Atencion>
+    <Div1Atencion >
+      <Div2Atencion estilo="w-1/2 flex-1">
+        <ContenedorAtencion labelH3="diagnostico">
           <DiagnosticoContenedor client:load />
         </ContenedorAtencion>
-      </div>
-      <div class=" w-full flex items-stretch justify-normal p-3 border-x">
-        <ContenedorAtencion labelButton="guardar" labelH3="diagnostico">
-          este otro contenedor men
+      </Div2Atencion>
+      <Div2Atencion estilo="w-1/2 flex-1">
+        <ContenedorAtencion  labelH3="diagnostico">
+          <MedicamentosAtencion client:load />
         </ContenedorAtencion>
-      </div>
-    </div>
+      </Div2Atencion>
+    </Div1Atencion>
   </MainDashboard>
 </LayoutDash>
