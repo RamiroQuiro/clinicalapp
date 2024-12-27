@@ -1,0 +1,43 @@
+---
+import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
+import DiagnosticosContenedor from "../../../../../components/organismo/DiagnosticosContenedor";
+---
+
+<ContenedorAtencion
+  labelH3="diagnostico"
+  labelButton="guardar"
+  idButton="guardarDiagnosticos"
+>
+  <DiagnosticosContenedor client:load />
+</ContenedorAtencion>
+
+<script>
+    import { atencion } from "../../../../../context/store";
+  
+    const btnEnviar = document.getElementById("guardarMedicacion");
+    const formulario = document.getElementById("motivoConsulta");
+  
+    let dataDiagnostico = {};
+  
+    atencion.subscribe((state) => {
+      dataMedicamento.medicamentos=state.medicamentos,
+      dataMedicamento.dataids=state.dataIds
+    
+  });
+  const atencionStore=atencion.get()
+    console.log("estoy en el contenedor medicamento", atencionStore);
+    btnEnviar.addEventListener("click", async (event) => {
+      event.preventDefault(); // Evita el envío del formulario por defecto
+  
+      try {
+        const response = await fetch("/api/pacientes/atencion/medicamentos", {
+          method: "POST",
+          body: JSON.stringify(dataMedicamento), // No necesitas establecer manualmente "Content-Type"  voieriprg
+        });
+        const result = await response.json();
+        console.log(result);
+      } catch (error) {
+        console.error("Error al enviar el motivo de consulta:", error);
+      }
+    });
+  </script>

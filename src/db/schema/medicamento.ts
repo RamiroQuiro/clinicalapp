@@ -1,17 +1,18 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const historiaClinica = sqliteTable("historiaClinica", {
+export const medicamento = sqliteTable("medicamentos", {
   id: text("id").primaryKey().unique(),
+  nombre: text("nombre").notNull(),
+  descripcion: text("descripcion"),
+  historiaClinicaId: text("historiaClinicaId").notNull(),
   pacienteId: text("pacienteId").notNull(),
-  fecha: text("fecha").notNull(),
   userId: text("userId").notNull(),
-  motivoConsulta: text("motivoConsulta"),
-  diagnosticoId: text("diagnosticoId"),
-  antecedenteId:text('antecedenteId'),
-  tratamientoId: text("tratamientoId"),
-  estado: text("estado").default("pediente"),
-  observaciones: text("observaciones"),
+  dosis: text("dosis"),
+  frecuencia: text("frecuencia"),
+  duracion: text("duracion"),
+  precio: text("precio"),
+  stock: text("stock"),
   updated_at: text("updated_at"),
   created_at: text("created_at")
     .notNull()

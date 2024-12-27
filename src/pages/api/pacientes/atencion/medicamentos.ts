@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import db from "../../../../db";
 import { historiaClinica } from "../../../../db/schema/historiaClinica";
-import { medicamentos } from "../../../../db/schema/medicamentos";
+import { medicamentos } from "../../../../db/schema/medicamento";
 
 type MedicamentoType = {
   id?:string,
@@ -52,14 +52,11 @@ export const POST: APIRoute = async ({ request }) => {
       const idMedicamento = generateId(12);
       return db.insert(medicamentos).values({
         id: idMedicamento,
-        descripcion: "-",
         nombre: medicamento.nombre,
         dosis: medicamento.dosis,
         frecuencia: medicamento.frecuencia,
         duracion: medicamento.duracion,
         pacienteId: data.dataids.pacienteId,
-        precio: 0,
-        stock: 0,
         historiaClinicaId: data.dataids.hcId, // Relacionar con la historia clínica
         userId: data.dataids.userId, // Registrar quién realizó la inserción
       });

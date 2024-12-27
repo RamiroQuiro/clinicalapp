@@ -9,15 +9,41 @@ CREATE TABLE `archivosAdjuntos` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `archivosAdjuntos_id_unique` ON `archivosAdjuntos` (`id`);--> statement-breakpoint
+CREATE TABLE `antecedente` (
+	`id` text PRIMARY KEY NOT NULL,
+	`pacienteId` text NOT NULL,
+	`tipo` text NOT NULL,
+	`descripcion` text NOT NULL,
+	`observaciones` text,
+	`created_at` text DEFAULT (current_timestamp)
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `antecedente_id_unique` ON `antecedente` (`id`);--> statement-breakpoint
+CREATE TABLE `diagnostico` (
+	`id` text PRIMARY KEY NOT NULL,
+	`diagnostico` text NOT NULL,
+	`historiaClinicaId` text NOT NULL,
+	`pacienteId` text NOT NULL,
+	`userId` text NOT NULL,
+	`observaciones` text,
+	`tratamiento` text,
+	`updated_at` text,
+	`created_at` text DEFAULT (current_timestamp) NOT NULL,
+	`deleted_at` text
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `diagnostico_id_unique` ON `diagnostico` (`id`);--> statement-breakpoint
 CREATE TABLE `historiaClinica` (
 	`id` text PRIMARY KEY NOT NULL,
 	`pacienteId` text NOT NULL,
 	`fecha` text NOT NULL,
 	`userId` text NOT NULL,
-	`motivoConsulta` text NOT NULL,
-	`diagnostico` text NOT NULL,
-	`tratamiento` text NOT NULL,
-	`observaciones` text NOT NULL,
+	`motivoConsulta` text,
+	`diagnosticoId` text,
+	`antecedenteId` text,
+	`tratamientoId` text,
+	`estado` text DEFAULT 'pediente',
+	`observaciones` text,
 	`updated_at` text,
 	`created_at` text DEFAULT (current_timestamp) NOT NULL,
 	`deleted_at` text
@@ -66,10 +92,12 @@ CREATE UNIQUE INDEX `users_id_unique` ON `users` (`id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
 CREATE TABLE `medicamentos` (
 	`id` text PRIMARY KEY NOT NULL,
-	`nombre` text NOT NULL,
-	`descripcion` text NOT NULL,
-	`precio` text NOT NULL,
-	`stock` text NOT NULL,
+	`tratamieento` text NOT NULL,
+	`descripcion` text,
+	`historiaClinicaId` text NOT NULL,
+	`pacienteId` text NOT NULL,
+	`userId` text NOT NULL,
+	`duracion` text,
 	`updated_at` text,
 	`created_at` text DEFAULT (current_timestamp) NOT NULL,
 	`deleted_at` text
@@ -102,6 +130,29 @@ CREATE TABLE `recetaMedica` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `recetaMedica_id_unique` ON `recetaMedica` (`id`);--> statement-breakpoint
+CREATE TABLE `signosVitales` (
+	`id` text PRIMARY KEY NOT NULL,
+	`historiaClinicaId` text NOT NULL,
+	`pacienteId` text NOT NULL,
+	`userId` text NOT NULL,
+	`updated_at` text,
+	`created_at` text DEFAULT (current_timestamp) NOT NULL,
+	`deleted_at` text,
+	`temperatura` text,
+	`pulso` text,
+	`respiracion` text,
+	`tensionArterial` text,
+	`saturacionOxigeno` text,
+	`glucosa` text,
+	`peso` text,
+	`talla` text,
+	`imc` text,
+	`frecuenciaCardiaca` text,
+	`frecuenciaRespiratoria` text,
+	`dolor` text
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `signosVitales_id_unique` ON `signosVitales` (`id`);--> statement-breakpoint
 CREATE TABLE `turnos` (
 	`id` text PRIMARY KEY NOT NULL,
 	`pacienteId` text NOT NULL,

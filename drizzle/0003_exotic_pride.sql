@@ -1,1 +1,0 @@
-ALTER TABLE `historiaClinica` ADD `estado` text DEFAULT 'pediente';

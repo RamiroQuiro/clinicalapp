@@ -19,7 +19,8 @@ import SignosVitalesForm from "./SignosVitalesForm.astro";
 import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
 import MedicacionContainar from "./MedicacionContainar.astro";
-import { medicamentos } from "../../../../../db/schema/medicamentos";
+import { medicamentos } from "../../../../../db/schema/medicamento";
+import DiagnosticoContainer from "./DiagnosticoContainer.astro";
 const { pacienteId, hcId } = Astro.params;
 let pacienteData: pacienteType = {
   id: "",
@@ -33,12 +34,12 @@ let pacienteData: pacienteType = {
   celular: "",
   direccion: "",
 };
-console.log('params pacientrId->',pacienteId)
-let isExistMedicamentos=[]
+console.log("params pacientrId->", pacienteId);
+let isExistMedicamentos = [];
 const dataIds = {
   hcId,
   userId: "",
-  pacienteId:pacienteId,
+  pacienteId: pacienteId,
 };
 // tengo q implemtar type para historiClinica
 let isExistHC: {};
@@ -47,12 +48,11 @@ try {
     await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
   ).at(0);
 
- 
   // console.log(pacienteData)
   if (!pacienteData) {
     return;
   } else {
-    dataIds.userId=pacienteData.userId
+    dataIds.userId = pacienteData.userId;
     isExistHC = (
       await db
         .select()
@@ -60,11 +60,17 @@ try {
         .rightJoin(
           signosVitales,
           eq(historiaClinica.id, signosVitales.historiaClinicaId)
-        ).where(eq(historiaClinica.id, hcId))
+        )
+        .where(eq(historiaClinica.id, hcId))
     ).at(0);
 
     if (isExistHC) {
-      isExistMedicamentos= await db.select().from(medicamentos).where(eq(medicamentos.historiaClinicaId,isExistHC.historiaClinica.id))
+      isExistMedicamentos = await db
+        .select()
+        .from(medicamentos)
+        .where(
+          eq(medicamentos.historiaClinicaId, isExistHC.historiaClinica.id)
+        );
     }
     if (!isExistHC) {
       const createHistoriaClinica = await db.insert(historiaClinica).values({
@@ -79,8 +85,7 @@ try {
         historiaClinicaId: hcId,
         pacienteId,
         userId: pacienteData.userId,
-      })
-    
+      });
     }
   }
 } catch (error) {
@@ -90,7 +95,7 @@ try {
 // usar contexto para guardar al termiarn la consulta, o guardar con un boton en cada campo a llenar
 ---
 
-<LayoutDash >
+<LayoutDash>
   <MainDashboard dataIds={dataIds}>
     <NavAtencionMedica pacienteData={pacienteData} />
     <Div1Atencion>
@@ -109,16 +114,10 @@ try {
     </Div1Atencion>
     <Div1Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
-        <ContenedorAtencion
-          labelH3="diagnostico"
-          labelButton="guardar"
-          idButton="guardarDiagnosticos"
-        >
-          <DiagnosticoContenedor client:load />
-        </ContenedorAtencion>
+    <DiagnosticoContainer/>
       </Div2Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
-        <MedicacionContainar isExistMedicamentos={isExistMedicamentos}/>
+        <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />
       </Div2Atencion>
     </Div1Atencion>
   </MainDashboard>

@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import { historiaClinica } from "../../../db/schema/historiaClinica";
 import db from "../../../db";
-import { medicamentos } from "../../../db/schema/medicamentos";
+import { medicamentos } from "../../../db/schema/medicamento";
 
 type MedicamentoType = {
   medicamento: string;
