@@ -43,7 +43,7 @@ export default function DiagnosticosContenedor() {
                         </ContenedorAgregarDiagnostico>
                         <h2 className='text-xs capitalize '>observaciones:</h2>
                         <textarea
-                            class="flex-1 w-full text-sm p-2 text-primary-texto outline-none ring-0 shadow-md border-gray-300 border rounded-lg"
+                            className="flex-1 w-full text-sm p-2 text-primary-texto outline-none ring-0 shadow-md border-gray-300 border rounded-lg"
                             rows="5"
                             value={diagnostico.observaciones}
                             name="observaciones"

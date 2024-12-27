@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request }) => {
       .set({
         motivoConsulta,
       })
-      .where(historiaClinica.id, hcId);
+      .where(eq(historiaClinica.id, hcId))
 
     console.log(updateHC);
     return new Response(

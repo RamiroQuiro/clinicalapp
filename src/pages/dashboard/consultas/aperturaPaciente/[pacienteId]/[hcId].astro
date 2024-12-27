@@ -47,11 +47,12 @@ try {
     await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
   ).at(0);
 
-  dataIds.userId = pacienteData.userId;
+ 
   // console.log(pacienteData)
-  if (pacienteData == undefined) {
+  if (!pacienteData) {
     return;
   } else {
+    dataIds.userId=pacienteData.userId
     isExistHC = (
       await db
         .select()
@@ -62,8 +63,10 @@ try {
         ).where(eq(historiaClinica.id, hcId))
     ).at(0);
 
-    isExistMedicamentos= await db.select().from(medicamentos).where(eq(medicamentos.historiaClinicaId,isExistHC.historiaClinica.id))
-    if (isExistHC == undefined) {
+    if (isExistHC) {
+      isExistMedicamentos= await db.select().from(medicamentos).where(eq(medicamentos.historiaClinicaId,isExistHC.historiaClinica.id))
+    }
+    if (!isExistHC) {
       const createHistoriaClinica = await db.insert(historiaClinica).values({
         id: hcId,
         pacienteId,
