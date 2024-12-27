@@ -34,6 +34,7 @@ let pacienteData: pacienteType = {
   direccion: "",
 };
 
+let isExistMedicamentos=[]
 const dataIds = {
   hcId,
   userId: "",
@@ -58,10 +59,11 @@ try {
         .rightJoin(
           signosVitales,
           eq(historiaClinica.id, signosVitales.historiaClinicaId)
-        )
-        .where(eq(historiaClinica.id, hcId))
+        ).where(eq(historiaClinica.id, hcId))
     ).at(0);
-    console.log("historia clinica", isExistHC);
+
+    isExistMedicamentos= await db.select().from(medicamentos).where(eq(medicamentos.historiaClinicaId,isExistHC.historiaClinica.id))
+    console.log("historia clinica", isExistMedicamentos);
     if (isExistHC == undefined) {
       const createHistoriaClinica = await db.insert(historiaClinica).values({
         id: hcId,
@@ -76,8 +78,7 @@ try {
         pacienteId,
         userId: pacienteData.userId,
       })
-      const idMedicamentos=generateId(12)
-      const createMedicamentosHistoriaClinica=await db.insert(medicamentos).values({id:idMedicamentos})
+    
     }
   }
 } catch (error) {
@@ -115,7 +116,7 @@ try {
         </ContenedorAtencion>
       </Div2Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
-        <MedicacionContainar />
+        <MedicacionContainar isExistMedicamentos={isExistMedicamentos}/>
       </Div2Atencion>
     </Div1Atencion>
   </MainDashboard>

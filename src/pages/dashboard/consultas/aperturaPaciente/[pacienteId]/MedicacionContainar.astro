@@ -2,7 +2,7 @@
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
 import MedicamentosAtencion from "../../../../../components/organismo/MedicamentosAtencion";
 
-const { dataIds } = Astro.props;
+const { dataIds,isExistMedicamentos } = Astro.props;
 ---
 
 <ContenedorAtencion
@@ -10,7 +10,7 @@ const { dataIds } = Astro.props;
   labelButton="guardar"
   idButton="guardarMedicacion"
 >
-  <MedicamentosAtencion client:load />
+  <MedicamentosAtencion isExistMedicamentos={isExistMedicamentos} client:load />
 </ContenedorAtencion>
 
 <script>
@@ -22,7 +22,7 @@ const { dataIds } = Astro.props;
   let dataMedicamento = {};
 
   atencion.subscribe((state) => {
-    dataMedicamento.medicamentos=state.medicamento,
+    dataMedicamento.medicamentos=state.medicamentos,
     dataMedicamento.dataids=state.dataIds
   
 });

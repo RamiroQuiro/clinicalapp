@@ -5,57 +5,83 @@ import db from "../../../../db";
 import { historiaClinica } from "../../../../db/schema/historiaClinica";
 import { medicamentos } from "../../../../db/schema/medicamentos";
 
-type MotivoConsultaType = {
-  id: string;
-  motivo: string;
-  pacienteId: string;
-  hcId?: string;
-  userId: string;
+type MedicamentoType = {
+  medicamento: string;
+  dosis?: string;
+  frecuencia?: string;
+  duracion?: string;
+};
+
+type RequestMedicamentosFront = {
+  medicamentos: MedicamentoType[];
+  dataids: {
+    userId: string;
+    hcId: string;
+    pacienteId?: string;
+  };
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const data = await request.json();
-  console.log("este es el enpoint", data);
-  
+  const data: RequestMedicamentosFront = await request.json();
+  console.log("endpoint ->", data);
+
   try {
-    const isExtis = (
+    // Verificar si existe la historia clínica
+    const isExists = (
       await db
         .select()
-        .from(medicamentos)
-        .where(eq(medicamentos.historiaClinicaId, data.dataids.hcId))
+        .from(historiaClinica)
+        .where(eq(historiaClinica.id, data.dataids.hcId))
     ).at(0);
-    
-    if (!isExtis) {
+
+    if (!isExists) {
       return new Response(
         JSON.stringify({
           status: 400,
-          mg: "Error al crear el motivo de consulta",
-        })
+          msg: "La historia clínica no existe",
+        }),
+        { status: 400 }
       );
     }
 
-    console.log(isExtis)
-    // const updateHC = await db
-    //   .update(historiaClinica)
-    //   .set({
-    //     motivoConsulta,
-    //   })
-    //   .where(historiaClinica.id, hcId);
+    console.log("Historia clínica encontrada:", isExists);
 
-    // console.log(updateHC);
+    // Insertar medicamentos en la base de datos
+    const medicamentosPromises = data.medicamentos.map((medicamento) => {
+      const idMedicamento = generateId(12);
+      return db.insert(medicamentos).values({
+        id: idMedicamento,
+        descripcion: "-",
+        nombre: medicamento.medicamento,
+        dosis: medicamento.dosis,
+        frecuencia: medicamento.frecuencia,
+        duracion: medicamento.duracion,
+        pacienteId: "lj9zasl82g",
+        precio: 0,
+        stock: 0,
+        historiaClinicaId: data.dataids.hcId, // Relacionar con la historia clínica
+        userId: data.dataids.userId, // Registrar quién realizó la inserción
+      });
+    });
+
+    // Esperar que todas las inserciones se completen
+    await Promise.all(medicamentosPromises);
+
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "Motivo de consulta creado correctamente",
+        msg: "Medicamentos guardados correctamente",
       })
     );
   } catch (error) {
-    console.log(error);
+    console.error("Error al guardar los medicamentos:", error);
     return new Response(
       JSON.stringify({
-        status: 400,
-        mg: "Error al crear el motivo de consulta",
-      })
+        status: 500,
+        msg: "Error al guardar los medicamentos",
+        error: error.message,
+      }),
+      { status: 500 }
     );
   }
 };
