@@ -19,7 +19,7 @@ const atencion=atom({
     signosVitales:[],
     motivoConsulta:{},
     diagnostico:[],
-    medicamento:[]
+    medicamentos:[]
 })
 
 const usuarioActivo = atom({})

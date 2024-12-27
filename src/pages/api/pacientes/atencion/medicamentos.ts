@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import db from "../../../../db";
 import { historiaClinica } from "../../../../db/schema/historiaClinica";
+import { medicamentos } from "../../../../db/schema/medicamentos";
 
 type MotivoConsultaType = {
   id: string;
@@ -15,15 +16,15 @@ type MotivoConsultaType = {
 export const POST: APIRoute = async ({ request }) => {
   const data = await request.json();
   console.log("este es el enpoint", data);
-  const motivoConsulta = data.get("motivoConsulta");
-  const hcId = data.get("hcId");
+  
   try {
     const isExtis = (
       await db
         .select()
-        .from(historiaClinica)
-        .where(eq(historiaClinica.id, hcId))
+        .from(medicamentos)
+        .where(eq(medicamentos.historiaClinicaId, data.dataids.hcId))
     ).at(0);
+    
     if (!isExtis) {
       return new Response(
         JSON.stringify({
@@ -32,6 +33,8 @@ export const POST: APIRoute = async ({ request }) => {
         })
       );
     }
+
+    console.log(isExtis)
     // const updateHC = await db
     //   .update(historiaClinica)
     //   .set({

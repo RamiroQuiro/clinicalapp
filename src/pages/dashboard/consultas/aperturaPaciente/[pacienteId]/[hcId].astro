@@ -19,6 +19,7 @@ import SignosVitalesForm from "./SignosVitalesForm.astro";
 import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
 import MedicacionContainar from "./MedicacionContainar.astro";
+import { medicamentos } from "../../../../../db/schema/medicamentos";
 const { pacienteId, hcId } = Astro.params;
 let pacienteData: pacienteType = {
   id: "",
@@ -74,7 +75,9 @@ try {
         historiaClinicaId: hcId,
         pacienteId,
         userId: pacienteData.userId,
-      });
+      })
+      const idMedicamentos=generateId(12)
+      const createMedicamentosHistoriaClinica=await db.insert(medicamentos).values({id:idMedicamentos})
     }
   }
 } catch (error) {
@@ -85,7 +88,7 @@ try {
 ---
 
 <LayoutDash >
-  <MainDashboard userId={dataIds.userId}>
+  <MainDashboard dataIds={dataIds}>
     <NavAtencionMedica pacienteData={pacienteData} />
     <Div1Atencion>
       <Div2Atencion estilo="flex-1">
