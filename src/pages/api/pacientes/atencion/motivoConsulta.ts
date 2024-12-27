@@ -14,7 +14,7 @@ type MotivoConsultaType = {
 
 export const POST: APIRoute = async ({ request }) => {
   const data = await request.formData();
-//   console.log("este es el enpoint", data);
+  console.log("este es el enpoint", data);
   const motivoConsulta = data.get("motivoConsulta");
   const hcId = data.get("hcId");
   try {

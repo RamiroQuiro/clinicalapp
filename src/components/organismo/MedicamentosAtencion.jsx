@@ -9,7 +9,7 @@ import BotonEliminar from "../moleculas/BotonEliminar";
 
 export default function MedicamentosAtencion({ isExistMedicamentos }) {
   const [medicamento, setMedicamento] = useState({
-    id: 0,
+    id: '',
     nombre: "",
     dosis: "",
     frecuencia: "",
@@ -29,11 +29,12 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
     e.preventDefault();
     setArrayMedicamentos(() => [...arrayMedicamentos, medicamento]);
     setMedicamento((state) => ({
-      id: 0,
+      id: '',
       nombre: "",
       dosis: "",
       frecuencia: "",
       duracion: "",
+      isSaved:false,
     }));
     atencion.set({
       ...$atencionStore,
@@ -74,7 +75,33 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
       console.error("Error al mandar edit:", error);
     }
   };
-  console.log("estado del medicamento ->", medicamento);
+
+  const handleDelet=async(deletMedicamento)=>{
+        try {
+            const delFeth=await fetch('/api/medicamentos/',{
+                method:'DELETE',
+                body:JSON.stringify(deletMedicamento.id)
+            })
+            const dataRes=await delFeth.json()
+            if (dataRes.status==200) {
+                setArrayMedicamentos((prevArray) =>
+                    prevArray.filter((med)=>med.id!==deletMedicamento.id)
+                  );
+                  setMedicamento({
+                    id: 0,
+                    nombre: "",
+                    dosis: "",
+                    frecuencia: "",
+                    duracion: "",
+                  });
+            }else {
+                console.log(dataRes)
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+  }
   return (
     <div className="flex flex-col rounded-lg  px-2 ">
       <div className="flex  w-full  relative gap-1 ">
@@ -115,13 +142,13 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
 
       <div>
         {arrayMedicamentos?.map((currentMedicamento, i) => (
-          <div className="bg-white p-2 rounded-lg text-primary-texto border-gray-200 border flex flex-col gap-2 my-2 shadow-md">
-            <div className="text-sm font-semibold tracking-wide flex items-center justify-start gap-2">
+          <div className={`${currentMedicamento.id==''?'bg-primary-500/20 animate-pulse':'bg-white'} p-2 rounded-lg text-primary-texto border-gray-200 border flex flex-col gap-2 my-2 shadow-md`}>
+            <div className="text-sm font-semibold tracking-wide flex items-center justify-between gap-2">
               <span>{i + 1}</span>
               <input type="text" value={currentMedicamento.nombre} name="frecuencia" className=" text-center py-0.5 w-1/2 bg-gray-100 rounded "/>
               <div className="flex gap-2">
                 <BotonEditar handleClick={()=>handleEdit(currentMedicamento)}/>
-                <BotonEliminar/>
+                <BotonEliminar handleClick={()=>handleDelet(currentMedicamento)}/>
               </div>
             </div>
             <div className="text-sm border-y border-gray-300 py- flex items-center justify-between gap-2 px-2">

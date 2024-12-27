@@ -33,12 +33,12 @@ let pacienteData: pacienteType = {
   celular: "",
   direccion: "",
 };
-
+console.log('params pacientrId->',pacienteId)
 let isExistMedicamentos=[]
 const dataIds = {
   hcId,
   userId: "",
-  pacienteId,
+  pacienteId:pacienteId,
 };
 // tengo q implemtar type para historiClinica
 let isExistHC: {};
@@ -63,7 +63,6 @@ try {
     ).at(0);
 
     isExistMedicamentos= await db.select().from(medicamentos).where(eq(medicamentos.historiaClinicaId,isExistHC.historiaClinica.id))
-    console.log("historia clinica", isExistMedicamentos);
     if (isExistHC == undefined) {
       const createHistoriaClinica = await db.insert(historiaClinica).values({
         id: hcId,

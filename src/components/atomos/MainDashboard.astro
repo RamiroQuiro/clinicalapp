@@ -7,7 +7,7 @@ const {title,dataIds}=Astro.props
 <main
 id="containerAtencion"
 data-userid={dataIds?.userId}
-data-pacientid={dataIds?.pacienteId}
+data-pacienteid={dataIds?.pacienteId}
 data-hcid={dataIds?.hcId}
   class="absolute  top-10 md:right-0 z-50 w-[91vw] bg-primary-bg-componentes rounded-tl-xl border-1 border-primary-100/50 overflow-hidden   print:hidden flex flex-col items-center justify-start"
 >
@@ -29,7 +29,6 @@ const dataset=document.getElementById('containerAtencion')
 const iduser=dataset?.dataset.userid
 const pacienteId=dataset?.dataset.pacienteid
 const hcId=dataset?.dataset.hcid
-
 const statePrev=atencion.get()
   atencion.set({...statePrev,
     dataIds:{...statePrev.dataIds,

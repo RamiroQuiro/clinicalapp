@@ -10,10 +10,10 @@ type MedicamentoType = {
   dosis?: string;
   frecuencia?: string;
   duracion?: string;
-  userId?:string,
-  pacienteId?:string,
-  historiaClinicaId?:string
-  id:string
+  userId?: string;
+  pacienteId?: string;
+  historiaClinicaId?: string;
+  id: string;
 };
 
 type RequestMedicamentosFront = {
@@ -48,12 +48,42 @@ export const PUT: APIRoute = async ({ request }) => {
       );
     }
 
-
-const updateMedicamento=await db.update(medicamentos).set(data).where(eq(medicamentos.id,data.id))
+    const updateMedicamento = await db
+      .update(medicamentos)
+      .set(data)
+      .where(eq(medicamentos.id, data.id));
     return new Response(
       JSON.stringify({
         status: 200,
         msg: "Medicamentos guardados correctamente",
+      })
+    );
+  } catch (error) {
+    console.error("Error al guardar los medicamentos:", error);
+    return new Response(
+      JSON.stringify({
+        status: 500,
+        msg: "Error al guardar los medicamentos",
+        error: error.message,
+      }),
+      { status: 500 }
+    );
+  }
+};
+
+export const DELETE: APIRoute = async ({ request }) => {
+const data:string=await request.json()
+
+
+
+  try {
+
+    const deleteMedicament= await db.delete(medicamentos).where(eq(medicamentos.id,data))
+
+    return new Response(
+      JSON.stringify({
+        status: 200,
+        msg: "Medicamentos eliminado correctamente",
       })
     );
   } catch (error) {

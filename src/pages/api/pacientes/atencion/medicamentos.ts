@@ -6,7 +6,8 @@ import { historiaClinica } from "../../../../db/schema/historiaClinica";
 import { medicamentos } from "../../../../db/schema/medicamentos";
 
 type MedicamentoType = {
-  medicamento: string;
+  id?:string,
+  nombre: string;
   dosis?: string;
   frecuencia?: string;
   duracion?: string;
@@ -44,7 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    console.log("Historia clínica encontrada:", isExists);
+    // console.log("Historia clínica encontrada:", isExists);
 
     // Insertar medicamentos en la base de datos
     const medicamentosPromises = data.medicamentos.map((medicamento) => {
@@ -52,11 +53,11 @@ export const POST: APIRoute = async ({ request }) => {
       return db.insert(medicamentos).values({
         id: idMedicamento,
         descripcion: "-",
-        nombre: medicamento.medicamento,
+        nombre: medicamento.nombre,
         dosis: medicamento.dosis,
         frecuencia: medicamento.frecuencia,
         duracion: medicamento.duracion,
-        pacienteId: "lj9zasl82g",
+        pacienteId: data.dataids.pacienteId,
         precio: 0,
         stock: 0,
         historiaClinicaId: data.dataids.hcId, // Relacionar con la historia clínica

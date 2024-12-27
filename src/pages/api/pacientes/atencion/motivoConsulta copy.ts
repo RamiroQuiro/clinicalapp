@@ -17,6 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
 //   console.log("este es el enpoint", data);
   const motivoConsulta = data.get("motivoConsulta");
   const hcId = data.get("hcId");
+  console.log('entois moticvo consulta',hcId)
   try {
     const isExtis = (
       await db

@@ -11,7 +11,6 @@ export default function DiagnosticosContenedor() {
     })
     const $atencionStore=useStore(atencion)
 
-    console.log('contexto atencion en diagnosticoContenedor->',$atencionStore)
     const [arrayDiagnosticos, setArrayDiagnosticos] = useState([])
 
 
