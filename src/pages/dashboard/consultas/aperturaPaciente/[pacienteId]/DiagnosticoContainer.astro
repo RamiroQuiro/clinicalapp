@@ -36,6 +36,7 @@ const {isExistDiagnosticos}=Astro.props
         });
         const result = await response.json();
         console.log(result);
+        document.location.reload()
       } catch (error) {
         console.error("Error al enviar el motivo de consulta:", error);
       }

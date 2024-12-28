@@ -3,17 +3,16 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import db from "../../../../db";
 import { historiaClinica } from "../../../../db/schema/historiaClinica";
-import { medicamento } from "../../../../db/schema/medicamento";
 import { diagnostico } from "../../../../db/schema";
 
 type DiagnosticoType = {
-  id?:string,
+  id?: string;
   diagnostico: string;
-  observaciones?:string,
-  tratamiento?:string,
+  observaciones?: string;
+  tratamiento?: string;
 };
 
-type RequestMedicamentosFront = {
+type RequestDiagnosticosFront = {
   diagnosticos: DiagnosticoType[];
   dataIds: {
     userId: string;
@@ -23,8 +22,8 @@ type RequestMedicamentosFront = {
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const data: RequestMedicamentosFront = await request.json();
-  console.log("endpoint ->", data);
+  const data: RequestDiagnosticosFront = await request.json();
+  // console.log("endpoint ->", data);
 
   try {
     // Verificar si existe la historia clínica
@@ -46,14 +45,13 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-
     // Insertar medicamentos en la base de datos
     const diagnosticoPromises = data.diagnosticos.map((diag) => {
       const idDiag = generateId(12);
       return db.insert(diagnostico).values({
         id: idDiag,
-        diagnostico:diag.diagnostico,
-        observaciones:diag.observaciones,
+        diagnostico: diag.diagnostico,
+        observaciones: diag.observaciones,
         pacienteId: data.dataIds.pacienteId,
         historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
         userId: data.dataIds.userId, // Registrar quién realizó la inserción
@@ -78,6 +76,50 @@ export const POST: APIRoute = async ({ request }) => {
         error: error.message,
       }),
       { status: 500 }
+    );
+  }
+};
+
+export const PUT: APIRoute = async ({ request }) => {
+  const data: DiagnosticoType = await request.json();
+
+  try {
+    const update=await db.update(diagnostico).set(data).where(eq(diagnostico.id,data.id))
+    return new Response(
+      JSON.stringify({
+        status: 200,
+        msg: "actualizacion correcta",
+      })
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        status: 404,
+        msg: "error al guardar",
+      })
+    );
+  }
+};
+
+export const DELETE: APIRoute = async ({ request }) => {
+  const data: { id: string } = await request.json();
+  console.log(data);
+  try {
+
+const deletDiag=await db.delete(diagnostico).where(eq(diagnostico.id,data.id))
+
+    return new Response(
+      JSON.stringify({
+        status: 200,
+        msg: "eliminacion correcta",
+      })
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        status: 404,
+        msg: "error al eliminar",
+      })
     );
   }
 };

@@ -144,7 +144,7 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
         {arrayMedicamentos?.map((currentMedicamento, i) => (
           <div className={`${currentMedicamento.id==''?'bg-primary-500/20 animate-pulse':'bg-white'} p-2 rounded-lg text-primary-texto border-gray-200 border flex flex-col gap-2 my-2 shadow-md`}>
             <div className="text-sm font-semibold tracking-wide flex items-center justify-start gap-2">
-              <span className="text-xs bg-gray-100 rounded-full border border-gray-800/50 px-1 text-center">{i + 1}</span>
+              <span className="text-xs bg-gray-100 rounded-full border border-gray-800/50 px-1.5 text-center">{i + 1}</span>
               <h3  className=" text-left py-0.5 w-1/2 flex-1 bg-gray-100 rounded ">{currentMedicamento.nombre}</h3> 
               <div className="flex gap-2">
                 <BotonEditar handleClick={()=>handleEdit(currentMedicamento)}/>
