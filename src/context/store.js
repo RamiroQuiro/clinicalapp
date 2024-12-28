@@ -18,7 +18,7 @@ const atencion=atom({
     },
     signosVitales:[],
     motivoConsulta:{},
-    diagnostico:[],
+    diagnosticos:[],
     medicamentos:[]
 })
 

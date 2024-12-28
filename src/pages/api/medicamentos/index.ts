@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import { historiaClinica } from "../../../db/schema/historiaClinica";
 import db from "../../../db";
-import { medicamentos } from "../../../db/schema/medicamento";
+import { medicamento } from "../../../db/schema/medicamento";
 
 type MedicamentoType = {
   medicamento: string;
@@ -49,9 +49,9 @@ export const PUT: APIRoute = async ({ request }) => {
     }
 
     const updateMedicamento = await db
-      .update(medicamentos)
+      .update(medicamento)
       .set(data)
-      .where(eq(medicamentos.id, data.id));
+      .where(eq(medicamento.id, data.id));
     return new Response(
       JSON.stringify({
         status: 200,
@@ -78,7 +78,7 @@ const data:string=await request.json()
 
   try {
 
-    const deleteMedicament= await db.delete(medicamentos).where(eq(medicamentos.id,data))
+    const deleteMedicament= await db.delete(medicamento).where(eq(medicamento.id,data))
 
     return new Response(
       JSON.stringify({

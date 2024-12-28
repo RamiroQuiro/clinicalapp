@@ -17,17 +17,16 @@ const { dataIds,isExistMedicamentos } = Astro.props;
   import { atencion } from "../../../../../context/store";
 
   const btnEnviar = document.getElementById("guardarMedicacion");
-  const formulario = document.getElementById("motivoConsulta");
 
   let dataMedicamento = {};
 
   atencion.subscribe((state) => {
     dataMedicamento.medicamentos=state.medicamentos,
     dataMedicamento.dataids=state.dataIds
+    console.log("estoy en el contenedor medicamento", state);
   
 });
 const atencionStore=atencion.get()
-  console.log("estoy en el contenedor medicamento", atencionStore);
   btnEnviar.addEventListener("click", async (event) => {
     event.preventDefault(); // Evita el envío del formulario por defecto
 

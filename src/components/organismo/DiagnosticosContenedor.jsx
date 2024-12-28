@@ -7,14 +7,15 @@ import BotonEliminar from '../moleculas/BotonEliminar'
 import BotonEditar from '../moleculas/BotonEditar'
 import { showToast } from '../../utils/toast/toastShow'
 
-export default function DiagnosticosContenedor() {
+export default function DiagnosticosContenedor({isExistDiagnosticos}) {
+    console.log(isExistDiagnosticos)
     const [diagnostico, setDiagnostico] = useState({
         diagnostico: '',
         observaciones: ''
     })
     const $atencionStore=useStore(atencion)
 
-    const [arrayDiagnosticos, setArrayDiagnosticos] = useState([])
+    const [arrayDiagnosticos, setArrayDiagnosticos] = useState(isExistDiagnosticos)
 
 
 
@@ -37,7 +38,7 @@ export default function DiagnosticosContenedor() {
             diagnostico: '',
             observaciones: ''
         }))
-        atencion.set({...$atencionStore,diagnostico:[...$atencionStore.diagnostico,diagnostico]})
+        atencion.set({...$atencionStore,diagnosticos:[...$atencionStore.diagnosticos,diagnostico]})
     }
 
 

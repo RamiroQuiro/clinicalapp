@@ -1,6 +1,8 @@
 ---
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
 import DiagnosticosContenedor from "../../../../../components/organismo/DiagnosticosContenedor";
+
+const {isExistDiagnosticos}=Astro.props
 ---
 
 <ContenedorAtencion
@@ -8,31 +10,29 @@ import DiagnosticosContenedor from "../../../../../components/organismo/Diagnost
   labelButton="guardar"
   idButton="guardarDiagnosticos"
 >
-  <DiagnosticosContenedor client:load />
+  <DiagnosticosContenedor client:load  isExistDiagnosticos={isExistDiagnosticos}/>
 </ContenedorAtencion>
 
 <script>
     import { atencion } from "../../../../../context/store";
   
-    const btnEnviar = document.getElementById("guardarMedicacion");
-    const formulario = document.getElementById("motivoConsulta");
+    const btnEnviar = document.getElementById("guardarDiagnosticos");
   
-    let dataDiagnostico = {};
+    let dataDiagnostico={}
   
-    atencion.subscribe((state) => {
-      dataMedicamento.medicamentos=state.medicamentos,
-      dataMedicamento.dataids=state.dataIds
-    
-  });
-  const atencionStore=atencion.get()
-    console.log("estoy en el contenedor medicamento", atencionStore);
+      
+    atencion.subscribe((state) => { dataDiagnostico.diagnosticos=state.diagnosticos ,dataDiagnostico.dataIds=state.dataIds
+
+      console.log("estoy en el contenedor diagnostico", state);
+    });
+
     btnEnviar.addEventListener("click", async (event) => {
       event.preventDefault(); // Evita el envío del formulario por defecto
   
       try {
-        const response = await fetch("/api/pacientes/atencion/medicamentos", {
+        const response = await fetch("/api/pacientes/atencion/diagnostico", {
           method: "POST",
-          body: JSON.stringify(dataMedicamento), // No necesitas establecer manualmente "Content-Type"  voieriprg
+          body: JSON.stringify(dataDiagnostico), // No necesitas establecer manualmente "Content-Type"  voieriprg
         });
         const result = await response.json();
         console.log(result);

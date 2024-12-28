@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { text } from "drizzle-orm/mysql-core";
 import { sqliteTable } from "drizzle-orm/sqlite-core";
 
-export const medicamentos= sqliteTable('medicamentos',{
+export const tratamiento= sqliteTable('tratamiento',{
     id:text('id').primaryKey().unique(),
     tratamiento:text('tratamieento').notNull(),
     descripcion:text('descripcion'),

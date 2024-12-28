@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import MainDashboard from "../../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
 import db from "../../../../../db";
-import { pacientes } from "../../../../../db/schema";
+import { diagnostico, pacientes } from "../../../../../db/schema";
 import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
 import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
 import type { pacienteType } from "../../../../../types";
@@ -19,7 +19,7 @@ import SignosVitalesForm from "./SignosVitalesForm.astro";
 import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
 import MedicacionContainar from "./MedicacionContainar.astro";
-import { medicamentos } from "../../../../../db/schema/medicamento";
+import { medicamento } from "../../../../../db/schema/medicamento";
 import DiagnosticoContainer from "./DiagnosticoContainer.astro";
 const { pacienteId, hcId } = Astro.params;
 let pacienteData: pacienteType = {
@@ -43,12 +43,13 @@ const dataIds = {
 };
 // tengo q implemtar type para historiClinica
 let isExistHC: {};
+let isExistDiagnosticos;
 try {
   pacienteData = (
     await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
   ).at(0);
 
-  // console.log(pacienteData)
+  // console.log(pacienteData) 
   if (!pacienteData) {
     return;
   } else {
@@ -67,10 +68,11 @@ try {
     if (isExistHC) {
       isExistMedicamentos = await db
         .select()
-        .from(medicamentos)
+        .from(medicamento)
         .where(
-          eq(medicamentos.historiaClinicaId, isExistHC.historiaClinica.id)
+          eq(medicamento.historiaClinicaId, isExistHC.historiaClinica.id)
         );
+        isExistDiagnosticos=await db.select().from(diagnostico).where(eq(diagnostico.historiaClinicaId,isExistHC.historiaClinica.id))
     }
     if (!isExistHC) {
       const createHistoriaClinica = await db.insert(historiaClinica).values({
@@ -91,6 +93,7 @@ try {
 } catch (error) {
   console.log(error);
 }
+
 
 // usar contexto para guardar al termiarn la consulta, o guardar con un boton en cada campo a llenar
 ---
@@ -114,7 +117,7 @@ try {
     </Div1Atencion>
     <Div1Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
-    <DiagnosticoContainer/>
+    <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos}/>
       </Div2Atencion>
       <Div2Atencion estilo="w-1/2 flex-1">
         <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />

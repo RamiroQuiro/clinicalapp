@@ -4,18 +4,18 @@ import type { APIRoute } from "astro";
 import db from "../../../../db";
 import { historiaClinica } from "../../../../db/schema/historiaClinica";
 import { medicamento } from "../../../../db/schema/medicamento";
+import { diagnostico } from "../../../../db/schema";
 
-type MedicamentoType = {
+type DiagnosticoType = {
   id?:string,
-  nombre: string;
-  dosis?: string;
-  frecuencia?: string;
-  duracion?: string;
+  diagnostico: string;
+  observaciones?:string,
+  tratamiento?:string,
 };
 
 type RequestMedicamentosFront = {
-  medicamentos: MedicamentoType[];
-  dataids: {
+  diagnosticos: DiagnosticoType[];
+  dataIds: {
     userId: string;
     hcId: string;
     pacienteId?: string;
@@ -32,7 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
       await db
         .select()
         .from(historiaClinica)
-        .where(eq(historiaClinica.id, data.dataids.hcId))
+        .where(eq(historiaClinica.id, data.dataIds.hcId))
     ).at(0);
 
     console.log("Historia clínica encontrada:", isExists);
@@ -48,22 +48,20 @@ export const POST: APIRoute = async ({ request }) => {
 
 
     // Insertar medicamentos en la base de datos
-    const medicamentosPromises = data.medicamentos.map((med) => {
-      const idMedicamento = generateId(12);
-      return db.insert(medicamento).values({
-        id: idMedicamento,
-        nombre: med.nombre,
-        dosis: med.dosis,
-        frecuencia: med.frecuencia,
-        duracion: med.duracion,
-        pacienteId: data.dataids.pacienteId,
-        historiaClinicaId: data.dataids.hcId, // Relacionar con la historia clínica
-        userId: data.dataids.userId, // Registrar quién realizó la inserción
+    const diagnosticoPromises = data.diagnosticos.map((diag) => {
+      const idDiag = generateId(12);
+      return db.insert(diagnostico).values({
+        id: idDiag,
+        diagnostico:diag.diagnostico,
+        observaciones:diag.observaciones,
+        pacienteId: data.dataIds.pacienteId,
+        historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
+        userId: data.dataIds.userId, // Registrar quién realizó la inserción
       });
     });
 
     // Esperar que todas las inserciones se completen
-    await Promise.all(medicamentosPromises);
+    await Promise.all(diagnosticoPromises);
 
     return new Response(
       JSON.stringify({
