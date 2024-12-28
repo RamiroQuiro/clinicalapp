@@ -1,40 +1,61 @@
 ---
-
-const {title,dataIds}=Astro.props
-
+const { title, dataIds } = Astro.props;
 ---
 
 <main
-id="containerAtencion"
-data-userid={dataIds?.userId}
-data-pacienteid={dataIds?.pacienteId}
-data-hcid={dataIds?.hcId}
-  class="absolute  top-10 md:right-0 z-50 w-[91vw] bg-primary-bg-componentes rounded-tl-xl border-1 border-primary-100/50 overflow-hidden   print:hidden flex flex-col items-center justify-start"
+  id="containerAtencion"
+  data-userid={dataIds?.userId}
+  data-pacienteid={dataIds?.pacienteId}
+  data-hcid={dataIds?.hcId}
+  class="absolute top-10 md:right-0 z-50 w-[91vw] bg-primary-bg-componentes rounded-tl-xl border-1 border-primary-100/50 overflow-hidden print:hidden flex flex-col items-center justify-start"
 >
-<header class="w-full h-20 bg-gradient-to-b from-primary-100/80 via-primary-100/40 to-transparent">
-    <h1 class="text-xl mt-2 font-semibold  text-center ">
-        {title}
-      </h1>
-</header>
-<div class="w-[98%] bg-primary-bg-componentes px-3 py-1 flex flex-col items-start justify-start rounded-lg h-full -translate-y-10 ">
-
+  <header
+    class="w-full h-20 bg-gradient-to-b from-primary-100/80 via-primary-100/40 to-transparent"
+  >
+    <h1 class="text-xl mt-2 font-semibold text-center">
+      {title}
+    </h1>
+  </header>
+  <div
+    class="w-[98%] bg-primary-bg-componentes px-3 py-1 flex flex-col items-start justify-start rounded-lg h-full -translate-y-10"
+  >
     <slot />
-</div>
+  </div>
 </main>
 
 <script>
-import { atencion } from "../../context/store";
+  import { atencion } from "../../context/store";
 
-const dataset=document.getElementById('containerAtencion')
-const iduser=dataset?.dataset.userid
-const pacienteId=dataset?.dataset.pacienteid
-const hcId=dataset?.dataset.hcid
-const statePrev=atencion.get()
-  atencion.set({...statePrev,
-    dataIds:{...statePrev.dataIds,
-      userId:iduser,
-      pacienteId:pacienteId,
-      hcId:hcId
+  const dataset = document.getElementById("containerAtencion");
+  const iduser = dataset?.dataset.userid;
+  const pacienteId = dataset?.dataset.pacienteid;
+  const hcId = dataset?.dataset.hcid;
+  const statePrev = atencion.get();
+  
+
+
+  const fecthingSignosVitales = async () => {
+    try {
+      const response = await fetch("/api/pacientes/atencion/signosVitales", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          idHistoriaClinica: hcId,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        atencion.set({ ...statePrev, signosVitales: data.data ,dataIds:{hcId,pacienteId,userId:iduser}});
+      } else {
+        console.error(
+          "Error al obtener los signos vitales:",
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
     }
-  })
+  };
+  fecthingSignosVitales();
 </script>

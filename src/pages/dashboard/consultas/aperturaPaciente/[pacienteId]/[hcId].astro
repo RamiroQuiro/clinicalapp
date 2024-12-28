@@ -8,14 +8,8 @@ import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
 import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
 import type { pacienteType } from "../../../../../types";
 import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
-import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
-import ContenedorSignosVitales from "../../../../../components/moleculas/ContenedorSignosVitales";
-import DiagnosticoContenedor from "../../../../../components/organismo/DiagnosticosContenedor";
-import MedicamentosAtencion from "../../../../../components/organismo/MedicamentosAtencion";
 import MotivoConsulta from "./MotivoConsulta.astro";
-import { undefined } from "astro:schema";
 import { historiaClinica } from "../../../../../db/schema/historiaClinica";
-import SignosVitalesForm from "./SignosVitalesForm.astro";
 import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
 import MedicacionContainar from "./MedicacionContainar.astro";
@@ -42,14 +36,14 @@ const dataIds = {
   pacienteId: pacienteId,
 };
 // tengo q implemtar type para historiClinica
-let isExistHC: {};
+let isExistHC={};
 let isExistDiagnosticos;
 try {
   pacienteData = (
     await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
   ).at(0);
 
-  // console.log(pacienteData) 
+  // console.log(pacienteData)
   if (!pacienteData) {
     return;
   } else {
@@ -58,21 +52,19 @@ try {
       await db
         .select()
         .from(historiaClinica)
-        .rightJoin(
-          signosVitales,
-          eq(historiaClinica.id, signosVitales.historiaClinicaId)
-        )
         .where(eq(historiaClinica.id, hcId))
     ).at(0);
 
+    console.log('hcid estoy preguntanso si isExitHc',isExistHC)
     if (isExistHC) {
       isExistMedicamentos = await db
         .select()
         .from(medicamento)
-        .where(
-          eq(medicamento.historiaClinicaId, isExistHC.historiaClinica.id)
-        );
-        isExistDiagnosticos=await db.select().from(diagnostico).where(eq(diagnostico.historiaClinicaId,isExistHC.historiaClinica.id))
+        .where(eq(medicamento.historiaClinicaId, isExistHC.id));
+      isExistDiagnosticos = await db
+        .select()
+        .from(diagnostico)
+        .where(eq(diagnostico.historiaClinicaId, isExistHC.id));
     }
     if (!isExistHC) {
       const createHistoriaClinica = await db.insert(historiaClinica).values({
@@ -94,31 +86,25 @@ try {
   console.log(error);
 }
 
-
 // usar contexto para guardar al termiarn la consulta, o guardar con un boton en cada campo a llenar
 ---
 
 <LayoutDash>
   <MainDashboard dataIds={dataIds}>
-    <NavAtencionMedica pacienteData={pacienteData} />
+    <NavAtencionMedica pacienteData={pacienteData} isExistHC={isExistHC} dataIds={dataIds} />
     <Div1Atencion>
-      <Div2Atencion estilo="flex-1">
-        <SignosVitalesForm
-          dataIds={dataIds}
-          isExistHC={isExistHC ? isExistHC.signosVitales : ""}
-        />
+      <Div2Atencion estilo="w-1/2 flex-1">
+        <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos} />
       </Div2Atencion>
       <Div2Atencion estilo="flex-[2]">
         <MotivoConsulta
-          isExistHC={isExistHC ? isExistHC.historiaClinica : ""}
+          isExistHC={isExistHC ? isExistHC : ""}
           dataIds={dataIds}
         />
       </Div2Atencion>
     </Div1Atencion>
     <Div1Atencion>
-      <Div2Atencion estilo="w-1/2 flex-1">
-    <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos}/>
-      </Div2Atencion>
+      
       <Div2Atencion estilo="w-1/2 flex-1">
         <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />
       </Div2Atencion>

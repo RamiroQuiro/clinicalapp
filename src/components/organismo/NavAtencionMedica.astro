@@ -1,49 +1,43 @@
 ---
+import SignosVitalesForm from "../../pages/dashboard/consultas/aperturaPaciente/[pacienteId]/SignosVitalesForm.astro";
 import type { pacienteType } from "../../types";
 import Button1 from "../atomos/Button1.astro";
 import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
 import Etiquetas from "../atomos/Etiquetas.astro";
 
-const { pacienteData } = Astro.props as pacienteType;
-
+const { pacienteData, isExistHC,dataIds } = Astro.props as pacienteType;
 const nowDate = new Date().toLocaleDateString();
 ---
 
 <div
-class="h relative  border-y border-neutral-200 pt-2 pb-3 bg-white rounded-lg text-sm w-full flex items-center justify-evenly text-primary-texto px-5 mb-5 "
+  class="h relative border-y border-neutral-200 pt-2 pb-3 bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-5 gap-y-2"
 >
-<div class="w-full flex items-center justify-evenly ">
+  <div class="w-full flex items-center justify-evenly">
     <!-- boton de vovler history -->
     <ButtonBackHistory />
-    <div class="flex flex-col w-full flex-1 gap-y-2">
-      <div class="flex w-full items-center justify-start gap-x-3">
-        <div>
-          <h2 class="font-bold">
+    <div class="flex  w-full items-center md:gap-4 justify-start flex-1 gap-y-2 ml-2 ">
+        <div class="whitespace-nowrap">
+          <h2 class="font-bold ">
             {pacienteData.nombre}
             {" "}
             {pacienteData.apellido}
           </h2>
         </div>
-        <div>
-          <button
-            class="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-            onClick={() => (document.location.href = data.href)}
-          >
-            ficha
-          </button>
-        </div>
-        <div>
-          <Etiquetas>diagnostico</Etiquetas>
-          <Etiquetas>{nowDate}</Etiquetas>
-        </div>
-      </div>
+        <button
+          class="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
+          onClick={() => (document.location.href = data.href)}
+        >
+          ficha
+        </button>
+        
+        <Etiquetas>{nowDate}</Etiquetas>
       <div
         class="flex w-full items-center text-xs font-semibold justify-start gap-x-3"
       >
-        <p>{pacienteData.dni}</p>
-        <p>{pacienteData.sexo}</p>
-        <p>{pacienteData.celular}</p>
-        <p>{pacienteData.email}</p>
+      <Etiquetas>DNI: {pacienteData.dni}</Etiquetas>
+        <Etiquetas>sexo: {pacienteData.sexo}</Etiquetas>
+        <Etiquetas>Celular: {pacienteData.celular}</Etiquetas>
+        <Etiquetas>email: {pacienteData.email}</Etiquetas>
       </div>
     </div>
     <div>
@@ -51,4 +45,5 @@ class="h relative  border-y border-neutral-200 pt-2 pb-3 bg-white rounded-lg tex
       <Button1>cancelar consulta</Button1>
     </div>
   </div>
+  <SignosVitalesForm dataIds={dataIds} isExistHC={isExistHC ? isExistHC : ""} />
 </div>

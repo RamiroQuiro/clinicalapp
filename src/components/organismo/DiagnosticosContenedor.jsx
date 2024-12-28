@@ -110,7 +110,7 @@ export default function DiagnosticosContenedor({ isExistDiagnosticos }) {
 
             <div>
                 {arrayDiagnosticos?.map((diag, i) => (
-                    <div className={`${diag.id == '' ? 'bg-primary-500/20 animate-pulse' : 'bg-white'} p-2 rounded-lg text-primary-texto border-gray-200 border flex flex-col gap-2 my-2 shadow-md`}>
+                    <div className={`${diag.id == '' ? 'bg-primary-500/20 animate-pulse' : 'bg-white'} py-1 px-2 rounded-lg text-primary-texto border-gray-200 border flex flex-col gap-2 my-1 shadow-md`}>
                         <div className='text-sm font-semibold tracking-wide flex items-center justify-start gap-2'>
                             <span className="text-xs bg-gray-100 rounded-full border border-gray-800/50 px-1.5 text-center">{i + 1}</span>
                             <p className='flex-1'>{diag.diagnostico}</p>
@@ -119,7 +119,7 @@ export default function DiagnosticosContenedor({ isExistDiagnosticos }) {
                                 <BotonEliminar handleClick={() => handleDeletDiag(diag.id)} />
                             </div>
                         </div>
-                        <div className='text-sm border-y border-gray-300 py-2'>
+                        <div className='text-sm border-y border-gray-300 py-1'>
                             <p className='break-words'>{diag.observaciones}</p>
                         </div>
                     </div>
