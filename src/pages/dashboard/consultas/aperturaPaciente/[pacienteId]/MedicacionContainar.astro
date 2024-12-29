@@ -15,6 +15,7 @@ const { dataIds,isExistMedicamentos } = Astro.props;
 
 <script>
   import { atencion } from "../../../../../context/store";
+import { showToast } from "../../../../../utils/toast/toastShow";
 
   const btnEnviar = document.getElementById("guardarMedicacion");
 
@@ -31,6 +32,12 @@ const atencionStore=atencion.get()
     event.preventDefault(); // Evita el envío del formulario por defecto
 
     try {
+      if (dataMedicamento.medicamentos.length===0) {
+            showToast('no hay medicamentos para guardar', {
+                background: 'bg-primary-400'
+            })
+            return
+        }
       const response = await fetch("/api/pacientes/atencion/medicamentos", {
         method: "POST",
         body: JSON.stringify(dataMedicamento), // No necesitas establecer manualmente "Content-Type"  voieriprg

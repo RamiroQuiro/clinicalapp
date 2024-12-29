@@ -57,5 +57,29 @@ const { title, dataIds } = Astro.props;
       console.error("Error al realizar la solicitud:", error);
     }
   };
+
+  const fetchgingTratamiento = async () => {
+    try {
+      const response = await fetch("/api/pacientes/atencion/tratamiento", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          idHistoriaClinica: hcId,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        atencion.set({ ...statePrev, signosVitales: data.data ,dataIds:{hcId,pacienteId,userId:iduser}});
+      } else {
+        console.error(
+          "Error al obtener los signos vitales:",
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+    }
+  };
   fecthingSignosVitales();
 </script>

@@ -3,24 +3,21 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import db from "../../../../db";
 import { historiaClinica } from "../../../../db/schema/historiaClinica";
+import { tratamiento } from "../../../../db/schema";
 
-type MotivoConsultaType = {
-  id: string;
-  motivo: string;
-  pacienteId: string;
-  hcId?: string;
-  userId: string;
-};
+
 
 export const POST: APIRoute = async ({ request }) => {
   const data = await request.json();
-  console.log("este es el enpoint", data);
+//   console.log("este es el enpoint", data);
+  const hcId = data.dataIds.hcId
+  console.log('endpoint trataiento',data)
   try {
     const isExtis = (
       await db
         .select()
-        .from(historiaClinica)
-        .where(eq(historiaClinica.id, data.dataIds.hcId))
+        .from(tratamiento)
+        .where(eq(tratamiento.historiaClinicaId, hcId))
     ).at(0);
     if (!isExtis) {
       return new Response(
@@ -31,11 +28,11 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
     const updateHC = await db
-      .update(historiaClinica)
+      .update(tratamiento)
       .set({
-       motivoConsulta: data.motivoConsulta,
+        tratamiento:data.tratamiento,
       })
-      .where(eq(historiaClinica.id, data.dataIds.hcId))
+      .where(eq(tratamiento.historiaClinicaId, hcId))
 
     console.log(updateHC);
     return new Response(

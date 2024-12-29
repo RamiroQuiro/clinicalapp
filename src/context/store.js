@@ -16,6 +16,7 @@ const atencion=atom({
         pacienteId:'',
         hcId:''
     },
+    tratamiento:{tratamiento:''},
     signosVitales:[],
     motivoConsulta:{},
     diagnosticos:[],

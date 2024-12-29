@@ -1,0 +1,92 @@
+---
+import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
+---
+
+<ContenedorAtencion
+  labelButton="Guardar"
+  labelH3="tratamiento"
+  idButton="guardarTratamiento"
+>
+  <form
+    action=""
+    class="flex-1 w-full h-full flex items-start justify-center"
+    id="formularioTratamiento"
+  >
+    <textarea
+      class="w-full text-sm p-2 text-primary-texto outline-none ring-0"
+      rows="10"
+      name="motivoConsulta"
+      id="campoTratamiento"
+      placeholder="Escribe aquí el tratamiento indicado..."
+    >
+    </textarea>
+  </form>
+  <span
+    id="notificacionTratamiento"
+    class="text-xs font-extralight tracking-wider px-2 animate-aparecer"></span>
+</ContenedorAtencion>
+
+<script>
+  import { atencion } from "../../../../../context/store";
+  import { showToast } from "../../../../../utils/toast/toastShow";
+  let dataTratamiento = { tratamiento: "", dataIds: {} };
+  const textarea = document.getElementById("campoTratamiento");
+  const btnEnviar = document.getElementById("guardarTratamiento");
+  let timeoutId;
+  atencion.subscribe((state) => {
+    dataTratamiento.dataIds = state.dataIds;
+  });
+
+  textarea.addEventListener("input", () => {
+    clearTimeout(timeoutId); // Limpia cualquier timeout pendiente
+    timeoutId = setTimeout(async () => {
+      const tratamiento = textarea.value.trim();
+      if (!tratamiento) return; // No guardar si está vacío
+      dataTratamiento.tratamiento = tratamiento;
+      try {
+        const response = await fetch("/api/pacientes/atencion/tratamiento", {
+          method: "POST",
+          body: JSON.stringify(dataTratamiento),
+        });
+        const result = await response.json();
+        console.log(result);
+        if (response.ok) {
+          document.getElementById("notificacionTratamiento").textContent =
+            "guardadado automaticamente...";
+          console.log("Motivo guardado automáticamente");
+        } else {
+          console.error("Error al guardar automáticamente");
+        }
+      } catch (error) {
+        console.error("Error al guardar el tratamiento:", error);
+      }
+    }, 20000);
+  });
+
+  btnEnviar.addEventListener("click", async (event) => {
+    event.preventDefault(); // Evita el envío del formulario por defecto
+
+    const tratamiento = textarea.value.trim();
+    if (!tratamiento) {
+      showToast("ingrese tratamiento", { background: "bg-primary-400" });
+      return; // No guardar si está vacío
+    }
+    dataTratamiento.tratamiento = tratamiento;
+
+    try {
+      const response = await fetch("/api/pacientes/atencion/tratamiento", {
+        method: "POST",
+        body: JSON.stringify(dataTratamiento), // No necesitas establecer manualmente "Content-Type"
+      });
+      const result = await response.json();
+      console.log(result);
+      if (result.status == 200) {
+        showToast("tratamiento guardado");
+      } else {
+        showToast("error al guardar", { background: "bg-primary-400" });
+      }
+    } catch (error) {
+      console.error("Error al enviar el motivo de consulta:", error);
+    }
+  });
+</script>

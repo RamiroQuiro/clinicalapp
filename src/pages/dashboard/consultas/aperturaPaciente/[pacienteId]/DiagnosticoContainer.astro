@@ -15,6 +15,7 @@ const {isExistDiagnosticos}=Astro.props
 
 <script>
     import { atencion } from "../../../../../context/store";
+import { showToast } from "../../../../../utils/toast/toastShow";
   
     const btnEnviar = document.getElementById("guardarDiagnosticos");
   
@@ -23,13 +24,18 @@ const {isExistDiagnosticos}=Astro.props
       
     atencion.subscribe((state) => { dataDiagnostico.diagnosticos=state.diagnosticos ,dataDiagnostico.dataIds=state.dataIds
 
-      console.log("estoy en el contenedor diagnostico", state);
     });
 
     btnEnviar.addEventListener("click", async (event) => {
       event.preventDefault(); // Evita el envío del formulario por defecto
   
       try {
+        if (dataDiagnostico.diagnosticos.length===0) {
+            showToast('no hay diagnosticos para guardar', {
+                background: 'bg-primary-400'
+            })
+            return
+          }
         const response = await fetch("/api/pacientes/atencion/diagnostico", {
           method: "POST",
           body: JSON.stringify(dataDiagnostico), // No necesitas establecer manualmente "Content-Type"  voieriprg

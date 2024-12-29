@@ -6,6 +6,7 @@ import { atencion } from "../../context/store";
 import { useStore } from "@nanostores/react";
 import BotonEditar from "../moleculas/BotonEditar";
 import BotonEliminar from "../moleculas/BotonEliminar";
+import { showToast } from "../../utils/toast/toastShow";
 
 export default function MedicamentosAtencion({ isExistMedicamentos }) {
   const [medicamento, setMedicamento] = useState({
@@ -27,6 +28,12 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
   };
   const handleAddDiagnostico = (e) => {
     e.preventDefault();
+    if (!medicamento.nombre) {
+      showToast('no hay medicacion para agregar', {
+          background: 'bg-primary-400'
+      })
+      return
+  }
     setArrayMedicamentos(() => [...arrayMedicamentos, medicamento]);
     setMedicamento((state) => ({
       id: '',
@@ -45,9 +52,10 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
   const handleEdit = (e) => {
     setMedicamento(e);
   };
-
+console.log(arrayMedicamentos)
   const handleMandarEdit = async (updatedMedicamento) => {
     try {
+        
       const response = await fetch("/api/medicamentos/", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
