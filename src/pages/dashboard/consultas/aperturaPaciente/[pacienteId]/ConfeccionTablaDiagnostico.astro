@@ -1,0 +1,22 @@
+---
+import DivBox1 from "../../../../../components/atomos/DivBox1.astro";
+import Table from "../../../../../components/tablaComponentes/Table";
+
+
+const pacienteData=[]
+const columns=[
+{
+    label: "diagnostico",
+    id: 1,
+  },
+{
+    label: "observaciones",
+    id: 2,
+  },
+]
+---
+
+
+<DivBox1 >
+    <Table columnas={columns} arrayBody={pacienteData} client:load/>
+</DivBox1>

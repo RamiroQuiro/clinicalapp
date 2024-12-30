@@ -5,6 +5,7 @@ import db from "../../../db";
 import { pacientes} from "../../../db/schema";
 import type { pacienteType } from "../../../types";
 import { generateId } from "lucia";
+import DivBox1 from "../../../components/atomos/DivBox1.astro";
 const {user}=Astro.props
 
 
@@ -102,6 +103,6 @@ const columnas = [
 
 ---
 
-<div class="w-10/12 overflow-x-auto my-5">
+<DivBox1>
   <Table columnas={columnas} arrayBody={pacientesData} client:load />
-</div>
+</DivBox1>

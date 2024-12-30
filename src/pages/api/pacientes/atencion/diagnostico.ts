@@ -23,7 +23,7 @@ type RequestDiagnosticosFront = {
 
 export const POST: APIRoute = async ({ request }) => {
   const data: RequestDiagnosticosFront = await request.json();
-  // console.log("endpoint ->", data);
+  console.log("endpoint ->", data);
 
   try {
     // Verificar si existe la historia clínica

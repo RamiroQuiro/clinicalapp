@@ -5,6 +5,9 @@ import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
 import Button1 from "../atomos/Button1.astro";
 import type { MedicalCondition } from "../../types";
 import CardAntecedentes from '../../components/moleculas/CardAntecedentes.astro'
+import ContenedeorModal from "./ContenedeorModal.astro";
+import FormularioPaciente from "../../pages/dashboard/pacientes/FormularioPaciente.astro";
+import FormularioAntecedentes from "./FormularioAntecedentes.astro";
 interface MedicalHistoryProps {
   conditions: MedicalCondition[];
 }
@@ -21,7 +24,9 @@ const familyConditions = conditions.filter((c) => c.type === "family");
       <h2 class="text font-semibold">Historial Médico</h2>
       <div>
         <Button1>ver más</Button1>
-        <Button1>agregar</Button1>
+        <ContenedeorModal open="agregar" >
+            <FormularioAntecedentes/>
+        </ContenedeorModal>
       </div>
     </ContenedorTitleBotonera>
 

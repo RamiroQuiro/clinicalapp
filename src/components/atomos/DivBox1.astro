@@ -1,4 +1,7 @@
-<div class="w-full bg-white rounded-lg shadow-sm flex items-center border justify-between p-3  mb-6 text-primary-texto" >
+---
+const {styleDiv}=Astro.props
+---
+<div class={`${styleDiv} w-full bg-white rounded-lg shadow-sm flex items-start border justify-between p-3  mb-6 text-primary-texto`} >
     <div class="flex flex-col gap-y-2 items-start w-full justify-between">
     <slot/>
     </div>

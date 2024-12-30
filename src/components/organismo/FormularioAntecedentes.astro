@@ -1,0 +1,48 @@
+---
+import FormCont from "../atomos/FormCont.astro";
+import ContenedorInputForm from '../moleculas/ContenedorInputForm.astro'
+import ContenedorInputSelected from "../moleculas/ContenedorInputSelected.astro";
+
+
+const options=[
+    {
+        id:1,
+        value:'familiar',
+    },
+    {
+        id:2,
+        value:'personal'
+    }
+]
+---
+
+<FormCont id="formularioAntecedente" title="Nuevo Antecedentes">
+    <div
+    data-user-id
+    class="flex md:flex-row items-center gap-2 w-full justify-normal"
+  >
+    <ContenedorInputForm
+    label="antecedente"
+      type="text"
+      name="nombre"
+      styleInput=""
+    />
+</div>
+<div
+data-user-id
+class="flex md:flex-row items-center gap-2 w-full justify-normal"
+>
+<ContenedorInputForm
+label="fecha del diagnostico"
+  type="text"
+  name="fechaDiagnostico"
+  styleInput=""
+/></div>
+<div
+data-user-id
+class="flex md:flex-row items-center gap-2 w-full justify-normal"
+>
+<ContenedorInputSelected options={options}/>
+</div>
+
+</FormCont>

@@ -1,50 +1,23 @@
 ---
+import Button1 from "../../../../../components/atomos/Button1.astro";
+import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
+import ContenedeorModal from "../../../../../components/organismo/ContenedeorModal.astro";
 import DiagnosticosContenedor from "../../../../../components/organismo/DiagnosticosContenedor";
+import FormularioDiagnosticos from "../../../../../components/organismo/FormularioDiagnosticos.astro";
+import ConfeccionTablaDiagnostico from "./ConfeccionTablaDiagnostico.astro";
 
-const {isExistDiagnosticos}=Astro.props
+const { isExistDiagnosticos } = Astro.props;
 ---
 
-<ContenedorAtencion
-  labelH3="diagnostico"
-  labelButton="guardar"
-  idButton="guardarDiagnosticos"
->
-  <DiagnosticosContenedor client:load  isExistDiagnosticos={isExistDiagnosticos}/>
-</ContenedorAtencion>
+<ContenedorTitleBotonera>
+  <h2 class="text-lg font-semibold">Diagnostico</h2>
+  <div>
+    <ContenedeorModal open="Agregar">
+      <FormularioDiagnosticos />
+      <!-- <DiagnosticosContenedor client:load  isExistDiagnosticos={isExistDiagnosticos}/> -->
+    </ContenedeorModal>
+  </div>
+</ContenedorTitleBotonera>
 
-<script>
-    import { atencion } from "../../../../../context/store";
-import { showToast } from "../../../../../utils/toast/toastShow";
-  
-    const btnEnviar = document.getElementById("guardarDiagnosticos");
-  
-    let dataDiagnostico={}
-  
-      
-    atencion.subscribe((state) => { dataDiagnostico.diagnosticos=state.diagnosticos ,dataDiagnostico.dataIds=state.dataIds
-
-    });
-
-    btnEnviar.addEventListener("click", async (event) => {
-      event.preventDefault(); // Evita el envío del formulario por defecto
-  
-      try {
-        if (dataDiagnostico.diagnosticos.length===0) {
-            showToast('no hay diagnosticos para guardar', {
-                background: 'bg-primary-400'
-            })
-            return
-          }
-        const response = await fetch("/api/pacientes/atencion/diagnostico", {
-          method: "POST",
-          body: JSON.stringify(dataDiagnostico), // No necesitas establecer manualmente "Content-Type"  voieriprg
-        });
-        const result = await response.json();
-        console.log(result);
-        document.location.reload()
-      } catch (error) {
-        console.error("Error al enviar el motivo de consulta:", error);
-      }
-    });
-  </script>
+<ConfeccionTablaDiagnostico />

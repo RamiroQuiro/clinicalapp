@@ -52,7 +52,7 @@ export default function TBody({ arrayBody, onClickFila }) {
         <tr>
           <td
             colSpan={Object.keys(arrayBody[0] || {}).length + 1}
-            className="text-center text-xs font-semibold"
+            className="border-b last:border-0 text-xs font-semibold bg-white"
           >
             No hay elementos para mostrar
           </td>
@@ -81,7 +81,7 @@ export default function TBody({ arrayBody, onClickFila }) {
               data={client}
               id={client.id}
               key={i}
-              styleTr="hover:bg-primary-200/20 duration-300 cursor-pointer border-b odd:bg-primary-200/10"
+              styleTr="hover:bg- duration-300 cursor-pointer border-b odd:bg-gray-50"
               renderActions={renderActions}
             />
           ))

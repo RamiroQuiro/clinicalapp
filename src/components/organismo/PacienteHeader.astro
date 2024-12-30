@@ -10,6 +10,7 @@ import {
   ArrowBigRightDash,
 } from "lucide-react";
 import type { pacienteType } from "../../types";
+import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
 
 const {
   apellido,
@@ -55,6 +56,7 @@ let edad = calcularEdad(fNacimiento);
 
     <div class="flex-1 flex-col flex">
       <div class="flex flex-col md:flex-row md:items-center gap-2 mb-4">
+       <ButtonBackHistory/>
         <h1 class="text-2xl font-bold text-foreground capitalize">
           {nombre}{" "}{apellido}
         </h1>

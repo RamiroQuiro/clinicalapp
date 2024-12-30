@@ -16,8 +16,8 @@ export default function THead({ columnas, arrayBody }) {
         // })
     }
     return (
-        <thead className="bg-primary-100/70 rounded-md text-white w-auto">
-            <tr id='cabeceraTable' className="rounded-md">
+         <thead class="w-full bg-primary-bg-componentes  ">
+          <tr class="text-left border-b ">
                 {
                     columnas?.map((columna) => {
                      
