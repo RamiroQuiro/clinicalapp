@@ -1,67 +1,42 @@
 ---
-interface Medication {
-    name: string;
-    dosage: string;
-    frequency: string;
-    duration: string;
-    status: "active" | "completed" | "suspended";
-  }
-  
-  interface MedicationsProps {
-    medications: Medication[];
-  }
-  
+import type { Medication, MedicationsProps } from "../../types";
+import Button1 from "../atomos/Button1.astro";
+import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
+import DivBox1 from "../atomos/DivBox1.astro";
+import TRTableMedicamento from "../moleculas/TRTableMedicamento.astro";
+
 
 const {medications}=Astro.props as MedicationsProps
 
-const getStatusColor = (status: Medication["status"]) => {
-    switch (status) {
-      case "active":
-        return "bg-accent text-accent-foreground";
-      case "completed":
-        return "bg-blue-100 text-blue-800";
-      case "suspended":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 ---
 
-<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-    <div class="flex justify-between items-center mb-4">
+<DivBox1>
+  <div class="flex flex-col gap-y-2 items-start w-full justify-between">
+   <ContenedorTitleBotonera>
       <h2 class="text-lg font-semibold">Medicamentos</h2>
-      <button class="text-sm text-primary-foreground hover:text-primary-foreground/80">
-        Ver todos
-      </button>
-    </div>
+      <div>
+        <Button1>ver historial</Button1>
+        <Button1>agregar</Button1>
+      </div>
+    </ContenedorTitleBotonera>
     
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <thead>
-          <tr class="text-left border-b">
-            <th class="pb-3 text-sm font-medium text-muted-foreground">Medicamento</th>
-            <th class="pb-3 text-sm font-medium text-muted-foreground">Dosis</th>
-            <th class="pb-3 text-sm font-medium text-muted-foreground">Frecuencia</th>
-            <th class="pb-3 text-sm font-medium text-muted-foreground">Duración</th>
-            <th class="pb-3 text-sm font-medium text-muted-foreground">Estado</th>
+    <div class="overflow-x-auto w-full bg-primary-bg-componentes  rounded-lg border">
+      <table class="w-full ">
+        <thead class="w-full  ">
+          <tr class="text-left border-b ">
+            <th class="py-2 pl-2 text-sm font-medium text-muted-foreground">Medicamento</th>
+            <th class=" text-sm font-medium text-muted-foreground">Dosis</th>
+            <th class=" text-sm font-medium text-muted-foreground">Frecuencia</th>
+            <th class=" text-sm font-medium text-muted-foreground">Fecha</th>
+            <th class=" text-sm font-medium text-muted-foreground">Estado</th>
           </tr>
         </thead>
         <tbody>
-          {medications.map((medication, index) => (
-            <tr key={index} class="border-b last:border-0">
-              <td class="py-4 text-sm font-medium">{medication.name}</td>
-              <td class="py-4 text-sm">{medication.dosage}</td>
-              <td class="py-4 text-sm">{medication.frequency}</td>
-              <td class="py-4 text-sm">{medication.duration}</td>
-              <td class="py-4 text-sm">
-                <span class={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(medication.status)}`}>
-                  {medication.status.charAt(0).toUpperCase() + medication.status.slice(1)}
-                </span>
-              </td>
-            </tr>
+          {medications.slice(0,4).map((medication:Medication, index) => (
+            <TRTableMedicamento medication={medication}/>
           ))}
         </tbody>
       </table>
     </div>
-  </div>
+    </div>
+</DivBox1>

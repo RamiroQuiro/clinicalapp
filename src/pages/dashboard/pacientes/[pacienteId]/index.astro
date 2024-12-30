@@ -1,21 +1,21 @@
 ---
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import MainDashboard from "../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
-import HistorialMedicina from "../../../../components/organismo/HistorialMedicina.astro";
 import HistorialVisitaPaciente from "../../../../components/organismo/HistorialVisitaPaciente.astro";
 import MedicacionFichaPaciente from "../../../../components/organismo/MedicacionFichaPaciente.astro";
 import ObservacionesDoctorHistorial from "../../../../components/organismo/ObservacionesDoctorHistorial.astro";
 import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
 import db from "../../../../db";
-import { pacientes } from "../../../../db/schema";
+import { medicamento, pacientes } from "../../../../db/schema";
 import type { pacienteType } from "../../../../types";
+import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
 
 
 const {pacienteId}=Astro.params
 
 let pacienteData :pacienteType= {};
-
+let medicamentosData={}
   const medicalHistory = [
     {
       condition: "Hipertensión Arterial",
@@ -86,6 +86,8 @@ let pacienteData :pacienteType= {};
 
   try {
   pacienteData = (await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))).at(0);
+  medicamentosData=await db.select().from(medicamento).where(eq(medicamento.pacienteId,pacienteId)).orderBy(desc(medicamento.created_at))
+  console.log('este son los medicamentos',medicamentosData)
 if(!pacienteData){
   console.log('paciente no encontrado')
 return
@@ -107,11 +109,11 @@ return
               
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <HistorialMedicina conditions={medicalHistory} />
+                  <Antecedentes conditions={medicalHistory} />
                   <HistorialVisitaPaciente visits={recentVisits} />
                 </div>
                 <div>
-                  <MedicacionFichaPaciente medications={medications} />
+                  <MedicacionFichaPaciente medications={medicamentosData} />
                   <ObservacionesDoctorHistorial notes={doctorNotes} />
                 </div>
               </div>

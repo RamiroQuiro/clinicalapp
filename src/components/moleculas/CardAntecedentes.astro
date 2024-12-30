@@ -1,0 +1,35 @@
+---
+import {AlertCircle,Heart} from 'lucide-react'
+import type { MedicalCondition } from '../../types'
+
+
+const {condition}=Astro.props as MedicalCondition
+---
+
+<div
+  class="flex items-start gap-4 p-2 border rounded-md bg-primary-bg-componentes"
+>
+  <div
+    class={`w-8 h-8 rounded-full ${condition.critical ? "bg-red-100" : "bg-primary-150"} flex items-center justify-center`}
+  >
+    {
+      condition.critical ? (
+        <AlertCircle size={16} className="text-red-800" />
+      ) : (
+        <Heart size={16} className="text-primary-texto" />
+      )
+    }
+  </div>
+
+  <div class="flex-1">
+    <h3 class="font-medium text-sm">
+      {condition.condition}
+    </h3>
+    <p class="text-xs text-muted-foreground">
+      Diagnosticado: {condition.diagnosisDate}
+    </p>
+  </div>
+  <span class="px-2 py-1 text-xs font-medium rounded-full bg-accent">
+    {condition.status}
+  </span>
+</div>
