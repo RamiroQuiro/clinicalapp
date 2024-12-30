@@ -9,7 +9,7 @@ import ContenedorInputForm from "../../../components/moleculas/ContenedorInputFo
 const { user } = Astro.props;
 ---
 
-<FormCont id="formularioCliente" title="Nuevo Cliente">
+<FormCont id="formularioCliente" title="Nuevo Paciente">
   <div
     id={user.id}
     data-user-id
@@ -36,6 +36,10 @@ const { user } = Astro.props;
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
     <ContenedorInputForm label="email" type="email" name="email" />
     <ContenedorInputForm label="celular" type="text" name="celular" />
+  </div>
+  <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
+    <ContenedorInputForm label="ciudad" type="text" name="ciudad" />
+    <ContenedorInputForm label="provincia" type="text" name="provincia" />
   </div>
   <ContenedorInputForm label="direccion" type="text" name="direccion" />
   <div class="text-xs text-left flex flex-col items-start gap-">
@@ -80,7 +84,6 @@ const { user } = Astro.props;
         "Por favor, complete todos los campos requeridos.";
       return;
     }
-
     try {
       const response = await fetch("/api/pacientes/create", {
         method: "POST",

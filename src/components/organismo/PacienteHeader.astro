@@ -1,0 +1,129 @@
+---
+import DivBox1 from "../../components/atomos/DivBox1.astro";
+import {
+  Briefcase,
+  Heart,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+  ArrowBigRightDash,
+} from "lucide-react";
+import type { pacienteType } from "../../types";
+
+const {
+  apellido,
+  dni,
+  email,
+  fNacimiento,
+  nombre,
+  sexo,
+  celular,
+  direccion,
+  srcPhoto,
+  ciudad,
+} = Astro.props as pacienteType;
+
+const ocupacion = [];
+const maritalStatus = "casado";
+
+function calcularEdad(fechaNacimiento) {
+  const hoy = new Date();
+  const fechaNac = new Date(fechaNacimiento);
+  let edad = hoy.getFullYear() - fechaNac.getFullYear();
+  const mes = hoy.getMonth() - fechaNac.getMonth();
+  if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+    edad--;
+  }
+  return edad;
+}
+
+let edad = calcularEdad(fNacimiento);
+---
+
+<DivBox1>
+  <div
+    class="flex w-full md:flex-row items-start md:items-center gap-6 flex-1"
+  >
+    <div class="relative">
+      <img
+        src={srcPhoto}
+        alt={nombre}
+        class="w-24 h-24 rounded-full object-cover border-2 border-primary-150"
+      />
+    </div>
+
+    <div class="flex-1 flex-col flex">
+      <div class="flex flex-col md:flex-row md:items-center gap-2 mb-4">
+        <h1 class="text-2xl font-bold text-foreground capitalize">
+          {nombre}{" "}{apellido}
+        </h1>
+        <span
+          class="px-2 py-1 text-xs font-medium rounded-full bg-primary-100/50 text-primary-foreground"
+        >
+          DNI: {dni}
+        </span>
+
+        <span
+          class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800"
+        >
+          Grupo: {"a+"}
+        </span>
+      </div>
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground"
+      >
+        <div class="flex items-center gap-2">
+          <ArrowBigRightDash size={16} />
+          <span>{fNacimiento}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <User size={16} />
+          <span>{edad} años • {sexo}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Mail size={16} />
+          <span>{email}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Phone size={16} />
+          <span>{celular}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <MapPin size={16} />
+          <span>{direccion}</span>
+        </div>
+        {
+          ocupacion && (
+            <div class="flex items-center gap-2">
+              <Briefcase size={16} />
+              <span>{"occupation"}</span>
+            </div>
+          )
+        }
+        {
+          maritalStatus && (
+            <div class="flex items-center gap-2">
+              <Heart size={16} />
+              <span>{maritalStatus}</span>
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 text-sm">
+      <button
+        class="px-4 py-2 bg-primary-100 text-white rounded-md hover:bg-primary/90 transition-colors"
+      >
+        Editar Perfil
+      </button>
+      <button
+        class="px-4 py-2 bg-primary-200 text-white rounded-md hover:bg-secondary/80 transition-colors"
+      >
+        Exportar HC
+      </button>
+    </div>
+  </div>
+</DivBox1>

@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import db from "../../../../db";
 import { historiaClinica } from "../../../../db/schema/historiaClinica";
-import { medicamentos } from "../../../../db/schema/medicamentos";
+import { medicamento } from "../../../../db/schema/medicamento";
 
 type MedicamentoType = {
   id?:string,
@@ -35,6 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
         .where(eq(historiaClinica.id, data.dataids.hcId))
     ).at(0);
 
+    console.log("Historia clínica encontrada:", isExists);
     if (!isExists) {
       return new Response(
         JSON.stringify({
@@ -45,21 +46,17 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // console.log("Historia clínica encontrada:", isExists);
 
     // Insertar medicamentos en la base de datos
-    const medicamentosPromises = data.medicamentos.map((medicamento) => {
+    const medicamentosPromises = data.medicamentos.map((med) => {
       const idMedicamento = generateId(12);
-      return db.insert(medicamentos).values({
+      return db.insert(medicamento).values({
         id: idMedicamento,
-        descripcion: "-",
-        nombre: medicamento.nombre,
-        dosis: medicamento.dosis,
-        frecuencia: medicamento.frecuencia,
-        duracion: medicamento.duracion,
+        nombre: med.nombre,
+        dosis: med.dosis,
+        frecuencia: med.frecuencia,
+        duracion: med.duracion,
         pacienteId: data.dataids.pacienteId,
-        precio: 0,
-        stock: 0,
         historiaClinicaId: data.dataids.hcId, // Relacionar con la historia clínica
         userId: data.dataids.userId, // Registrar quién realizó la inserción
       });

@@ -19,6 +19,7 @@ export const pacientes = sqliteTable("pacientes", {
   sexo:text('sexo'),
   direccion: text("direccion"),
   ciudad: text("ciudad"),
+  grupoSanguineo:text('grupoSanguinieo'),
   provincia: text("provincia"),
   pais: text("pais"),
   updated_at: text("updated_at"),

@@ -15,29 +15,36 @@ const { dataIds,isExistMedicamentos } = Astro.props;
 
 <script>
   import { atencion } from "../../../../../context/store";
+import { showToast } from "../../../../../utils/toast/toastShow";
 
   const btnEnviar = document.getElementById("guardarMedicacion");
-  const formulario = document.getElementById("motivoConsulta");
 
   let dataMedicamento = {};
 
   atencion.subscribe((state) => {
     dataMedicamento.medicamentos=state.medicamentos,
     dataMedicamento.dataids=state.dataIds
+    console.log("estoy en el contenedor medicamento", state);
   
 });
 const atencionStore=atencion.get()
-  console.log("estoy en el contenedor medicamento", atencionStore);
   btnEnviar.addEventListener("click", async (event) => {
     event.preventDefault(); // Evita el envío del formulario por defecto
 
     try {
+      if (dataMedicamento.medicamentos.length===0) {
+            showToast('no hay medicamentos para guardar', {
+                background: 'bg-primary-400'
+            })
+            return
+        }
       const response = await fetch("/api/pacientes/atencion/medicamentos", {
         method: "POST",
         body: JSON.stringify(dataMedicamento), // No necesitas establecer manualmente "Content-Type"  voieriprg
       });
       const result = await response.json();
       console.log(result);
+      document.location.reload()
     } catch (error) {
       console.error("Error al enviar el motivo de consulta:", error);
     }

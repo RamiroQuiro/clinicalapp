@@ -13,16 +13,14 @@ type MotivoConsultaType = {
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const data = await request.formData();
+  const data = await request.json();
   console.log("este es el enpoint", data);
-  const motivoConsulta = data.get("motivoConsulta");
-  const hcId = data.get("hcId");
   try {
     const isExtis = (
       await db
         .select()
         .from(historiaClinica)
-        .where(eq(historiaClinica.id, hcId))
+        .where(eq(historiaClinica.id, data.dataIds.hcId))
     ).at(0);
     if (!isExtis) {
       return new Response(
@@ -35,9 +33,9 @@ export const POST: APIRoute = async ({ request }) => {
     const updateHC = await db
       .update(historiaClinica)
       .set({
-        motivoConsulta,
+       motivoConsulta: data.motivoConsulta,
       })
-      .where(eq(historiaClinica.id, hcId))
+      .where(eq(historiaClinica.id, data.dataIds.hcId))
 
     console.log(updateHC);
     return new Response(

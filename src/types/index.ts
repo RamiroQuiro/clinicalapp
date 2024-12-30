@@ -41,3 +41,28 @@ export type optionsSelectInputType={
     value:string,
     name?:string
 }
+
+export interface MedicalCondition {
+    condition: string;
+    diagnosisDate: string;
+    status: string;
+    type: "personal" | "family";
+    critical?: boolean;
+  }
+  
+export interface MedicalHistoryProps {
+    conditions: MedicalCondition[];
+  }
+
+  
+export interface Medication {
+    nombre: string;
+    dosis: string;
+    frecuencia: string;
+    estado: "activo" | "completado" | "suspendido";
+  }
+  
+export interface MedicationsProps {
+    medications: Medication[];
+  }
+  

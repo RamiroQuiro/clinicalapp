@@ -1,9 +1,7 @@
 ---
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
 
-
-const { dataIds, isExistHC} = Astro.props;
-// console.log('estoy en motivo consulta',isExistHC)
+const { dataIds, isExistHC } = Astro.props;
 ---
 
 <ContenedorAtencion
@@ -13,42 +11,85 @@ const { dataIds, isExistHC} = Astro.props;
 >
   <form
     action=""
-    class="flex-1 w-full h-full flex items-stretch justify-center"
+    class="flex-1 w-full h-full flex items-start justify-center"
     id="motivoConsulta"
   >
     <textarea
-      class="w-full text-sm p-2 text-primary-texto outline-none ring-0"
+      class="w-full text-sm py-2 px-1 text-primary-texto outline-none ring-0"
       rows="10"
-      
       name="motivoConsulta"
       id="formularioConsulta"
-    >{isExistHC.motivoConsulta}
+      >{isExistHC.motivoConsulta}
     </textarea>
   </form>
+  <span
+    id="notificacion"
+    class="text-xs font-extralight tracking-wider px-2 animate-aparecer"></span>
 </ContenedorAtencion>
 
-<script define:vars={{ dataIds }}>
+<script >
+  import { atencion } from "../../../../../context/store";
+  import { showToast } from "../../../../../utils/toast/toastShow";
+  let dataConsulta = { motivoConsulta: "", dataIds: {} };
   const btnEnviar = document.getElementById("guardarMotivo");
   const formulario = document.getElementById("motivoConsulta");
+  const textarea = document.getElementById("formularioConsulta");
+  let timeoutId;
+  atencion.subscribe((state) => {
+    dataConsulta.dataIds = state.dataIds;
+  });
+
+  textarea.addEventListener("input", () => {
+    document.getElementById("notificacion").textContent = "";
+    clearTimeout(timeoutId); // Limpia cualquier timeout pendiente
+    timeoutId = setTimeout(async () => {
+      const motivo = textarea.value.trim();
+ 
+      dataConsulta.motivoConsulta=motivo
+        try {
+
+          const response = await fetch(
+            "/api/pacientes/atencion/motivoConsulta",
+            {
+              method: "POST",
+              body: JSON.stringify(dataConsulta),
+            }
+          );
+
+          if (response.ok) {
+            document.getElementById("notificacion").textContent =
+              "guardadado automaticamente...";
+            console.log("Motivo guardado automáticamente");
+          } else {
+            console.error("Error al guardar automáticamente");
+          }
+        } catch (error) {
+          console.error("Error al enviar el motivo de consulta:", error);
+        }
+      }, 20000); // Guarda automáticamente después de 1 segundo de inactividad
+    })
+
 
   btnEnviar.addEventListener("click", async (event) => {
     event.preventDefault(); // Evita el envío del formulario por defecto
-    const formData = new FormData(formulario);
-    formData.append("hcId", dataIds.hcId);
-    formData.append("pacienteId", dataIds.pacienteId);
-    formData.append("userId", dataIds.userId);
-    const motivo = formData.get("motivoConsulta").trim();
+    const motivo = textarea.value.trim();
     if (!motivo) {
-        alert("Por favor, ingresa un motivo de consulta.");
-        return;
+      showToast("no hay data para guardar", {
+        background: "bg-primary-400",
+      });
+      return;
     }
+    dataConsulta.motivoConsulta=motivo
     try {
       const response = await fetch("/api/pacientes/atencion/motivoConsulta", {
         method: "POST",
-        body: formData, // No necesitas establecer manualmente "Content-Type"
+        body:JSON.stringify(dataConsulta), // No necesitas establecer manualmente "Content-Type"
       });
       const result = await response.json();
       console.log(result);
+      if(result.status===200){
+        showToast('motivo de consulta guardado')
+      }
     } catch (error) {
       console.error("Error al enviar el motivo de consulta:", error);
     }

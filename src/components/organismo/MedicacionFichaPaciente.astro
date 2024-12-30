@@ -1,0 +1,64 @@
+---
+import type { Medication, MedicationsProps } from "../../types";
+import Button1 from "../atomos/Button1.astro";
+import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
+import DivBox1 from "../atomos/DivBox1.astro";
+import TRTableMedicamento from "../moleculas/TRTableMedicamento.astro";
+
+
+const {medicacion}=Astro.props as MedicationsProps
+
+
+const cabeceraColumn=[
+  {
+    id:1,
+    label:'medicamentos'
+  },
+  {
+    id:2,
+    label:'dosis',
+  },
+  {
+    id:3,
+    label:'frecuencia',
+  },
+  {
+    id:4,
+    label:'fecha'
+  },
+  {
+    id:5,
+    label:'estado'
+  }
+]
+---
+
+<DivBox1>
+ 
+   <ContenedorTitleBotonera>
+      <h2 class="text-lg font-semibold">Medicamentos</h2>
+      <div>
+        <Button1>ver historial</Button1>
+        <Button1>agregar</Button1>
+      </div>
+    </ContenedorTitleBotonera>
+    
+    <div class="overflow-x-auto w-full bg-primary-bg-componentes  rounded-lg border">
+      <table class="w-full ">
+        <thead class="w-full  ">
+          <tr class="text-left border-b ">
+            {
+              cabeceraColumn?.map((colum)=>(                
+                <th class="py-2 pl-2 text-sm font-medium capitalize">{colum.label}</th>
+              ))
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {medicacion.slice(0,4).map((medicacion:Medication, index) => (
+            <TRTableMedicamento medication={medicacion}/>
+          ))}
+        </tbody>
+      </table>
+    </div>
+</DivBox1>

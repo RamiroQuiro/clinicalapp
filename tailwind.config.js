@@ -6,13 +6,14 @@ export default {
       colors: {
         primary: {
           100: "#5FA5FA",
+          150: "#5FA5FA50",
           200: "#5FD6FA",
           300: "#DFFA5F",
           400: "#FA6D5F",
           500: "#9BE32B",
           600: "#2B60E3",
           "bg-claro": "#E9E9F1",
-          "bg-componentes": "#F3F3F3",
+          "bg-componentes": "#F0F0F0FF",
           resaltado: "#E3D32B",
           texto: "#4F4F4F",
           error: "#BF0404",

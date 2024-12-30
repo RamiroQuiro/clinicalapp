@@ -21,7 +21,7 @@ export default function TBody({ arrayBody, onClickFila }) {
     <div className="flex gap-2 pr-5 justify-end items-center text-xs">
       <button
         className="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-        onClick={() => (document.location.href = data.href)}
+        onClick={() => (document.location.href = `/dashboard/pacientes/${data.id}`)}
       >
         ficha
       </button>

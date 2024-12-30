@@ -3,23 +3,14 @@ import { eq } from "drizzle-orm";
 import MainDashboard from "../../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
 import db from "../../../../../db";
-import { pacientes } from "../../../../../db/schema";
-import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
-import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
+import { diagnostico, pacientes, tratamiento } from "../../../../../db/schema";
 import type { pacienteType } from "../../../../../types";
-import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
-import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
-import ContenedorSignosVitales from "../../../../../components/moleculas/ContenedorSignosVitales";
-import DiagnosticoContenedor from "../../../../../components/organismo/DiagnosticosContenedor";
-import MedicamentosAtencion from "../../../../../components/organismo/MedicamentosAtencion";
-import MotivoConsulta from "./MotivoConsulta.astro";
-import { undefined } from "astro:schema";
 import { historiaClinica } from "../../../../../db/schema/historiaClinica";
-import SignosVitalesForm from "./SignosVitalesForm.astro";
 import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
-import MedicacionContainar from "./MedicacionContainar.astro";
-import { medicamentos } from "../../../../../db/schema/medicamentos";
+import { medicamento } from "../../../../../db/schema/medicamento";
+import IndexAtencion from "./IndexAtencion.astro";
+import { showToast } from "../../../../../utils/toast/toastShow";
 const { pacienteId, hcId } = Astro.params;
 let pacienteData: pacienteType = {
   id: "",
@@ -33,38 +24,47 @@ let pacienteData: pacienteType = {
   celular: "",
   direccion: "",
 };
-console.log('params pacientrId->',pacienteId)
-let isExistMedicamentos=[]
+let isExistMedicamentos:any = [];
 const dataIds = {
+  estado:'pendienta',
   hcId,
   userId: "",
-  pacienteId:pacienteId,
+  pacienteId: pacienteId,
 };
 // tengo q implemtar type para historiClinica
-let isExistHC: {};
+let isExistHC = {};
+let isExistDiagnosticos;
 try {
   pacienteData = (
     await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
   ).at(0);
 
- 
   // console.log(pacienteData)
   if (!pacienteData) {
+    console.log('paciente no encontrado')
     return;
   } else {
-    dataIds.userId=pacienteData.userId
+    dataIds.userId = pacienteData.userId;
     isExistHC = (
       await db
         .select()
         .from(historiaClinica)
-        .rightJoin(
-          signosVitales,
-          eq(historiaClinica.id, signosVitales.historiaClinicaId)
-        ).where(eq(historiaClinica.id, hcId))
+        .where(eq(historiaClinica.id, hcId))
     ).at(0);
 
+    if (isExistHC?.estado==='FINALIZADO') {
+    
+    }
+console.log(isExistHC)
     if (isExistHC) {
-      isExistMedicamentos= await db.select().from(medicamentos).where(eq(medicamentos.historiaClinicaId,isExistHC.historiaClinica.id))
+      isExistMedicamentos = await db
+        .select()
+        .from(medicamento)
+        .where(eq(medicamento.historiaClinicaId, isExistHC.id));
+      isExistDiagnosticos = await db
+        .select()
+        .from(diagnostico)
+        .where(eq(diagnostico.historiaClinicaId, isExistHC.id));
     }
     if (!isExistHC) {
       const createHistoriaClinica = await db.insert(historiaClinica).values({
@@ -79,8 +79,15 @@ try {
         historiaClinicaId: hcId,
         pacienteId,
         userId: pacienteData.userId,
-      })
-    
+      });
+      const idTratamiento = generateId(15);
+      const createTratamiento = await db.insert(tratamiento).values({
+        id: idTratamiento,
+        historiaClinicaId: hcId,
+        pacienteId,
+        userId: pacienteData.userId,
+        tratamiento: "",
+      });
     }
   }
 } catch (error) {
@@ -90,36 +97,21 @@ try {
 // usar contexto para guardar al termiarn la consulta, o guardar con un boton en cada campo a llenar
 ---
 
-<LayoutDash >
+<LayoutDash>
   <MainDashboard dataIds={dataIds}>
-    <NavAtencionMedica pacienteData={pacienteData} />
-    <Div1Atencion>
-      <Div2Atencion estilo="flex-1">
-        <SignosVitalesForm
-          dataIds={dataIds}
-          isExistHC={isExistHC ? isExistHC.signosVitales : ""}
-        />
-      </Div2Atencion>
-      <Div2Atencion estilo="flex-[2]">
-        <MotivoConsulta
-          isExistHC={isExistHC ? isExistHC.historiaClinica : ""}
-          dataIds={dataIds}
-        />
-      </Div2Atencion>
-    </Div1Atencion>
-    <Div1Atencion>
-      <Div2Atencion estilo="w-1/2 flex-1">
-        <ContenedorAtencion
-          labelH3="diagnostico"
-          labelButton="guardar"
-          idButton="guardarDiagnosticos"
-        >
-          <DiagnosticoContenedor client:load />
-        </ContenedorAtencion>
-      </Div2Atencion>
-      <Div2Atencion estilo="w-1/2 flex-1">
-        <MedicacionContainar isExistMedicamentos={isExistMedicamentos}/>
-      </Div2Atencion>
-    </Div1Atencion>
+    {
+      !isExistHC&&
+      <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
+        <p>Atencion Finalziada</p>
+      </div>
+    }
+    <IndexAtencion 
+    dataIds={dataIds},
+    pacienteData={pacienteData},
+    isExistHC={isExistHC},
+    isExistDiagnosticos={isExistDiagnosticos},
+    isExistMedicamentos={isExistMedicamentos},
+    />
   </MainDashboard>
 </LayoutDash>
+

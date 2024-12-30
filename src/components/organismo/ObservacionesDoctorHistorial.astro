@@ -1,0 +1,37 @@
+---
+interface Note {
+  date: string;
+  doctor: string;
+  content: string;
+}
+
+interface DoctorNotesProps {
+  notes: Note[];
+}
+
+
+const {notes}=Astro.props as DoctorNotesProps
+---
+
+<div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold">Notas del Médico</h2>
+      <button class="text-sm text-primary-foreground hover:text-primary-foreground/80">
+        Añadir nota
+      </button>
+    </div>
+    
+    <div class="space-y-4">
+      {notes.map((note, index) => (
+        <div key={index} class="p-4 rounded-md bg-secondary">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <span class="text-sm font-medium">{note.doctor}</span>
+              <span class="text-sm text-muted-foreground ml-2">{note.date}</span>
+            </div>
+          </div>
+          <p class="text-sm text-primary-texto whitespace-pre-line">{note.content}</p>
+        </div>
+      ))}
+    </div>
+  </div>
