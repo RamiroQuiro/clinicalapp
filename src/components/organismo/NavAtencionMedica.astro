@@ -41,9 +41,42 @@ const nowDate = new Date().toLocaleDateString();
       </div>
     </div>
     <div>
-      <Button1>terminar consulta</Button1>
+      <Button1 id="finalizarConsulta">finalizar consulta</Button1>
       <Button1>cancelar consulta</Button1>
     </div>
   </div>
   <SignosVitalesForm dataIds={dataIds} isExistHC={isExistHC ? isExistHC : ""} />
 </div>
+
+
+<script>
+import { atencion } from "../../context/store"
+import { showToast } from "../../utils/toast/toastShow"
+let contextoAtencion=atencion.get()
+
+  const btnFinalizar=document.getElementById('finalizarConsulta')
+
+  atencion.subscribe((state)=>{
+    contextoAtencion=state
+  })
+
+  btnFinalizar?.addEventListener('click',async()=>{
+    try {
+      const finalizar=await fetch('/api/pacientes/atencion/',{
+        method:'POST',
+        body:JSON.stringify({
+          idAtencion:contextoAtencion.dataIds.hcId,
+          msg:'finalizar consulta'
+        })
+      })
+      const data=await finalizar.json()
+
+      if(data.status==200){
+        showToast('atecion cerrada')
+        document.location.href='/dashboard/'
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  })
+</script>

@@ -1,0 +1,124 @@
+---
+import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
+import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
+import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
+import DiagnosticoContainer from "./DiagnosticoContainer.astro";
+import MedicacionContainar from "./MedicacionContainar.astro";
+import MotivoConsulta from "./MotivoConsulta.astro";
+import TratamientoContenedor from "./TratamientoContenedor.astro";
+
+const {
+  dataIds,
+  pacienteData,
+  isExistHC,
+  isExistDiagnosticos,
+  isExistMedicamentos,
+} = Astro.props;
+---
+
+<div
+  class=""
+  id="containerAtencion"
+  data-fin={dataIds?.estado}
+  data-userid={dataIds?.userId}
+  data-pacienteid={dataIds?.pacienteId}
+  data-hcid={dataIds?.hcId}
+>
+  <!-- nav en donde van, datos del paciente, dni,sexo,celular,mail, la fecha de apertura de la atencion, un buton de ficha, para ir a la ficha del paciente y al finailar la coumna dos botonos, terminar consulta y cancelar consulta
+ en la 2 fila, los signos vitales con su boton de guardar -->
+  <NavAtencionMedica
+    pacienteData={pacienteData}
+    isExistHC={isExistHC}
+    dataIds={dataIds}
+  />
+  <Div1Atencion>
+    <!-- contenedor de diagnostiro en donde se podran ingreadr mas de un diagnostico con su respectivo observacion -->
+    <Div2Atencion estilo="w-1/2 flex-1">
+      <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos} />
+    </Div2Atencion>
+    <!-- motivo de consulta: formulario con un textarea para ingrar el motivo de la consulta actual -->
+    <Div2Atencion estilo="flex-[2]">
+      <MotivoConsulta
+        isExistHC={isExistHC ? isExistHC : ""}
+        dataIds={dataIds}
+      />
+    </Div2Atencion>
+  </Div1Atencion>
+  <Div1Atencion>
+    <!-- box de medicametos, al mismo estilo que el diagnostico,m se proporcionar un nombre, dosis, frecuencia y duracion para que pueda guardar mas de un medicamento con su respectivos datos -->
+    <Div2Atencion estilo="w-1/2 flex-1">
+      <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />
+    </Div2Atencion>
+    <Div2Atencion estilo="w-1/2 flex-1">
+      <TratamientoContenedor />
+    </Div2Atencion>
+  </Div1Atencion>
+</div>
+
+<script>
+  import { atencion } from "../../../../../context/store";
+
+  const dataset = document.getElementById("containerAtencion");
+  const iduser = dataset?.dataset.userid;
+  const pacienteId = dataset?.dataset.pacienteid;
+  const isDisable = dataset?.dataset.fin;
+  const hcId = dataset?.dataset.hcid;
+  atencion.set({
+    ...atencion.get(),
+    dataIds: { hcId, pacienteId, userId: iduser, isDisable },
+  });
+
+  const fecthingSignosVitales = async () => {
+    try {
+      const response = await fetch("/api/pacientes/atencion/signosVitales", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          idHistoriaClinica: hcId,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        atencion.set({
+          ...atencion.get(),
+          signosVitales: data.data,
+        });
+      } else {
+        console.error(
+          "Error al obtener los signos vitales:",
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+    }
+  };
+
+  const fetchgingTratamiento = async () => {
+    try {
+      const response = await fetch("/api/pacientes/atencion/tratamiento", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          idHistoriaClinica: hcId,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log("get tratamiento", data.data.tratamiento);
+        let tratamientoGet = data.data.tratamiento;
+        atencion.set({ ...atencion.get(), tratamiento: tratamientoGet });
+      } else {
+        console.error(
+          "Error al obtener los signos vitales:",
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+    }
+  };
+  fetchgingTratamiento();
+  fecthingSignosVitales();
+</script>

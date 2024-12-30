@@ -29,64 +29,99 @@ import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAt
 <script>
   import { atencion } from "../../../../../context/store";
   import { showToast } from "../../../../../utils/toast/toastShow";
+
+  // Objeto para manejar datos del tratamiento y los IDs asociados
   let dataTratamiento = { tratamiento: "", dataIds: {} };
+
+  // Referencia al campo de texto para ingresar el tratamiento
   const textarea = document.getElementById("campoTratamiento");
+
+  // Referencia al botón para guardar manualmente el tratamiento
   const btnEnviar = document.getElementById("guardarTratamiento");
+
+  // ID del timeout para evitar múltiples solicitudes simultáneas
   let timeoutId;
+
+  // Cargar el tratamiento actual desde el store al textarea
+
+
+  // Actualizar `dataIds` del tratamiento cada vez que cambie el store de `atencion`
   atencion.subscribe((state) => {
+   
     dataTratamiento.dataIds = state.dataIds;
+    if (textarea) {
+    textarea.value = state.tratamiento || ""; // Asegura que el valor esté sincronizado
+  }
   });
 
-  textarea.addEventListener("input", () => {
-    clearTimeout(timeoutId); // Limpia cualquier timeout pendiente
+  // Evento para guardar automáticamente el tratamiento después de un tiempo de inactividad
+  textarea?.addEventListener("input", () => {
+    // Limpiar cualquier timeout anterior
+    clearTimeout(timeoutId);
+
+    // Configurar un timeout de 20 segundos para guardar automáticamente
     timeoutId = setTimeout(async () => {
-      const tratamiento = textarea.value.trim();
-      if (!tratamiento) return; // No guardar si está vacío
+      const tratamiento = textarea.value.trim(); // Eliminar espacios en blanco al inicio y final
+      if (!tratamiento) return; // No enviar si el campo está vacío
+
       dataTratamiento.tratamiento = tratamiento;
       try {
+        // Enviar los datos a la API para guardar el tratamiento
         const response = await fetch("/api/pacientes/atencion/tratamiento", {
           method: "POST",
           body: JSON.stringify(dataTratamiento),
         });
         const result = await response.json();
         console.log(result);
+
+        // Notificar al usuario según el resultado de la solicitud
         if (response.ok) {
           document.getElementById("notificacionTratamiento").textContent =
-            "guardadado automaticamente...";
-          console.log("Motivo guardado automáticamente");
+            "Guardado automáticamente...";
+          console.log("Tratamiento guardado automáticamente");
         } else {
-          console.error("Error al guardar automáticamente");
+          console.error("Error al guardar automáticamente el tratamiento");
         }
       } catch (error) {
-        console.error("Error al guardar el tratamiento:", error);
+        console.error(
+          "Error al guardar el tratamiento automáticamente:",
+          error
+        );
       }
-    }, 20000);
+    }, 20000); // Guardar automáticamente después de 20 segundos
   });
 
-  btnEnviar.addEventListener("click", async (event) => {
-    event.preventDefault(); // Evita el envío del formulario por defecto
+  // Evento para guardar manualmente el tratamiento al hacer clic en el botón
+  btnEnviar?.addEventListener("click", async (event) => {
+    event.preventDefault(); // Evitar el comportamiento predeterminado del formulario
 
-    const tratamiento = textarea.value.trim();
+    const tratamiento = textarea.value.trim(); // Obtener el valor del textarea
     if (!tratamiento) {
-      showToast("ingrese tratamiento", { background: "bg-primary-400" });
-      return; // No guardar si está vacío
+      // Mostrar notificación si el campo está vacío
+      showToast("Ingrese tratamiento", { background: "bg-primary-400" });
+      return;
     }
+
+    // Asignar el tratamiento al objeto de datos
     dataTratamiento.tratamiento = tratamiento;
 
     try {
+      // Enviar los datos a la API para guardar manualmente el tratamiento
       const response = await fetch("/api/pacientes/atencion/tratamiento", {
         method: "POST",
-        body: JSON.stringify(dataTratamiento), // No necesitas establecer manualmente "Content-Type"
+        body: JSON.stringify(dataTratamiento),
       });
       const result = await response.json();
       console.log(result);
-      if (result.status == 200) {
-        showToast("tratamiento guardado");
+
+      // Mostrar notificación según el resultado de la solicitud
+      if (result.status === 200) {
+        showToast("Tratamiento guardado");
       } else {
-        showToast("error al guardar", { background: "bg-primary-400" });
+        showToast("Error al guardar", { background: "bg-primary-400" });
       }
     } catch (error) {
-      console.error("Error al enviar el motivo de consulta:", error);
+      console.error("Error al enviar el tratamiento:", error);
     }
   });
 </script>

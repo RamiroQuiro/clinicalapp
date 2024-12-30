@@ -1,0 +1,88 @@
+---
+import {AlertCircle,Heart} from 'lucide-react'
+import DivBox1 from '../atomos/DivBox1.astro';
+interface MedicalCondition {
+  condition: string;
+  diagnosisDate: string;
+  status: string;
+  type: "personal" | "family";
+  critical?: boolean;
+}
+
+interface MedicalHistoryProps {
+  conditions: MedicalCondition[];
+}
+
+const {conditions}=Astro.props as MedicalHistoryProps
+
+const personalConditions = conditions.filter(c => c.type === "personal");
+  const familyConditions = conditions.filter(c => c.type === "family");
+ 
+---
+
+<DivBox1>
+  <div class="flex flex-col items-center w-full justify-between ">
+    <div class="flex justify-between items-center w-full mb-4">
+      <h2 class="text-lg font-semibold">Historial Médico</h2>
+      <button class="text-sm  hover:text-primary-100/80">
+        Ver todo
+      </button>
+    </div>
+    
+    <div class="space- flex flex-col gap-y-6 w-full">
+      <div>
+        <h3 class="text-md font-medium mb-3">Antecedentes Personales</h3>
+        <div class="space-y-3">
+          {personalConditions.map((condition, index) => (
+            <div
+              key={index}
+              class="flex items-start gap-4 p-3 rounded-md bg-secondary"
+            >
+              <div class={`w-8 h-8 rounded-full ${condition.critical ? 'bg-red-100' : 'bg-primary-150'} flex items-center justify-center`}>
+                {condition.critical ? (
+                  <AlertCircle size={16} className="text-red-800" />
+                ) : (
+                  <Heart size={16} className="text-primary-foreground" />
+                )} 
+              </div>
+              
+              <div class="flex-1">
+                <h3 class="font-medium text-foreground">{condition.condition}</h3>
+                <p class="text-sm text-muted-foreground">
+                  Diagnosticado: {condition.diagnosisDate}
+                </p>
+              </div>
+              
+              <span class="px-2 py-1 text-xs font-medium rounded-full bg-accent text-accent-foreground">
+                {condition.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-md font-medium mb-3">Antecedentes Familiares</h3>
+        <div class="space-y-3">
+          {familyConditions.map((condition, index) => (
+            <div
+              key={index}
+              class="flex items-start gap-4 p-3 rounded-md bg-secondary"
+            >
+              <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                {/* <Heart size={16} class="text-primary-foreground" /> */}
+              </div>
+              
+              <div class="flex-1">
+                <h3 class="font-medium text-foreground">{condition.condition}</h3>
+                <p class="text-sm text-muted-foreground">
+                  Registrado: {condition.diagnosisDate}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+  </DivBox1>

@@ -1,14 +1,120 @@
 ---
+import { eq } from "drizzle-orm";
 import MainDashboard from "../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
+import HistorialMedicina from "../../../../components/organismo/HistorialMedicina.astro";
+import HistorialVisitaPaciente from "../../../../components/organismo/HistorialVisitaPaciente.astro";
+import MedicacionFichaPaciente from "../../../../components/organismo/MedicacionFichaPaciente.astro";
+import ObservacionesDoctorHistorial from "../../../../components/organismo/ObservacionesDoctorHistorial.astro";
+import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
+import db from "../../../../db";
+import { pacientes } from "../../../../db/schema";
+import type { pacienteType } from "../../../../types";
 
 
 const {pacienteId}=Astro.params
+
+let pacienteData :pacienteType= {};
+
+  const medicalHistory = [
+    {
+      condition: "Hipertensión Arterial",
+      diagnosisDate: "15 Enero 2022",
+      status: "Controlado",
+      type: "personal",
+      critical: true
+    },
+    {
+      condition: "Diabetes Tipo 2",
+      diagnosisDate: "3 Marzo 2021",
+      status: "En tratamiento",
+      type: "personal"
+    },
+    {
+      condition: "Antecedente de Cáncer de Mama",
+      diagnosisDate: "10 Enero 2020",
+      status: "Familiar",
+      type: "family"
+    }
+  ];
+
+  const recentVisits = [
+    {
+      date: "12 Mar 2024",
+      reason: "Control rutinario",
+      doctor: "Dr. Juan Pérez",
+      department: "Medicina General"
+    },
+    {
+      date: "25 Feb 2024",
+      reason: "Dolor de cabeza",
+      doctor: "Dra. Ana López",
+      department: "Neurología"
+    }
+  ];
+
+  const medications = [
+    {
+      name: "Metformina",
+      dosage: "850mg",
+      frequency: "2 veces al día",
+      duration: "Continuo",
+      status: "active" as const
+    },
+    {
+      name: "Losartán",
+      dosage: "50mg",
+      frequency: "1 vez al día",
+      duration: "Continuo",
+      status: "active" as const
+    }
+  ];
+
+  const doctorNotes = [
+    {
+      date: "12 Mar 2024",
+      doctor: "Dr. Juan Pérez",
+      content: "Paciente presenta mejora en niveles de glucosa. Se mantiene tratamiento actual. Próximo control en 3 meses."
+    },
+    {
+      date: "25 Feb 2024",
+      doctor: "Dra. Ana López",
+      content: "Cefalea tensional. Se recomienda ejercicios de relajación y seguimiento de patrones de sueño. Control en 2 semanas si persisten los síntomas."
+    }
+  ];
+
+
+  try {
+  pacienteData = (await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))).at(0);
+if(!pacienteData){
+  console.log('paciente no encontrado')
+return
+}
+
+  }catch(error){
+    console.log(error)
+  }
+
+// const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
 ---
 
 
 <LayoutDash>
     <MainDashboard>
-        {pacienteId}
+        
+            <div class="container py-4 px-2 flex flex-col w-full ">
+              <PacienteHeader {...pacienteData} />
+              
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <HistorialMedicina conditions={medicalHistory} />
+                  <HistorialVisitaPaciente visits={recentVisits} />
+                </div>
+                <div>
+                  <MedicacionFichaPaciente medications={medications} />
+                  <ObservacionesDoctorHistorial notes={doctorNotes} />
+                </div>
+              </div>
+            </div>
     </MainDashboard>
 </LayoutDash>

@@ -4,19 +4,13 @@ import MainDashboard from "../../../../../components/atomos/MainDashboard.astro"
 import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
 import db from "../../../../../db";
 import { diagnostico, pacientes, tratamiento } from "../../../../../db/schema";
-import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
-import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
 import type { pacienteType } from "../../../../../types";
-import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
-import MotivoConsulta from "./MotivoConsulta.astro";
 import { historiaClinica } from "../../../../../db/schema/historiaClinica";
 import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
-import MedicacionContainar from "./MedicacionContainar.astro";
 import { medicamento } from "../../../../../db/schema/medicamento";
-import DiagnosticoContainer from "./DiagnosticoContainer.astro";
-import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
-import TratamientoContenedor from "./TratamientoContenedor.astro";
+import IndexAtencion from "./IndexAtencion.astro";
+import { showToast } from "../../../../../utils/toast/toastShow";
 const { pacienteId, hcId } = Astro.params;
 let pacienteData: pacienteType = {
   id: "",
@@ -30,9 +24,9 @@ let pacienteData: pacienteType = {
   celular: "",
   direccion: "",
 };
-console.log("params pacientrId->", pacienteId);
-let isExistMedicamentos = [];
+let isExistMedicamentos:any = [];
 const dataIds = {
+  estado:'pendienta',
   hcId,
   userId: "",
   pacienteId: pacienteId,
@@ -47,6 +41,7 @@ try {
 
   // console.log(pacienteData)
   if (!pacienteData) {
+    console.log('paciente no encontrado')
     return;
   } else {
     dataIds.userId = pacienteData.userId;
@@ -57,7 +52,10 @@ try {
         .where(eq(historiaClinica.id, hcId))
     ).at(0);
 
-    console.log("hcid estoy preguntanso si isExitHc", isExistHC);
+    if (isExistHC?.estado==='FINALIZADO') {
+    
+    }
+console.log(isExistHC)
     if (isExistHC) {
       isExistMedicamentos = await db
         .select()
@@ -82,14 +80,14 @@ try {
         pacienteId,
         userId: pacienteData.userId,
       });
-      const idTratamiento=generateId(15);
-      const createTratamiento=await db.insert(tratamiento).values({
-        id:idTratamiento,
+      const idTratamiento = generateId(15);
+      const createTratamiento = await db.insert(tratamiento).values({
+        id: idTratamiento,
         historiaClinicaId: hcId,
         pacienteId,
         userId: pacienteData.userId,
-        tratamiento:''
-      })
+        tratamiento: "",
+      });
     }
   }
 } catch (error) {
@@ -101,34 +99,19 @@ try {
 
 <LayoutDash>
   <MainDashboard dataIds={dataIds}>
-    <!-- nav en donde van, datos del paciente, dni,sexo,celular,mail, la fecha de apertura de la atencion, un buton de ficha, para ir a la ficha del paciente y al finailar la coumna dos botonos, terminar consulta y cancelar consulta
-     en la 2 fila, los signos vitales con su boton de guardar -->
-    <NavAtencionMedica
-      pacienteData={pacienteData}
-      isExistHC={isExistHC}
-      dataIds={dataIds}
+    {
+      isExistHC&&
+      <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
+        <p>Atencion Finalziada</p>
+      </div>
+    }
+    <IndexAtencion 
+    dataIds={dataIds},
+    pacienteData={pacienteData},
+    isExistHC={isExistHC},
+    isExistDiagnosticos={isExistDiagnosticos},
+    isExistMedicamentos={isExistMedicamentos},
     />
-    <Div1Atencion>
-      <!-- contenedor de diagnostiro en donde se podran ingreadr mas de un diagnostico con su respectivo observacion -->
-      <Div2Atencion estilo="w-1/2 flex-1">
-        <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos} />
-      </Div2Atencion>
-      <!-- motivo de consulta: formulario con un textarea para ingrar el motivo de la consulta actual -->
-      <Div2Atencion estilo="flex-[2]">
-        <MotivoConsulta
-          isExistHC={isExistHC ? isExistHC : ""}
-          dataIds={dataIds}
-        />
-      </Div2Atencion>
-    </Div1Atencion>
-    <Div1Atencion>
-      <!-- box de medicametos, al mismo estilo que el diagnostico,m se proporcionar un nombre, dosis, frecuencia y duracion para que pueda guardar mas de un medicamento con su respectivos datos -->
-      <Div2Atencion estilo="w-1/2 flex-1">
-        <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />
-      </Div2Atencion>
-      <Div2Atencion estilo="w-1/2 flex-1">
-       <TratamientoContenedor/>
-      </Div2Atencion>
-    </Div1Atencion>
   </MainDashboard>
 </LayoutDash>
+
