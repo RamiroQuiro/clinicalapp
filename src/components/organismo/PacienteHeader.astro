@@ -10,7 +10,10 @@ import {
   ArrowBigRightDash,
 } from "lucide-react";
 import type { pacienteType } from "../../types";
+<<<<<<< HEAD
 import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
+=======
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
 
 const {
   apellido,
@@ -40,23 +43,38 @@ function calcularEdad(fechaNacimiento) {
 }
 
 let edad = calcularEdad(fNacimiento);
+<<<<<<< HEAD
+=======
+console.log("esta es la edad", edad);
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
 ---
 
 <DivBox1>
   <div
+<<<<<<< HEAD
     class="flex w-full md:flex-row items-start md:items-center gap-6 flex-1"
+=======
+    class="flex flex-col md:flex-row items-start md:items-center gap-6 flex-1"
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
   >
     <div class="relative">
       <img
         src={srcPhoto}
         alt={nombre}
+<<<<<<< HEAD
         class="w-24 h-24 rounded-full object-cover border-2 border-primary-150"
+=======
+        class="w-24 h-24 rounded-full object-cover border-4 border-primary-100"
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
       />
     </div>
 
     <div class="flex-1 flex-col flex">
       <div class="flex flex-col md:flex-row md:items-center gap-2 mb-4">
+<<<<<<< HEAD
        <ButtonBackHistory/>
+=======
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
         <h1 class="text-2xl font-bold text-foreground capitalize">
           {nombre}{" "}{apellido}
         </h1>

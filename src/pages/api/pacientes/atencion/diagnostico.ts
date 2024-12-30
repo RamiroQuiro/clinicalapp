@@ -70,6 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
     // await Promise.all(diagnosticoPromises);
 
 
+
     return new Response(
       JSON.stringify({
         status: 200,

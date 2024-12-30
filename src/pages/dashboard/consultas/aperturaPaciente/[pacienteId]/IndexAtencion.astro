@@ -1,7 +1,10 @@
 ---
 import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
 import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
+<<<<<<< HEAD
 import DivBox1 from "../../../../../components/atomos/DivBox1.astro";
+=======
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
 import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
 import DiagnosticoContainer from "./DiagnosticoContainer.astro";
 import MedicacionContainar from "./MedicacionContainar.astro";
@@ -34,9 +37,15 @@ const {
   />
   <Div1Atencion>
     <!-- contenedor de diagnostiro en donde se podran ingreadr mas de un diagnostico con su respectivo observacion -->
+<<<<<<< HEAD
     <DivBox1 styleDiv="flex-1">
       <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos} />
     </DivBox1>
+=======
+    <Div2Atencion estilo="w-1/2 flex-1">
+      <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos} />
+    </Div2Atencion>
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
     <!-- motivo de consulta: formulario con un textarea para ingrar el motivo de la consulta actual -->
     <Div2Atencion estilo="flex-[2]">
       <MotivoConsulta

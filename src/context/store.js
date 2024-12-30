@@ -20,7 +20,11 @@ const atencion=atom({
     tratamiento:{tratamiento:''},
     signosVitales:{},
     motivoConsulta:{},
+<<<<<<< HEAD
     diagnosticos:[{diagnostico:'',observaciones:''}],
+=======
+    diagnosticos:[],
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
     medicamentos:[]
 })
 

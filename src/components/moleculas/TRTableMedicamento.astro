@@ -3,6 +3,10 @@ import type { Medication } from "../../types";
 
 
 const {medication}=Astro.props
+<<<<<<< HEAD
+=======
+console.log('este es el TRMedicamento',medication)
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
 const getStatusColor = (status: Medication["status"]) => {
     switch (status) {
       case "active":
@@ -18,7 +22,11 @@ const getStatusColor = (status: Medication["status"]) => {
 ---
 
 <tr  class="border-b last:border-0 bg-white">
+<<<<<<< HEAD
     <td class=" text-xs px-2 py-2.5  font-medium">{medication.nombre}</td>
+=======
+    <td class=" text-xs p-2  font-medium">{medication.nombre}</td>
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
     <td class=" text-xs p-2 ">{medication.dosis}</td>
     <td class=" text-xs p-2 ">{medication.frecuencia}</td>
     <td class=" text-xs p-2 ">{medication.created_at}</td>

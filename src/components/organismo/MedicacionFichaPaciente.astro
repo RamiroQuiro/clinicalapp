@@ -6,6 +6,7 @@ import DivBox1 from "../atomos/DivBox1.astro";
 import TRTableMedicamento from "../moleculas/TRTableMedicamento.astro";
 
 
+<<<<<<< HEAD
 const {medicacion}=Astro.props as MedicationsProps
 
 
@@ -35,6 +36,14 @@ const cabeceraColumn=[
 
 <DivBox1>
  
+=======
+const {medications}=Astro.props as MedicationsProps
+
+---
+
+<DivBox1>
+  <div class="flex flex-col gap-y-2 items-start w-full justify-between">
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
    <ContenedorTitleBotonera>
       <h2 class="text-lg font-semibold">Medicamentos</h2>
       <div>
@@ -47,6 +56,7 @@ const cabeceraColumn=[
       <table class="w-full ">
         <thead class="w-full  ">
           <tr class="text-left border-b ">
+<<<<<<< HEAD
             {
               cabeceraColumn?.map((colum)=>(                
                 <th class="py-2 pl-2 text-sm font-medium capitalize">{colum.label}</th>
@@ -57,8 +67,24 @@ const cabeceraColumn=[
         <tbody>
           {medicacion.slice(0,4).map((medicacion:Medication, index) => (
             <TRTableMedicamento medication={medicacion}/>
+=======
+            <th class="py-2 pl-2 text-sm font-medium text-muted-foreground">Medicamento</th>
+            <th class=" text-sm font-medium text-muted-foreground">Dosis</th>
+            <th class=" text-sm font-medium text-muted-foreground">Frecuencia</th>
+            <th class=" text-sm font-medium text-muted-foreground">Fecha</th>
+            <th class=" text-sm font-medium text-muted-foreground">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {medications.slice(0,4).map((medication:Medication, index) => (
+            <TRTableMedicamento medication={medication}/>
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
           ))}
         </tbody>
       </table>
     </div>
+<<<<<<< HEAD
+=======
+    </div>
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
 </DivBox1>

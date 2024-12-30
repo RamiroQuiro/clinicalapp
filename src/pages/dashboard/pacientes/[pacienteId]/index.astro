@@ -7,6 +7,7 @@ import MedicacionFichaPaciente from "../../../../components/organismo/Medicacion
 import ObservacionesDoctorHistorial from "../../../../components/organismo/ObservacionesDoctorHistorial.astro";
 import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
 import db from "../../../../db";
+<<<<<<< HEAD
 import { diagnostico, historiaClinica, medicamento, pacientes, tratamiento } from "../../../../db/schema";
 import type { pacienteType } from "../../../../types";
 import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
@@ -105,10 +106,103 @@ try {
   console.log(error);
 }
 
+=======
+import { medicamento, pacientes } from "../../../../db/schema";
+import type { pacienteType } from "../../../../types";
+import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
+
+
+const {pacienteId}=Astro.params
+
+let pacienteData :pacienteType= {};
+let medicamentosData={}
+  const medicalHistory = [
+    {
+      condition: "Hipertensión Arterial",
+      diagnosisDate: "15 Enero 2022",
+      status: "Controlado",
+      type: "personal",
+      critical: true
+    },
+    {
+      condition: "Diabetes Tipo 2",
+      diagnosisDate: "3 Marzo 2021",
+      status: "En tratamiento",
+      type: "personal"
+    },
+    {
+      condition: "Antecedente de Cáncer de Mama",
+      diagnosisDate: "10 Enero 2020",
+      status: "Familiar",
+      type: "family"
+    }
+  ];
+
+  const recentVisits = [
+    {
+      date: "12 Mar 2024",
+      reason: "Control rutinario",
+      doctor: "Dr. Juan Pérez",
+      department: "Medicina General"
+    },
+    {
+      date: "25 Feb 2024",
+      reason: "Dolor de cabeza",
+      doctor: "Dra. Ana López",
+      department: "Neurología"
+    }
+  ];
+
+  const medications = [
+    {
+      name: "Metformina",
+      dosage: "850mg",
+      frequency: "2 veces al día",
+      duration: "Continuo",
+      status: "active" as const
+    },
+    {
+      name: "Losartán",
+      dosage: "50mg",
+      frequency: "1 vez al día",
+      duration: "Continuo",
+      status: "active" as const
+    }
+  ];
+
+  const doctorNotes = [
+    {
+      date: "12 Mar 2024",
+      doctor: "Dr. Juan Pérez",
+      content: "Paciente presenta mejora en niveles de glucosa. Se mantiene tratamiento actual. Próximo control en 3 meses."
+    },
+    {
+      date: "25 Feb 2024",
+      doctor: "Dra. Ana López",
+      content: "Cefalea tensional. Se recomienda ejercicios de relajación y seguimiento de patrones de sueño. Control en 2 semanas si persisten los síntomas."
+    }
+  ];
+
+
+  try {
+  pacienteData = (await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))).at(0);
+  medicamentosData=await db.select().from(medicamento).where(eq(medicamento.pacienteId,pacienteId)).orderBy(desc(medicamento.created_at))
+  console.log('este son los medicamentos',medicamentosData)
+if(!pacienteData){
+  console.log('paciente no encontrado')
+return
+}
+
+  }catch(error){
+    console.log(error)
+  }
+
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
 // const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
 ---
 
 <LayoutDash>
+<<<<<<< HEAD
   <MainDashboard>
     <div class="container py-4 px-2 flex flex-col w-full">
       <PacienteHeader {...pacienteData} />
@@ -126,3 +220,23 @@ try {
     </div>
   </MainDashboard>
 </LayoutDash>
+=======
+    <MainDashboard>
+        
+            <div class="container py-4 px-2 flex flex-col w-full ">
+              <PacienteHeader {...pacienteData} />
+              
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <Antecedentes conditions={medicalHistory} />
+                  <HistorialVisitaPaciente visits={recentVisits} />
+                </div>
+                <div>
+                  <MedicacionFichaPaciente medications={medicamentosData} />
+                  <ObservacionesDoctorHistorial notes={doctorNotes} />
+                </div>
+              </div>
+            </div>
+    </MainDashboard>
+</LayoutDash>
+>>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
