@@ -23,7 +23,7 @@ type RequestDiagnosticosFront = {
 
 export const POST: APIRoute = async ({ request }) => {
   const data: RequestDiagnosticosFront = await request.json();
-  console.log("endpoint ->", data);
+  // console.log("endpoint ->", data);
 
   try {
     // Verificar si existe la historia clínica
@@ -44,22 +44,31 @@ export const POST: APIRoute = async ({ request }) => {
         { status: 400 }
       );
     }
-
-    // Insertar medicamentos en la base de datos
-    const diagnosticoPromises = data.diagnosticos.map((diag) => {
-      const idDiag = generateId(12);
-      return db.insert(diagnostico).values({
-        id: idDiag,
-        diagnostico: diag.diagnostico,
-        observaciones: diag.observaciones,
-        pacienteId: data.dataIds.pacienteId,
-        historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
-        userId: data.dataIds.userId, // Registrar quién realizó la inserción
-      });
+    const idDiag = generateId(12);
+    const creandoDiagnostico=await db.insert(diagnostico).values({
+      id: idDiag,
+      diagnostico: data.diagnostico.diagnostico,
+      observaciones: data.diagnostico.observaciones,
+      pacienteId: data.dataIds.pacienteId,
+      historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
+      userId: data.dataIds.userId, // Registrar quién realizó la inserción
     });
+    // Insertar medicamentos en la base de datos
+    // const diagnosticoPromises = data.diagnosticos.map((diag) => {
+    //   const idDiag = generateId(12);
+    //   return db.insert(diagnostico).values({
+    //     id: idDiag,
+    //     diagnostico: diag.diagnostico,
+    //     observaciones: diag.observaciones,
+    //     pacienteId: data.dataIds.pacienteId,
+    //     historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
+    //     userId: data.dataIds.userId, // Registrar quién realizó la inserción
+    //   });
+    // });
 
     // Esperar que todas las inserciones se completen
-    await Promise.all(diagnosticoPromises);
+    // await Promise.all(diagnosticoPromises);
+
 
     return new Response(
       JSON.stringify({
