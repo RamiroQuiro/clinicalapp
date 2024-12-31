@@ -1,0 +1,10 @@
+---
+import DivBox1 from "../../../../../components/atomos/DivBox1.astro";
+import ConfeccionTablaDiagnostico from './ConfeccionTablaDiagnostico'
+const { isExistDiagnosticos } = Astro.props;
+---
+
+  <ConfeccionTablaDiagnostico
+    isExistDiagnosticos={isExistDiagnosticos}
+    client:load
+  />

@@ -8,17 +8,22 @@ const { id, open } = Astro.props;
 <Button1 id={id}>{open}</Button1>
 
 <DialogModal>
-  <div class="relative flex flex-col w-full h-full p-3 print:hidden modal">
+  <div id="dataId" data-id={id} class="relative flex flex-col w-full h-full p-3 print:hidden modal">
     <slot name="main" />
     <form method="dialog">
       <slot name="close" />
     </form>
   </div>
 </DialogModal>
-<script define:vars={{ id }}>
-  const btnModal = document.getElementById(id);
+<script >
+import { dataFormularioContexto } from "../../context/store";
+
+  const data=document.getElementById('dataId')?.dataset.id
+
+  const btnModal = document.getElementById(data);
   const modal = document.querySelector(".modal");
   btnModal.addEventListener("click", (e) => {
+    dataFormularioContexto.set({})
     modal.showModal();
     // e.showModal()
   });

@@ -5,16 +5,11 @@ import Button1 from "../atomos/Button1.astro";
 import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
 import Etiquetas from "../atomos/Etiquetas.astro";
 
-<<<<<<< HEAD
 const { pacienteData, isExistHC, dataIds } = Astro.props as pacienteType;
-=======
-const { pacienteData, isExistHC,dataIds } = Astro.props as pacienteType;
->>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
 const nowDate = new Date().toLocaleDateString();
 ---
 
 <div
-<<<<<<< HEAD
   class="h relative border-y border-neutral-200 py-5 px-4  bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-4 gap-y-2"
 >
   <div class="flex w-full md:flex-row items-start md:items-center mb-4 flex-1">
@@ -42,33 +37,6 @@ const nowDate = new Date().toLocaleDateString();
         class="flex w-full items-center text-xs font-semibold justify-start gap-x-3"
       >
         <Etiquetas>DNI: {pacienteData.dni}</Etiquetas>
-=======
-  class="h relative border-y border-neutral-200 p-5  bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-5 gap-y-2"
->
-  <div class="w-full flex items-center justify-evenly">
-    <!-- boton de vovler history -->
-    <ButtonBackHistory />
-    <div class="flex  w-full items-center md:gap-4 justify-start flex-1 gap-y-2 ml-2 ">
-        <div class="whitespace-nowrap">
-          <h2 class="font-bold ">
-            {pacienteData.nombre}
-            {" "}
-            {pacienteData.apellido}
-          </h2>
-        </div>
-        <button
-          class="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-          onClick={() => (document.location.href = data.href)}
-        >
-          ficha
-        </button>
-        
-        <Etiquetas>{nowDate}</Etiquetas>
-      <div
-        class="flex w-full items-center text-xs font-semibold justify-start gap-x-3"
-      >
-      <Etiquetas>DNI: {pacienteData.dni}</Etiquetas>
->>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d
         <Etiquetas>sexo: {pacienteData.sexo}</Etiquetas>
         <Etiquetas>Celular: {pacienteData.celular}</Etiquetas>
         <Etiquetas>email: {pacienteData.email}</Etiquetas>
@@ -82,7 +50,6 @@ const nowDate = new Date().toLocaleDateString();
   <SignosVitalesForm dataIds={dataIds} isExistHC={isExistHC ? isExistHC : ""} />
 </div>
 
-<<<<<<< HEAD
 <script>
   import { atencion } from "../../context/store";
   import { showToast } from "../../utils/toast/toastShow";
@@ -114,37 +81,3 @@ const nowDate = new Date().toLocaleDateString();
     }
   });
 </script>
-=======
-
-<script>
-import { atencion } from "../../context/store"
-import { showToast } from "../../utils/toast/toastShow"
-let contextoAtencion=atencion.get()
-
-  const btnFinalizar=document.getElementById('finalizarConsulta')
-
-  atencion.subscribe((state)=>{
-    contextoAtencion=state
-  })
-
-  btnFinalizar?.addEventListener('click',async()=>{
-    try {
-      const finalizar=await fetch('/api/pacientes/atencion/',{
-        method:'POST',
-        body:JSON.stringify({
-          idAtencion:contextoAtencion.dataIds.hcId,
-          msg:'finalizar consulta'
-        })
-      })
-      const data=await finalizar.json()
-
-      if(data.status==200){
-        showToast('atecion cerrada')
-        document.location.href='/dashboard/'
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  })
-</script>
->>>>>>> d01c59ff6fdf92946889071885401a6b84e0991d

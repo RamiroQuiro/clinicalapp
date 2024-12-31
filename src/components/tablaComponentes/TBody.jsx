@@ -1,54 +1,20 @@
 import React, { useState } from "react";
 import Tr from "./Tr";
 import { useStore } from "@nanostores/react";
-import {
-  columnSelectTable,
-  filtrosBusquedaPrestamos,
-} from "../../context/store";
+import { columnSelectTable, filtrosBusquedaPrestamos } from "../../context/store";
 
-export default function TBody({ arrayBody, onClickFila }) {
+export default function TBody({ arrayBody, onClickFila, renderBotonActions }) {
   const $columnSelectTable = useStore(columnSelectTable);
   const $filtros = useStore(filtrosBusquedaPrestamos);
   const [sortSelect, setSortSelect] = useState($columnSelectTable.seleccion);
 
-  //ruteador
   const onClick = (href) => {
     document.location.href = href;
   };
 
-  //   botonera de acciones
-  const renderActions = (data) => (
-    <div className="flex gap-2 pr-5 justify-end items-center text-xs">
-      <button
-        className="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-        onClick={() => (document.location.href = `/dashboard/pacientes/${data.id}`)}
-      >
-        ficha
-      </button>
-      <button
-        className="bg-primary-200 text-white  px-1 py-0.5 rounded hover:bg-primary-200/80 duration-150"
-        onClick={(e) => {
-          e.stopPropagation();
-          document.location.href = data.href;
-        }}
-      >
-        atender
-      </button>
-      <button
-        className="bg-primary-400 text-white  px-1 py-0.5 rounded hover:bg-primary-400/80 duration-150"
-        onClick={(e) => {
-          e.stopPropagation();
-          alert(`Eliminar: ${data.id}`);
-        }}
-      >
-        Eliminar
-      </button>
-    </div>
-  );
-
   return (
     <tbody>
-      {arrayBody.length === 0 ? (
+      {arrayBody?.length === 0 ? (
         <tr>
           <td
             colSpan={Object.keys(arrayBody[0] || {}).length + 1}
@@ -59,7 +25,7 @@ export default function TBody({ arrayBody, onClickFila }) {
         </tr>
       ) : (
         arrayBody
-          .sort((a, b) => a - b)
+          ?.sort((a, b) => a - b)
           .filter((element) => {
             if ($filtros.filtro === "todos") {
               return element;
@@ -81,8 +47,8 @@ export default function TBody({ arrayBody, onClickFila }) {
               data={client}
               id={client.id}
               key={i}
-              styleTr="hover:bg- duration-300 cursor-pointer border-b odd:bg-gray-50"
-              renderActions={renderActions}
+              styleTr="hover:bg- duration-300 cursor-pointer border-b  odd:bg-gray-50"
+              renderBotonActions={renderBotonActions} // Corregido
             />
           ))
       )}

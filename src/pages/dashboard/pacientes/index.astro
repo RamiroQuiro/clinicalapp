@@ -7,6 +7,7 @@ import ContenedorModal from "../../../components/organismo/ContenedeorModal.astr
 import FormularioCliente from "./FormularioPaciente.astro";
 import Button2 from "../../../components/atomos/Button2.astro";
 import ConfeccionTabla from "./ConfeccionTabla.astro";
+import ContenedorTablaPaciente from "./ContenedorTablaPaciente.astro";
 let user = {
 id: '321321321' ,
   title: "CLIENTES",
@@ -28,7 +29,7 @@ id: '321321321' ,
         </ContenedorModal>
         <Button2>pdf</Button2>
       </div>
-      <ConfeccionTabla user={user}/>
+      <ContenedorTablaPaciente user={user}/>
     </ContenedorDiv1>
   </MainDashboard>
 </LayoutDash>
