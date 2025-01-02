@@ -19,12 +19,12 @@ id: '321321321' ,
   <MainDashboard title="Pacientes">
  
     <ContenedorDiv1>
-      <div class="w-full flex justify-between items-center gap-x-5">
+      <div class="w-full flex justify-between items-center gap-4">
         <FormularioBusqueda
           placeholder={"Busqueda de pacientes..."}
           client:load
         />
-        <ContenedorModal open="Crear ">
+        <ContenedorModal open="Crear" id="dialogPaciente">
           <FormularioCliente user={user} />
         </ContenedorModal>
         <Button2>pdf</Button2>

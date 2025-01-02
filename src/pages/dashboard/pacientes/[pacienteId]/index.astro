@@ -5,17 +5,25 @@ import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
 import HistorialVisitaPaciente from "../../../../components/organismo/HistorialVisitaPaciente.astro";
 import ObservacionesDoctorHistorial from "../../../../components/organismo/ObservacionesDoctorHistorial.astro";
 import db from "../../../../db";
-import { diagnostico, historiaClinica, medicamento, pacientes, tratamiento } from "../../../../db/schema";
+import {
+  diagnostico,
+  historiaClinica,
+  medicamento,
+  pacientes,
+  tratamiento,
+} from "../../../../db/schema";
 import type { pacienteType } from "../../../../types";
-import PacienteHeader from '../../../../components/organismo/PacienteHeader.astro'
-import MedicacionFichaPaciente from '../../../../components/organismo/MedicacionFichaPaciente.astro'
-import Antecedentes from '../../../../components/organismo/Antecedentes.astro'
+import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
+import MedicacionFichaPaciente from "../../../../components/organismo/MedicacionFichaPaciente.astro";
+import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
+import Div1Atencion from "../../../../components/atomos/Div1Atencion.astro";
+import Div2Atencion from "../../../../components/atomos/Div2Atencion.astro";
 
 const { pacienteId } = Astro.params;
 
 let pacienteData: pacienteType = {};
 let medicamentosData = {};
-let historialVisitas=[]
+let historialVisitas = [];
 const medicalHistory = [
   {
     condition: "Hipertensión Arterial",
@@ -53,7 +61,6 @@ const recentVisits = [
   },
 ];
 
-
 const doctorNotes = [
   {
     date: "12 Mar 2024",
@@ -78,24 +85,31 @@ try {
     .from(medicamento)
     .where(eq(medicamento.pacienteId, pacienteId))
     .orderBy(desc(medicamento.created_at));
-    import { sql } from "drizzle-orm";
+  import { sql } from "drizzle-orm";
 
- historialVisitas = await db
-  .select({
-    fecha: historiaClinica.created_at,
-    motivo: historiaClinica.motivoConsulta,
-    diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as("diagnosticos"),
-    tratamiento: tratamiento.tratamiento,
-  })
-  .from(historiaClinica)
-  .rightJoin(tratamiento, eq(tratamiento.historiaClinicaId, historiaClinica.id))
-  .rightJoin(diagnostico, eq(diagnostico.historiaClinicaId, historiaClinica.id))
-  .where(eq(historiaClinica.pacienteId, pacienteId))
-  .groupBy(historiaClinica.id)
-  .orderBy(desc(historiaClinica.created_at)); // Agrupa por la historia clínica
-  
+  historialVisitas = await db
+    .select({
+      fecha: historiaClinica.created_at,
+      motivo: historiaClinica.motivoConsulta,
+      diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as(
+        "diagnosticos"
+      ),
+      tratamiento: tratamiento.tratamiento,
+    })
+    .from(historiaClinica)
+    .rightJoin(
+      tratamiento,
+      eq(tratamiento.historiaClinicaId, historiaClinica.id)
+    )
+    .rightJoin(
+      diagnostico,
+      eq(diagnostico.historiaClinicaId, historiaClinica.id)
+    )
+    .where(eq(historiaClinica.pacienteId, pacienteId))
+    .groupBy(historiaClinica.id)
+    .orderBy(desc(historiaClinica.created_at)); // Agrupa por la historia clínica
 
-//  console.log("este son los historialVisitas", historialVisitas);
+  //  console.log("este son los historialVisitas", historialVisitas);
 
   if (!pacienteData) {
     console.log("paciente no encontrado");
@@ -110,18 +124,22 @@ try {
 
 <LayoutDash>
   <MainDashboard>
-    <div class="container py-4 px-2 flex flex-col w-full">
+    <div class="container py-4 gap-4 px-2 flex flex-col w-full">
       <PacienteHeader {...pacienteData} />
 
-      <div class="flex  gap-4">
-        <div class="flex-1">
-          <Antecedentes conditions={medicalHistory} />
-          <HistorialVisitaPaciente visitas={historialVisitas} />
-        </div>
-        <div class="flex-1">
-          <MedicacionFichaPaciente medicacion={medicamentosData} />
-          <ObservacionesDoctorHistorial notes={doctorNotes} />
-        </div>
+      <div class="flex gap-4">
+        <Div1Atencion>
+          <Div2Atencion>
+            <Antecedentes conditions={medicalHistory} />
+          </Div2Atencion>
+            <HistorialVisitaPaciente visitas={historialVisitas} />
+        </Div1Atencion>
+        <Div1Atencion>
+            <MedicacionFichaPaciente
+              medicacion={medicamentosData}
+            />
+            <ObservacionesDoctorHistorial notes={doctorNotes} />
+        </Div1Atencion>
       </div>
     </div>
   </MainDashboard>

@@ -1,4 +1,8 @@
 ---
+import Button1 from "../atomos/Button1.astro";
+import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
+import DivBox1 from "../atomos/DivBox1.astro";
+
 interface Note {
   date: string;
   doctor: string;
@@ -13,13 +17,13 @@ interface DoctorNotesProps {
 const {notes}=Astro.props as DoctorNotesProps
 ---
 
-<div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-semibold">Notas del Médico</h2>
-      <button class="text-sm text-primary-foreground hover:text-primary-foreground/80">
-        Añadir nota
-      </button>
+<DivBox1>
+  <ContenedorTitleBotonera>
+    <h2 class="text-lg font-semibold">notas medico</h2>
+    <div>
+      <Button1>ver historial</Button1>
     </div>
+  </ContenedorTitleBotonera>
     
     <div class="space-y-4">
       {notes.map((note, index) => (
@@ -34,4 +38,4 @@ const {notes}=Astro.props as DoctorNotesProps
         </div>
       ))}
     </div>
-  </div>
+  </DivBox1>

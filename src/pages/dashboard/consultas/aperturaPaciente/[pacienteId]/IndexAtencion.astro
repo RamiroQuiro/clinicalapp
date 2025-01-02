@@ -32,31 +32,30 @@ const {
     isExistHC={isExistHC}
     dataIds={dataIds}
   />
-  <Div1Atencion>
-    <!-- contenedor de diagnostiro en donde se podran ingreadr mas de un diagnostico con su respectivo observacion -->
-    <div class="w-1/2">
-    <DivBox1 styleDiv="">
-        
+  <div class="w-full items-start justify-between flex gap-4">
+    <Div1Atencion>
+      <!-- contenedor de diagnostiro en donde se podran ingreadr mas de un diagnostico con su respectivo observacion -->
+      <DivBox1 styleDiv="">
         <DiagnosticoContainer isExistDiagnosticos={isExistDiagnosticos} />
       </DivBox1>
-    </div>
-    <!-- motivo de consulta: formulario con un textarea para ingrar el motivo de la consulta actual -->
-    <Div2Atencion estilo="flex-[2]">
-      <MotivoConsulta
-        isExistHC={isExistHC ? isExistHC : ""}
-        dataIds={dataIds}
-      />
-    </Div2Atencion>
-  </Div1Atencion>
-  <Div1Atencion>
-    <!-- box de medicametos, al mismo estilo que el diagnostico,m se proporcionar un nombre, dosis, frecuencia y duracion para que pueda guardar mas de un medicamento con su respectivos datos -->
-    <Div2Atencion estilo="w-1/2 flex-1">
-      <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />
-    </Div2Atencion>
-    <Div2Atencion estilo="w-1/2 flex-1">
-      <TratamientoContenedor />
-    </Div2Atencion>
-  </Div1Atencion>
+      <!-- motivo de consulta: formulario con un textarea para ingrar el motivo de la consulta actual -->
+      <DivBox1>
+        <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />
+      </DivBox1>
+    </Div1Atencion>
+    <Div1Atencion>
+      <!-- box de medicametos, al mismo estilo que el diagnostico,m se proporcionar un nombre, dosis, frecuencia y duracion para que pueda guardar mas de un medicamento con su respectivos datos -->
+      <Div2Atencion estilo="flex-[2]">
+        <MotivoConsulta
+          isExistHC={isExistHC ? isExistHC : ""}
+          dataIds={dataIds}
+        />
+      </Div2Atencion>
+      <Div2Atencion estilo=" flex-1">
+        <TratamientoContenedor />
+      </Div2Atencion>
+    </Div1Atencion>
+  </div>
 </div>
 
 <script>
