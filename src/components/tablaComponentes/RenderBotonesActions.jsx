@@ -79,8 +79,9 @@ export const RenderActionsEditDeletMedicamentos = (data) =>{
     }
 
     const handleDeletDiag = async ({id}) => {
+        console.log(id)
         try {
-            const deletFetch = await fetch('/api/pacientes/atencion/diagnostico', {
+            const deletFetch = await fetch('/api/medicamentos', {
                 method: 'DELETE',
                 body: JSON.stringify({
                     id: id

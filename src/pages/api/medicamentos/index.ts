@@ -66,13 +66,12 @@ return new Response(JSON.stringify({
 };
 
 export const DELETE: APIRoute = async ({ request }) => {
-const data:string=await request.json()
-
+const {id}:string=await request.json()
 
 
   try {
 
-    const deleteMedicament= await db.delete(medicamento).where(eq(medicamento.id,data))
+    const deleteMedicament= await db.delete(medicamento).where(eq(medicamento.id,id))
 
     return new Response(
       JSON.stringify({

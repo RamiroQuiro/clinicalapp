@@ -1,0 +1,83 @@
+---
+import {Documentos} from '../../types/index'
+const { document } = Astro.props;
+
+const getTypeIcon = (type:Documentos["type"]) => {
+  switch (type) {
+    case "lab_result":
+      return "🧪";
+    case "xray":
+      return "📷";
+    case "prescription":
+      return "📝";
+    default:
+      return "📄";
+  }
+};
+const getStatusColor = (status: Documentos["status"]) => {
+  switch (status) {
+    case "pending":
+      return "bg-yellow-100 text-yellow-800";
+    case "reviewed":
+      return "bg-green-100 text-green-800";
+    case "archived":
+      return "bg-gray-100 text-gray-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+---
+
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-lg font-semibold">Documentos Adjuntos</h2>
+    <button
+      class="text-sm text-primary-foreground hover:text-primary-foreground/80"
+    >
+      Ver todos
+    </button>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="text-left border-b">
+          <th class="pb-3 text-sm font-medium text-muted-foreground"
+            >Documento</th
+          >
+          <th class="pb-3 text-sm font-medium text-muted-foreground">Fecha</th>
+          <th class="pb-3 text-sm font-medium text-muted-foreground">Tamaño</th>
+          <th class="pb-3 text-sm font-medium text-muted-foreground">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          documents.map((doc, index) => (
+            <tr key={index} class="border-b last:border-0">
+              <td class="py-4">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">{getTypeIcon(doc.type)}</span>
+                  <div>
+                    <p class="font-medium text-sm">{doc.name}</p>
+                    <p class="text-xs text-muted-foreground capitalize">
+                      {doc.type.replace("_", " ")}
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 text-sm">{doc.date}</td>
+              <td class="py-4 text-sm">{doc.size}</td>
+              <td class="py-4">
+                <span
+                  class={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(doc.status)}`}
+                >
+                  {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
+                </span>
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

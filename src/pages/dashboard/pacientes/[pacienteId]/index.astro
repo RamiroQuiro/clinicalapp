@@ -1,5 +1,5 @@
 ---
-import { desc, eq } from "drizzle-orm";
+import { desc, eq,sql } from "drizzle-orm";
 import MainDashboard from "../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
 import HistorialVisitaPaciente from "../../../../components/organismo/HistorialVisitaPaciente.astro";
@@ -11,18 +11,21 @@ import {
   medicamento,
   pacientes,
   tratamiento,
+  antecedente
 } from "../../../../db/schema";
-import type { pacienteType } from "../../../../types";
+import type { AntecedentesMedicosProps, pacienteType } from "../../../../types";
 import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
 import MedicacionFichaPaciente from "../../../../components/organismo/MedicacionFichaPaciente.astro";
 import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
 import Div1Atencion from "../../../../components/atomos/Div1Atencion.astro";
 import Div2Atencion from "../../../../components/atomos/Div2Atencion.astro";
+import ArchivosAdjuntosPaciente from "../../../../components/organismo/ArchivosAdjuntosPaciente.astro";
 
 const { pacienteId } = Astro.params;
 
 let pacienteData: pacienteType = {};
 let medicamentosData = {};
+let arrayAntecedente:AntecedentesMedicosProps = [];
 let historialVisitas = [];
 const medicalHistory = [
   {
@@ -43,21 +46,6 @@ const medicalHistory = [
     diagnosisDate: "10 Enero 2020",
     status: "Familiar",
     type: "family",
-  },
-];
-
-const recentVisits = [
-  {
-    date: "12 Mar 2024",
-    reason: "Control rutinario",
-    doctor: "Dr. Juan Pérez",
-    department: "Medicina General",
-  },
-  {
-    date: "25 Feb 2024",
-    reason: "Dolor de cabeza",
-    doctor: "Dra. Ana López",
-    department: "Neurología",
   },
 ];
 
@@ -85,7 +73,6 @@ try {
     .from(medicamento)
     .where(eq(medicamento.pacienteId, pacienteId))
     .orderBy(desc(medicamento.created_at));
-  import { sql } from "drizzle-orm";
 
   historialVisitas = await db
     .select({
@@ -109,7 +96,9 @@ try {
     .groupBy(historiaClinica.id)
     .orderBy(desc(historiaClinica.created_at)); // Agrupa por la historia clínica
 
-  //  console.log("este son los historialVisitas", historialVisitas);
+    arrayAntecedente=await db.select().from(antecedente).where(eq(antecedente.pacienteId,pacienteId))
+
+  //  console.log("este son los historialVisitas",arrayAntecedente);
 
   if (!pacienteData) {
     console.log("paciente no encontrado");
@@ -130,15 +119,14 @@ try {
       <div class="flex gap-4">
         <Div1Atencion>
           <Div2Atencion>
-            <Antecedentes conditions={medicalHistory} />
+            <Antecedentes antecedentes={arrayAntecedente} />
           </Div2Atencion>
-            <HistorialVisitaPaciente visitas={historialVisitas} />
+          <HistorialVisitaPaciente visitas={historialVisitas} />
         </Div1Atencion>
         <Div1Atencion>
-            <MedicacionFichaPaciente
-              medicacion={medicamentosData}
-            />
-            <ObservacionesDoctorHistorial notes={doctorNotes} />
+          <MedicacionFichaPaciente medicacion={medicamentosData} />
+          <ArchivosAdjuntosPaciente/>
+          <ObservacionesDoctorHistorial notes={doctorNotes} />
         </Div1Atencion>
       </div>
     </div>

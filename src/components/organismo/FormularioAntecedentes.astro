@@ -1,48 +1,126 @@
 ---
+import Button1 from "../atomos/Button1.astro";
 import FormCont from "../atomos/FormCont.astro";
-import ContenedorInputForm from '../moleculas/ContenedorInputForm.astro'
+import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
 import ContenedorInputSelected from "../moleculas/ContenedorInputSelected.astro";
 
-
-const options=[
-    {
-        id:1,
-        value:'familiar',
-    },
-    {
-        id:2,
-        value:'personal'
-    }
-]
+const {pacienteId}=Astro.params
+const options = [
+  {
+    id: 1,
+    value: "familiar",
+  },
+  {
+    id: 2,
+    value: "personal",
+  },
+];
 ---
 
 <FormCont id="formularioAntecedente" title="Nuevo Antecedentes">
-    <div
-    data-user-id
+  <div
+  id="datapacienteId"
+    data-id={pacienteId}
     class="flex md:flex-row items-center gap-2 w-full justify-normal"
   >
     <ContenedorInputForm
-    label="antecedente"
+      label="antecedente"
       type="text"
-      name="nombre"
+      name="antecedente"
       styleInput=""
     />
-</div>
-<div
-data-user-id
-class="flex md:flex-row items-center gap-2 w-full justify-normal"
->
-<ContenedorInputForm
-label="fecha del diagnostico"
-  type="text"
-  name="fechaDiagnostico"
-  styleInput=""
-/></div>
-<div
-data-user-id
-class="flex md:flex-row items-center gap-2 w-full justify-normal"
->
-<ContenedorInputSelected options={options}/>
-</div>
+    <ContenedorInputForm
+      label="fecha del diagnostico"
+      type="date"
+      name="fechaDiagnostico"
+      styleInput=""
+    />
+  </div>
 
+  <div
+    data-user-id
+    class="flex flex-col items-start gap-2 w-full justify-normal"
+  >
+  <label for="observaciones" class="text-xs text-primary-texto capitalize">Observaciones</label>
+    <textarea
+      class="w-full text-sm p-2 text-primary-texto outline-none ring-0 border rounded focus:border-primary-150"
+      rows="5"
+      name="observaciones"
+      id="observaciones"
+      placeholder="Escribe aquí observaciones..."
+    >
+    </textarea>
+  </div>
+  <div
+    data-user-id
+    class="flex md:flex-row items-center gap-2 w-full justify-normal"
+  >
+    <ContenedorInputSelected options={options} label="tipo de antecedente" name="tipo" />
+    <ContenedorInputSelected
+      label="estado"
+      name="estado"
+      options={[
+        { id: 1, value: "activo" },
+        { id: 2, value: "controlado" },
+        { id: 3, value: "curado" },
+      ]}
+    />
+  </div>
+
+  <div class="w-full items-center justify-end flex py-2">
+    <Button1>agregar</Button1>
+  </div>
 </FormCont>
+
+<script>
+  const dataForm = document.getElementById('formularioAntecedente');
+  const pacienteId = document.getElementById('datapacienteId')?.dataset.id;
+console.log(pacienteId)
+  // Función para convertir FormData a JSON
+  const formDataToJson = (formData) => {
+    const json = {};
+    formData.forEach((value, key) => {
+      json[key] = value;
+    });
+    return json;
+  };
+
+  const enviarDatos = async () => {
+    // Obtén los datos del formulario
+    const formData = new FormData(dataForm);
+    const jsonData = formDataToJson(formData);
+
+    try {
+      // Realiza la solicitud
+      const response = await fetch(`/api/pacientes/antecedentes/${pacienteId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jsonData),
+      });
+
+      // Manejo de la respuesta
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Datos enviados con éxito:', data);
+        if (data.status===200) {
+          document.location.reload()
+        }
+        // Aquí puedes realizar alguna acción adicional, como limpiar el formulario
+      } else {
+        console.error('Error al enviar los datos:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error al realizar la solicitud:', error);
+    }
+  };
+
+  // Evento de envío del formulario
+  dataForm?.addEventListener('submit', (event) => {
+    event.preventDefault(); // Prevenir el comportamiento por defecto
+    
+
+    enviarDatos(); // Llamar a la función de envío
+  });
+</script>

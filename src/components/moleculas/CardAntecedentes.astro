@@ -1,19 +1,20 @@
 ---
-import {AlertCircle,Heart} from 'lucide-react'
-import type { MedicalCondition } from '../../types'
+import { AlertCircle, Heart } from "lucide-react";
+import type { Antecedente } from "../../types";
+import formatDate from '../../utils/formatDate'
+const { data } = Astro.props as Antecedente;
 
 
-const {condition}=Astro.props as MedicalCondition
 ---
 
 <div
   class="flex items-start gap-4 p-2 border rounded-md bg-primary-bg-componentes"
 >
   <div
-    class={`w-8 h-8 rounded-full ${condition.critical ? "bg-red-100" : "bg-primary-150"} flex items-center justify-center`}
+    class={`w-8 h-8 rounded-full ${data.estado !== "controlado" ? "bg-red-100" : "bg-primary-150"} flex items-center justify-center`}
   >
     {
-      condition.critical ? (
+      data.estado !== "controlado" ? (
         <AlertCircle size={16} className="text-red-800" />
       ) : (
         <Heart size={16} className="text-primary-texto" />
@@ -22,14 +23,14 @@ const {condition}=Astro.props as MedicalCondition
   </div>
 
   <div class="flex-1">
-    <h3 class="font-medium text-sm">
-      {condition.condition}
+    <h3 class="font-medium text-sm uppercase">
+      {data.antecedente}
     </h3>
     <p class="text-xs text-muted-foreground">
-      Diagnosticado: {condition.diagnosisDate}
+      Diagnosticado: {formatDate(data.fechaDiagnostico)}
     </p>
   </div>
   <span class="px-2 py-1 text-xs font-medium rounded-full bg-accent">
-    {condition.status}
+    {data.tipo === "familiar" ? "familiar" : data.estado}
   </span>
 </div>
