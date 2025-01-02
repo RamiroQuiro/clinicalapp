@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ContenedorAgregarDiagnostico from "../moleculas/ContenedorAgregarDiagnostico";
 import BotonMas from "../atomos/BotonMas";
 import MedicamentosAgregar from "../moleculas/MedicamentosAgregar";
-import { atencion } from "../../context/store";
+import { atencion, dataFormularioContexto } from "../../context/store";
 import { useStore } from "@nanostores/react";
 import BotonEditar from "../moleculas/BotonEditar";
 import BotonEliminar from "../moleculas/BotonEliminar";
@@ -16,9 +16,16 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
     frecuencia: "",
     duracion: "",
   });
-  const [arrayMedicamentos, setArrayMedicamentos] =
-    useState(isExistMedicamentos);
   const $atencionStore = useStore(atencion);
+const $dataFormularioContexto=useStore(dataFormularioContexto)
+
+
+useEffect(() => {
+  setMedicamento($dataFormularioContexto)
+
+  
+}, [$dataFormularioContexto])
+
 
   const handleChange = (e) => {
     setMedicamento({
@@ -69,22 +76,18 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
   };
 
 
-  const handleEdit = async (updatedMedicamento) => {
+  const handleEdit = async () => {
     try {
 
       const response = await fetch("/api/medicamentos/", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedMedicamento),
+        body: JSON.stringify(medicamento),
       });
       const data = await response.json();
 
       if (response.ok) {
-        setArrayMedicamentos((prevArray) =>
-          prevArray.map((med) =>
-            med.id === updatedMedicamento.id ? updatedMedicamento : med
-          )
-        );
+   
         setMedicamento({
           id: 0,
           nombre: "",
@@ -92,6 +95,8 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
           frecuencia: "",
           duracion: "",
         });
+
+        document.location.reload();
       } else {
         console.error("Error al actualizar el medicamento:", data.message);
       }
@@ -162,7 +167,7 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
       </div>
       <div className="w-full items-center flex py-2 justify-end">
 
-        <button onClick={handleAddMedicamento} className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white">agregar</button>
+        <button onClick={medicamento.id==''?handleAddMedicamento:handleEdit} className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white">agregar</button>
       </div>
 
 

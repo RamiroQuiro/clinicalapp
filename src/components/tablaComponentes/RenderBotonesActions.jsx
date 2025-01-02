@@ -70,3 +70,36 @@ export const RenderActionsEditDelet = (data) =>{
         <BotonEliminar handleClick={()=>handleDeletDiag(data)} />
     </div>
 );}
+export const RenderActionsEditDeletMedicamentos = (data) =>{
+    const handleEditModal=(data)=>{
+        dataFormularioContexto.set(data)
+        const modal = document.getElementById(`dialog-modal-medicamentos`);
+          modal.showModal();
+          // e.showModal()
+    }
+
+    const handleDeletDiag = async ({id}) => {
+        try {
+            const deletFetch = await fetch('/api/pacientes/atencion/diagnostico', {
+                method: 'DELETE',
+                body: JSON.stringify({
+                    id: id
+                })
+            })
+            if (deletFetch.ok) {
+                showToast('Diagnostico eliminado')
+                document.location.reload()
+            } else {
+                showToast('error al borrar', { background: 'bg-primary-400' })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    return(
+    <div className="flex gap-2 pr-5 justify-end items-center text-xs">
+        <BotonEditar handleClick={()=>handleEditModal(data)}/>
+        <BotonEliminar handleClick={()=>handleDeletDiag(data)} />
+    </div>
+);}
