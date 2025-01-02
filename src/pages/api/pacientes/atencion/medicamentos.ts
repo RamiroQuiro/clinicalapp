@@ -6,7 +6,7 @@ import { historiaClinica } from "../../../../db/schema/historiaClinica";
 import { medicamento } from "../../../../db/schema/medicamento";
 
 type MedicamentoType = {
-  id?:string,
+  id?: string;
   nombre: string;
   dosis?: string;
   frecuencia?: string;
@@ -14,8 +14,8 @@ type MedicamentoType = {
 };
 
 type RequestMedicamentosFront = {
-  medicamentos: MedicamentoType[];
-  dataids: {
+  medicamentos: MedicamentoType;
+  dataIds: {
     userId: string;
     hcId: string;
     pacienteId?: string;
@@ -24,7 +24,7 @@ type RequestMedicamentosFront = {
 
 export const POST: APIRoute = async ({ request }) => {
   const data: RequestMedicamentosFront = await request.json();
-  console.log("endpoint ->", data);
+  // console.log("endpoint meidcamento->", data);
 
   try {
     // Verificar si existe la historia clínica
@@ -32,10 +32,10 @@ export const POST: APIRoute = async ({ request }) => {
       await db
         .select()
         .from(historiaClinica)
-        .where(eq(historiaClinica.id, data.dataids.hcId))
+        .where(eq(historiaClinica.id, data.dataIds.hcId))
     ).at(0);
 
-    console.log("Historia clínica encontrada:", isExists);
+    // console.log("Historia clínica encontrada:", isExists);
     if (!isExists) {
       return new Response(
         JSON.stringify({
@@ -46,24 +46,18 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-
     // Insertar medicamentos en la base de datos
-    const medicamentosPromises = data.medicamentos.map((med) => {
-      const idMedicamento = generateId(12);
-      return db.insert(medicamento).values({
-        id: idMedicamento,
-        nombre: med.nombre,
-        dosis: med.dosis,
-        frecuencia: med.frecuencia,
-        duracion: med.duracion,
-        pacienteId: data.dataids.pacienteId,
-        historiaClinicaId: data.dataids.hcId, // Relacionar con la historia clínica
-        userId: data.dataids.userId, // Registrar quién realizó la inserción
-      });
+    const idMedicamento = generateId(12);
+    const insetMedicamento = await db.insert(medicamento).values({
+      id: idMedicamento,
+      nombre: data.medicamentos.nombre,
+      dosis: data.medicamentos.dosis,
+      frecuencia: data.medicamentos.frecuencia,
+      duracion: data.medicamentos.duracion,
+      pacienteId: data.dataIds.pacienteId,
+      historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
+      userId: data.dataIds.userId, // Registrar quién realizó la inserción
     });
-
-    // Esperar que todas las inserciones se completen
-    await Promise.all(medicamentosPromises);
 
     return new Response(
       JSON.stringify({

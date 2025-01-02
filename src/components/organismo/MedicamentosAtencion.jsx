@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ContenedorAgregarDiagnostico from "../moleculas/ContenedorAgregarDiagnostico";
 import BotonMas from "../atomos/BotonMas";
 import MedicamentosAgregar from "../moleculas/MedicamentosAgregar";
-import { atencion } from "../../context/store";
+import { atencion, dataFormularioContexto } from "../../context/store";
 import { useStore } from "@nanostores/react";
 import BotonEditar from "../moleculas/BotonEditar";
 import BotonEliminar from "../moleculas/BotonEliminar";
@@ -16,9 +16,16 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
     frecuencia: "",
     duracion: "",
   });
-  const [arrayMedicamentos, setArrayMedicamentos] =
-    useState(isExistMedicamentos);
   const $atencionStore = useStore(atencion);
+const $dataFormularioContexto=useStore(dataFormularioContexto)
+
+
+useEffect(() => {
+  setMedicamento($dataFormularioContexto)
+
+  
+}, [$dataFormularioContexto])
+
 
   const handleChange = (e) => {
     setMedicamento({
@@ -26,48 +33,88 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
       [e.target.name]: e.target.value,
     });
   };
-  const handleAddDiagnostico = (e) => {
+  const handleAddMedicamento = async (e) => {
     e.preventDefault();
     if (!medicamento.nombre) {
       showToast('no hay medicacion para agregar', {
-          background: 'bg-primary-400'
+        background: 'bg-primary-400'
       })
       return
-  }
-    setArrayMedicamentos(() => [...arrayMedicamentos, medicamento]);
-    setMedicamento((state) => ({
-      id: '',
-      nombre: "",
-      dosis: "",
-      frecuencia: "",
-      duracion: "",
-      isSaved:false,
-    }));
-    atencion.set({
-      ...$atencionStore,
-      medicamentos: [...$atencionStore.medicamentos, medicamento],
-    });
+    }
+    try {
+      let dataMedicamentos={
+        medicamentos:medicamento,
+        dataIds:$atencionStore.dataIds
+      }
+      const response = await fetch('/api/pacientes/atencion/medicamentos/', {
+        method: 'POST',
+        body: JSON.stringify(dataMedicamentos)
+      })
+      const data = await response.json()
+      if (data.status === 200) {
+
+        setMedicamento((state) => ({
+          id: '',
+          nombre: "",
+          dosis: "",
+          frecuencia: "",
+          duracion: "",
+          isSaved: false,
+        }));
+        atencion.set({
+          ...$atencionStore,
+          medicamentos: [...$atencionStore.medicamentos, medicamento],
+        });
+      }
+      document.location.reload()
+    } catch (error) {
+      console.log(error)
+
+    }
+
+
   };
 
-  const handleEdit = (e) => {
-    setMedicamento(e);
-  };
-console.log(arrayMedicamentos)
-  const handleMandarEdit = async (updatedMedicamento) => {
+
+  const handleEdit = async () => {
     try {
-        
+
       const response = await fetch("/api/medicamentos/", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedMedicamento),
+        body: JSON.stringify(medicamento),
       });
       const data = await response.json();
-  
+
       if (response.ok) {
+   
+        setMedicamento({
+          id: 0,
+          nombre: "",
+          dosis: "",
+          frecuencia: "",
+          duracion: "",
+        });
+
+        document.location.reload();
+      } else {
+        console.error("Error al actualizar el medicamento:", data.message);
+      }
+    } catch (error) {
+      console.error("Error al mandar edit:", error);
+    }
+  };
+
+  const handleDelet = async (deletMedicamento) => {
+    try {
+      const delFeth = await fetch('/api/medicamentos/', {
+        method: 'DELETE',
+        body: JSON.stringify(deletMedicamento.id)
+      })
+      const dataRes = await delFeth.json()
+      if (dataRes.status == 200) {
         setArrayMedicamentos((prevArray) =>
-          prevArray.map((med) =>
-            med.id === updatedMedicamento.id ? updatedMedicamento : med
-          )
+          prevArray.filter((med) => med.id !== deletMedicamento.id)
         );
         setMedicamento({
           id: 0,
@@ -77,38 +124,12 @@ console.log(arrayMedicamentos)
           duracion: "",
         });
       } else {
-        console.error("Error al actualizar el medicamento:", data.message);
+        console.log(dataRes)
       }
+
     } catch (error) {
-      console.error("Error al mandar edit:", error);
+      console.log(error)
     }
-  };
-
-  const handleDelet=async(deletMedicamento)=>{
-        try {
-            const delFeth=await fetch('/api/medicamentos/',{
-                method:'DELETE',
-                body:JSON.stringify(deletMedicamento.id)
-            })
-            const dataRes=await delFeth.json()
-            if (dataRes.status==200) {
-                setArrayMedicamentos((prevArray) =>
-                    prevArray.filter((med)=>med.id!==deletMedicamento.id)
-                  );
-                  setMedicamento({
-                    id: 0,
-                    nombre: "",
-                    dosis: "",
-                    frecuencia: "",
-                    duracion: "",
-                  });
-            }else {
-                console.log(dataRes)
-            }
-
-        } catch (error) {
-            console.log(error)
-        }
   }
   return (
     <div className="flex flex-col rounded-lg  px-2 ">
@@ -143,11 +164,14 @@ console.log(arrayMedicamentos)
             />
           </div>
         </div>
-        <div className="mt-6">
-      {medicamento.id==0 ?   <BotonMas onclick={handleAddDiagnostico} />: <BotonEditar handleClick={()=>handleMandarEdit(medicamento)}/>}
-        </div>
+      </div>
+      <div className="w-full items-center flex py-2 justify-end">
+
+        <button onClick={medicamento.id==''?handleAddMedicamento:handleEdit} className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white">agregar</button>
       </div>
 
+
+      {/* 
       <div>
         {arrayMedicamentos?.map((currentMedicamento, i) => (
           <div className={`${currentMedicamento.id==''?'bg-primary-500/20 animate-pulse':'bg-white'} p-2 rounded-lg text-primary-texto border-gray-200 border flex flex-col gap-2 my-2 shadow-md`}>
@@ -175,7 +199,7 @@ console.log(arrayMedicamentos)
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }

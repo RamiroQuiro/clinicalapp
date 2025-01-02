@@ -1,0 +1,27 @@
+---
+import Button1 from "../../../../../components/atomos/Button1.astro";
+import FormularioMedicamentosAgregar from "../../../../../components/organismo/FormularioMedicamentosAgregar.astro";
+---
+
+<div>
+  <Button1 id="modal-medicamentos">agregar</Button1>
+
+  <dialog
+    id={`dialog-modal-medicamentos`}
+    class="modal print:hidden duration-300 open:fixed open:flex flex-col w-full md:open:min-w-[30vw] md:open:max-w-[40vw] open:min-h-[50vh] rounded-lg border-l-2 border-primary-100 backdrop:bg-primary-texto/80 open:backdrop:backdrop-blur-sm"
+  >
+    <div
+      id="dataId"
+      class="relative flex flex-col w-full h-full p-3 print:hidden modal"
+    >
+      <form method="dialog">
+        <Button1 slot="close" id="cerrarModal" style="absolute top-1 right-1 "
+          >✕</Button1
+        >
+        <slot />
+      </form>
+
+      <!-- <DiagnosticosContenedor client:load  isExistDiagnosticos={isExistDiagnosticos}/> -->
+    </div>
+  </dialog>
+</div>

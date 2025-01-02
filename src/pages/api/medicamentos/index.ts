@@ -31,33 +31,27 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     // Verificar si existe la historia clínica
-    const isExists = (
-      await db
-        .select()
-        .from(historiaClinica)
-        .where(eq(historiaClinica.id, data.historiaClinicaId))
-    ).at(0);
-
-    if (!isExists) {
-      return new Response(
-        JSON.stringify({
-          status: 400,
-          msg: "La historia clínica no existe",
-        }),
-        { status: 400 }
-      );
-    }
 
     const updateMedicamento = await db
       .update(medicamento)
       .set(data)
       .where(eq(medicamento.id, data.id));
-    return new Response(
+
+if(!updateMedicamento){
+return new Response(JSON.stringify({
+  status:404,
+  mdg:'medicacin no entontrada'
+}))
+}
+      return new Response(
       JSON.stringify({
         status: 200,
         msg: "Medicamentos guardados correctamente",
       })
     );
+
+
+
   } catch (error) {
     console.error("Error al guardar los medicamentos:", error);
     return new Response(

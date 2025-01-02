@@ -13,7 +13,7 @@ type DiagnosticoType = {
 };
 
 type RequestDiagnosticosFront = {
-  diagnosticos: DiagnosticoType[];
+  diagnostico: DiagnosticoType;
   dataIds: {
     userId: string;
     hcId: string;
@@ -23,7 +23,7 @@ type RequestDiagnosticosFront = {
 
 export const POST: APIRoute = async ({ request }) => {
   const data: RequestDiagnosticosFront = await request.json();
-  // console.log("endpoint ->", data);
+  console.log("endpoint ->", data);
 
   try {
     // Verificar si existe la historia clínica
@@ -44,15 +44,23 @@ export const POST: APIRoute = async ({ request }) => {
         { status: 400 }
       );
     }
-    const idDiag = generateId(12);
-    const creandoDiagnostico=await db.insert(diagnostico).values({
-      id: idDiag,
-      diagnostico: data.diagnostico.diagnostico,
-      observaciones: data.diagnostico.observaciones,
-      pacienteId: data.dataIds.pacienteId,
-      historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
-      userId: data.dataIds.userId, // Registrar quién realizó la inserción
-    });
+
+    if (data.diagnostico.id) {
+      const updateData = await db
+        .update(diagnostico)
+        .set(data.diagnostico)
+        .where(eq(diagnostico.id, data.diagnostico.id));
+    } else {
+      const idDiag = generateId(12);
+      const creandoDiagnostico = await db.insert(diagnostico).values({
+        id: idDiag,
+        diagnostico: data.diagnostico.diagnostico,
+        observaciones: data.diagnostico.observaciones,
+        pacienteId: data.dataIds.pacienteId,
+        historiaClinicaId: data.dataIds.hcId, // Relacionar con la historia clínica
+        userId: data.dataIds.userId, // Registrar quién realizó la inserción
+      });
+    }
     // Insertar medicamentos en la base de datos
     // const diagnosticoPromises = data.diagnosticos.map((diag) => {
     //   const idDiag = generateId(12);
@@ -68,8 +76,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Esperar que todas las inserciones se completen
     // await Promise.all(diagnosticoPromises);
-
-
 
     return new Response(
       JSON.stringify({
@@ -94,7 +100,10 @@ export const PUT: APIRoute = async ({ request }) => {
   const data: DiagnosticoType = await request.json();
 
   try {
-    const update=await db.update(diagnostico).set(data).where(eq(diagnostico.id,data.id))
+    const update = await db
+      .update(diagnostico)
+      .set(data)
+      .where(eq(diagnostico.id, data.id));
     return new Response(
       JSON.stringify({
         status: 200,
@@ -112,11 +121,11 @@ export const PUT: APIRoute = async ({ request }) => {
 };
 
 export const DELETE: APIRoute = async ({ request }) => {
-  const data: { id: string } = await request.json();
-  console.log(data);
+  const { id }: { id: string } = await request.json();
   try {
-
-const deletDiag=await db.delete(diagnostico).where(eq(diagnostico.id,data.id))
+    const deletDiag = await db
+      .delete(diagnostico)
+      .where(eq(diagnostico.id, id));
 
     return new Response(
       JSON.stringify({
