@@ -6,6 +6,7 @@ import ContenedeorModal from "../../../../../components/organismo/ContenedeorMod
 import FormularioDiagnosticos from "../../../../../components/organismo/FormularioDiagnosticos.astro";
 import FormularioMedicamentosAgregar from "../../../../../components/organismo/FormularioMedicamentosAgregar.astro";
 import MedicamentosAtencion from "../../../../../components/organismo/MedicamentosAtencion";
+import ConfeccionTablaMedicamentos from "./ConfeccionTablaMedicamentos";
 import ModalMedicamentos from "./ModalMedicamentos.astro";
 
 const { dataIds, isExistMedicamentos } = Astro.props;
@@ -17,6 +18,7 @@ const { dataIds, isExistMedicamentos } = Astro.props;
   <MedicamentosAtencion isExistMedicamentos={isExistMedicamentos} client:load/>
 </ModalMedicamentos>
 </ContenedorTitleBotonera>
+<ConfeccionTablaMedicamentos isExistMedicamentos={isExistMedicamentos}  client:load/>
 
 <script>
   import {
