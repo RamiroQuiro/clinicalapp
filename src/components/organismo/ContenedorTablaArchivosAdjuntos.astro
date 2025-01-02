@@ -1,0 +1,74 @@
+---
+import type { Documentos } from "../../types";
+
+
+const {documentos}=Astro.props as Documentos
+
+
+const getTypeIcon = (type:Documentos["tipo"]) => {
+  switch (type) {
+    case "laboratorios":
+      return "🧪";
+    case "rayosx":
+      return "📷";
+    case "prescripcion":
+      return "📝";
+    case "derivacion":
+      return "📝";
+    default:
+      return "📄";
+  }
+};
+const getStatusColor = (status: Documentos["estado"]) => {
+  switch (status) {
+    case "pendiente":
+      return "bg-yellow-100 text-yellow-800";
+    case "revisar":
+      return "bg-green-100 text-green-800";
+    case "archivado":
+      return "bg-gray-100 text-gray-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+---
+
+<table class="w-full">
+    <thead>
+      <tr class="text-left border-b">
+        <th class="pb-3 text-sm font-medium text-muted-foreground"
+          >Documento</th
+        >
+        <th class="pb-3 text-sm font-medium text-muted-foreground">Fecha</th>
+        <th class="pb-3 text-sm font-medium text-muted-foreground">Tamaño</th>
+        <th class="pb-3 text-sm font-medium text-muted-foreground">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {documentos?.map((doc, index) => (
+          <tr  class="border-b last:border-0">
+            <td class="py-4">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">{getTypeIcon(doc.tipo)}</span>
+                <div>
+                  <p class="font-medium text-sm">{doc.nombre}</p>
+                  <p class="text-xs text-muted-foreground capitalize">
+                    {doc.tipo.replace("_", " ")}
+                  </p>
+                </div>
+              </div>
+            </td>
+            <td class="py-4 text-sm">{doc.fecha}</td>
+            <td class="py-4 text-sm">{doc.tamaño}</td>
+            <td class="py-4">
+              <span
+                class={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(doc.estado)}`}
+              >
+                {doc.estado.charAt(0).toUpperCase() + doc.estado.slice(1)}
+              </span>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>

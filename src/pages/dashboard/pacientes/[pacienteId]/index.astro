@@ -109,6 +109,30 @@ try {
 }
 
 // const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
+
+const documents = [
+    {
+      nombre: "Análisis de sangre",
+      tipo: "laboratorios" as const,
+      fecha: "15 Mar 2024",
+      tamaño: "2.4 MB",
+      estado: "revisar" as const
+    },
+    {
+      nombre: "Radiografía de tórax",
+      tipo: "rayosx" as const,
+      fecha: "10 Mar 2024",
+      tamaño: "5.1 MB",
+      estado: "pendiente" as const
+    },
+    {
+      nombre: "Receta médica",
+      tipo: "prescripcion" as const,
+      fecha: "12 Mar 2024",
+      tamaño: "512 KB",
+      estado: "archivado" as const
+    }
+  ];
 ---
 
 <LayoutDash>
@@ -125,7 +149,7 @@ try {
         </Div1Atencion>
         <Div1Atencion>
           <MedicacionFichaPaciente medicacion={medicamentosData} />
-          <ArchivosAdjuntosPaciente/>
+          <ArchivosAdjuntosPaciente documentos={documents}/>
           <ObservacionesDoctorHistorial notes={doctorNotes} />
         </Div1Atencion>
       </div>
