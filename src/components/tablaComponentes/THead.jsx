@@ -17,7 +17,7 @@ export default function THead({ columnas, arrayBody }) {
     }
     return (
          <thead class="w-full bg-primary-bg-componentes  ">
-          <tr class="text-left border-b ">
+          <tr class="text- border-b ">
                 {
                     columnas?.map((columna) => {
                      

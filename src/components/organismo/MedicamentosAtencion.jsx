@@ -23,7 +23,7 @@ const $dataFormularioContexto=useStore(dataFormularioContexto)
 useEffect(() => {
   setMedicamento($dataFormularioContexto)
 
-  
+  console.log(medicamento)
 }, [$dataFormularioContexto])
 
 
@@ -32,6 +32,7 @@ useEffect(() => {
       ...medicamento,
       [e.target.name]: e.target.value,
     });
+
   };
   const handleAddMedicamento = async (e) => {
     e.preventDefault();
@@ -41,6 +42,7 @@ useEffect(() => {
       })
       return
     }
+    
     try {
       let dataMedicamentos={
         medicamentos:medicamento,
@@ -59,7 +61,6 @@ useEffect(() => {
           dosis: "",
           frecuencia: "",
           duracion: "",
-          isSaved: false,
         }));
         atencion.set({
           ...$atencionStore,
@@ -78,7 +79,6 @@ useEffect(() => {
 
   const handleEdit = async () => {
     try {
-
       const response = await fetch("/api/medicamentos/", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -167,7 +167,7 @@ useEffect(() => {
       </div>
       <div className="w-full items-center flex py-2 justify-end">
 
-        <button onClick={medicamento.id==''?handleAddMedicamento:handleEdit} className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white">agregar</button>
+        <button onClick={!medicamento.id?handleAddMedicamento:handleEdit} className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white">agregar</button>
       </div>
 
 
