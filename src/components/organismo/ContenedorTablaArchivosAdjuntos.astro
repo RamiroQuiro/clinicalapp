@@ -1,12 +1,13 @@
 ---
 import type { Documentos } from "../../types";
+import formatDate from "../../utils/formatDate";
 
 
 const {documentos}=Astro.props as Documentos
 
 
-const getTypeIcon = (type:Documentos["tipo"]) => {
-  switch (type) {
+const getTypeIcon = (tipo:Documentos["tipo"]) => {
+  switch (tipo) {
     case "laboratorios":
       return "🧪";
     case "rayosx":
@@ -15,6 +16,8 @@ const getTypeIcon = (type:Documentos["tipo"]) => {
       return "📝";
     case "derivacion":
       return "📝";
+    case "electrocardiograma":
+      return "❤️";
     default:
       return "📄";
   }
@@ -31,13 +34,14 @@ const getStatusColor = (status: Documentos["estado"]) => {
       return "bg-gray-100 text-gray-800";
   }
 };
+console.log('contenedor tabla archivos de domucentos adjuntos',documentos)
 ---
 
 <table class="w-full">
-    <thead>
+  <thead>
       <tr class="text-left border-b">
         <th class="pb-3 text-sm font-medium text-muted-foreground"
-          >Documento</th
+        >Documento</th
         >
         <th class="pb-3 text-sm font-medium text-muted-foreground">Fecha</th>
         <th class="pb-3 text-sm font-medium text-muted-foreground">Tamaño</th>
@@ -45,20 +49,22 @@ const getStatusColor = (status: Documentos["estado"]) => {
       </tr>
     </thead>
     <tbody>
-      {documentos?.map((doc, index) => (
-          <tr  class="border-b last:border-0">
+      
+      {documentos?.slice(0,5)?.map((doc, index) => {
+        const dateFormat=formatDate(doc.created_at)
+          console.log(doc.tipo)
+        return(
+        <tr  class="border-b last:border-0">
             <td class="py-4">
               <div class="flex items-center gap-2">
                 <span class="text-xl">{getTypeIcon(doc.tipo)}</span>
                 <div>
                   <p class="font-medium text-sm">{doc.nombre}</p>
-                  <p class="text-xs text-muted-foreground capitalize">
-                    {doc.tipo.replace("_", " ")}
-                  </p>
+                 
                 </div>
               </div>
             </td>
-            <td class="py-4 text-sm">{doc.fecha}</td>
+            <td class="py-4 text-sm">{dateFormat}</td>
             <td class="py-4 text-sm">{doc.tamaño}</td>
             <td class="py-4">
               <span
@@ -68,7 +74,7 @@ const getStatusColor = (status: Documentos["estado"]) => {
               </span>
             </td>
           </tr>
-        ))
+        )})
       }
     </tbody>
   </table>

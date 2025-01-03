@@ -6,17 +6,26 @@ import DivBox1 from "../atomos/DivBox1.astro";
 import FormularioArchivosAdjuntos from "../organismo/FormularioArchivosAdjuntos";
 import ModalArchivosAdjuntos from "../moleculas/ModalArchivosAdjuntos.astro";
 import ContenedorTablaArchivosAdjuntos from "./ContenedorTablaArchivosAdjuntos.astro";
+import FormCont from "../atomos/FormCont.astro";
 
+const {pacienteId}=Astro.params
 const { documentos } = Astro.props as DocumentosAdjuntosProps;
+
+console.log(documentos)
 ---
 
 <DivBox1>
   <ContenedorTitleBotonera>
     <h2 class="text-lg font-semibold">Arhivos Adjuntos</h2>
-    <div>
-    <ModalArchivosAdjuntos>
-        <FormularioArchivosAdjuntos client:load/>
-    </ModalArchivosAdjuntos>
+    <div class="flex items-center gap-2">
+       <Button1>ver más</Button1>
+       <ModalArchivosAdjuntos>
+        <FormCont title="agregar medicamento" id="formularioDiagnostico">
+          
+          <FormularioArchivosAdjuntos pacienteId={pacienteId} client:load/>
+        </FormCont>
+      </ModalArchivosAdjuntos>
+     
     </div>
   </ContenedorTitleBotonera>
   <div class="overflow-x-auto w-full">

@@ -65,7 +65,7 @@ export interface MedicationsProps {
 }
 export interface Documentos {
   nombre: string;
-  tipo: "laboratorios" | "rayosx" | "prescripcion" | "otros"|"derivacion";
+  tipo: "laboratorios" | "rayosx" | "prescripcion" |"electrocardiograma"| "otros"|"derivacion";
   fecha: string;
   tamaño: string;
   estado: "pendiente" | "revisar" | "archivado";

@@ -11,15 +11,17 @@ import {
   medicamento,
   pacientes,
   tratamiento,
-  antecedente
+  antecedente,
+archivosAdjuntos
 } from "../../../../db/schema";
-import type { AntecedentesMedicosProps, pacienteType } from "../../../../types";
+import type { AntecedentesMedicosProps, DocumentosAdjuntosProps, pacienteType } from "../../../../types";
 import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
 import MedicacionFichaPaciente from "../../../../components/organismo/MedicacionFichaPaciente.astro";
 import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
 import Div1Atencion from "../../../../components/atomos/Div1Atencion.astro";
 import Div2Atencion from "../../../../components/atomos/Div2Atencion.astro";
 import ArchivosAdjuntosPaciente from "../../../../components/organismo/ArchivosAdjuntosPaciente.astro";
+import DivBox1 from "../../../../components/atomos/DivBox1.astro";
 
 const { pacienteId } = Astro.params;
 
@@ -27,27 +29,8 @@ let pacienteData: pacienteType = {};
 let medicamentosData = {};
 let arrayAntecedente:AntecedentesMedicosProps = [];
 let historialVisitas = [];
-const medicalHistory = [
-  {
-    condition: "Hipertensión Arterial",
-    diagnosisDate: "15 Enero 2022",
-    status: "Controlado",
-    type: "personal",
-    critical: true,
-  },
-  {
-    condition: "Diabetes Tipo 2",
-    diagnosisDate: "3 Marzo 2021",
-    status: "En tratamiento",
-    type: "personal",
-  },
-  {
-    condition: "Antecedente de Cáncer de Mama",
-    diagnosisDate: "10 Enero 2020",
-    status: "Familiar",
-    type: "family",
-  },
-];
+let arrayArchivosAdjuntos :DocumentosAdjuntosProps = [];
+
 
 const doctorNotes = [
   {
@@ -98,6 +81,8 @@ try {
 
     arrayAntecedente=await db.select().from(antecedente).where(eq(antecedente.pacienteId,pacienteId))
 
+    arrayArchivosAdjuntos=await db.select().from(archivosAdjuntos).where(eq(archivosAdjuntos.pacienteId,pacienteId)).orderBy(desc(archivosAdjuntos.created_at))
+
   //  console.log("este son los historialVisitas",arrayAntecedente);
 
   if (!pacienteData) {
@@ -110,29 +95,6 @@ try {
 
 // const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
 
-const documents = [
-    {
-      nombre: "Análisis de sangre",
-      tipo: "laboratorios" as const,
-      fecha: "15 Mar 2024",
-      tamaño: "2.4 MB",
-      estado: "revisar" as const
-    },
-    {
-      nombre: "Radiografía de tórax",
-      tipo: "rayosx" as const,
-      fecha: "10 Mar 2024",
-      tamaño: "5.1 MB",
-      estado: "pendiente" as const
-    },
-    {
-      nombre: "Receta médica",
-      tipo: "prescripcion" as const,
-      fecha: "12 Mar 2024",
-      tamaño: "512 KB",
-      estado: "archivado" as const
-    }
-  ];
 ---
 
 <LayoutDash>
@@ -142,14 +104,14 @@ const documents = [
 
       <div class="flex gap-4">
         <Div1Atencion>
-          <Div2Atencion>
+          <DivBox1>
             <Antecedentes antecedentes={arrayAntecedente} />
-          </Div2Atencion>
+          </DivBox1>
           <HistorialVisitaPaciente visitas={historialVisitas} />
         </Div1Atencion>
         <Div1Atencion>
           <MedicacionFichaPaciente medicacion={medicamentosData} />
-          <ArchivosAdjuntosPaciente documentos={documents}/>
+          <ArchivosAdjuntosPaciente documentos={arrayArchivosAdjuntos}/>
           <ObservacionesDoctorHistorial notes={doctorNotes} />
         </Div1Atencion>
       </div>
