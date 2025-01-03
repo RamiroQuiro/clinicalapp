@@ -73,17 +73,11 @@ const options = [
 </FormCont>
 
 <script>
+import formDataToJson from "../../utils/formatJson";
+
   const dataForm = document.getElementById('formularioAntecedente');
   const pacienteId = document.getElementById('datapacienteId')?.dataset.id;
-console.log(pacienteId)
   // Función para convertir FormData a JSON
-  const formDataToJson = (formData) => {
-    const json = {};
-    formData.forEach((value, key) => {
-      json[key] = value;
-    });
-    return json;
-  };
 
   const enviarDatos = async () => {
     // Obtén los datos del formulario

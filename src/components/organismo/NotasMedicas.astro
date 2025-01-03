@@ -2,6 +2,8 @@
 import Button1 from "../atomos/Button1.astro";
 import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
 import DivBox1 from "../atomos/DivBox1.astro";
+import ModalNotasMedicas from "../moleculas/ModalNotasMedicas.astro";
+import FormularioNotasMedicas from "./FormularioNotasMedicas.astro";
 
 interface Note {
   date: string;
@@ -11,17 +13,21 @@ interface Note {
 
 interface DoctorNotesProps {
   notes: Note[];
+  userId:string
 }
 
 
-const {notes}=Astro.props as DoctorNotesProps
+const {notes,userId}=Astro.props as DoctorNotesProps
 ---
 
 <DivBox1>
   <ContenedorTitleBotonera>
-    <h2 class="text-lg font-semibold">notas medico</h2>
-    <div>
-      <Button1>ver historial</Button1>
+    <h2 class="text-lg font-semibold capitalize">notas medico</h2>
+    <div class="flex items-center justify-normal gap-2">
+      <Button1>ver más</Button1>
+      <ModalNotasMedicas client:visible>
+        <FormularioNotasMedicas userId={userId}/>
+      </ModalNotasMedicas>
     </div>
   </ContenedorTitleBotonera>
     

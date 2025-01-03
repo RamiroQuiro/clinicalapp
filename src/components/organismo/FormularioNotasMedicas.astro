@@ -1,0 +1,53 @@
+---
+import Button1 from "../atomos/Button1.astro";
+import FormCont from "../atomos/FormCont.astro";
+
+const { userId } = Astro.props;
+const { pacienteId } = Astro.params;
+---
+
+<FormCont title="notas médicas" id="formularioNotasMedicas">
+  <div
+    id="dataIds"
+    data-pacienteid={pacienteId}
+    data-userid={userId}
+    class="w-full flex flex-col items-start justify-between"
+  >
+    <div class="w-full">
+      <label for="descripcion" class="text-xs capitalize">Nota:</label>
+      <textarea
+        class="flex-1 w-full text-sm p-2 text-primary-texto outline-none ring-0 shadow-md border-gray-300 ring-primary-200/60 focus:ring-1 focus:border-primary-200/60 border rounded-lg"
+        rows="5"
+        name="descripcionNota"
+        id="descripcionNota"
+        placeholder="Escribe aqui las notas a agregar..."></textarea>
+    </div>
+    <div class="w-full items-center justify-end flex mt-6">
+      <Button1 type="submit" id="guardarNota">guardar</Button1>
+    </div>
+  </div>
+</FormCont>
+
+<script>
+  const dataIds = document.getElementById("dataIds");
+  const pacienteId = dataIds?.dataset.pacienteid;
+  const userId = dataIds?.dataset.userid;
+  const textarea = document.getElementById("descripcionNota");
+  const btnSubmint = document.getElementById("guardarNota");
+  btnSubmint.addEventListener("click", async (event) => {
+    event.preventDefault();
+    const response = await fetch(`/api/pacientes/notasMedicas/${pacienteId}`, {
+      method: "POST",
+      body: JSON.stringify({
+        descripcion: textarea.value,
+        pacienteId,
+        userId,
+      }),
+    });
+    if (response.ok) {
+      document.location.reload();
+    } else {
+      console.log(response);
+    }
+  });
+</script>
