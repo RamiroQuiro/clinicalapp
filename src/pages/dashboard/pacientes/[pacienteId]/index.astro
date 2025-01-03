@@ -22,6 +22,7 @@ import ArchivosAdjuntosPaciente from "../../../../components/organismo/ArchivosA
 import DivBox1 from "../../../../components/atomos/DivBox1.astro";
 import NotasMedicas from "../../../../components/organismo/NotasMedicas.astro";
 import { notasMedicas } from "../../../../db/schema/notasMedicas";
+import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.astro'
 
 const { pacienteId } = Astro.params;
 const userId='dfsdfsds'
@@ -33,20 +34,7 @@ let historialVisitas = [];
 let arrayArchivosAdjuntos :DocumentosAdjuntosProps = [];
 let arrayNotasMedicas=[]
 
-const doctorNotes = [
-  {
-    date: "12 Mar 2024",
-    doctor: "Dr. Juan Pérez",
-    content:
-      "Paciente presenta mejora en niveles de glucosa. Se mantiene tratamiento actual. Próximo control en 3 meses.",
-  },
-  {
-    date: "25 Feb 2024",
-    doctor: "Dra. Ana López",
-    content:
-      "Cefalea tensional. Se recomienda ejercicios de relajación y seguimiento de patrones de sueño. Control en 2 semanas si persisten los síntomas.",
-  },
-];
+
 
 try {
   pacienteData = (
@@ -101,9 +89,15 @@ try {
 
 <LayoutDash>
   <MainDashboard>
-    <div class="container py-4 gap-4 px-2 flex flex-col w-full">
+    <div class="container py-4 gap-2 px-2 flex flex-col w-full">
       <PacienteHeader {...pacienteData} />
-
+<!-- <ContenedoresProgresoHistorial client:load/> -->
+<DivBox1  class="w-full text-primary-texto">
+  <details class="w-full tex-center flex items-center justify-center">
+    <summary class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100  cursor-pointer w-full text-sm font-semibold text-center" >historial progreso</summary>
+   <ContenedorCharts/>
+  </details>
+</DivBox1>
       <div class="flex gap-4">
         <Div1Atencion>
           <DivBox1>
