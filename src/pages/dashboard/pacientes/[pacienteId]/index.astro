@@ -21,6 +21,7 @@ import Div1Atencion from "../../../../components/atomos/Div1Atencion.astro";
 import ArchivosAdjuntosPaciente from "../../../../components/organismo/ArchivosAdjuntosPaciente.astro";
 import DivBox1 from "../../../../components/atomos/DivBox1.astro";
 import NotasMedicas from "../../../../components/organismo/NotasMedicas.astro";
+import { notasMedicas } from "../../../../db/schema/notasMedicas";
 
 const { pacienteId } = Astro.params;
 const userId='dfsdfsds'
@@ -30,7 +31,7 @@ let medicamentosData = {};
 let arrayAntecedente:AntecedentesMedicosProps = [];
 let historialVisitas = [];
 let arrayArchivosAdjuntos :DocumentosAdjuntosProps = [];
-
+let arrayNotasMedicas=[]
 
 const doctorNotes = [
   {
@@ -82,8 +83,9 @@ try {
     arrayAntecedente=await db.select().from(antecedente).where(eq(antecedente.pacienteId,pacienteId))
 
     arrayArchivosAdjuntos=await db.select().from(archivosAdjuntos).where(eq(archivosAdjuntos.pacienteId,pacienteId)).orderBy(desc(archivosAdjuntos.created_at))
+    arrayNotasMedicas=await db.select().from(notasMedicas).where(eq(notasMedicas.pacienteId,pacienteId)).orderBy(desc(notasMedicas.created_at))
 
-  //  console.log("este son los historialVisitas",arrayAntecedente);
+   console.log("este son los historialVisitas",arrayNotasMedicas);
 
   if (!pacienteData) {
     console.log("paciente no encontrado");
@@ -112,7 +114,7 @@ try {
         <Div1Atencion>
           <MedicacionFichaPaciente medicacion={medicamentosData} />
           <ArchivosAdjuntosPaciente documentos={arrayArchivosAdjuntos}/>
-          <NotasMedicas userId={userId} notes={doctorNotes} />
+          <NotasMedicas userId={userId} notes={arrayNotasMedicas} />
         </Div1Atencion>
       </div>
     </div>

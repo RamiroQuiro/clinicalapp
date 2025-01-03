@@ -1,4 +1,5 @@
 ---
+import formatDate from "../../utils/formatDate";
 import Button1 from "../atomos/Button1.astro";
 import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
 import DivBox1 from "../atomos/DivBox1.astro";
@@ -6,9 +7,9 @@ import ModalNotasMedicas from "../moleculas/ModalNotasMedicas.astro";
 import FormularioNotasMedicas from "./FormularioNotasMedicas.astro";
 
 interface Note {
-  date: string;
-  doctor: string;
-  content: string;
+  created_at: string;
+  user: string;
+  descripcion: string;
 }
 
 interface DoctorNotesProps {
@@ -18,6 +19,8 @@ interface DoctorNotesProps {
 
 
 const {notes,userId}=Astro.props as DoctorNotesProps
+
+console.log(notes)
 ---
 
 <DivBox1>
@@ -32,16 +35,19 @@ const {notes,userId}=Astro.props as DoctorNotesProps
   </ContenedorTitleBotonera>
     
     <div class="space-y-4">
-      {notes.map((note, index) => (
-        <div key={index} class="p-4 rounded-md bg-secondary">
-          <div class="flex justify-between items-start mb-2">
+      {notes.map((note, index) => {
+        
+const fechaFormateada=formatDate(note.created_at)
+        return (
+        <div class="p-2 rounded-md bg-primary-bg-componentes border flex flex-col">
+          <div class="flex justify-between items-start ">
             <div>
-              <span class="text-sm font-medium">{note.doctor}</span>
-              <span class="text-sm text-muted-foreground ml-2">{note.date}</span>
+              <span class="text-sm font-medium">{'Dr. Name'}</span>
+              <span class="text-sm text-muted-foreground ml-2">{fechaFormateada}</span>
             </div>
           </div>
-          <p class="text-sm text-primary-texto whitespace-pre-line">{note.content}</p>
+          <p class="text-sm text-primary-texto whitespace-pre-line">{note.descripcion}</p>
         </div>
-      ))}
+      )})}
     </div>
   </DivBox1>
