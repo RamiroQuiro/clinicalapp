@@ -1,12 +1,17 @@
 ---
+import Button1 from "../../../../../components/atomos/Button1.astro";
+import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
+import H2 from "../../../../../components/atomos/H2.astro";
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
 ---
 
-<ContenedorAtencion
-  labelButton="Guardar"
-  labelH3="tratamiento"
-  idButton="guardarTratamiento"
->
+<ContenedorAtencion>
+<ContenedorTitleBotonera>
+  <H2>Tratamiento</H2>
+  <div>
+    <Button1 id={"guardarTratamiento"}>guardar</Button1>
+  </div>
+</ContenedorTitleBotonera>
   <form
     action=""
     class="flex-1 w-full h-full flex items-start justify-center"
@@ -15,7 +20,7 @@ import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAt
     <textarea
       class="w-full text-sm p-2 text-primary-texto outline-none ring-0"
       rows="10"
-      name="motivoConsulta"
+      name="tratamiento"
       id="campoTratamiento"
       placeholder="Escribe aquí el tratamiento indicado..."
     >

@@ -1,4 +1,7 @@
 ---
+import Button1 from "../../../../../components/atomos/Button1.astro";
+import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
+import H2 from "../../../../../components/atomos/H2.astro";
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
 
 const { dataIds, isExistHC } = Astro.props;
@@ -9,18 +12,26 @@ const { dataIds, isExistHC } = Astro.props;
   labelButton="guardar"
   labelH3="motivo de consulta"
 >
+<ContenedorTitleBotonera>
+  <H2>Motivo de consulta</H2>
+  <div>
+    <Button1 id={"guardarMotivo"}>guardar</Button1>
+  </div>
+</ContenedorTitleBotonera>
   <form
     action=""
     class="flex-1 w-full h-full flex items-start justify-center"
     id="motivoConsulta"
   >
-    <textarea
-      class="w-full text-sm py-2 px-1 text-primary-texto outline-none ring-0"
-      rows="10"
-      name="motivoConsulta"
-      id="formularioConsulta"
-      >{isExistHC.motivoConsulta}
-    </textarea>
+  <textarea
+  class="w-full text-sm p-2 text-primary-texto outline-none ring-0"
+  rows="10"
+  name="motivoConsulta"
+  id="formularioConsulta"
+  placeholder="Motivo de consulta y sintomas..."
+>
+{isExistHC.motivoConsulta}
+</textarea>
   </form>
   <span
     id="notificacion"

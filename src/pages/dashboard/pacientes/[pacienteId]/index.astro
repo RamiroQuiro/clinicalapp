@@ -1,5 +1,5 @@
 ---
-import { desc, eq,sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import MainDashboard from "../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
 import HistorialVisitaPaciente from "../../../../components/organismo/HistorialVisitaPaciente.astro";
@@ -11,9 +11,13 @@ import {
   pacientes,
   tratamiento,
   antecedente,
-archivosAdjuntos
+  archivosAdjuntos,
 } from "../../../../db/schema";
-import type { AntecedentesMedicosProps, DocumentosAdjuntosProps, pacienteType } from "../../../../types";
+import type {
+  AntecedentesMedicosProps,
+  DocumentosAdjuntosProps,
+  pacienteType,
+} from "../../../../types";
 import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
 import MedicacionFichaPaciente from "../../../../components/organismo/MedicacionFichaPaciente.astro";
 import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
@@ -22,20 +26,18 @@ import ArchivosAdjuntosPaciente from "../../../../components/organismo/ArchivosA
 import DivBox1 from "../../../../components/atomos/DivBox1.astro";
 import NotasMedicas from "../../../../components/organismo/NotasMedicas.astro";
 import { notasMedicas } from "../../../../db/schema/notasMedicas";
-import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.astro'
+import ContenedorCharts from "../../../../components/moleculas/ContenedorCharts.astro";
 import Button1 from "../../../../components/atomos/Button1.astro";
 
 const { pacienteId } = Astro.params;
-const userId='dfsdfsds'
+const userId = "dfsdfsds";
 
 let pacienteData: pacienteType = {};
 let medicamentosData = {};
-let arrayAntecedente:AntecedentesMedicosProps = [];
+let arrayAntecedente: AntecedentesMedicosProps = [];
 let historialVisitas = [];
-let arrayArchivosAdjuntos :DocumentosAdjuntosProps = [];
-let arrayNotasMedicas=[]
-
-
+let arrayArchivosAdjuntos: DocumentosAdjuntosProps = [];
+let arrayNotasMedicas = [];
 
 try {
   pacienteData = (
@@ -69,12 +71,23 @@ try {
     .groupBy(historiaClinica.id)
     .orderBy(desc(historiaClinica.created_at)); // Agrupa por la historia clínica
 
-    arrayAntecedente=await db.select().from(antecedente).where(eq(antecedente.pacienteId,pacienteId))
+  arrayAntecedente = await db
+    .select()
+    .from(antecedente)
+    .where(eq(antecedente.pacienteId, pacienteId));
 
-    arrayArchivosAdjuntos=await db.select().from(archivosAdjuntos).where(eq(archivosAdjuntos.pacienteId,pacienteId)).orderBy(desc(archivosAdjuntos.created_at))
-    arrayNotasMedicas=await db.select().from(notasMedicas).where(eq(notasMedicas.pacienteId,pacienteId)).orderBy(desc(notasMedicas.created_at))
+  arrayArchivosAdjuntos = await db
+    .select()
+    .from(archivosAdjuntos)
+    .where(eq(archivosAdjuntos.pacienteId, pacienteId))
+    .orderBy(desc(archivosAdjuntos.created_at));
+  arrayNotasMedicas = await db
+    .select()
+    .from(notasMedicas)
+    .where(eq(notasMedicas.pacienteId, pacienteId))
+    .orderBy(desc(notasMedicas.created_at));
 
-   console.log("este son los historialVisitas",arrayNotasMedicas);
+  console.log("este son los historialVisitas", arrayNotasMedicas);
 
   if (!pacienteData) {
     console.log("paciente no encontrado");
@@ -85,22 +98,23 @@ try {
 }
 
 // const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
-
 ---
 
 <LayoutDash>
   <MainDashboard>
-    <div class="container py-4 gap-2 px-2 flex flex-col w-full">
+    <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
       <PacienteHeader {...pacienteData} />
-<!-- <ContenedoresProgresoHistorial client:load/> -->
-<DivBox1  class="w-full text-primary-texto">
-  
-  <details class="w-full tex-center flex items-center justify-center">
-    <summary class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100  cursor-pointer w-full text-sm font-semibold text-center flex items-center justify-between" ><p>Pogresos</p><Button1>ver más</Button1></summary>
-   <ContenedorCharts/>
-  </details>
-</DivBox1>
-      <div class="flex gap-4">
+      <!-- <ContenedoresProgresoHistorial client:load/> -->
+      <DivBox1 class="w-full text-primary-texto">
+        <details class="w-full tex-center flex items-center justify-center">
+          <summary
+            class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100 cursor-pointer w-full text-sm font-semibold text-center flex items-center justify-between"
+            ><p>Pogresos</p><Button1>ver más</Button1></summary
+          >
+          <ContenedorCharts />
+        </details>
+      </DivBox1>
+      <div class=" flex w-full items-start justify-normal gap-4">
         <Div1Atencion>
           <DivBox1>
             <Antecedentes antecedentes={arrayAntecedente} />
@@ -109,7 +123,7 @@ try {
         </Div1Atencion>
         <Div1Atencion>
           <MedicacionFichaPaciente medicacion={medicamentosData} />
-          <ArchivosAdjuntosPaciente documentos={arrayArchivosAdjuntos}/>
+          <ArchivosAdjuntosPaciente documentos={arrayArchivosAdjuntos} />
           <NotasMedicas userId={userId} notes={arrayNotasMedicas} />
         </Div1Atencion>
       </div>

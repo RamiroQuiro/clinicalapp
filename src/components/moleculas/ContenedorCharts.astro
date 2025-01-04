@@ -35,6 +35,7 @@ const { pacienteId } = Astro.params;
 
 <script>
   const pacienteId = document.getElementById("dataId")?.dataset.pacienteid;
+  let labels
   async function fetchSignosVitales() {
     try {
       const response = await fetch(
@@ -46,6 +47,10 @@ const { pacienteId } = Astro.params;
         console.error("Error al obtener los datos:", data.msg);
         return null;
       }
+       labels = data.data.map((item) => {
+    const newDate=new Date(item.created_at)
+     return newDate .toLocaleDateString('es-AR')
+    }); // Fechas de las mediciones
       return data.data;
     } catch (error) {
       console.error("Error fetching temperatura data:", error);
@@ -57,7 +62,6 @@ const { pacienteId } = Astro.params;
     const temperaturaData = await fetchSignosVitales();
     if (!temperaturaData) return;
 
-    const labels = temperaturaData.map((item) => item.created_at); // Fechas de las mediciones
     const temperaturas = temperaturaData.map((item) => item.temperatura);
     const dateFormat = new Date(labels).toLocaleDateString();
     const data = {
@@ -110,9 +114,8 @@ const { pacienteId } = Astro.params;
     const frecuenciaData = await fetchSignosVitales();
     if (!frecuenciaData) return;
 
-    const labels = frecuenciaData.map((item) => item.created_at); // Fechas de las mediciones
-    const frecuencias = frecuenciaData.map((item) => item.frecuenciaCardiaca);
 
+    const frecuencias = frecuenciaData.map((item) => item.frecuenciaCardiaca);
     const data = {
       labels: labels,
       datasets: [
@@ -162,7 +165,6 @@ const { pacienteId } = Astro.params;
     const frecuenciaData = await fetchSignosVitales();
     if (!frecuenciaData) return;
 
-    const labels = frecuenciaData.map((item) => item.created_at); // Fechas de las mediciones
     const frecuencias = frecuenciaData.map((item) => item.frecuenciaRespiratoria);
 
     const data = {
@@ -215,7 +217,6 @@ const { pacienteId } = Astro.params;
     const imcData = await fetchSignosVitales();
     if (!imcData) return;
 
-    const labels = imcData.map((item) => item.created_at); // Fechas de las mediciones
     const imcs = imcData.map((item) => item.imc);
 
     const data = {
