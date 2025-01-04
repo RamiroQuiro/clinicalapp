@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { APIRoute } from "astro";
 import db from "../../../../db";
 import { signosVitales } from "../../../../db/schema/signosVitales";
+import calcularIMC from "../../../../utils/calcularIMC";
 
 type MotivoConsultaType = {
   id: string;
@@ -54,7 +55,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   const {dataIds,dataSignosVitales} = await request.json();
-  console.log('signos vitales post ',dataSignosVitales)
+  // console.log('signos vitales post ',dataSignosVitales)
   try {
     const isExtis = (
       await db
@@ -70,11 +71,14 @@ export const POST: APIRoute = async ({ request }) => {
         })
       );
     }
+    const imc=calcularIMC(dataSignosVitales.peso,dataSignosVitales.talla)
+      dataSignosVitales.imc=imc 
+
     const updateHC = await db
       .update(signosVitales)
       .set(dataSignosVitales)
       .where(eq(signosVitales.historiaClinicaId, dataIds.hcId));
-    console.log(updateHC);
+    // console.log(updateHC);
     return new Response(
       JSON.stringify({
         status: 200,

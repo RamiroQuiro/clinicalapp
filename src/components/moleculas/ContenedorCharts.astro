@@ -1,4 +1,6 @@
 ---
+import ContenedorChartjs from "../atomos/ContenedorChartjs.astro";
+
 const { userId } = Astro.props;
 const { pacienteId } = Astro.params;
 ---
@@ -7,25 +9,29 @@ const { pacienteId } = Astro.params;
   id="dataId"
   data-userid={userId}
   data-pacienteid={pacienteId}
-  class="flex   h-72 overflow-auto items-center justify-center gap-2 "
+  class="flex h-72 overflow-x-auto items-center gap-4 p-4 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-gray-400"
 >
-  <div class="w-1/3 h-full flex items-center border rounded-lg p-1 bg-primary-bg-componentes">
-    <canvas id="imc" class="w-[30%]"></canvas>
-  </div>
-  <div class="w-1/3 h-full flex items-center border rounded-lg p-1 bg-primary-bg-componentes">
-    <canvas id="temperatura" class="w-[30%]"></canvas>
-  </div>
-  <div class="w-1/3 h-full flex items-center border rounded-lg p-1 bg-primary-bg-componentes">
-    <canvas id="frecuenciaCardiaca" class="w-[30%]"></canvas>
-  </div>
-
+  <ContenedorChartjs>
+    <canvas id="imc" class="w-full h-full"></canvas>
+  </ContenedorChartjs>
+  <ContenedorChartjs>
+    <canvas id="temperatura" class="w-full h-full"></canvas>
+  </ContenedorChartjs>
+  <ContenedorChartjs>
+    <canvas id="frecuenciaCardiaca" class="w-full h-full"></canvas>
+  </ContenedorChartjs>
+  <ContenedorChartjs>
+    <canvas id="frecuenciaRespiratoria" class="w-full h-full"></canvas>
+  </ContenedorChartjs>
+  <ContenedorChartjs>
+    <canvas id="saturacionOxigeno" class="w-full h-full"></canvas>
+  </ContenedorChartjs>
+  <!-- Agrega más gráficos aquí -->
 </div>
 
 <script
   type="text/javascript"
   src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
-
-<canvas id="temperatura" class="p-2"></canvas>
 
 <script>
   const pacienteId = document.getElementById("dataId")?.dataset.pacienteid;
@@ -152,6 +158,58 @@ const { pacienteId } = Astro.params;
       config
     );
   }
+  async function initFrecuenciaRespiratoria() {
+    const frecuenciaData = await fetchSignosVitales();
+    if (!frecuenciaData) return;
+
+    const labels = frecuenciaData.map((item) => item.created_at); // Fechas de las mediciones
+    const frecuencias = frecuenciaData.map((item) => item.frecuenciaRespiratoria);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          label: "Frecuencia Respiratoria ",
+          data: frecuencias,
+          borderColor: "#2B82E3",
+          backgroundColor: "rgba(43, 130, 227, 0.5)",
+          borderWidth: 2,
+        },
+      ],
+    };
+
+    const config = {
+      type: "line",
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+          },
+          title: {
+            display: true,
+            text: "Evolución de la Frecuencia Respiratoria",
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Frecuencia Respiratoria",
+            },
+          },
+        },
+      },
+    };
+
+    const frecuenciaCardiacaChart = new Chart(
+      document.getElementById("frecuenciaRespiratoria"),
+      config
+    );
+  }
 
   async function initIMCChart() {
     const imcData = await fetchSignosVitales();
@@ -223,8 +281,23 @@ const { pacienteId } = Astro.params;
 
     const imcChart = new Chart(document.getElementById("imc"), config);
   }
-
+  initFrecuenciaRespiratoria()
   initIMCChart();
   initFrecuenciaCardiacaChart();
   initTemperaturaChart();
 </script>
+
+<style>
+  .scrollbar-thin::-webkit-scrollbar {
+    height:6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background:rgba(6, 114, 246, 0.498);
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 114, 246, 0.8)
+  }
+</style>

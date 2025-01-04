@@ -23,6 +23,7 @@ import DivBox1 from "../../../../components/atomos/DivBox1.astro";
 import NotasMedicas from "../../../../components/organismo/NotasMedicas.astro";
 import { notasMedicas } from "../../../../db/schema/notasMedicas";
 import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.astro'
+import Button1 from "../../../../components/atomos/Button1.astro";
 
 const { pacienteId } = Astro.params;
 const userId='dfsdfsds'
@@ -93,8 +94,9 @@ try {
       <PacienteHeader {...pacienteData} />
 <!-- <ContenedoresProgresoHistorial client:load/> -->
 <DivBox1  class="w-full text-primary-texto">
+  
   <details class="w-full tex-center flex items-center justify-center">
-    <summary class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100  cursor-pointer w-full text-sm font-semibold text-center" >historial progreso</summary>
+    <summary class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100  cursor-pointer w-full text-sm font-semibold text-center flex items-center justify-between" ><p>Pogresos</p><Button1>ver más</Button1></summary>
    <ContenedorCharts/>
   </details>
 </DivBox1>
