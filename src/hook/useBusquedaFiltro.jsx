@@ -6,7 +6,6 @@ const useBusquedaFiltros = (arr) => {
   // Inicializamos el estado de 'search' y 'encontrado'
   const [search, setSearch] = useState('');
   const [encontrado, setEncontrado] = useState(arr);
-
   // Definimos la función de búsqueda
   const busquedaFiltros = useCallback(
     (arr, search) => {
@@ -14,12 +13,12 @@ const useBusquedaFiltros = (arr) => {
       const encontrado = arr?.filter((leg) => {
         // Comprobamos si cada campo coincide con la búsqueda
         let busquedaNombre = leg.nombre?.toUpperCase().includes(search?.toUpperCase());
-      
-        let email = leg.email?.toUpperCase().includes(search?.toUpperCase());
+        
         let apellido = leg.apellido?.toUpperCase().includes(search?.toUpperCase());
-
+        let dni = String(leg.dni)?.includes(search);
+        
         // Si alguno de los campos coincide y el elemento está activo, lo retornamos
-        if (busquedaNombre ||  email || apellido) {
+        if (busquedaNombre ||  dni || apellido) {
           // if (leg.activo == true) {
             return leg;
           // }
@@ -43,9 +42,10 @@ const useBusquedaFiltros = (arr) => {
     },
     [arr, busquedaFiltros]  // Dependencias de useCallback
   );
-
   // Retornamos los estados y funciones que queremos exponer
   return { search, encontrado, handleSearch ,setSearch};
+
+
 };
 
 // Exportamos nuestro hook personalizado

@@ -1,0 +1,52 @@
+---
+import { Activity, Clock } from "lucide-react";
+
+
+const patients = [
+  {
+    id: 1,
+    name: 'María García',
+    lastVisit: '2024-03-10',
+    status: 'Estable',
+    obraSocial:'particular'
+  },
+  {
+    id: 2,
+    name: 'Juan Pérez',
+    lastVisit: '2024-03-09',
+    status: 'En observación',
+    obraSocial:'IOSEP'
+  },
+  {
+    id: 3,
+    name: 'Ana Martínez',
+    lastVisit: '2024-03-08',
+    status: 'Crítico',
+    statusColor: 'text-red-500',
+    obraSocial:'OSDE'
+  },
+];
+---
+
+
+<div class=" rounded-lg w-full">
+
+    <div class="flex flex-col gap-2 items-center justify-normal w-full">
+      {patients.map((patient) => (
+        <div class="py-1 px-4 w-full hover:bg-gray-50 bg-primary-bg-componentes transition-colors">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-medium text-gray-800">{patient.name}</h3>
+              <div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                <Clock class="w-4 h-4" />
+                <span>Última visita: {patient.lastVisit}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class={`text-sm `}>{patient.obraSocial}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>

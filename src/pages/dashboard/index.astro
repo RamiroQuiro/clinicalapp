@@ -3,23 +3,17 @@ import MainDashboard from "../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../components/layouts/LayoutDash.astro";
 import db from "../../db";
 import { pacientes } from "../../db/schema";
+import Dashboard from "./dashboard/Dashboard.astro";
 try {
-  const data=await db.select().from(pacientes);
+  const data = await db.select().from(pacientes);
   console.log(data);
 } catch (error) {
-console.log(error);   
-  
+  console.log(error);
 }
-
 ---
 
-<LayoutDash>
-  <MainDashboard title="Dashboard">
-    <div slot="header" class="w-full flex justify-center -mt-8 items-center h-full text-white">
-     
-    </div>
-    <div class="">
-        hola men
-    </div>
+<LayoutDash title="Dashboard">
+  <MainDashboard h1="Dashboard" >
+    <Dashboard />
   </MainDashboard>
 </LayoutDash>
