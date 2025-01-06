@@ -22,7 +22,7 @@ import { dataFormularioContexto } from "../../context/store";
 
   const btnModal = document.getElementById(`${data}`);
   const modal = document.getElementById(`modal-${data}`);
-  btnModal.addEventListener("click", (e) => {
+  btnModal?.addEventListener("click", (e) => {
     dataFormularioContexto.set({})
     modal.showModal();
     // e.showModal()
