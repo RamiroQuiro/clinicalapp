@@ -3,7 +3,6 @@ import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
 import Button1 from "../atomos/Button1.astro";
 import type { Antecedente } from "../../types";
 import CardAntecedentes from "../../components/moleculas/CardAntecedentes.astro";
-import ContenedeorModal from "./ContenedeorModal.astro";
 import FormularioAntecedentes from "./FormularioAntecedentes.astro";
 import ModalAntecedentes from "../moleculas/ModalAntecedentes.astro";
 interface MedicalHistoryProps {
@@ -23,7 +22,7 @@ const familyConditions = antecedentes.filter((c) => c.tipo === "familiar");
     <h2 class="text font-semibold">Antecedentes Médico</h2>
     <div class="flex gap-2">
       <Button1>ver más</Button1>
-      <ModalAntecedentes >
+      <ModalAntecedentes>
         <FormularioAntecedentes  />
       </ModalAntecedentes>
     </div>
