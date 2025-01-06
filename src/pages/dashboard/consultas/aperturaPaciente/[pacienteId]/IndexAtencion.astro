@@ -15,15 +15,15 @@ const {
   isExistDiagnosticos,
   isExistMedicamentos,
 } = Astro.props;
+console.log(dataIds)
 ---
-
 <div
-  class=""
+  class="container py-4 gap-2 px-2 flex flex-col w-[97%]"
   id="containerAtencion"
   data-fin={dataIds?.estado}
   data-userid={dataIds?.userId}
   data-pacienteid={dataIds?.pacienteId}
-  data-hcid={dataIds?.hcId}
+  data-atencionid={dataIds?.atencionId}
 >
   <!-- nav en donde van, datos del paciente, dni,sexo,celular,mail, la fecha de apertura de la atencion, un buton de ficha, para ir a la ficha del paciente y al finailar la coumna dos botonos, terminar consulta y cancelar consulta
  en la 2 fila, los signos vitales con su boton de guardar -->
@@ -65,19 +65,24 @@ const {
   const iduser = dataset?.dataset.userid;
   const pacienteId = dataset?.dataset.pacienteid;
   const isDisable = dataset?.dataset.fin;
-  const hcId = dataset?.dataset.hcid;
+  const atencionId = dataset?.dataset.atencionid;
+
+
+  console.log(iduser)
   atencion.set({
     ...atencion.get(),
-    dataIds: { hcId, pacienteId, userId: iduser, isDisable },
+    dataIds: { atencionId, pacienteId, userId: iduser, isDisable },
   });
 
+  atencion.subscribe((state)=>{
+  })
   const fecthingSignosVitales = async () => {
     try {
       const response = await fetch("/api/pacientes/atencion/signosVitales", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          idHistoriaClinica: hcId,
+          idHistoriaClinica: atenciondId,
         },
       });
       if (response.ok) {
@@ -104,12 +109,11 @@ const {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          idHistoriaClinica: hcId,
+          idHistoriaClinica: atenciondId,
         },
       });
       if (response.ok) {
         const data = await response.json();
-        console.log("get tratamiento", data.data.tratamiento);
         let tratamientoGet = data.data.tratamiento;
         atencion.set({ ...atencion.get(), tratamiento: tratamientoGet });
       } else {

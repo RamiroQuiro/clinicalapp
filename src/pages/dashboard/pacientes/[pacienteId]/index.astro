@@ -6,12 +6,11 @@ import HistorialVisitaPaciente from "../../../../components/organismo/HistorialV
 import db from "../../../../db";
 import {
   diagnostico,
-  historiaClinica,
   medicamento,
   pacientes,
-  tratamiento,
   antecedente,
   archivosAdjuntos,
+  atenciones,
 } from "../../../../db/schema";
 import type {
   AntecedentesMedicosProps,
@@ -27,9 +26,10 @@ import DivBox1 from "../../../../components/atomos/DivBox1.astro";
 import NotasMedicas from "../../../../components/organismo/NotasMedicas.astro";
 import { notasMedicas } from "../../../../db/schema/notasMedicas";
 import ContenedorCharts from "../../../../components/moleculas/ContenedorCharts.astro";
+import Button1 from "../../../../components/atomos/Button1.astro";
 
 const { pacienteId } = Astro.params;
-const userId = "dfsdfsds";
+const userId = "sakflsdk";
 
 let pacienteData: pacienteType = {};
 let medicamentosData = {};
@@ -50,25 +50,18 @@ try {
 
   historialVisitas = await db
     .select({
-      fecha: historiaClinica.created_at,
-      motivo: historiaClinica.motivoConsulta,
+      fecha: atenciones.created_at,
+      motivo: atenciones.motivoConsulta,
       diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as(
         "diagnosticos"
       ),
-      tratamiento: tratamiento.tratamiento,
+      tratamiento: atenciones.tratamiento,
     })
-    .from(historiaClinica)
-    .rightJoin(
-      tratamiento,
-      eq(tratamiento.historiaClinicaId, historiaClinica.id)
-    )
-    .rightJoin(
-      diagnostico,
-      eq(diagnostico.historiaClinicaId, historiaClinica.id)
-    )
-    .where(eq(historiaClinica.pacienteId, pacienteId))
-    .groupBy(historiaClinica.id)
-    .orderBy(desc(historiaClinica.created_at)); // Agrupa por la historia clínica
+    .from(atenciones)
+    .rightJoin(diagnostico,eq(diagnostico.pacienteId,pacienteId))
+    .where(eq(atenciones.pacienteId, pacienteId))
+    .groupBy(atenciones.id)
+    .orderBy(desc(atenciones.created_at)); // Agrupa por la historia clínica
 
   arrayAntecedente = await db
     .select()
@@ -96,24 +89,24 @@ try {
   console.log(error);
 }
 
-// const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
+const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
 ---
 
 <LayoutDash>
-  <MainDashboard>
-    <div class="container py-4 gap-2 px-2 flex flex-col w-full">
+  <MainDashboard h1="Ficha del paciente">
+    <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
       <PacienteHeader {...pacienteData} />
       <!-- <ContenedoresProgresoHistorial client:load/> -->
-      <DivBox1 styleDiv="w-full bg-red-500 text-primary-texto">
-        <details class="w-full flex items-center justify-center">
+      <DivBox1 class="w-full text-primary-texto">
+        <details class="w-full tex-center flex items-center justify-center">
           <summary
-            class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100 cursor-pointer w-full text-sm font-semibold text-center"
-            >historial progreso</summary
+            class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100 cursor-pointer w-full text-sm font-semibold text-center flex items-center justify-between"
+            ><p>Pogresos</p><Button1>ver más</Button1></summary
           >
           <ContenedorCharts />
         </details>
       </DivBox1>
-      <div class="flex gap-4">
+      <div class="flex w-full items-start justify-normal gap-4">
         <Div1Atencion>
           <DivBox1>
             <Antecedentes antecedentes={arrayAntecedente} />

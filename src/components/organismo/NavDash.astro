@@ -1,5 +1,7 @@
 ---
 import Button2 from "../atomos/Button2.astro";
+import H2 from "../atomos/H2.astro";
+import FormularioDeBusqueda from "./FormularioDeBusqueda";
 
 const { pathname } = Astro.url;
 const local = Astro.locals;
@@ -18,14 +20,15 @@ if (pathname?.includes("cuota")) {
 ---
 
 <nav
-  class="fixed bg-primary-bg-componentes md:w-[95%]  w-full md:right-0  text-sm text-primary-texto  md:h-10 flex  z-30 items-center justify-center"
+  class="absolute bg-primary-bg-componentes md:w-[95%] w-full md:right-0 z-40 text-sm text-primary-texto md:h-12 flex items-center justify-between"
 >
   <div
-    class="w-full flex flex-col md:flex-row md:m-0   h-full items-center justify-center "
+    class="w-full flex flex-col md:flex-row md:m-0 h-full items-center justify-between "
   >
     <div
-      class="md:flex hidden items-center md:justify-start justify-between gap-3 md:px-20 w-full md:w-2/3"
+      class="md:flex hidden w-full items-center md:justify-start justify-between gap-3 md:px-20"
     >
+      <h3 class="font-semibold">Bienvenido Dr. Name</h3>
       <span class="text-sm font- md:ml-10">
         {
           new Date().toLocaleDateString("es-AR", {
@@ -36,14 +39,14 @@ if (pathname?.includes("cuota")) {
         }
       </span>
     </div>
-    <div
-      class="flex items-center md:justify-end justify-evenly gap-2 md:pr-5 w-full flex-shrink"
-    >
 
+    <div
+      class="flex items-center md:justify-end justify-evenly gap-2 md:pr-5 md:w-1/3 flex-shrink "
+    >
+      <Button2>+ Nueva Atención</Button2>
       <form method="post" action="/api/auth/signout">
         <Button2>Sign out</Button2>
       </form>
     </div>
   </div>
 </nav>
-

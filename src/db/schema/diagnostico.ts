@@ -4,7 +4,8 @@ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const diagnostico=sqliteTable('diagnostico',{
     id:text('id').primaryKey().unique(),
     diagnostico:text('diagnostico').notNull(),
-    historiaClinicaId:text('historiaClinicaId').notNull(),
+    historiaClinicaId:text('historiaClinicaId'),
+    atencionId:text('atencionId').notNull(),
     pacienteId:text('pacienteId').notNull(),
     userId:text('userId').notNull(),
     observaciones:text('observaciones'),

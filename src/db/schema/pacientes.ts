@@ -16,6 +16,8 @@ export const pacientes = sqliteTable("pacientes", {
   fNacimiento:text('fNacimiento').notNull().default(sql`(current_timestamp)`),
   srcPhoto: text("srcPhoto"),
   celular: text("celular"),
+  estatura:text('estatura'),
+  obraSocial:text('obraSocial'),
   sexo:text('sexo'),
   direccion: text("direccion"),
   ciudad: text("ciudad"),

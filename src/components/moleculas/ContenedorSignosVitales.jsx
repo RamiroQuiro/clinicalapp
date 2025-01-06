@@ -25,7 +25,7 @@ const [isDisable, setIsDisable] = useState(false)
   };
 
   return (
-    <div className="flex items-center justify-start w-full py-0.5 px-1 bg-white  border-gray-500/30 rounded-lg">
+    <div className="flex items-center justify-start  py-2 px-1    border-gray-200/70 rounded-lg">
       <div className="flex items-center justify-start gap-1">
         <div
           className="w-8 h-8"
@@ -40,7 +40,7 @@ const [isDisable, setIsDisable] = useState(false)
               disabled={isDisable}
               value={signoVital}
               onChange={handleChange}
-              className="border border-gray-500/50 w-full px-2 py-1 text-sm rounded-lg outline-none ring-0"
+              className="border border-gray-200/70 bg-primary-bg-componentes w-full px-2 py-1 text-sm rounded-lg outline-none ring-0"
               type="number"
               name={name}
             />

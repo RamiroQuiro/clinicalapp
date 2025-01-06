@@ -1,5 +1,6 @@
 ---
 import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
+import H2 from "../../../../../components/atomos/H2.astro";
 import ContenedeorModal from "../../../../../components/organismo/ContenedeorModal.astro";
 import FormularioDiagnosticos from "../../../../../components/organismo/FormularioDiagnosticos.astro";
 import ContenedorTabla from "./ContenedorTabla.astro";
@@ -8,7 +9,7 @@ const { isExistDiagnosticos } = Astro.props;
 ---
 
 <ContenedorTitleBotonera>
-  <h2 class="text-lg font-semibold">Diagnostico</h2>
+  <H2>Diagnostico</H2>
   <div>
     <ContenedeorModal open="Agregar" id="dialogDiagnostico">
       <FormularioDiagnosticos />

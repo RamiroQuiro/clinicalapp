@@ -3,15 +3,12 @@ import { eq } from "drizzle-orm";
 import MainDashboard from "../../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
 import db from "../../../../../db";
-import { diagnostico, pacientes, tratamiento } from "../../../../../db/schema";
+import { atenciones, diagnostico, pacientes } from "../../../../../db/schema";
 import type { pacienteType } from "../../../../../types";
-import { historiaClinica } from "../../../../../db/schema/historiaClinica";
-import { signosVitales } from "../../../../../db/schema/signosVitales";
 import { generateId } from "lucia";
 import { medicamento } from "../../../../../db/schema/medicamento";
 import IndexAtencion from "./IndexAtencion.astro";
-import { showToast } from "../../../../../utils/toast/toastShow";
-const { pacienteId, hcId } = Astro.params;
+const { pacienteId, atencionId } = Astro.params;
 let pacienteData: pacienteType = {
   id: "",
   userId: "",
@@ -27,7 +24,7 @@ let pacienteData: pacienteType = {
 let isExistMedicamentos:any = [];
 const dataIds = {
   estado:'pendienta',
-  hcId,
+  atencionId,
   userId: "",
   pacienteId: pacienteId,
 };
@@ -48,8 +45,8 @@ try {
     isExistHC = (
       await db
         .select()
-        .from(historiaClinica)
-        .where(eq(historiaClinica.id, hcId))
+        .from(atenciones)
+        .where(eq(atenciones.id, atencionId))
     ).at(0);
 
     if (isExistHC?.estado==='FINALIZADO') {
@@ -59,35 +56,13 @@ try {
       isExistMedicamentos = await db
         .select()
         .from(medicamento)
-        .where(eq(medicamento.historiaClinicaId, isExistHC.id));
+        .where(eq(medicamento.atencionId, isExistHC.id));
       isExistDiagnosticos = await db
         .select()
         .from(diagnostico)
-        .where(eq(diagnostico.historiaClinicaId, isExistHC.id));
+        .where(eq(diagnostico.atencionId, isExistHC.id));
     }
-    if (!isExistHC) {
-      const createHistoriaClinica = await db.insert(historiaClinica).values({
-        id: hcId,
-        pacienteId,
-        fecha: new Date(),
-        userId: pacienteData.userId,
-      });
-      const idSignosVitales = generateId(15);
-      const createSignosVitales = await db.insert(signosVitales).values({
-        id: idSignosVitales,
-        historiaClinicaId: hcId,
-        pacienteId,
-        userId: pacienteData.userId,
-      });
-      const idTratamiento = generateId(15);
-      const createTratamiento = await db.insert(tratamiento).values({
-        id: idTratamiento,
-        historiaClinicaId: hcId,
-        pacienteId,
-        userId: pacienteData.userId,
-        tratamiento: "",
-      });
-    }
+    
   }
 } catch (error) {
   console.log(error);
@@ -97,13 +72,13 @@ try {
 ---
 
 <LayoutDash>
-  <MainDashboard dataIds={dataIds}>
-    {
+  <MainDashboard dataIds={dataIds} h1="Atención">
+    <!-- {
       !isExistHC&&
       <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
         <p>Atencion Finalziada</p>
       </div>
-    }
+    } -->
     <IndexAtencion 
     dataIds={dataIds},
     pacienteData={pacienteData},

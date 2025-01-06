@@ -1,9 +1,11 @@
 import React from 'react'
 import Table from '../../../../../components/tablaComponentes/Table'
 import { RenderActionsEditDelet, RenderActionsEditDeletMedicamentos, RenderActionsPacientes } from '../../../../../components/tablaComponentes/RenderBotonesActions'
+import { useStore } from '@nanostores/react'
+import { atencion } from '../../../../../context/store'
 
 export default function ConfeccionTablaMedicamentos({ isExistMedicamentos }) {
-
+const $medicamentosStore=useStore(atencion).medicamentos
   const columns = [
     {
       label: "Medicamento",
@@ -37,6 +39,6 @@ export default function ConfeccionTablaMedicamentos({ isExistMedicamentos }) {
     }
   })
   return (
-    <Table columnas={columns} arrayBody={newArrayMedicamentos} renderBotonActions={RenderActionsEditDeletMedicamentos} />
+    <Table columnas={columns} arrayBody={$medicamentosStore} renderBotonActions={RenderActionsEditDeletMedicamentos} />
   )
 }

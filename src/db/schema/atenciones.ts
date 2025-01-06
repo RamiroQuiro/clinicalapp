@@ -10,6 +10,7 @@ export const atenciones = sqliteTable("atenciones", {
   diagnosticoId: text("diagnosticoId"),
   antecedenteId:text('antecedenteId'),
   tratamientoId: text("tratamientoId"),
+  tratamiento:text('tratamiento'),
   estado: text("estado").default("pediente"),
   observaciones: text("observaciones"),
   updated_at: text("updated_at"),

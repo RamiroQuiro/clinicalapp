@@ -1,13 +1,13 @@
 ---
 const { onClick, id, style, type } = Astro.props;
+
+console.log(id)
 ---
 
 <button
   id={id}
   type={type}
-  class={`${style} px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white`}
+  class={`${style} ${id} px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white`}
 >
   <slot />
 </button>
-
-<script define:vars={{ id, onClick }}></script>

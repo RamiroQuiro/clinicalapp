@@ -75,3 +75,25 @@ export interface Documentos {
 export interface DocumentosAdjuntosProps {
   documentos: Documentos[];
 }
+
+export type signosVitalesTypes={
+  id:string,
+  historiaClinica:string,
+  pacienteId:string,
+  userId:string,
+  update_at?:string,
+  created_at?:string,
+  deleted_ar?:string,
+  temperatura?:string,
+  pulso?:string,
+  respiracion?:string,
+  tensionArterial?:string,
+  saturacionOxigeno?:string,
+  glucosa?:string,
+  peso?:string,
+  talla?:string,
+  imc?:string,
+  frecuenciaCardiaca?:string,
+  frecuenciaRespiratoria?:string,
+  dolor?:string
+}

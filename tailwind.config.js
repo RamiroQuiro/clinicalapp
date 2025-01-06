@@ -13,9 +13,10 @@ export default {
           500: "#9BE32B",
           600: "#2B60E3",
           "bg-claro": "#E9E9F1",
-          "bg-componentes": "#F0F0F0FF",
+          "bg-componentes": "#F9FAFB",
+          
           resaltado: "#E3D32B",
-          texto: "#4F4F4F",
+          texto: "#8894A6",
           error: "#BF0404",
           background: "#E9E9F1",
         },

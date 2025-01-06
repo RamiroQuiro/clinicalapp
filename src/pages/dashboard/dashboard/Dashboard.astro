@@ -1,0 +1,115 @@
+---
+import Header from "./componente/Header.astro";
+import StatsCard from "./componente/StatsCard.astro";
+import PacienteList from "./componente/PacienteList.astro";
+import QuickActions from "./componente/QuickAction.astro";
+import {
+  Activity,
+  AlertTriangle,
+  Calendar,
+  Clock,
+  FileText,
+  Users,
+} from "lucide-react";
+import db from "../../../db";
+import { pacientes } from "../../../db/schema";
+import { eq } from "drizzle-orm";
+import DivBox1 from "../../../components/atomos/DivBox1.astro";
+import ContenedorTitleBotonera from "../../../components/atomos/ContenedorTitleBotonera.astro";
+import H2 from "../../../components/atomos/H2.astro";
+import Button1 from "../../../components/atomos/Button1.astro";
+
+const pacientesArray = await db
+  .select({
+    id: pacientes.id,
+    nombre: pacientes.nombre,
+    apellido: pacientes.apellido,
+    dni: pacientes.dni,
+  })
+  .from(pacientes);
+
+const stats = [
+  {
+    title: "Pacientes Totales",
+    value: "1,234",
+    icon: Users,
+    change: "+12.5%",
+  },
+  {
+    title: "Consultas Hoy",
+    value: "15",
+    icon: Activity,
+    change: "+4.5%",
+  },
+  {
+    title: "Tiempo Promedio",
+    value: "24m",
+    icon: Clock,
+    change: "-2.5%",
+  },
+  {
+    title: "Historias Actualizadas",
+    value: "89%",
+    icon: FileText,
+    change: "+3.2%",
+  },
+];
+---
+
+<div class="container py-4 gap-4 px-2 flex flex-col w- w-[97%]">
+  <Header arrayPacientes={pacientesArray} />
+
+  <div class="flex items-center gap-4 justify-evenly">
+    {
+      stats.map((stat, index) => {
+        let Icon = stat.icon;
+        return (
+          <DivBox1 key={index} class="p-6">
+            <div class="flex w-full items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">{stat.title}</p>
+                <h3 class="mt-1 text-2xl font-semibold">{stat.value}</h3>
+              </div>
+              <div class={`rounded-full bg-primary-150 p-2`}>
+                <Icon className="w-5" />
+              </div>
+            </div>
+            <div class="mt-4">
+              <span
+                class={`text-sm ${stat.change.startsWith("+") ? "text-green-600" : "text-red-600"}`}
+              >
+                {stat.change} vs. mes anterior
+              </span>
+            </div>
+          </DivBox1>
+        );
+      })
+    }
+  </div>
+
+  <div class="flex items-start justify-normal gap-4 w-full">
+    <DivBox1>
+      <ContenedorTitleBotonera>
+        <H2>Pacientes Recientes</H2>
+        <div>
+          <Button1>ver más</Button1>
+        </div>
+      </ContenedorTitleBotonera>
+      <PacienteList />
+    </DivBox1>
+    <DivBox1>
+    
+      <div class="bg-white p-6 rounded-lg shadow-sm">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">
+          Gráfico de Tendencias
+        </h2>
+        <div class="h-64 flex items-center justify-center text-gray-400">
+          Gráfico de tendencias aquí
+        </div>
+      </div>
+    </DivBox1>
+  </div>
+  <div class="mt-8">
+    <QuickActions />
+  </div>
+</div>

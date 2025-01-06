@@ -10,7 +10,7 @@ const nowDate = new Date().toLocaleDateString();
 ---
 
 <div
-  class="h relative border-y border-neutral-200 py-5 px-4  bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-4 gap-y-2"
+  class="h relative border py-8 px-4  bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-2 gap-y-2"
 >
   <div class="flex w-full md:flex-row items-start md:items-center mb-4 flex-1">
     <!-- boton de vovler history -->
@@ -27,22 +27,28 @@ const nowDate = new Date().toLocaleDateString();
       </div>
       <button
         class="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-        onClick={() => (document.location.href = `/dashboard/pacientes/${data.id}`)}
+        onclick={() => document.location.href = `/dashboard/pacientes/${data.id}`}
       >
         ficha
       </button>
 
-      <Etiquetas>{nowDate}</Etiquetas>
+      <Etiquetas>Atencion dia: {nowDate}</Etiquetas>
       <div
-        class="flex w-full items-center text-xs font-semibold justify-start gap-x-3"
+        class="flex w-full items-center text-xs font-semibold justify-start flex-wrap gap-2"
       >
         <Etiquetas>DNI: {pacienteData.dni}</Etiquetas>
         <Etiquetas>sexo: {pacienteData.sexo}</Etiquetas>
         <Etiquetas>Celular: {pacienteData.celular}</Etiquetas>
         <Etiquetas>email: {pacienteData.email}</Etiquetas>
+        <Etiquetas>estatura: {pacienteData.estatura}</Etiquetas>
+        <Etiquetas>obra social: {pacienteData.obraSocial}</Etiquetas>
       </div>
     </div>
-    <div>
+    <div class="flex flex-col gap-3 ">
+      <Button1 id="finalizarConsulta">finalizar consulta</Button1>
+      <Button1>cancelar consulta</Button1>
+    </div>
+    <div class="flex bg-white px-3 py-2 rounded-2xl border gap-3 md:fixed bottom-5 left-[40%]">
       <Button1 id="finalizarConsulta">finalizar consulta</Button1>
       <Button1>cancelar consulta</Button1>
     </div>
@@ -57,8 +63,11 @@ const nowDate = new Date().toLocaleDateString();
 
   const btnFinalizar = document.getElementById("finalizarConsulta");
 
+  let dataAtencion={}
   atencion.subscribe((state) => {
-    contextoAtencion = state;
+    
+    dataAtencion=state
+    console.log(state)
   });
 
   btnFinalizar?.addEventListener("click", async () => {
@@ -66,7 +75,7 @@ const nowDate = new Date().toLocaleDateString();
       const finalizar = await fetch("/api/pacientes/atencion/", {
         method: "POST",
         body: JSON.stringify({
-          idAtencion: contextoAtencion.dataIds.hcId,
+          data:dataAtencion,
           msg: "finalizar consulta",
         }),
       });

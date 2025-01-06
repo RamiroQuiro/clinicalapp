@@ -50,53 +50,61 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
     dataDiagnostico.diagnostico.id = data?.id || ""; // Por defecto, cadena vacía
   });
 
-  // Actualiza `dataIds` con los datos de la tienda
-  atencion.subscribe((state) => {
-    dataDiagnostico.dataIds = state.dataIds;
-  });
+  // // Actualiza `dataIds` con los datos de la tienda
+  // atencion.subscribe((state) => {
+  //   dataDiagnostico.dataIds = state.dataIds;
+  // });
 
-  // Agregar evento al botón
-  btnEnviar.addEventListener("click", async (event) => {
-    event.preventDefault(); // Evita el envío del formulario por defecto
+  // // Agregar evento al botón
+  // btnEnviar.addEventListener("click", async (event) => {
+  //   event.preventDefault(); // Evita el envío del formulario por defecto
 
-    // Obtiene valores de los campos
-    const diagnosticoValue = diagnostico.value.trim();
-    const observacionesValue = textArea.value.trim();
+  //   // Obtiene valores de los campos
+  //   const diagnosticoValue = diagnostico.value.trim();
+  //   const observacionesValue = textArea.value.trim();
 
-    if (!diagnosticoValue || !observacionesValue) {
-      showToast("Por favor, completa todos los campos", {
-        background: "bg-primary-400",
-      });
-      return;
-    }
+  //   if (!diagnosticoValue || !observacionesValue) {
+  //     showToast("Por favor, completa todos los campos", {
+  //       background: "bg-primary-400",
+  //     });
+  //     return;
+  //   }
 
-    // Asigna valores al objeto
-    dataDiagnostico.diagnostico.diagnostico = diagnosticoValue;
-    dataDiagnostico.diagnostico.observaciones = observacionesValue;
+  //   // Asigna valores al objeto
+  //   dataDiagnostico.diagnostico.diagnostico = diagnosticoValue;
+  //   dataDiagnostico.diagnostico.observaciones = observacionesValue;
 
-    try {
-      // Envía los datos al endpoint
-      const response = await fetch("/api/pacientes/atencion/diagnostico", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataDiagnostico),
-      });
+  //   try {
+  //     // Envía los datos al endpoint
+  //     const response = await fetch("/api/pacientes/atencion/diagnostico", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(dataDiagnostico),
+  //     });
 
-      if (!response.ok) {
-        throw new Error("Error al enviar los datos");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Error al enviar los datos");
+  //     }
 
-      const result = await response.json();
-      console.log("Resultado:", result);
-      showToast("Diagnóstico guardado correctamente", {
-        background: "bg-green-500",
-      });
-      document.location.reload(); // Recarga la página después de guardar
-    } catch (error) {
-      console.error("Error al enviar el diagnóstico:", error);
-      showToast("Error al guardar el diagnóstico", {
-        background: "bg-red-500",
-      });
-    }
-  });
+  //     const result = await response.json();
+  //     console.log("Resultado:", result);
+  //     showToast("Diagnóstico guardado correctamente", {
+  //       background: "bg-green-500",
+  //     });
+  //     document.location.reload(); // Recarga la página después de guardar
+  //   } catch (error) {
+  //     console.error("Error al enviar el diagnóstico:", error);
+  //     showToast("Error al guardar el diagnóstico", {
+  //       background: "bg-red-500",
+  //     });
+  //   }
+  // });
+  btnEnviar?.addEventListener('click',(e)=>{
+    e.preventDefault()
+    atencion.set({
+      ...atencion.get(),
+      diagnosticos:[...atencion.get().diagnosticos,{diagnostico:diagnostico.value,observaciones:textArea.value}]
+    })
+  })
+  
 </script>

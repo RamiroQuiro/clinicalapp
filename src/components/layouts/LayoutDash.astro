@@ -27,14 +27,17 @@ const url = Astro.url;
     <title>{title}</title>
   </head>
   <body
-    class="bg-primary-bg-componentes md:min-h-[125vh] relative overflow-x-hidden flex flex-col"
+    class="bg-primary-bg-componentes md:min-h-[125vh] text-primary-texto  relative overflow-x-hidden flex flex-col"
   >
     <!-- <LoaderGral/> -->
 
     <Sidebar />
     <NavDash dataCliente={dataCliente} userData={userData} />
     <Loader />
-    <slot />
+    <div class="min-h-screen min-w-screen   flex items-start justify-end mt-14">
+
+      <slot />
+    </div>
   </body>
 </html>
 <style is:global>

@@ -12,6 +12,7 @@ const {user}=Astro.props
 let pacientesData=[]
 try {
   const dataDB:pacienteType[]=await db.select().from(pacientes).where(eq(pacientes.userId,user.id))
+  console.log(user)
   const idHC=generateId(15)
 
   pacientesData= dataDB.map(paciente=>{

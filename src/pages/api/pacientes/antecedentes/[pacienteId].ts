@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({ request, params }) => {
   const data = await request.json();
   const {pacienteId}=params
 
-//   console.log('enpditn de antecedentes',data,pacienteId);
+  console.log('enpditn de antecedentes',data,pacienteId);
 
   try {
     const id = generateId(13);

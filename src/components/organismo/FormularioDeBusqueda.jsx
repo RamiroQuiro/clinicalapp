@@ -2,45 +2,49 @@ import { useStore } from '@nanostores/react'
 import React, { useEffect, useState } from 'react'
 import { busqueda } from '../../context/store'
 import useBusquedaFiltros from '../../hook/useBusquedaFiltro'
+import { generateId } from 'lucia'
 
-export default function FormularioDeBusqueda({ value, clientes, id,placeholder}) {
+export default function FormularioDeBusqueda({ value, pacientes, id,placeholder}) {
     // const [clientSelect, setClientSelect] = useState([])
-
     const arr = []
-    const $clienteSelect = useStore(busqueda)
+    const $pacienteSelect = useStore(busqueda)
 
-    // console.log('',$clienteSelect)
-    const { encontrado, handleSearch, search, setSearch } = useBusquedaFiltros(clientes,['nombre','apellido','dni'])
+    console.log('',$pacienteSelect)
+    const { encontrado, handleSearch, search, setSearch } = useBusquedaFiltros(pacientes)
 
     const handleClick = (leg) => {
         busqueda.set({
-            clientSelect: leg
+            pacienteSelect: leg
         })
+        const idAtencion=generateId(13)
+        document.location.href=`/dashboard/consultas/aperturaPaciente/${leg.id}/${idAtencion}`
         setSearch('')
     }
 
     return (
-        <div className={`${"styleContenedor"} w-full flex items relative flex-col items-start gap- duration-300 group -md `}>
+        <div className={`${"styleContenedor"} w-full flex  items relative flex-col items-start gap- duration-300 group -md border rounded-lg`}>
 
             <input
                 onChange={handleSearch}
                 placeholder={placeholder}
                 value={search}
-                type="search" name="busquedaCliente" id="busquedaCliente" className=' w-full text-sm bg-primary-200/10  rounded-md group-hover:ring-2  border-gray-300  ring-primary-100/60 focus:ring-2  outline-none transition-colors duration-200 ease-in-out px-2 py-2' />
+                type="search" name="busquedaCliente" id="busquedaCliente" className=' w-full text-sm bg-white  rounded-lg group-hover:ring-2  border-gray-300  ring-primary-100/70 focus:ring-2  outline-none transition-colors duration-200 ease-in-out px-2 py-2' />
             {search?.length >= 2  && (
-                <div className="w-full text-primary-400 absolute z-30 shadow-md bg-white top-[103%] rounded-xl animate-apDeArriba bg-primari-100/20  text-sm  flex flex-col items-start gap-y-2">
-                    {encontrado ? (
+                <div className="w-full  absolute z-40 shadow-md bg-white top-[110%] rounded-xl animate-apDeArriba bg-primari-100 border  text-sm  flex flex-col items-start gap-y-2">
+                    {encontrado?.length>=1 ? (
                         encontrado?.map((leg, i) => (
                             <div
                                 onClick={() => handleClick(leg)}
-                                className="w-full animate-aparecer py-2 rounded hover:bg-primary-100/40  font-semibold  border-b cursor-pointer px-2 text-sm "
+                                className="w-full animate-aparecer py-2 rounded-lg hover:bg-primary-100/40  font-semibold  border-b cursor-pointer px-2 text-sm "
                                 key={i}
                             >
-                                → {leg.nombre} | → {leg.apellido} | → {leg.dni}
+                                <p>{`${leg.nombre}  ${leg.apellido} ${' '}  DNI:${leg.dni}`}</p>
                             </div>
                         ))
-                    ) : (
-                        <span className='text-sm py-2 px-3'>No se encontro registros</span>
+                    ) : (<>
+                        <span className='text-xs py-2 px-3 border-y w-full font-semibold'>No se encontro registros</span>
+                        <button className='text-xs py-2 px-3 text-primary-100 font-semibold'>+ Agregar registro</button>
+                        </>
                     )}
                 </div>
             )}

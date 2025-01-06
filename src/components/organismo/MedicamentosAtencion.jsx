@@ -10,108 +10,60 @@ import { showToast } from "../../utils/toast/toastShow";
 
 export default function MedicamentosAtencion({ isExistMedicamentos }) {
   const [medicamento, setMedicamento] = useState({
-    id: '',
+    id: "",
     nombre: "",
     dosis: "",
     frecuencia: "",
     duracion: "",
   });
   const $atencionStore = useStore(atencion);
-const $dataFormularioContexto=useStore(dataFormularioContexto)
+  const $dataFormularioContexto = useStore(dataFormularioContexto);
 
+  useEffect(() => {
+    setMedicamento($dataFormularioContexto);
 
-useEffect(() => {
-  setMedicamento($dataFormularioContexto)
-
-  console.log(medicamento)
-}, [$dataFormularioContexto])
-
+    console.log(medicamento);
+  }, [$dataFormularioContexto]);
 
   const handleChange = (e) => {
     setMedicamento({
       ...medicamento,
       [e.target.name]: e.target.value,
     });
-
   };
   const handleAddMedicamento = async (e) => {
     e.preventDefault();
     if (!medicamento.nombre) {
-      showToast('no hay medicacion para agregar', {
-        background: 'bg-primary-400'
-      })
-      return
+      showToast("no hay medicacion para agregar", {
+        background: "bg-primary-400",
+      });
+      return;
     }
-    
-    try {
-      let dataMedicamentos={
-        medicamentos:medicamento,
-        dataIds:$atencionStore.dataIds
-      }
-      const response = await fetch('/api/pacientes/atencion/medicamentos/', {
-        method: 'POST',
-        body: JSON.stringify(dataMedicamentos)
-      })
-      const data = await response.json()
-      if (data.status === 200) {
-
-        setMedicamento((state) => ({
-          id: '',
-          nombre: "",
-          dosis: "",
-          frecuencia: "",
-          duracion: "",
-        }));
-        atencion.set({
-          ...$atencionStore,
-          medicamentos: [...$atencionStore.medicamentos, medicamento],
-        });
-      }
-      document.location.reload()
-    } catch (error) {
-      console.log(error)
-
-    }
-
-
+    atencion.set({
+      ...$atencionStore,
+      medicamentos: [...$atencionStore.medicamentos, medicamento],
+    });
+    setMedicamento({
+      id: "",
+      nombre: "",
+      dosis: "",
+      frecuencia: "",
+      duracion: "",
+    })
+return
   };
 
-
   const handleEdit = async () => {
-    try {
-      const response = await fetch("/api/medicamentos/", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(medicamento),
-      });
-      const data = await response.json();
 
-      if (response.ok) {
-   
-        setMedicamento({
-          id: 0,
-          nombre: "",
-          dosis: "",
-          frecuencia: "",
-          duracion: "",
-        });
-
-        document.location.reload();
-      } else {
-        console.error("Error al actualizar el medicamento:", data.message);
-      }
-    } catch (error) {
-      console.error("Error al mandar edit:", error);
-    }
   };
 
   const handleDelet = async (deletMedicamento) => {
     try {
-      const delFeth = await fetch('/api/medicamentos/', {
-        method: 'DELETE',
-        body: JSON.stringify(deletMedicamento.id)
-      })
-      const dataRes = await delFeth.json()
+      const delFeth = await fetch("/api/medicamentos/", {
+        method: "DELETE",
+        body: JSON.stringify(deletMedicamento.id),
+      });
+      const dataRes = await delFeth.json();
       if (dataRes.status == 200) {
         setArrayMedicamentos((prevArray) =>
           prevArray.filter((med) => med.id !== deletMedicamento.id)
@@ -124,13 +76,12 @@ useEffect(() => {
           duracion: "",
         });
       } else {
-        console.log(dataRes)
+        console.log(dataRes);
       }
-
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
   return (
     <div className="flex flex-col rounded-lg  px-2 ">
       <div className="flex  w-full  relative gap-1 ">
@@ -166,10 +117,13 @@ useEffect(() => {
         </div>
       </div>
       <div className="w-full items-center flex py-2 justify-end">
-
-        <button onClick={!medicamento.id?handleAddMedicamento:handleEdit} className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white">agregar</button>
+        <button
+          onClick={!medicamento.id ? handleAddMedicamento : handleEdit}
+          className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white"
+        >
+          agregar
+        </button>
       </div>
-
 
       {/* 
       <div>

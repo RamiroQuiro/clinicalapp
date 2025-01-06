@@ -5,7 +5,8 @@ export const medicamento = sqliteTable("medicamentos", {
   id: text("id").primaryKey().unique(),
   nombre: text("nombre").notNull(),
   descripcion: text("descripcion"),
-  historiaClinicaId: text("historiaClinicaId").notNull(),
+  historiaClinicaId: text("historiaClinicaId"),
+  atencionId:text('atencionId').notNull(),
   pacienteId: text("pacienteId").notNull(),
   userId: text("userId").notNull(),
   dosis: text("dosis"),
@@ -18,4 +19,4 @@ export const medicamento = sqliteTable("medicamentos", {
     .notNull()
     .default(sql`(current_timestamp)`),
   deleted_at: text("deleted_at"),
-});
+})
