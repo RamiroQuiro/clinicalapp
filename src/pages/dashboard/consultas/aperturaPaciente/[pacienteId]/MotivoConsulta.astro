@@ -50,59 +50,71 @@ const { dataIds, isExistHC } = Astro.props;
     dataConsulta.dataIds = state.dataIds;
   });
 
-  textarea.addEventListener("input", () => {
-    document.getElementById("notificacion").textContent = "";
-    clearTimeout(timeoutId); // Limpia cualquier timeout pendiente
-    timeoutId = setTimeout(async () => {
-      const motivo = textarea.value.trim();
- 
-      dataConsulta.motivoConsulta=motivo
-        try {
+  textarea?.addEventListener("input", (e) => {
+  const { value } = e.target;
 
-          const response = await fetch(
-            "/api/pacientes/atencion/motivoConsulta",
-            {
-              method: "POST",
-              body: JSON.stringify(dataConsulta),
-            }
-          );
+  // Guardar el valor en localStorage
+  localStorage.setItem("tratamiento", value);
 
-          if (response.ok) {
-            document.getElementById("notificacion").textContent =
-              "guardadado automaticamente...";
-            console.log("Motivo guardado automáticamente");
-          } else {
-            console.error("Error al guardar automáticamente");
-          }
-        } catch (error) {
-          console.error("Error al enviar el motivo de consulta:", error);
-        }
-      }, 20000); // Guarda automáticamente después de 1 segundo de inactividad
-    })
-
-
-  btnEnviar.addEventListener("click", async (event) => {
-    event.preventDefault(); // Evita el envío del formulario por defecto
-    const motivo = textarea.value.trim();
-    if (!motivo) {
-      showToast("no hay data para guardar", {
-        background: "bg-primary-400",
-      });
-      return;
-    }
-    dataConsulta.motivoConsulta=motivo
-    try {
-      const response = await fetch("/api/pacientes/atencion/motivoConsulta", {
-        method: "POST",
-        body:JSON.stringify(dataConsulta), // No necesitas establecer manualmente "Content-Type"
-      });
-      const result = await response.json();
-      console.log(result);
-      if(result.status===200){
-        showToast('motivo de consulta guardado')
-      }
-    } catch (error) {
-      console.error("Error al enviar el motivo de consulta:", error);
-    }
+  // Actualizar el estado en Nanostores
+  atencion.set({
+    ...atencion.get(),
+    motivoConsulta: value,
   });
+});
+  // textarea.addEventListener("input", () => {
+  //   document.getElementById("notificacion").textContent = "";
+  //   clearTimeout(timeoutId); // Limpia cualquier timeout pendiente
+  //   timeoutId = setTimeout(async () => {
+  //     const motivo = textarea.value.trim();
+ 
+  //     dataConsulta.motivoConsulta=motivo
+  //       try {
+
+  //         const response = await fetch(
+  //           "/api/pacientes/atencion/motivoConsulta",
+  //           {
+  //             method: "POST",
+  //             body: JSON.stringify(dataConsulta),
+  //           }
+  //         );
+
+  //         if (response.ok) {
+  //           document.getElementById("notificacion").textContent =
+  //             "guardadado automaticamente...";
+  //           console.log("Motivo guardado automáticamente");
+  //         } else {
+  //           console.error("Error al guardar automáticamente");
+  //         }
+  //       } catch (error) {
+  //         console.error("Error al enviar el motivo de consulta:", error);
+  //       }
+  //     }, 20000); // Guarda automáticamente después de 1 segundo de inactividad
+  //   })
+
+
+  // btnEnviar.addEventListener("click", async (event) => {
+  //   event.preventDefault(); // Evita el envío del formulario por defecto
+  //   const motivo = textarea.value.trim();
+  //   if (!motivo) {
+  //     showToast("no hay data para guardar", {
+  //       background: "bg-primary-400",
+  //     });
+  //     return;
+  //   }
+  //   dataConsulta.motivoConsulta=motivo
+  //   try {
+  //     const response = await fetch("/api/pacientes/atencion/motivoConsulta", {
+  //       method: "POST",
+  //       body:JSON.stringify(dataConsulta), // No necesitas establecer manualmente "Content-Type"
+  //     });
+  //     const result = await response.json();
+  //     console.log(result);
+  //     if(result.status===200){
+  //       showToast('motivo de consulta guardado')
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al enviar el motivo de consulta:", error);
+  //   }
+  // });
 </script>

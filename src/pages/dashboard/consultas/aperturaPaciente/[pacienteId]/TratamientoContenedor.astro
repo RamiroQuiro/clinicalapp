@@ -48,8 +48,18 @@ import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAt
   let timeoutId;
 
   // Cargar el tratamiento actual desde el store al textarea
+  textarea?.addEventListener("input", (e) => {
+  const { value } = e.target;
 
+  // Guardar el valor en localStorage
+  localStorage.setItem("tratamiento", value);
 
+  // Actualizar el estado en Nanostores
+  atencion.set({
+    ...atencion.get(),
+    tratamiento: value,
+  });
+});
   // Actualizar `dataIds` del tratamiento cada vez que cambie el store de `atencion`
   atencion.subscribe((state) => {
    
@@ -60,73 +70,73 @@ import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAt
   });
 
   // Evento para guardar automáticamente el tratamiento después de un tiempo de inactividad
-  textarea?.addEventListener("input", () => {
-    // Limpiar cualquier timeout anterior
-    clearTimeout(timeoutId);
+  // textarea?.addEventListener("input", () => {
+  //   // Limpiar cualquier timeout anterior
+  //   clearTimeout(timeoutId);
 
-    // Configurar un timeout de 20 segundos para guardar automáticamente
-    timeoutId = setTimeout(async () => {
-      const tratamiento = textarea.value.trim(); // Eliminar espacios en blanco al inicio y final
-      if (!tratamiento) return; // No enviar si el campo está vacío
+  //   // Configurar un timeout de 20 segundos para guardar automáticamente
+  //   timeoutId = setTimeout(async () => {
+  //     const tratamiento = textarea.value.trim(); // Eliminar espacios en blanco al inicio y final
+  //     if (!tratamiento) return; // No enviar si el campo está vacío
 
-      dataTratamiento.tratamiento = tratamiento;
-      try {
-        // Enviar los datos a la API para guardar el tratamiento
-        const response = await fetch("/api/pacientes/atencion/tratamiento", {
-          method: "POST",
-          body: JSON.stringify(dataTratamiento),
-        });
-        const result = await response.json();
-        console.log(result);
+  //     dataTratamiento.tratamiento = tratamiento;
+  //     try {
+  //       // Enviar los datos a la API para guardar el tratamiento
+  //       const response = await fetch("/api/pacientes/atencion/tratamiento", {
+  //         method: "POST",
+  //         body: JSON.stringify(dataTratamiento),
+  //       });
+  //       const result = await response.json();
+  //       console.log(result);
 
-        // Notificar al usuario según el resultado de la solicitud
-        if (response.ok) {
-          document.getElementById("notificacionTratamiento").textContent =
-            "Guardado automáticamente...";
-          console.log("Tratamiento guardado automáticamente");
-        } else {
-          console.error("Error al guardar automáticamente el tratamiento");
-        }
-      } catch (error) {
-        console.error(
-          "Error al guardar el tratamiento automáticamente:",
-          error
-        );
-      }
-    }, 20000); // Guardar automáticamente después de 20 segundos
-  });
+  //       // Notificar al usuario según el resultado de la solicitud
+  //       if (response.ok) {
+  //         document.getElementById("notificacionTratamiento").textContent =
+  //           "Guardado automáticamente...";
+  //         console.log("Tratamiento guardado automáticamente");
+  //       } else {
+  //         console.error("Error al guardar automáticamente el tratamiento");
+  //       }
+  //     } catch (error) {
+  //       console.error(
+  //         "Error al guardar el tratamiento automáticamente:",
+  //         error
+  //       );
+  //     }
+  //   }, 20000); // Guardar automáticamente después de 20 segundos
+  // });
 
-  // Evento para guardar manualmente el tratamiento al hacer clic en el botón
-  btnEnviar?.addEventListener("click", async (event) => {
-    event.preventDefault(); // Evitar el comportamiento predeterminado del formulario
+  // // Evento para guardar manualmente el tratamiento al hacer clic en el botón
+  // btnEnviar?.addEventListener("click", async (event) => {
+  //   event.preventDefault(); // Evitar el comportamiento predeterminado del formulario
 
-    const tratamiento = textarea.value.trim(); // Obtener el valor del textarea
-    if (!tratamiento) {
-      // Mostrar notificación si el campo está vacío
-      showToast("Ingrese tratamiento", { background: "bg-primary-400" });
-      return;
-    }
+  //   const tratamiento = textarea.value.trim(); // Obtener el valor del textarea
+  //   if (!tratamiento) {
+  //     // Mostrar notificación si el campo está vacío
+  //     showToast("Ingrese tratamiento", { background: "bg-primary-400" });
+  //     return;
+  //   }
 
-    // Asignar el tratamiento al objeto de datos
-    dataTratamiento.tratamiento = tratamiento;
+  //   // Asignar el tratamiento al objeto de datos
+  //   dataTratamiento.tratamiento = tratamiento;
 
-    try {
-      // Enviar los datos a la API para guardar manualmente el tratamiento
-      const response = await fetch("/api/pacientes/atencion/tratamiento", {
-        method: "POST",
-        body: JSON.stringify(dataTratamiento),
-      });
-      const result = await response.json();
-      console.log(result);
+  //   try {
+  //     // Enviar los datos a la API para guardar manualmente el tratamiento
+  //     const response = await fetch("/api/pacientes/atencion/tratamiento", {
+  //       method: "POST",
+  //       body: JSON.stringify(dataTratamiento),
+  //     });
+  //     const result = await response.json();
+  //     console.log(result);
 
-      // Mostrar notificación según el resultado de la solicitud
-      if (result.status === 200) {
-        showToast("Tratamiento guardado");
-      } else {
-        showToast("Error al guardar", { background: "bg-primary-400" });
-      }
-    } catch (error) {
-      console.error("Error al enviar el tratamiento:", error);
-    }
-  });
+  //     // Mostrar notificación según el resultado de la solicitud
+  //     if (result.status === 200) {
+  //       showToast("Tratamiento guardado");
+  //     } else {
+  //       showToast("Error al guardar", { background: "bg-primary-400" });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al enviar el tratamiento:", error);
+  //   }
+  // });
 </script>

@@ -59,6 +59,7 @@ const nowDate = new Date().toLocaleDateString();
 
   atencion.subscribe((state) => {
     contextoAtencion = state;
+    console.log(state)
   });
 
   btnFinalizar?.addEventListener("click", async () => {

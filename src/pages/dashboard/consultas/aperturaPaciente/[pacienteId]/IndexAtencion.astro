@@ -70,6 +70,9 @@ const {
     dataIds: { hcId, pacienteId, userId: iduser, isDisable },
   });
 
+  atencion.subscribe((state)=>{
+    console.log('estoy en la pantalla printcap de la consutla',state)
+  })
   const fecthingSignosVitales = async () => {
     try {
       const response = await fetch("/api/pacientes/atencion/signosVitales", {

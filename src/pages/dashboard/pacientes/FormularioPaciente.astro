@@ -42,7 +42,10 @@ const { user } = Astro.props;
     <ContenedorInputForm label="ciudad" type="text" name="ciudad" />
     <ContenedorInputForm label="provincia" type="text" name="provincia" />
   </div>
+  <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
   <ContenedorInputForm label="direccion" type="text" name="direccion" />
+  <ContenedorInputForm label="obraSocial" type="text" name="obraSocial" />
+  </div>
   <div class="text-xs text-left flex flex-col items-start gap-">
     <p>Fecha de Nacimiento</p>
     <InputDate label="Fecha de Nacimiento"name="fNacimiento"  client:load/>
