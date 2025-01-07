@@ -42,6 +42,7 @@ export const POST: APIRoute = async ({ request }) => {
         pacienteId: dataIds.pacienteId,
         userId: dataIds.userId,
         fecha: new Date().toISOString(),
+        inicioAtencion:dataIds.inicioAtencion,
         tratamiento,
         motivoConsulta,
       });

@@ -1,14 +1,16 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { users } from "./users";
+import { pacientes } from "./pacientes";
 
 export const atenciones = sqliteTable("atenciones", {
   id: text("id").primaryKey().unique(),
-  pacienteId: text("pacienteId").notNull(),
+  pacienteId: text("pacienteId").notNull().references(()=>pacientes.id),
   fecha: text("fecha").notNull(),
-  userId: text("userId").notNull(),
+  userId: text("userId").notNull().references(()=>users.id),
   motivoConsulta: text("motivoConsulta"),
-  diagnosticoId: text("diagnosticoId"),
-  antecedenteId:text('antecedenteId'),
+  diagnosticoId: text("diagnosticoId"),//varios diagnostios
+  antecedenteId:text('antecedenteId'),//varios antecedentes
   tratamientoId: text("tratamientoId"),
   tratamiento:text('tratamiento'),
   estado: text("estado").default("pediente"),
@@ -18,4 +20,8 @@ export const atenciones = sqliteTable("atenciones", {
     .notNull()
     .default(sql`(current_timestamp)`),
   deleted_at: text("deleted_at"),
+  inicioAtencion: text("inicioAtencion"), // Nuevo: Hora de inicio
+  finAtencion: text("finAtencion"),       // Nuevo: Hora de fin
+  duracionAtencion: text("duracionAtencion"), // Nuevo: Duración total
+  
 });

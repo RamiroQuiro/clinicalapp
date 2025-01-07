@@ -67,11 +67,10 @@ console.log(dataIds)
   const isDisable = dataset?.dataset.fin;
   const atencionId = dataset?.dataset.atencionid;
 
-
-  console.log(iduser)
+const dateNow=new Date()
   atencion.set({
     ...atencion.get(),
-    dataIds: { atencionId, pacienteId, userId: iduser, isDisable },
+    dataIds: { atencionId, pacienteId, userId: iduser, isDisable,inicioAtencion:dateNow },
   });
 
   atencion.subscribe((state)=>{

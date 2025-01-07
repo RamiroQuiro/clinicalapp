@@ -1,6 +1,5 @@
 ---
 import Button1 from "../atomos/Button1.astro";
-
 ---
 
 <div>
@@ -18,8 +17,8 @@ import Button1 from "../atomos/Button1.astro";
         <Button1 slot="close" id="cerrarModal" style="absolute top-1 right-1 "
           >✕</Button1
         >
-        <slot />
       </form>
+      <slot />
 
       <!-- <DiagnosticosContenedor client:load  isExistDiagnosticos={isExistDiagnosticos}/> -->
     </div>
@@ -27,12 +26,10 @@ import Button1 from "../atomos/Button1.astro";
 </div>
 
 <script>
-    const btnModal = document.getElementById("modal-antecedentes");
-  
-    btnModal?.addEventListener("click", () => {
-      const modal = document.getElementById(`dialog-modal-antecedentes`);
-      modal.showModal();
-      // e.showModal()
-    });
-  </script>
-  
+  const btnModal = document.getElementById("modal-antecedentes");
+  btnModal?.addEventListener("click", () => {
+    const modal = document.getElementById(`dialog-modal-antecedentes`);
+    modal.showModal();
+    // e.showModal()
+  });
+</script>

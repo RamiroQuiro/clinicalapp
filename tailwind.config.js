@@ -16,7 +16,7 @@ export default {
           "bg-componentes": "#F9FAFB",
           
           resaltado: "#E3D32B",
-          texto: "#8894A6",
+          texto: "#7F8A9AFF",
           error: "#BF0404",
           background: "#E9E9F1",
         },
