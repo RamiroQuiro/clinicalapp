@@ -4,20 +4,22 @@ import { busqueda } from '../../context/store'
 import useBusquedaFiltros from '../../hook/useBusquedaFiltro'
 import { generateId } from 'lucia'
 
-export default function FormularioDeBusqueda({ value, pacientes, id,placeholder}) {
+export default function FormularioDeBusqueda({ value, arrayABuscar, id,placeholder,opcionesFiltrado,onACtion}) {
     // const [clientSelect, setClientSelect] = useState([])
     const arr = []
     const $pacienteSelect = useStore(busqueda)
 
-    console.log('',$pacienteSelect)
-    const { encontrado, handleSearch, search, setSearch } = useBusquedaFiltros(pacientes)
+    const { encontrado, handleSearch, search, setSearch } = useBusquedaFiltros(arrayABuscar,opcionesFiltrado)
 
     const handleClick = (leg) => {
         busqueda.set({
             pacienteSelect: leg
         })
-        const idAtencion=generateId(13)
-        document.location.href=`/dashboard/consultas/aperturaPaciente/${leg.id}/${idAtencion}`
+        if(opcionesFiltrado?.length>=1){
+            const idAtencion=generateId(13)
+            document.location.href=`/dashboard/consultas/aperturaPaciente/${leg.id}/${idAtencion}`
+            setSearch('')
+        }
         setSearch('')
     }
 
@@ -34,11 +36,18 @@ export default function FormularioDeBusqueda({ value, pacientes, id,placeholder}
                     {encontrado?.length>=1 ? (
                         encontrado?.map((leg, i) => (
                             <div
-                                onClick={() => handleClick(leg)}
-                                className="w-full animate-aparecer py-2 rounded-lg hover:bg-primary-100/40  font-semibold  border-b cursor-pointer px-2 text-sm "
+                                onClick={onACtion?onACtion:() => handleClick(leg)}
+                                className="w-full animate-aparecer py-2 rounded-lg hover:bg-primary-100/40 flex gap-2 items-center  font-semibold  border-b cursor-pointer px-2 text-sm "
                                 key={i}
                             >
-                                <p>{`${leg.nombre}  ${leg.apellido} ${' '}  DNI:${leg.dni}`}</p>
+                                {
+                                opcionesFiltrado.length==0?
+                                <p>{leg}</p>
+                                :
+                                opcionesFiltrado.map((item)=>(
+                                    <p className='capitalize font-normal text-primary-texto'>{`${item}: `}<span className=' text-primary-textoTitle font-semibold'>{`${leg[item]}`}</span></p>
+
+                                ))}
                             </div>
                         ))
                     ) : (<>

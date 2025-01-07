@@ -12,6 +12,7 @@ export type pacienteType = {
   direccion?: string;
   ciudad?: string;
   provincia?: string;
+  obraSocial?:string;
   pais?: string;
   updated_at?: string;
   created_at: string;

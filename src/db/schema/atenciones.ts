@@ -7,8 +7,9 @@ export const atenciones = sqliteTable("atenciones", {
   id: text("id").primaryKey().unique(),
   pacienteId: text("pacienteId").notNull().references(()=>pacientes.id),
   fecha: text("fecha").notNull(),
-  userId: text("userId").notNull().references(()=>users.id),
+  userId: text("userId").notNull(),
   motivoConsulta: text("motivoConsulta"),
+  motivoInicial:text('motivoInicial').notNull(),
   diagnosticoId: text("diagnosticoId"),//varios diagnostios
   antecedenteId:text('antecedenteId'),//varios antecedentes
   tratamientoId: text("tratamientoId"),

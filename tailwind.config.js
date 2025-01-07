@@ -17,6 +17,7 @@ export default {
           
           resaltado: "#E3D32B",
           texto: "#7F8A9AFF",
+          textoTitle: "#3B3B3B",
           error: "#BF0404",
           background: "#E9E9F1",
         },

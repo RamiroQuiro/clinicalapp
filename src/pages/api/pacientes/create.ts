@@ -41,6 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
       apellido: data.apellido,
       celular: data.celular,
       sexo:data.sexo,
+      obraSocial:data.obraSocial,
       id,
       created_at: new Date().toISOString(),
     });

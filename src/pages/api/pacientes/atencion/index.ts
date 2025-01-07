@@ -12,9 +12,9 @@ import { generateId } from "lucia";
 import calcularIMC from "../../../../utils/calcularIMC";
 
 export const POST: APIRoute = async ({ request }) => {
-  const{data:{dataIds,tratamiento,motivoConsulta,signosVitales: dataSignosVitales,diagnosticos: dataDiagnosticos,medicamentos: dataMedicamentos}} = await request.json();
+  const{data:{dataIds,tratamiento,motivoConsulta,signosVitales: dataSignosVitales,diagnosticos: dataDiagnosticos,medicamentos: dataMedicamentos,motivoInicial}} = await request.json();
 
-  console.log(dataIds)
+  console.log(motivoInicial)
   try {
     
     const isExistPaciente=(await db.select().from(pacientes).where(eq(pacientes.id,dataIds.pacienteId))).at(0)
@@ -45,6 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
         inicioAtencion:dataIds.inicioAtencion,
         tratamiento,
         motivoConsulta,
+        motivoInicial
       });
 
       const idSignos = generateId(13);

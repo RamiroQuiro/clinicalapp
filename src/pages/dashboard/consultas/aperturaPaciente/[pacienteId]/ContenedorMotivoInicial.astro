@@ -1,0 +1,22 @@
+---
+import H2 from "../../../../../components/atomos/H2.astro";
+import { arrayMotivosIniciales } from "../../../../../utils/arrayMotivosIniciales";
+import FormularioDeBusqueda from "../../../../../components/organismo/FormularioDeBusqueda";
+import ContenedorFormularioBusqueda from "./ContenedorFormularioBusqueda";
+
+const objUser = { especialidad: "cardiologo" };
+
+const arrayABuscar = arrayMotivosIniciales.find(
+  (item) =>
+    item.especialidad?.toLowerCase() === objUser.especialidad?.toLowerCase()
+)?.motivos;
+---
+
+<div
+  class="flex gap-2 bg-primary-bg-componentes justify-between items-center text-primary-texto w-full pb-1"
+>
+  <h2 class="font-semibold text-base text-primary-textoTitle">
+    Motivo Inicial
+  </h2>
+  <ContenedorFormularioBusqueda arrayABuscar={arrayABuscar} client:load />
+</div>

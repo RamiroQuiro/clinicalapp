@@ -2,7 +2,7 @@ import { atom } from "nanostores"
 
 
 const busqueda = atom({
-    pacienteSelect: {}
+    pacienteSelect: ''
 })
 
 const filtrosBusquedaPrestamos=atom({})
@@ -20,6 +20,7 @@ const atencion=atom({
     },
     tratamiento:'',
     signosVitales:{},
+    motivoInicial:'',
     motivoConsulta:'',
     diagnosticos:[],
     medicamentos:[]

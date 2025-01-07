@@ -12,7 +12,7 @@ const {arrayPacientes}=Astro.props
 <div class="mb-4 w-full flex items-center gap-2 justify-center bg">
   <Etiquetas><DiamondPlus className="w-4 inline-block mr-4"/> Nueva Consulta</Etiquetas>
   <div class="w-2/3">
-    <FormularioDeBusqueda pacientes={arrayPacientes}  placeholder={`Busqueda de pacientes...`}  client:load/>
+    <FormularioDeBusqueda arrayABuscar={arrayPacientes} opcionesFiltrado={['nombre','apellido','dni']} placeholder={`Busqueda de pacientes...`}  client:load/>
 
   </div>
   

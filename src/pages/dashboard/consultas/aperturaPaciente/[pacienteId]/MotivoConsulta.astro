@@ -3,6 +3,8 @@ import Button1 from "../../../../../components/atomos/Button1.astro";
 import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
 import H2 from "../../../../../components/atomos/H2.astro";
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
+import ContenedorInputSelected from "../../../../../components/moleculas/ContenedorInputSelected.astro";
+import ContenedorMotivoInicial from "./ContenedorMotivoInicial.astro";
 
 const { dataIds, isExistHC } = Astro.props;
 ---
@@ -12,31 +14,32 @@ const { dataIds, isExistHC } = Astro.props;
   labelButton="guardar"
   labelH3="motivo de consulta"
 >
-<ContenedorTitleBotonera>
-  <H2>Motivo de consulta</H2>
-  
-</ContenedorTitleBotonera>
+
+    <ContenedorMotivoInicial />
+  <ContenedorTitleBotonera>
+    <H2>Motivo de consulta</H2>
+  </ContenedorTitleBotonera>
   <form
     action=""
     class="flex-1 w-full h-full flex items-start justify-center"
     id="motivoConsulta"
   >
-  <textarea
-  class="w-full text-sm p-2 text-primary-texto outline-none ring-0"
-  rows="10"
-  name="motivoConsulta"
-  id="formularioConsulta"
-  placeholder="Motivo de consulta y sintomas..."
->
-{isExistHC.motivoConsulta}
-</textarea>
+    <textarea
+      class="w-full text-sm p-2 text-primary-texto outline-none ring-0"
+      rows="10"
+      name="motivoConsulta"
+      id="formularioConsulta"
+      placeholder="Motivo de consulta y sintomas..."
+    >
+      {isExistHC.motivoConsulta}
+    </textarea>
   </form>
   <span
     id="notificacion"
     class="text-xs font-extralight tracking-wider px-2 animate-aparecer"></span>
 </ContenedorAtencion>
 
-<script >
+<script>
   import { atencion } from "../../../../../context/store";
   import { showToast } from "../../../../../utils/toast/toastShow";
   let dataConsulta = { motivoConsulta: "", dataIds: {} };
@@ -49,23 +52,23 @@ const { dataIds, isExistHC } = Astro.props;
   });
 
   textarea?.addEventListener("input", (e) => {
-  const { value } = e.target;
+    const { value } = e.target;
 
-  // Guardar el valor en localStorage
-  localStorage.setItem("tratamiento", value);
+    // Guardar el valor en localStorage
+    localStorage.setItem("tratamiento", value);
 
-  // Actualizar el estado en Nanostores
-  atencion.set({
-    ...atencion.get(),
-    motivoConsulta: value,
+    // Actualizar el estado en Nanostores
+    atencion.set({
+      ...atencion.get(),
+      motivoConsulta: value,
+    });
   });
-});
   // textarea.addEventListener("input", () => {
   //   document.getElementById("notificacion").textContent = "";
   //   clearTimeout(timeoutId); // Limpia cualquier timeout pendiente
   //   timeoutId = setTimeout(async () => {
   //     const motivo = textarea.value.trim();
- 
+
   //     dataConsulta.motivoConsulta=motivo
   //       try {
 
@@ -89,7 +92,6 @@ const { dataIds, isExistHC } = Astro.props;
   //       }
   //     }, 20000); // Guarda automáticamente después de 1 segundo de inactividad
   //   })
-
 
   // btnEnviar.addEventListener("click", async (event) => {
   //   event.preventDefault(); // Evita el envío del formulario por defecto
