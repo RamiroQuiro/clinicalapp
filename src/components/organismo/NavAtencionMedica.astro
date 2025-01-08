@@ -5,68 +5,76 @@ import Button1 from "../atomos/Button1.astro";
 import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
 import Etiquetas from "../atomos/Etiquetas.astro";
 import H2 from "../atomos/H2.astro";
+import Antecedentes from "./Antecedentes.astro";
 
-const { pacienteData, isExistHC, dataIds } = Astro.props as pacienteType;
+const { pacienteData, isExistHC, dataIds ,antecedentes} = Astro.props as pacienteType;
 const nowDate = new Date().toLocaleDateString();
 ---
 
 <div
-  class="h relative  border py-4 px-4 bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-2 gap-y-2"
+  class="h relative border py-4 px-4 bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-2 gap-y-2"
 >
-  <div class="flex   w-full md:flex-row items-start md:items-center mb-4 flex-1">
+  <div class="flex w-full md:flex-row items-start md:items-center mb-4 flex-1">
     <!-- boton de vovler history -->
     <ButtonBackHistory />
     <div
-      class="flex w-full h-full  items-center md:gap-4 justify-start flex-1 gap-y-2 ml-2"
+      class="flex w-full h-full items-center md:gap-4 justify-start flex-1 gap-y-2 ml-2"
     >
-      <div class="flex flex-col px-4 items-center gap-2 justify-between h-full">
-        <div class="flex flex-col items-center justify-center gap-2">
-          <H2>
-            {pacienteData.nombre}
-            {" "}
-            {pacienteData.apellido}
-          </H2>
-          <button
-            class="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-            onclick={"() => document.location.href = `/dashboard/pacientes/${data.id}`"}
-          >
-            ficha
-          </button>
-        </div>
+      <div class="flex flex-col border-l px-4 items-center justify-between h-full gap-2">
+        <H2>
+          {pacienteData.nombre}
+          {" "}
+          {pacienteData.apellido}
+        </H2>
+        <button
+          class="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
+          onclick={"() => document.location.href = `/dashboard/pacientes/${data.id}`"}
+        >
+          ficha
+        </button>
       </div>
       <!-- datos personales -->
       <div
-        class="flex w-1/3 items-center text-xs font- justify-start flex-wrap gap-2"
+        class="flex border-x px-4 w-1/3 items-center text-xs font- justify-start flex-wrap gap-2"
       >
         <p>
           DNI: <span class="text-primary-textoTitle font-bold"
-            >{pacienteData.dni}</span>
+            >{pacienteData.dni}</span
+          >
         </p>
         <p>
           Sexo: <span class="text-primary-textoTitle font-bold"
-            >{pacienteData.sexo}</span>
+            >{pacienteData.sexo}</span
+          >
         </p>
         <p>
           Celular: <span class="text-primary-textoTitle font-bold"
-            >{pacienteData.celular}</span>
+            >{pacienteData.celular}</span
+          >
         </p>
         <p>
           Email: <span class="text-primary-textoTitle font-bold"
-            >{pacienteData.email}</span>
+            >{pacienteData.email}</span
+          >
         </p>
         <p>
           Obra Social: <span class="text-primary-textoTitle font-bold"
-            >{pacienteData.obraSocial}</span>
+            >{pacienteData.obraSocial}</span
+          >
         </p>
         <p>
           Estatura: <span class="text-primary-textoTitle font-bold"
-            >{pacienteData.estatura}</span>
+            >{pacienteData.estatura}</span
+          >
         </p>
         <p>
           Domicilio: <span class="text-primary-textoTitle font-bold"
-            >{pacienteData.domicilio}</span>
+            >{pacienteData.domicilio}</span
+          >
         </p>
       </div>
+      <!-- antecedentes -->
+       <Antecedentes antecedentes={antecedentes}/>
     </div>
     <div class="flex flex-col gap-3">
       <Button1 id="finalizarConsulta">finalizar consulta</Button1>
