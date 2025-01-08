@@ -1,0 +1,48 @@
+---
+import { AlertCircle, Heart } from "lucide-react";
+import type { Antecedente } from "../../types";
+import formatDate from "../../utils/formatDate";
+const { data } = Astro.props as Antecedente;
+
+console.log(data);
+const dateFormat = formatDate(data.created_at);
+---
+
+<div
+  class="flex items-center gap-2 pr-2 group relative border border-gray-200/50 rounded-xl bg-primary-bg-componentes"
+>
+  <div
+    class={`w-7 h-7 rounded-full ${data.estado !== "controlado" ? "bg-red-100" : "bg-primary-150"} flex items-center justify-center`}
+  >
+    {
+      data.estado !== "controlado" ? (
+        <AlertCircle size={14} className="text-red-800" />
+      ) : (
+        <Heart size={14} className="text-primary-texto" />
+      )
+    }
+  </div>
+
+  <div class="flex-1">
+    <h3 class="font- text-sm text-primary-textoTitle capitalize">
+      {data.antecedente}
+    </h3>
+  </div>
+
+  <div
+    class="absolute w-full bottom-[115%] shadow-lg  flex-col items-start justify-normal gap-1 left-0 bg-primary-bg-componentes border rounded-lg text-xs p-2 hidden group-hover:flex duration- animate-apDeArriba"
+  >
+    <p>
+      Diagnosticado: <span class="text-primary-textoTitle font-bold"
+        >{dateFormat}</span>
+    </p>
+    <p>
+      Observaciones: <span class="text-primary-textoTitle font-bold"
+        >{data.observaciones}</span>
+    </p>
+    <p>
+      Estado: <span class="text-primary-textoTitle font-bold"
+        >{data.estado}</span>
+    </p>
+  </div>
+</div>
