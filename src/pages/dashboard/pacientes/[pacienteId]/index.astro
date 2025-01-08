@@ -31,64 +31,83 @@ import Button1 from "../../../../components/atomos/Button1.astro";
 const { pacienteId } = Astro.params;
 const userId = "sakflsdk";
 
-let pacienteData: pacienteType = {};
-let medicamentosData = {};
-let arrayAntecedente: AntecedentesMedicosProps = [];
-let historialVisitas = [];
-let arrayArchivosAdjuntos: DocumentosAdjuntosProps = [];
-let arrayNotasMedicas = [];
 
-try {
-  pacienteData = (
-    await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
-  ).at(0);
-  medicamentosData = await db
-    .select()
-    .from(medicamento)
-    .where(eq(medicamento.pacienteId, pacienteId))
-    .orderBy(desc(medicamento.created_at));
+export async function getPacienteData(pacienteId:string) {
+  try {
+    const result = await db.transaction(async (trx) => {
+      // Consulta del paciente
+      const pacienteData =( await trx
+        .select()
+        .from(pacientes)
+        .where(eq(pacientes.id, pacienteId))).at(0);
 
-  historialVisitas = await db
-    .select({
-      fecha: atenciones.created_at,
-      motivo: atenciones.motivoConsulta,
-      diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as(
-        "diagnosticos"
-      ),
-      tratamiento: atenciones.tratamiento,
-    })
-    .from(atenciones)
-    .where(eq(atenciones.pacienteId, pacienteId))
-    .groupBy(atenciones.id)
-    .orderBy(desc(atenciones.created_at)); // Agrupa por la historia clínica
+      if (!pacienteData) {
+        throw new Error("Paciente no encontrado");
+      }
 
-  arrayAntecedente = await db
-    .select()
-    .from(antecedente)
-    .where(eq(antecedente.pacienteId, pacienteId));
+      // Medicamentos asociados
+      const medicamentosData = await trx
+        .select()
+        .from(medicamento)
+        .where(eq(medicamento.pacienteId, pacienteId))
+        .orderBy(desc(medicamento.created_at));
 
-  arrayArchivosAdjuntos = await db
-    .select()
-    .from(archivosAdjuntos)
-    .where(eq(archivosAdjuntos.pacienteId, pacienteId))
-    .orderBy(desc(archivosAdjuntos.created_at));
-  arrayNotasMedicas = await db
-    .select()
-    .from(notasMedicas)
-    .where(eq(notasMedicas.pacienteId, pacienteId))
-    .orderBy(desc(notasMedicas.created_at));
+      // Historial de visitas
+      const historialVisitas = await trx
+        .select({
+          fecha: atenciones.created_at,
+          motivo: atenciones.motivoConsulta,
+          diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as(
+            "diagnosticos"
+          ),
+          tratamiento: atenciones.tratamiento,
+        })
+        .from(atenciones)
+        .rightJoin(diagnostico,eq(diagnostico.atencionId,atenciones.id))
+        .where(eq(atenciones.pacienteId, pacienteId))
+        .groupBy(atenciones.id)
+        .orderBy(desc(atenciones.created_at));
 
-  console.log("este son los historialVisitas", historialVisitas);
+      // Antecedentes
+      const arrayAntecedente = await trx
+        .select()
+        .from(antecedente)
+        .where(eq(antecedente.pacienteId, pacienteId));
 
-  if (!pacienteData) {
-    console.log("paciente no encontrado");
-    return;
+      // Archivos adjuntos
+      const arrayArchivosAdjuntos = await trx
+        .select()
+        .from(archivosAdjuntos)
+        .where(eq(archivosAdjuntos.pacienteId, pacienteId))
+        .orderBy(desc(archivosAdjuntos.created_at));
+
+      // Notas médicas
+      const arrayNotasMedicas = await trx
+        .select()
+        .from(notasMedicas)
+        .where(eq(notasMedicas.pacienteId, pacienteId))
+        .orderBy(desc(notasMedicas.created_at));
+
+      // Devuelve todos los resultados juntos
+      return {
+        pacienteData,
+        medicamentosData,
+        historialVisitas,
+        arrayAntecedente,
+        arrayArchivosAdjuntos,
+        arrayNotasMedicas,
+      };
+    });
+
+    return result; // Transacción exitosa
+  } catch (error) {
+    console.error("Error en la transacción:", error);
+    throw new Error("Ocurrió un error al procesar la solicitud");
   }
-} catch (error) {
-  console.log(error);
 }
 
-const {patientData,medicalHistory,recentVisits,medications,doctorNotes}=Astro.props
+const {arrayAntecedente,arrayArchivosAdjuntos,arrayNotasMedicas,historialVisitas,medicamentosData,pacienteData}=await getPacienteData(pacienteId)
+
 ---
 
 <LayoutDash>

@@ -55,7 +55,7 @@ const cabeceraColumn=[
           </tr>
         </thead>
         <tbody>
-          {medicacion.slice(0,4).map((medicacion:Medication, index) => (
+          {medicacion.length>=1&&medicacion?.slice(0,4).map((medicacion:Medication, index) => (
             <TRTableMedicamento medication={medicacion}/>
           ))}
         </tbody>

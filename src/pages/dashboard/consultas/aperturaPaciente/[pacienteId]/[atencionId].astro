@@ -1,74 +1,77 @@
 ---
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import MainDashboard from "../../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
 import db from "../../../../../db";
-import { atenciones, diagnostico, pacientes } from "../../../../../db/schema";
+import { antecedente, atenciones, diagnostico, pacientes } from "../../../../../db/schema";
 import type { pacienteType } from "../../../../../types";
 import { generateId } from "lucia";
 import { medicamento } from "../../../../../db/schema/medicamento";
 import IndexAtencion from "./IndexAtencion.astro";
 const { pacienteId, atencionId } = Astro.params;
-let pacienteData: pacienteType = {
-  id: "",
-  userId: "",
-  email: "",
-  nombre: "",
-  apellido: "",
-  fNacimiento: "",
-  dni: 0,
-  sexo: "",
-  celular: "",
-  direccion: "",
-};
-let isExistMedicamentos:any = [];
+
 const dataIds = {
-  estado:'pendienta',
+  estado: "pendienta",
   atencionId,
-  userId: "",
+  userId: "sakflsdk",
   pacienteId: pacienteId,
 };
 // tengo q implemtar type para historiClinica
-let isExistHC = {};
-let isExistDiagnosticos;
-try {
-  pacienteData = (
-    await db.select().from(pacientes).where(eq(pacientes.id, pacienteId))
-  ).at(0);
 
-  // console.log(pacienteData)
-  if (!pacienteData) {
-    console.log('paciente no encontrado')
-    return;
-  } else {
-    dataIds.userId = pacienteData.userId;
-    isExistHC = (
-      await db
-        .select()
-        .from(atenciones)
-        .where(eq(atenciones.id, atencionId))
-    ).at(0);
+const dataFetchPaciente = async (idPaciente, idAtencion) => {
+  try {
+    const result = await db.transaction(async (trx) => {
+      // Buscar paciente
+      const pacienteData = (
+        await trx.select().from(pacientes).where(eq(pacientes.id, idPaciente))
+      ).at(0);
+      const antecedentesData= await trx.select().from(antecedente).where(eq(antecedente.pacienteId,idPaciente))
+      if (!pacienteData) throw new Error("Paciente no encontrado");
 
-    if (isExistHC?.estado==='FINALIZADO') {
-    
-    }
-    if (isExistHC) {
-      isExistMedicamentos = await db
-        .select()
-        .from(medicamento)
-        .where(eq(medicamento.atencionId, isExistHC.id));
-      isExistDiagnosticos = await db
-        .select()
-        .from(diagnostico)
-        .where(eq(diagnostico.atencionId, isExistHC.id));
-    }
-    
+      // Verificar si existe atención
+      const atencionData = (
+        await trx.select().from(atenciones).where(eq(atenciones.id, idAtencion))
+      ).at(0);
+
+      if (atencionData) {
+        // Traer medicamentos asociados a la atención
+        const medicamentosData = await trx
+          .select()
+          .from(medicamento)
+          .where(eq(medicamento.atencionId, idAtencion))
+          .orderBy(desc(medicamento.created_at));
+
+        // Traer diagnósticos asociados a la atención
+        const diagnosticoData = await trx
+          .select()
+          .from(diagnostico)
+          .where(eq(diagnostico.atencionId, idAtencion))
+          .orderBy(desc(diagnostico.created_at));
+
+        return {
+          pacienteData,
+          atencionData,
+          medicamentosData,
+          diagnosticoData,
+          antecedentesData
+        };
+      }
+
+      // Si no hay atención, devolver solo datos del paciente
+      return { pacienteData ,antecedentesData};
+    });
+
+    return result; // Resultado de la transacción
+  } catch (error) {
+    console.error("Error en la transacción:", error);
+    throw new Error("Ocurrió un error al procesar la solicitud");
   }
-} catch (error) {
-  console.log(error);
-}
+};
 
-// usar contexto para guardar al termiarn la consulta, o guardar con un boton en cada campo a llenar
+const {antecedentesData,pacienteData,atencionData,diagnosticoData,medicamentosData}= await dataFetchPaciente(pacienteId,atencionId)
+
+
+
 ---
 
 <LayoutDash>
@@ -79,13 +82,19 @@ try {
         <p>Atencion Finalziada</p>
       </div>
     } -->
-    <IndexAtencion 
-    dataIds={dataIds},
-    pacienteData={pacienteData},
-    isExistHC={isExistHC},
-    isExistDiagnosticos={isExistDiagnosticos},
-    isExistMedicamentos={isExistMedicamentos},
+    <IndexAtencion
+    antecedentes={antecedentesData}
+      dataIds={dataIds}
+      ,
+
+      pacienteData={pacienteData}
+      ,
+      isExistHC={atencionData}
+      ,
+      isExistDiagnosticos={diagnosticoData}
+      ,
+      isExistMedicamentos={medicamentosData}
+      ,
     />
   </MainDashboard>
 </LayoutDash>
-
