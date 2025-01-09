@@ -18,8 +18,8 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
     <textarea
       class="flex-1 w-full text-sm p-2 text-primary-texto outline-none ring-0 shadow-md border-gray-300 ring-primary-200/60 focus:ring-1 focus:border-primary-200/60 border rounded-lg"
       rows="5"
-      name="observaciones"
-      id="observaciones"></textarea>
+      name="observacionesDiagnostico"
+      id="observacionesDiagnostico"></textarea>
   </div>
   <div class="w-full flex items-center justify-between">
     <div
@@ -35,7 +35,7 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
   import { generateId } from "lucia";
   import { atencion, dataFormularioContexto } from "../../context/store";
 
-  const textArea = document.getElementById("observaciones");
+  const textArea = document.getElementById("observacionesDiagnostico");
   const diagnostico = document.getElementById("diagnostico");
   const btnEnviar = document.getElementById("guardarDiagnostico");
   const errores = document.getElementById("errores");
@@ -62,14 +62,12 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
 
   btnEnviar?.addEventListener("click", (e) => {
     e.preventDefault();
-
     // Validar campos obligatorios
     if (!diagnostico.value.trim()) {
       errores.textContent = "Ingrese un diagnóstico";
       setTimeout(() => (errores.textContent = ""), 2000);
       return;
     }
-
     // Crea o actualiza el diagnóstico en el contexto
     const dataContext = atencion.get();
     const isEditing = !!currentDiagnostico.id;

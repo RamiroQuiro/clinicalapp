@@ -37,10 +37,10 @@ export const RenderActionsPacientes = (data) => (
 
 // botoner para acciones de diagnosticos
 
-export const RenderActionsEditDelet = (data) =>{
+export const RenderActionsEditDeletDiagnostico = (data) =>{
     const handleEditModal=(data)=>{
         dataFormularioContexto.set(data)
-        const modal = document.querySelector(".modal");
+        const modal = document.getElementById("modal-dialogDiagnostico");
           modal.showModal();
           // e.showModal()
     }
@@ -59,6 +59,9 @@ export const RenderActionsEditDelet = (data) =>{
         <BotonEliminar handleClick={()=>handleDeletDiag(data)} />
     </div>
 );}
+
+
+
 export const RenderActionsEditDeletMedicamentos = (data) =>{
     const handleEditModal=(data)=>{
         dataFormularioContexto.set(data)

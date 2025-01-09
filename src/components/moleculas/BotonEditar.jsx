@@ -6,7 +6,7 @@ export default function BotonEditar({ id, name, handleClick }) {
       id={id}
       name={name}
       onClick={handleClick}
-      className="bg-primary-200 text-white rounded-full hover:bg-primary-100  duration-150 px-2 py-1 text-xs"
+      className="bg-primary-200 text-white rounded-full hover:bg-primary-100 focus:outline-none duration-150 px-2 py-1 text-xs"
     >
       <svg
         className="w-4 "

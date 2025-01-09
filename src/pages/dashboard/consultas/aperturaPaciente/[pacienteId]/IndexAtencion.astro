@@ -1,4 +1,5 @@
 ---
+import Button1 from "../../../../../components/atomos/Button1.astro";
 import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
 import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
 import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
@@ -52,7 +53,8 @@ const {
       </DivBox1>
       <DivBox1>
         <ContenedorTitleBotonera>
-          <H2>Medicamentos</H2>
+          <H2>Ultimas Visitas</H2>
+          <Button1>ver historial</Button1>
         </ContenedorTitleBotonera>
         <ConfeccionTablaVisitas historialVisitaData={historialVisitaData} client:load/>
       </DivBox1>

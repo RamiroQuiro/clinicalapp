@@ -1,12 +1,13 @@
 import React from 'react'
 import Table from '../../../../../components/tablaComponentes/Table'
-import { RenderActionsEditDelet, RenderActionsPacientes } from '../../../../../components/tablaComponentes/RenderBotonesActions'
 import { useStore } from '@nanostores/react'
 import { atencion } from '../../../../../context/store'
+import { RenderActionsEditDeletDiagnostico } from '../../../../../components/tablaComponentes/RenderBotonesActions'
 
 export default function ConfeccionTablaDiagnostico({ isExistDiagnosticos }) {
 
   const $diagnosticosStore=useStore(atencion).diagnosticos
+  console.log($diagnosticosStore)
   const columns = [
     {
       label: "diagnostico",
@@ -30,6 +31,6 @@ export default function ConfeccionTablaDiagnostico({ isExistDiagnosticos }) {
     }
   })
   return (
-    <Table columnas={columns} arrayBody={$diagnosticosStore} renderBotonActions={RenderActionsEditDelet} />
+    <Table columnas={columns} arrayBody={$diagnosticosStore} renderBotonActions={RenderActionsEditDeletDiagnostico} />
   )
 }

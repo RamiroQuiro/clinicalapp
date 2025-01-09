@@ -20,3 +20,18 @@ const { isExistDiagnosticos } = Astro.props;
 </ContenedorTitleBotonera>
 
   <ContenedorTabla isExistDiagnosticos={isExistDiagnosticos} />
+
+  <script >
+import { dataFormularioContexto } from "../../../../../context/store";
+
+    
+    
+      const btnModal = document.getElementById(`dialogDiagnostico`);
+      const modal = document.getElementById(`modal-dialogDiagnostico`);
+      btnModal?.addEventListener("click", (e) => {
+        dataFormularioContexto.set({})
+        modal.showModal();
+        // e.showModal()
+      });
+    </script>
+    

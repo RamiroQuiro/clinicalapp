@@ -51,7 +51,6 @@ const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
   let dataAtencion = {};
   atencion.subscribe((state) => {
     dataAtencion = state;
-    console.log(dataAtencion);
   });
 
   btnFinalizar?.addEventListener("click", async () => {
@@ -77,3 +76,8 @@ const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
     document.location.href = `/dashboard/pacientes/${dataAtencion.dataIds.pacienteId}`;
   });
 </script>
+
+
+<style>
+  
+</style>

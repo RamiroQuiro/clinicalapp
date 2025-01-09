@@ -5,7 +5,7 @@ export default function BotonEliminar({id,name, handleClick }) {
     <button
     id={id}
       onClick={handleClick}
-      className="bg-primary-400 text-white rounded-full px-2 py-1 text-xs hover:bg-primary-error duration-150"
+      className="bg-primary-400 text-white rounded-full px-2 py-1 text-xs focus:outline-none hover:bg-primary-error duration-150"
     >
       <svg
         className="w-4 "
