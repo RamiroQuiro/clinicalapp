@@ -26,8 +26,8 @@ const [isDisable, setIsDisable] = useState(false)
 
   return (
     <div className="flex group items-center justify-start  py-2 px-1 relative   border-gray-200/70 rounded-lg">
-      <div className="flex items-center justify-start gap-1">
-        <div className=" hidden absolute bg-primary-bg-componentes rounded-lg border p-2  top-[0] group-hover:flex z-50 right-full -0 w-full items-center">hola</div>
+      <div className="flex items-center justify-start relative gap-1">
+        <div className=" hidden absolute bg-primary-bg-componentes rounded-lg border p-2  top-0 group-hover:flex z-50 right-full -0 w-28 items-center">hola</div>
         <div
           className="w-8 h-8 relative peer"
           dangerouslySetInnerHTML={{ __html: svg }}
