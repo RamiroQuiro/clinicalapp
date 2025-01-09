@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import formatDate from "../../../../utils/formatDate";
 import { EyeClosed, LogOut, Outdent, TypeOutline } from "lucide-react";
+import ModalVisitasMedicas from "./ModalVisitasMedicas";
 
 export default function ConfeccionTablaVisitas({ historialVisitaData }) {
   const [modalData, setModalData] = useState(null); // Estado para los datos del modal
@@ -49,7 +50,7 @@ export default function ConfeccionTablaVisitas({ historialVisitaData }) {
             arrayBody.map((visit, index) => (
               <tr
                 key={index}
-                className="border-b last:border-0 bg-white group cursor-pointer"
+                className="border-b last:border-0 bg-white group cursor-pointer hover:bg-primary-100/10 rounded-md"
                 onClick={() => openModal(visit)} // Abre el modal al hacer clic en la fila
               >
                 <td className="text-xs px-2 py-2.5">{visit.fecha}</td>
@@ -84,26 +85,7 @@ export default function ConfeccionTablaVisitas({ historialVisitaData }) {
             <button onClick={closeModal}><LogOut/></button>
             </div>
             {modalData && (
-              <div className="space-y-2">
-                <p>
-                  <strong>Fecha:</strong> {modalData.fecha}
-                </p>
-                <p>
-                  <strong>Motivo Inicial:</strong> {modalData.motivo}
-                </p>
-                <p>
-                  <strong>Motivo:</strong> {modalData.motivo}
-                </p>
-                <p>
-                  <strong>Tratamiento:</strong> {modalData.tratamiento}
-                </p>
-                <p>
-                  <strong>Diagnostico:</strong> {modalData.tratamiento}
-                </p>
-                <p>
-                  <strong>Medicamentos:</strong> {modalData.tratamiento}
-                </p>
-              </div>
+             <ModalVisitasMedicas/>
             )}
     
           </div>

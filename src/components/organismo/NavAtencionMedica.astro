@@ -6,7 +6,7 @@ import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
 import ContenedorAntecedentesAtencion from "./ContenedorAntecedentesAtencion.astro";
 import ContenedorDatosPersonalesAtencion from "./ContenedorDatosPersonalesAtencion.astro";
 import ContenedorAlertaAtencion from "./ContenedorAlertaAtencion.astro";
-const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
+const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   Astro.props as pacienteType;
 ---
 
@@ -26,18 +26,23 @@ const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
       <!-- antecedentes -->
       <ContenedorAntecedentesAtencion antecedentes={antecedentes} />
     </div>
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3" id="buttons-container">
       <Button1 id="finalizarConsulta">finalizar consulta</Button1>
       <Button1 id="fichaPaciente">Ficha del Paciente</Button1>
     </div>
     <div
-      class="flex bg-white px-3 py-2 rounded-2xl border gap-3 md:fixed bottom-5 left-[40%]"
+      class="flex bg-white px-3 animate-aparecer py-2 rounded-2xl border gap-3 md:fixed bottom-5 left-[40%]"
+      id="fixed-buttons"
     >
       <Button1 id="finalizarConsulta">finalizar consulta</Button1>
       <Button1 id="fichaPaciente">Ficha del Paciente</Button1>
     </div>
   </div>
-  <SignosVitalesForm signosVitalesData={signosVitalesData} dataIds={dataIds} isExistHC={isExistHC ? isExistHC : ""} />
+  <SignosVitalesForm
+    signosVitalesData={signosVitalesData}
+    dataIds={dataIds}
+    isExistHC={isExistHC ? isExistHC : ""}
+  />
 </div>
 
 <script>
@@ -45,6 +50,8 @@ const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
   import { showToast } from "../../utils/toast/toastShow";
 
   let contextoAtencion = atencion.get();
+  const buttonsContainer = document.getElementById("buttons-container");
+  const fixedButtons = document.getElementById("fixed-buttons");
 
   const btnFinalizar = document.getElementById("finalizarConsulta");
   const btnFichaPaciente = document.getElementById("fichaPaciente");
@@ -52,6 +59,21 @@ const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
   atencion.subscribe((state) => {
     dataAtencion = state;
   });
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry.isIntersecting) {
+        // Botones no están visibles -> Mostrar los botones fijos
+        fixedButtons.classList.remove("hidden");
+      } else {
+        // Botones están visibles -> Ocultar los botones fijos
+        fixedButtons.classList.add("hidden");
+      }
+    },
+    { root: null, threshold: 0.1 } // Umbral del 10% para detectar visibilidad
+  );
+
+  observer.observe(buttonsContainer);
 
   btnFinalizar?.addEventListener("click", async () => {
     try {
@@ -77,7 +99,4 @@ const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
   });
 </script>
 
-
-<style>
-  
-</style>
+<style></style>
