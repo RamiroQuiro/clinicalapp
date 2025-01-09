@@ -1,9 +1,15 @@
 ---
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import MainDashboard from "../../../../../components/atomos/MainDashboard.astro";
 import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
 import db from "../../../../../db";
-import { antecedente, atenciones, diagnostico, pacientes } from "../../../../../db/schema";
+import {
+  antecedente,
+  atenciones,
+  diagnostico,
+  pacientes,
+  signosVitales,
+} from "../../../../../db/schema";
 import type { pacienteType } from "../../../../../types";
 import { generateId } from "lucia";
 import { medicamento } from "../../../../../db/schema/medicamento";
@@ -25,7 +31,42 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
       const pacienteData = (
         await trx.select().from(pacientes).where(eq(pacientes.id, idPaciente))
       ).at(0);
-      const antecedentesData= await trx.select().from(antecedente).where(eq(antecedente.pacienteId,idPaciente))
+      // buscar antecedentes del paciente
+      const antecedentesData = await trx
+        .select()
+        .from(antecedente)
+        .where(eq(antecedente.pacienteId, idPaciente));
+// buscar signosvitales anteriores
+      const fecthSignosVitalesData = await trx
+        .select()
+        .from(signosVitales)
+        .where(eq(signosVitales.pacienteId, pacienteId))
+        .orderBy(desc(signosVitales.created_at))
+        .limit(4);
+
+
+// Procesar los datos
+const signosVitalesData = [
+  "temperatura",
+  "pulso",
+  "frecuenciaCardiaca",
+  "frecuenciaRespiratoria",
+  "tensionArterial",
+  "saturacionOxigeno",
+  "glucosa",
+  "peso",
+  "talla",
+  "imc",
+].map((tipo) => {
+  const historial = fecthSignosVitalesData
+    .map((sv) => parseFloat(sv[tipo])) // Convertir valores a número (si aplica)
+    .filter((value) => !isNaN(value)); // Filtrar valores inválidos
+  return {
+    tipo,
+    historial,
+  };
+});
+
       if (!pacienteData) throw new Error("Paciente no encontrado");
 
       // Verificar si existe atención
@@ -41,6 +82,7 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
           .where(eq(medicamento.atencionId, idAtencion))
           .orderBy(desc(medicamento.created_at));
 
+
         // Traer diagnósticos asociados a la atención
         const diagnosticoData = await trx
           .select()
@@ -53,12 +95,13 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
           atencionData,
           medicamentosData,
           diagnosticoData,
-          antecedentesData
+          antecedentesData,
+          signosVitalesData,
         };
       }
 
       // Si no hay atención, devolver solo datos del paciente
-      return { pacienteData ,antecedentesData};
+      return { pacienteData,signosVitalesData, antecedentesData };
     });
 
     return result; // Resultado de la transacción
@@ -68,14 +111,21 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
   }
 };
 
-const {antecedentesData,pacienteData,atencionData,diagnosticoData,medicamentosData}= await dataFetchPaciente(pacienteId,atencionId)
-
-
-
+const {
+  antecedentesData,
+  pacienteData,
+  atencionData,
+  diagnosticoData,
+  signosVitalesData,
+  medicamentosData,
+} = await dataFetchPaciente(pacienteId, atencionId);
 ---
 
 <LayoutDash>
-  <MainDashboard dataIds={dataIds} h1={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}>
+  <MainDashboard
+    dataIds={dataIds}
+    h1={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}
+  >
     <!-- {
       !isExistHC&&
       <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
@@ -83,18 +133,13 @@ const {antecedentesData,pacienteData,atencionData,diagnosticoData,medicamentosDa
       </div>
     } -->
     <IndexAtencion
-    antecedentes={antecedentesData}
+      antecedentes={antecedentesData}
       dataIds={dataIds}
-      ,
-
+      signosVitalesData={signosVitalesData}
       pacienteData={pacienteData}
-      ,
       isExistHC={atencionData}
-      ,
       isExistDiagnosticos={diagnosticoData}
-      ,
       isExistMedicamentos={medicamentosData}
-      ,
     />
   </MainDashboard>
 </LayoutDash>

@@ -14,9 +14,10 @@ const {
   isExistHC,
   isExistDiagnosticos,
   isExistMedicamentos,
+  signosVitalesData,
   antecedentes
 } = Astro.props;
-console.log(pacienteData)
+
 ---
 <div
   class="container py-2 gap-2 px-2 flex flex-col w-[97%]"
@@ -29,6 +30,7 @@ console.log(pacienteData)
   <!-- nav en donde van, datos del paciente, dni,sexo,celular,mail, la fecha de apertura de la atencion, un buton de ficha, para ir a la ficha del paciente y al finailar la coumna dos botonos, terminar consulta y cancelar consulta
  en la 2 fila, los signos vitales con su boton de guardar -->
   <NavAtencionMedica
+  signosVitalesData={signosVitalesData}
   antecedentes={antecedentes}
     pacienteData={pacienteData}
     isExistHC={isExistHC}

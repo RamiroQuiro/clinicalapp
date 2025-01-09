@@ -1,6 +1,7 @@
 ---
 import Button2 from "../../../../../components/atomos/Button2.astro";
 import ContenedorSignosVitales from "../../../../../components/moleculas/ContenedorSignosVitales";
+import type { signosVitalesTypes } from "../../../../../types";
 
 const signosVitales = [
   {
@@ -30,11 +31,13 @@ const signosVitales = [
   },
 ];
 
-const { dataIds } = Astro.props;
+const { dataIds ,signosVitalesData} = Astro.props;
+
+
 ---
 
 <div
-  class="bg- p w-full rounded- border-y flex items-center justify-evenly overflow-hidden"
+  class="bg- p w-full rounded- border-y flex items-center justify-evenly "
 >
   <form
     action=""
@@ -43,15 +46,17 @@ const { dataIds } = Astro.props;
   >
     <div class="flex items-center w-full justify-evenly gap-2">
       {
-        signosVitales?.map((signo, i) => (
-          <ContenedorSignosVitales
+        signosVitales?.map((signo, i) => {
+          const historialSigno=signosVitalesData.filter(dataSigno=>dataSigno.tipo==signo.name)[0]?.historial
+          return(<ContenedorSignosVitales
+          historialSignos={historialSigno}
             svg={signo.svg}
             medida={signo.medida}
             label={signo.label}
             name={signo.name}
             client:load
           />
-        ))
+        )})
       }
     </div>
   </form>

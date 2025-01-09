@@ -6,7 +6,7 @@ import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
 import ContenedorAntecedentesAtencion from "./ContenedorAntecedentesAtencion.astro";
 import ContenedorDatosPersonalesAtencion from "./ContenedorDatosPersonalesAtencion.astro";
 import ContenedorAlertaAtencion from "./ContenedorAlertaAtencion.astro";
-const { pacienteData, isExistHC, dataIds, antecedentes } =
+const { pacienteData, isExistHC, dataIds, antecedentes,signosVitalesData } =
   Astro.props as pacienteType;
 ---
 
@@ -37,7 +37,7 @@ const { pacienteData, isExistHC, dataIds, antecedentes } =
       <Button1 id="fichaPaciente">Ficha del Paciente</Button1>
     </div>
   </div>
-  <SignosVitalesForm dataIds={dataIds} isExistHC={isExistHC ? isExistHC : ""} />
+  <SignosVitalesForm signosVitalesData={signosVitalesData} dataIds={dataIds} isExistHC={isExistHC ? isExistHC : ""} />
 </div>
 
 <script>
