@@ -1,7 +1,7 @@
 import React from 'react'
 import BotonEditar from '../moleculas/BotonEditar';
 import BotonEliminar from '../moleculas/BotonEliminar';
-import { dataFormularioContexto } from '../../context/store';
+import { atencion, dataFormularioContexto } from '../../context/store';
 import { showToast } from '../../utils/toast/toastShow';
 
 
@@ -46,22 +46,11 @@ export const RenderActionsEditDelet = (data) =>{
     }
 
     const handleDeletDiag = async ({id}) => {
-        try {
-            const deletFetch = await fetch('/api/pacientes/atencion/diagnostico', {
-                method: 'DELETE',
-                body: JSON.stringify({
-                    id: id
-                })
-            })
-            if (deletFetch.ok) {
-                showToast('Diagnostico eliminado')
-                document.location.reload()
-            } else {
-                showToast('error al borrar', { background: 'bg-primary-400' })
-            }
-        } catch (error) {
-            console.log(error)
-        }
+        const newDiagnosticos=atencion.get().diagnosticos.filter(diag=>diag.id!=id)
+        atencion.set({
+            ...atencion.get(),
+            diagnosticos:newDiagnosticos
+        })
     }
 
     return(
@@ -78,29 +67,18 @@ export const RenderActionsEditDeletMedicamentos = (data) =>{
           // e.showModal()
     }
 
-    const handleDeletDiag = async ({id}) => {
-        console.log(id)
-        try {
-            const deletFetch = await fetch('/api/medicamentos', {
-                method: 'DELETE',
-                body: JSON.stringify({
-                    id: id
-                })
+    const handleDeletMed = async ({id}) => {
+        const newMedicamentos=atencion.get().medicamentos.filter(med=>med.id!=id)
+            atencion.set({
+                ...atencion.get(),
+                medicamentos:newMedicamentos
             })
-            if (deletFetch.ok) {
-                showToast('Diagnostico eliminado')
-                document.location.reload()
-            } else {
-                showToast('error al borrar', { background: 'bg-primary-400' })
-            }
-        } catch (error) {
-            console.log(error)
-        }
+       
     }
 
     return(
     <div className="flex gap-2 pr-5 justify-end items-center text-xs">
         <BotonEditar handleClick={()=>handleEditModal(data)}/>
-        <BotonEliminar handleClick={()=>handleDeletDiag(data)} />
+        <BotonEliminar handleClick={()=>handleDeletMed(data)} />
     </div>
 );}

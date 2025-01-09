@@ -11,7 +11,7 @@ const { dataIds, isExistMedicamentos } = Astro.props;
 <ContenedorTitleBotonera>
   <H2>Medicamentos</H2>
 <ModalMedicamentos>
-  <MedicamentosAtencion isExistMedicamentos={isExistMedicamentos} client:load/>
+  <MedicamentosAtencion  client:load/>
 </ModalMedicamentos>
 </ContenedorTitleBotonera>
 <ConfeccionTablaMedicamentos isExistMedicamentos={isExistMedicamentos}  client:load/>

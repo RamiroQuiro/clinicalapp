@@ -21,90 +21,88 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
       name="observaciones"
       id="observaciones"></textarea>
   </div>
-  <div class="w-full flex items-center justify-end">
+  <div class="w-full flex items-center justify-between">
+    <div
+      class="w-full h-7 0 py-2 flex text-primary-400 font-semibold tracking-wider text-xs"
+    >
+      <p class="capitalize animate-aparecer" id="errores"></p>
+    </div>
     <Button1 id="guardarDiagnostico">agregar</Button1>
   </div>
 </FormCont>
 
 <script>
+  import { generateId } from "lucia";
   import { atencion, dataFormularioContexto } from "../../context/store";
-  import { showToast } from "../../utils/toast/toastShow";
 
   const textArea = document.getElementById("observaciones");
   const diagnostico = document.getElementById("diagnostico");
   const btnEnviar = document.getElementById("guardarDiagnostico");
+  const errores = document.getElementById("errores");
 
-  let dataDiagnostico = {
-    diagnostico: {
-      id: "",
-      diagnostico: "",
-      observaciones: "",
-    },
-    dataIds: {},
+  // Objeto para almacenar el diagnóstico actual
+  let currentDiagnostico = {
+    id: "",
+    diagnostico: "",
+    observaciones: "",
   };
 
+  // Suscripción al contexto para cargar los datos iniciales
   dataFormularioContexto.subscribe((data) => {
-    // Usa valores por defecto si los datos no están definidos
-    textArea.value = data?.observaciones || ""; // Por defecto, cadena vacía
-    diagnostico.value = data?.diagnostico || ""; // Por defecto, cadena vacía
-    dataDiagnostico.diagnostico.id = data?.id || ""; // Por defecto, cadena vacía
+    currentDiagnostico = {
+      id: data?.id || "",
+      diagnostico: data?.diagnostico || "",
+      observaciones: data?.observaciones || "",
+    };
+
+    // Rellena los campos del formulario con los datos existentes
+    diagnostico.value = currentDiagnostico.diagnostico;
+    textArea.value = currentDiagnostico.observaciones;
   });
 
-  // // Actualiza `dataIds` con los datos de la tienda
-  // atencion.subscribe((state) => {
-  //   dataDiagnostico.dataIds = state.dataIds;
-  // });
+  btnEnviar?.addEventListener("click", (e) => {
+    e.preventDefault();
 
-  // // Agregar evento al botón
-  // btnEnviar.addEventListener("click", async (event) => {
-  //   event.preventDefault(); // Evita el envío del formulario por defecto
+    // Validar campos obligatorios
+    if (!diagnostico.value.trim()) {
+      errores.textContent = "Ingrese un diagnóstico";
+      setTimeout(() => (errores.textContent = ""), 2000);
+      return;
+    }
 
-  //   // Obtiene valores de los campos
-  //   const diagnosticoValue = diagnostico.value.trim();
-  //   const observacionesValue = textArea.value.trim();
+    // Crea o actualiza el diagnóstico en el contexto
+    const dataContext = atencion.get();
+    const isEditing = !!currentDiagnostico.id;
 
-  //   if (!diagnosticoValue || !observacionesValue) {
-  //     showToast("Por favor, completa todos los campos", {
-  //       background: "bg-primary-400",
-  //     });
-  //     return;
-  //   }
+    if (isEditing) {
+      // Actualizar diagnóstico existente
+      const updatedDiagnosticos = dataContext.diagnosticos.map((diag) =>
+        diag.id === currentDiagnostico.id
+          ? { ...diag, diagnostico: diagnostico.value, observaciones: textArea.value }
+          : diag
+      );
+      atencion.set({
+        ...dataContext,
+        diagnosticos: updatedDiagnosticos,
+      });
+    } else {
+      // Crear nuevo diagnóstico
+      const newDiagnostico = {
+        id: generateId(13),
+        diagnostico: diagnostico.value,
+        observaciones: textArea.value,
+      };
+      atencion.set({
+        ...dataContext,
+        diagnosticos: [...dataContext.diagnosticos, newDiagnostico],
+      });
+    }
 
-  //   // Asigna valores al objeto
-  //   dataDiagnostico.diagnostico.diagnostico = diagnosticoValue;
-  //   dataDiagnostico.diagnostico.observaciones = observacionesValue;
-
-  //   try {
-  //     // Envía los datos al endpoint
-  //     const response = await fetch("/api/pacientes/atencion/diagnostico", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(dataDiagnostico),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Error al enviar los datos");
-  //     }
-
-  //     const result = await response.json();
-  //     console.log("Resultado:", result);
-  //     showToast("Diagnóstico guardado correctamente", {
-  //       background: "bg-green-500",
-  //     });
-  //     document.location.reload(); // Recarga la página después de guardar
-  //   } catch (error) {
-  //     console.error("Error al enviar el diagnóstico:", error);
-  //     showToast("Error al guardar el diagnóstico", {
-  //       background: "bg-red-500",
-  //     });
-  //   }
-  // });
-  btnEnviar?.addEventListener('click',(e)=>{
-    e.preventDefault()
-    atencion.set({
-      ...atencion.get(),
-      diagnosticos:[...atencion.get().diagnosticos,{diagnostico:diagnostico.value,observaciones:textArea.value}]
-    })
-  })
-  
+    // Limpiar el formulario y cerrar el modal
+    diagnostico.value = "";
+    textArea.value = "";
+    currentDiagnostico = { id: "", diagnostico: "", observaciones: "" };
+    errores.textContent = "";
+    document.getElementById("modal-dialogDiagnostico").close();
+  });
 </script>

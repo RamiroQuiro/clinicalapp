@@ -1,44 +1,46 @@
 import React, { useEffect, useState } from "react";
 import ContenedorAgregarDiagnostico from "../moleculas/ContenedorAgregarDiagnostico";
-import BotonMas from "../atomos/BotonMas";
 import MedicamentosAgregar from "../moleculas/MedicamentosAgregar";
 import { atencion, dataFormularioContexto } from "../../context/store";
 import { useStore } from "@nanostores/react";
-import BotonEditar from "../moleculas/BotonEditar";
-import BotonEliminar from "../moleculas/BotonEliminar";
-import { showToast } from "../../utils/toast/toastShow";
+import { generateId } from "lucia";
 
 export default function MedicamentosAtencion({ isExistMedicamentos }) {
   const [medicamento, setMedicamento] = useState({
     id: "",
     nombre: "",
-    dosis: "",
-    frecuencia: "",
+    dosis: '',
+    frecuencia: '',
     duracion: "",
   });
+  const [errores, setErrores] = useState('')
   const $atencionStore = useStore(atencion);
   const $dataFormularioContexto = useStore(dataFormularioContexto);
-
+  
   useEffect(() => {
-    setMedicamento($dataFormularioContexto);
+    setMedicamento(()=>$dataFormularioContexto);
 
-    console.log(medicamento);
   }, [$dataFormularioContexto]);
 
   const handleChange = (e) => {
-    setMedicamento({
+    
+    setMedicamento(()=>({
       ...medicamento,
       [e.target.name]: e.target.value,
-    });
+    }))
   };
-  const handleAddMedicamento = async (e) => {
+  const handleAddMedicamento =  (e) => {
     e.preventDefault();
-    if (!medicamento.nombre) {
-      showToast("no hay medicacion para agregar", {
-        background: "bg-primary-400",
-      });
+    if (!medicamento.nombre || !medicamento.dosis || !medicamento.duracion || !medicamento.frecuencia) {
+      setErrores('Complete los campos')
+      setTimeout(() => {
+        setErrores('')
+      }, 2000)
       return;
     }
+    
+    const idMedicamento=generateId(13)
+    medicamento.id=idMedicamento
     atencion.set({
       ...$atencionStore,
       medicamentos: [...$atencionStore.medicamentos, medicamento],
@@ -50,12 +52,43 @@ export default function MedicamentosAtencion({ isExistMedicamentos }) {
       frecuencia: "",
       duracion: "",
     })
-return
+    document.getElementById(`dialog-modal-medicamentos`).close()
+    return
   };
 
-  const handleEdit = async () => {
-
+  const handleEdit = (e) => {
+    e.preventDefault();
+    if (!medicamento.nombre || !medicamento.dosis || !medicamento.duracion || !medicamento.frecuencia) {
+      setErrores("Complete los campos");
+      setTimeout(() => {
+        setErrores("");
+      }, 2000);
+      return;
+    }
+  
+    atencion.set({
+      ...$atencionStore,
+      medicamentos: $atencionStore.medicamentos?.map((med) => {
+        if (med.id === medicamento.id) {
+          return medicamento; // Reemplaza el medicamento editado
+        }
+        return med; // Deja los demás como están
+      }),
+    });
+  
+    // Reinicia el estado
+    setMedicamento({
+      id: "",
+      nombre: "",
+      dosis: "",
+      frecuencia: "",
+      duracion: "",
+    });
+  
+    // Cierra el modal
+    document.getElementById(`dialog-modal-medicamentos`).close();
   };
+  
 
   const handleDelet = async (deletMedicamento) => {
     try {
@@ -116,12 +149,15 @@ return
           </div>
         </div>
       </div>
+      <div className="w-full h-7 0 py-2 flex text-primary-400 font-semibold tracking-wider text-xs">
+        <p className="capitalize  animate-aparecer">{errores}</p>
+      </div>
       <div className="w-full items-center flex py-2 justify-end">
         <button
           onClick={!medicamento.id ? handleAddMedicamento : handleEdit}
           className=" px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-150 hover:bg-primary-100/80 hover:text-white"
         >
-          agregar
+          {!medicamento.id?'agregar':'modificar'}
         </button>
       </div>
 

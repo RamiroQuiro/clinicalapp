@@ -75,8 +75,6 @@ const dateNow=new Date()
     dataIds: { atencionId, pacienteId, userId: iduser, isDisable,inicioAtencion:dateNow },
   });
 
-  atencion.subscribe((state)=>{
-  })
   const fecthingSignosVitales = async () => {
     try {
       const response = await fetch("/api/pacientes/atencion/signosVitales", {

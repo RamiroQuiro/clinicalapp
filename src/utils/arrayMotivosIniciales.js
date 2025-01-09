@@ -3,7 +3,7 @@
 export const arrayMotivosIniciales = [
     { especialidad: "general", motivos: ["Dolor abdominal", "Dolor de cabeza", "Fiebre", "Tos persistente", "Cansancio extremo"] },
     { especialidad: "pediatra", motivos: ["Fiebre", "Tos en niños", "Problemas de alimentación", "Irritabilidad", "Retrasos en el desarrollo"] },
-    { especialidad: "cardiologo", motivos: ["Dolor en el pecho", "Palpitaciones", "Presión arterial alta", "Hinchazón en las extremidades", "Dificultad para respirar"] },
+    { especialidad: "cardiologo", motivos: ["Dolor en el pecho", "Palpitaciones", "Presión arterial alta", "Hinchazón en las extremidades", "Dificultad para respirar","Fiebre alta"] },
     { especialidad: "neurologo", motivos: ["Dolores de cabeza crónicos", "Mareos", "Convulsiones", "Pérdida de memoria", "Entumecimiento"] },
     { especialidad: "gastroenterologo", motivos: ["Dolor abdominal", "Acidez", "Náuseas persistentes", "Diarrea crónica", "Sangrado rectal"] },
     { especialidad: "clinico", motivos: ["Fatiga", "Dolores musculares", "Problemas de sueño", "Perdida de peso inexplicable", "Dolores generales"] },
