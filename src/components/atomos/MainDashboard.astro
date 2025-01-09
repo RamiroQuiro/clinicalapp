@@ -3,7 +3,7 @@ const { title, dataIds, h1 } = Astro.props;
 ---
 
 <main
-  class="top-12 md:right-0 z-30 w-[91vw] bg-primary-bg-componentes rounded-tl-xl md:mb-16 overflow-hidden print:hidden flex flex-col items-center justify-center"
+  class="top-12 md:right-0 z-40 w-[91vw] bg-primary-bg-componentes rounded-tl-xl md:mb-16 overflow-hidden print:hidden flex flex-col items-center justify-center"
 >
   {
     h1 && (
@@ -13,7 +13,7 @@ const { title, dataIds, h1 } = Astro.props;
     )
   }
   <div
-    class="w-full py-1 flex flex-col items-center justify- rounded-lg h-full"
+    class="w-full py flex flex-col items-center justify- rounded-lg h-full"
   >
     <slot />
   </div>

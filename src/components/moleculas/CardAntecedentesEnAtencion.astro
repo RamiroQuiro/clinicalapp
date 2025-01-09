@@ -1,24 +1,37 @@
 ---
-import { AlertCircle, Heart } from "lucide-react";
+import { AlertCircle, Heart, SwitchCamera } from "lucide-react";
 import type { Antecedente } from "../../types";
 import formatDate from "../../utils/formatDate";
 const { data } = Astro.props as Antecedente;
 
-console.log(data);
 const dateFormat = formatDate(data.created_at);
+
+const pintarBg = (estado: string) => {
+  console.log(estado); // Para depurar
+  switch (estado) {
+    case "controlado":
+      return "bg-primary-100/20";
+    case "curado":
+      return "bg-green-300/30";
+    case "critico":
+      return "bg-primary-400/20";
+    default:
+      return "bg-primary-bg-componentes"; // Asegúrate de usar 'return' aquí
+  }
+};
+
+const bg=pintarBg(data.estado)
+
 ---
 
-<div
-  class="flex items-center gap-2 pr-2 group relative border border-gray-200/50 rounded-xl bg-primary-bg-componentes"
->
-  <div
-    class={`w-7 h-7 rounded-full ${data.estado !== "controlado" ? "bg-red-100" : "bg-primary-150"} flex items-center justify-center`}
-  >
+<div 
+  class={`flex items-center gap-2 z-40 pr-2 group relative border border-gray-200/50 rounded-xl ${bg} `}>
+  <div class={`w-7 h-7 rounded-full ${data.estado == "critico" ? "bg-red-200" : data.estado == "activo" ?"bg-primary-400/20":"bg-primary-100/50"} flex items-center justify-center`}>
     {
-      data.estado !== "controlado" ? (
+      data.estado === "critico" ? (
         <AlertCircle size={14} className="text-red-800" />
       ) : (
-        <Heart size={14} className="text-primary-texto" />
+        <Heart size={14} className="text-primary-textoTitle" />
       )
     }
   </div>
@@ -30,18 +43,18 @@ const dateFormat = formatDate(data.created_at);
   </div>
 
   <div
-    class="absolute w-full bottom-[115%] shadow-lg  flex-col items-start justify-normal gap-1 left-0 bg-primary-bg-componentes border rounded-lg text-xs p-2 hidden group-hover:flex duration- animate-apDeArriba"
+    class="absolute w-full bottom-[115%] shadow-lg   flex-col items-start justify-normal gap-1 left-0 bg-primary-bg-componentes border rounded-lg text-xs p-2 hidden group-hover:flex duration- animate-apDeArriba"
   >
     <p>
       Diagnosticado: <span class="text-primary-textoTitle font-bold"
         >{dateFormat}</span>
     </p>
     <p>
-      Observaciones: <span class="text-primary-textoTitle font-bold"
+      Observaciones: <span class="text-primary-textoTitle break-all font-bold"
         >{data.observaciones}</span>
     </p>
     <p>
-      Estado: <span class="text-primary-textoTitle font-bold"
+      Estado: <span class="text-primary-textoTitle capitalize font-bold"
         >{data.estado}</span>
     </p>
   </div>

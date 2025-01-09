@@ -25,10 +25,11 @@ const [isDisable, setIsDisable] = useState(false)
   };
 
   return (
-    <div className="flex items-center justify-start  py-2 px-1    border-gray-200/70 rounded-lg">
+    <div className="flex group items-center justify-start  py-2 px-1 relative   border-gray-200/70 rounded-lg">
       <div className="flex items-center justify-start gap-1">
+        <div className=" hidden absolute bg-primary-bg-componentes rounded-lg border p-2  top-[0] group-hover:flex z-50 right-full -0 w-full items-center">hola</div>
         <div
-          className="w-8 h-8"
+          className="w-8 h-8 relative peer"
           dangerouslySetInnerHTML={{ __html: svg }}
         ></div>
         <span className="text-xs font-bold break-words px-1">{label}</span>
