@@ -1,8 +1,11 @@
 ---
+import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
 import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
 import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
 import DivBox1 from "../../../../../components/atomos/DivBox1.astro";
+import H2 from "../../../../../components/atomos/H2.astro";
 import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
+import ConfeccionTablaVisitas from "../../../pacientes/[pacienteId]/ConfeccionTablaVisitas";
 import DiagnosticoContainer from "./DiagnosticoContainer.astro";
 import MedicacionContainar from "./MedicacionContainar.astro";
 import MotivoConsulta from "./MotivoConsulta.astro";
@@ -15,7 +18,8 @@ const {
   isExistDiagnosticos,
   isExistMedicamentos,
   signosVitalesData,
-  antecedentes
+  antecedentes,
+  historialVisitaData
 } = Astro.props;
 
 ---
@@ -45,6 +49,12 @@ const {
       <!-- motivo de consulta: formulario con un textarea para ingrar el motivo de la consulta actual -->
       <DivBox1>
         <MedicacionContainar isExistMedicamentos={isExistMedicamentos} />
+      </DivBox1>
+      <DivBox1>
+        <ContenedorTitleBotonera>
+          <H2>Medicamentos</H2>
+        </ContenedorTitleBotonera>
+        <ConfeccionTablaVisitas historialVisitaData={historialVisitaData} client:load/>
       </DivBox1>
     </Div1Atencion>
     <Div1Atencion>

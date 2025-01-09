@@ -7,7 +7,6 @@ const { data } = Astro.props as Antecedente;
 const dateFormat = formatDate(data.created_at);
 
 const pintarBg = (estado: string) => {
-  console.log(estado); // Para depurar
   switch (estado) {
     case "controlado":
       return "bg-primary-100/20";
@@ -20,13 +19,15 @@ const pintarBg = (estado: string) => {
   }
 };
 
-const bg=pintarBg(data.estado)
-
+const bg = pintarBg(data.estado);
 ---
 
-<div 
-  class={`flex items-center gap-2 z-40 pr-2 group relative border border-gray-200/50 rounded-xl ${bg} `}>
-  <div class={`w-7 h-7 rounded-full ${data.estado == "critico" ? "bg-red-200" : data.estado == "activo" ?"bg-primary-400/20":"bg-primary-100/50"} flex items-center justify-center`}>
+<div
+  class={`flex items-center gap-2 z-40 pr-2 group relative border border-gray-200/50 rounded-xl ${bg} `}
+>
+  <div
+    class={`w-7 h-7 rounded-full ${data.estado == "critico" ? "bg-red-200" : data.estado == "activo" ? "bg-primary-400/20" : "bg-primary-100/50"} flex items-center justify-center`}
+  >
     {
       data.estado === "critico" ? (
         <AlertCircle size={14} className="text-red-800" />
@@ -43,19 +44,22 @@ const bg=pintarBg(data.estado)
   </div>
 
   <div
-    class="absolute w-full bottom-[115%] shadow-lg   flex-col items-start justify-normal gap-1 left-0 bg-primary-bg-componentes/70 backdrop-blur-sm border rounded-lg text-xs p-2 hidden group-hover:flex duration- animate-apDeArriba"
+    class="absolute w-full bottom-[115%] shadow-lg flex-col items-start justify-normal gap-1 left-0 bg-primary-bg-componentes/70 backdrop-blur-sm border rounded-lg text-xs p-2 hidden group-hover:flex duration- animate-apDeArriba"
   >
     <p>
       Diagnosticado: <span class="text-primary-textoTitle font-bold"
-        >{dateFormat}</span>
+        >{dateFormat}</span
+      >
     </p>
     <p>
       Observaciones: <span class="text-primary-textoTitle break-all font-bold"
-        >{data.observaciones}</span>
+        >{data.observaciones}</span
+      >
     </p>
     <p>
       Estado: <span class="text-primary-textoTitle capitalize font-bold"
-        >{data.estado}</span>
+        >{data.estado}</span
+      >
     </p>
   </div>
 </div>
