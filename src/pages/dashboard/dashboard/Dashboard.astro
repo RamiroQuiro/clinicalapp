@@ -12,12 +12,20 @@ import {
   Users,
 } from "lucide-react";
 import db from "../../../db";
-import { pacientes } from "../../../db/schema";
+import { pacientes, users } from "../../../db/schema";
 import { eq } from "drizzle-orm";
 import DivBox1 from "../../../components/atomos/DivBox1.astro";
 import ContenedorTitleBotonera from "../../../components/atomos/ContenedorTitleBotonera.astro";
 import H2 from "../../../components/atomos/H2.astro";
 import Button1 from "../../../components/atomos/Button1.astro";
+
+// const insertData=await db.insert(users).values({
+//   id:'sakflsdk',
+//   nombre:'Name',
+//   apellido:'Man',
+//   email:'a@a.com',
+//   password:'asdfsadf'
+// })
 
 const pacientesArray = await db
   .select({

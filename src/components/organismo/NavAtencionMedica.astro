@@ -58,6 +58,7 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   let dataAtencion = {};
   atencion.subscribe((state) => {
     dataAtencion = state;
+    console.log(state)
   });
 
   const observer = new IntersectionObserver(
@@ -76,6 +77,8 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   observer.observe(buttonsContainer);
 
   btnFinalizar?.addEventListener("click", async () => {
+    const finAtencion=new Date()
+    dataAtencion.dataIds.finAtencion=finAtencion
     try {
       const finalizar = await fetch("/api/pacientes/atencion/", {
         method: "POST",
@@ -99,4 +102,10 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   });
 </script>
 
-<style></style>
+<style>
+
+.botoneraFixed{
+  
+}
+
+</style>

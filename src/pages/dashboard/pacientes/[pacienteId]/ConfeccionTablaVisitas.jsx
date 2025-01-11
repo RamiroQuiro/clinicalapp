@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import formatDate from "../../../../utils/formatDate";
 import { EyeClosed, LogOut, Outdent, TypeOutline } from "lucide-react";
-import ModalVisitasMedicas from "./ModalVisitasMedicas";
+import ModalAtencion from "./HistoriaClinicaModal";
 
 export default function ConfeccionTablaVisitas({ historialVisitaData }) {
   const [modalData, setModalData] = useState(null); // Estado para los datos del modal
@@ -75,21 +75,10 @@ export default function ConfeccionTablaVisitas({ historialVisitaData }) {
       </table>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 text-primary-texto flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-md">
-            <div className="w-full flex items-center justify-between pb-2 mb-2 border-b">
-            <h2 className="text-lg font-semibold ">
-              Información de la Atención
-            </h2>
-            <button onClick={closeModal}><LogOut/></button>
-            </div>
-            {modalData && (
-             <ModalVisitasMedicas/>
-            )}
+      {isModalOpen && (   
     
-          </div>
-        </div>
+             <ModalAtencion  atencionId={modalData.id}  onClose={closeModal}/>
+      
       )}
     </div>
   );

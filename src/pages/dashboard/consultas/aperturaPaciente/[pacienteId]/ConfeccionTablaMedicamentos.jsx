@@ -1,11 +1,12 @@
 import React from 'react'
 import Table from '../../../../../components/tablaComponentes/Table'
-import { RenderActionsEditDelet, RenderActionsEditDeletMedicamentos, RenderActionsPacientes } from '../../../../../components/tablaComponentes/RenderBotonesActions'
+import {  RenderActionsEditDeletMedicamentos,  } from '../../../../../components/tablaComponentes/RenderBotonesActions'
 import { useStore } from '@nanostores/react'
 import { atencion } from '../../../../../context/store'
 
-export default function ConfeccionTablaMedicamentos({ isExistMedicamentos }) {
+export default function ConfeccionTablaMedicamentos({  }) {
 const $medicamentosStore=useStore(atencion).medicamentos
+console.log($medicamentosStore)
   const columns = [
     {
       label: "Medicamento",
@@ -29,15 +30,7 @@ const $medicamentosStore=useStore(atencion).medicamentos
     }
   ]
 
-  let newArrayMedicamentos = isExistMedicamentos?.map((med) => {
-    return {
-      id: med.id,
-      nombre: med.nombre,
-      dosis: med.dosis,
-      frecuencia:med.frecuencia,
-      duracion:med.duracion
-    }
-  })
+
   return (
     <Table columnas={columns} arrayBody={$medicamentosStore} renderBotonActions={RenderActionsEditDeletMedicamentos} />
   )

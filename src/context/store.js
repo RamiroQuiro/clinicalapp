@@ -13,6 +13,8 @@ const columnSelectTable = atom({ asc: true, seleccion: '' })
 
 const atencion=atom({
     dataIds:{
+        inicioAtencion:'',
+        finAtencion:'',
         isDisable:false,// si es 0 desativado=noEditable , si es 1 activado=editable
         userId:'',
         pacienteId:'',

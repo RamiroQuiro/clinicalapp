@@ -83,10 +83,10 @@ const {
   const isDisable = dataset?.dataset.fin;
   const atencionId = dataset?.dataset.atencionid;
 
-const dateNow=new Date()
+const horaInicio=new Date()
   atencion.set({
     ...atencion.get(),
-    dataIds: { atencionId, pacienteId, userId: iduser, isDisable,inicioAtencion:dateNow },
+    dataIds: { atencionId, pacienteId, userId: iduser, isDisable,inicioAtencion:horaInicio },
   });
 
   const fecthingSignosVitales = async () => {
