@@ -69,7 +69,7 @@ export async function getPacienteData(pacienteId: string) {
 
         // voy a crear un mapa o objeto de colores segun el id de la atencion, los key del objeto seran el id, y se asignara el color de la paleta denro de la funcion generatColor
       const generateColor = (index) => {
-        const colors = ["#A5CDFE38","#DCECFF","#FCE3D590",  "#FFD2B2", "#E25B3250"];
+        const colors = ["#A5CDFE38","#DCECFF45","#FCE3D54C",  "#FFD2B2BD", "#E25B3250"];
         return colors[index % colors.length]; // Reutiliza colores si hay más atenciones que colores.
       };
 

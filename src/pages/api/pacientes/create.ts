@@ -9,7 +9,7 @@ export const POST: APIRoute = async ({ request }) => {
   const data: pacienteType = await request.json();
   console.log(data);
   if (!data.email || !data.nombre || !data.dni || !data.userId) {
-    return new Response("Missing required fields", {
+    return new Response("Datos incompletos requeridos", {
       status: 400,
     });
   }
@@ -36,6 +36,7 @@ export const POST: APIRoute = async ({ request }) => {
       fNacimiento: data.fNacimiento,
       ciudad:data.ciudad,
       direccion:data.direccion,
+      estatura:data.estatura,
       provincia:data.provincia,
       userId: data.userId,
       apellido: data.apellido,

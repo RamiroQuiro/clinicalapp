@@ -55,13 +55,13 @@ export const GET: APIRoute = async ({ request, params }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   const {dataIds,dataSignosVitales} = await request.json();
-  // console.log('signos vitales post ',dataSignosVitales)
+  console.log('signos vitales post ',dataSignosVitales)
   try {
     const isExtis = (
       await db
         .select()
         .from(signosVitales)
-        .where(eq(signosVitales.historiaClinicaId, dataIds.hcId))
+        .where(eq(signosVitales.atencionId, dataIds.hcId))
     ).at(0);
     if (!isExtis) {
       return new Response(
