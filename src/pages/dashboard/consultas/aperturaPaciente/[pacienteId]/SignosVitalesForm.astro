@@ -47,6 +47,7 @@ const { dataIds ,signosVitalesData} = Astro.props;
     <div class="flex items-center w-full justify-evenly gap-2">
       {
         signosVitales?.map((signo, i) => {
+
           const historialSigno=signosVitalesData.filter(dataSigno=>dataSigno.tipo==signo.name)[0]?.historial
           return(<ContenedorSignosVitales
           historialSignos={historialSigno}

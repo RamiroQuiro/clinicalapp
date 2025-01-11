@@ -4,6 +4,11 @@ import { ArrowBigRightDash, Blocks, Briefcase, FileChartColumn, Heart, Mail, Map
 import DivReact from "../../../../components/atomos/DivReact";
 import formatDate from "../../../../utils/formatDate";
 import extraerHora from "../../../../utils/extraerHora";
+import ConfeccionTablaMedicamentos from "../../consultas/aperturaPaciente/[pacienteId]/ConfeccionTablaMedicamentos";
+import ConfeccionTablaDiagnostico from "../../consultas/aperturaPaciente/[pacienteId]/ConfeccionTablaDiagnostico";
+import { atencion } from "../../../../context/store";
+import ConfeccionTablaDiagnosticoHistoriaModal from "./ConfeccionTablaDiagnosticoHistoriaModal";
+import ConfeccionTablaMedicamentosHistoriaModal from "./ConfeccionTablaMedicamentosHistoriaModal";
 
 const ModalAtencion = ({ atencionId, onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -28,6 +33,7 @@ const ModalAtencion = ({ atencionId, onClose }) => {
         const data = await response.json();
         setAtencionData(data.data);
         console.log(data.data)
+
       } catch (err) {
         setError(err.message);
       } finally {
@@ -58,18 +64,18 @@ const ModalAtencion = ({ atencionId, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black  bg-opacity-50 flex items-center justify-center backdrop-blur-sm">
-      <div className="bg-primary-bg-componentes rounded-lg border-l-2 text- border-primary-100/80 shadow-lg min-h-[95vh] p-6 w- w-2/3">
+      <div className="bg-primary-bg-componentes rounded-lg border-l-2 text- border-primary-100/80 shadow-lg h-[95vh] overflow-y-auto p-6 w- w-2/3">
 
         {isLoading ? (
           <div className="text-center">Cargando...</div>
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
         ) : (
-          <div className="flex flex-col items-start gap-4 justify-normal w-full bg0">
-            <div className="flex items-center justify-between w-full mb-2 pb-2 border-b ">
+          <div className="flex flex-col items-start gap-2 justify-normal w-full  ">
+            <div className="flex items-center justify-between w-full mb- pb-2 border-b ">
 
               <h2 className="text-xl font-semibold ">
-                Detalles de la Atención del día {formatDate(atencionData?.atencionData?.created_at)}, atención Dr. Name
+               Atención del día {formatDate(atencionData?.atencionData?.created_at)}, atención Dr. Name
               </h2>
               <Button3 onClick={onClose}>X</Button3>
             </div>
@@ -84,6 +90,7 @@ const ModalAtencion = ({ atencionId, onClose }) => {
             </DivReact>
             {/* datos personales */}
             <DivReact>
+              {/* nombre dni grupo sanguiniea */}
               <div className="border-b pb-2 mb-2 gap-3 w-full items-center justify-sart flex">
                 <h2 className="">Paciente : {atencionData?.pacienteData?.nombre} {atencionData?.pacienteData?.apellido}</h2>
 
@@ -96,7 +103,8 @@ const ModalAtencion = ({ atencionId, onClose }) => {
                   <span>Grupo Sanguineo {atencionData?.pacienteData?.grupoSanguineo}</span>
                 </div>
               </div>
-              <div className="flex  items-start justify-start py-2 gap-4 w-full ">
+              {/* data info paciente */}
+              <div className="flex  items-start justify-evenly py-2 gap-4 w-full ">
                 <div
                   class=" flex gap-2 flex-col  text-sm text-muted-foreground"
                 >
@@ -112,15 +120,15 @@ const ModalAtencion = ({ atencionId, onClose }) => {
                     <User size={16} />
                     <span>Genero {atencionData?.pacienteData?.sexo}</span>
                   </div>
-                  <div class="flex items-center cpai gap-2">
-                    <Mail size={16} />
-                    <span>{atencionData?.pacienteData?.email}</span>
-                  </div>
 
                 </div>
                 <div
                   class=" flex gap-2 flex-col text-sm capitalize text-muted-foreground"
                 >
+                  <div class="flex items-center cpai gap-2">
+                    <Mail size={16} />
+                    <span>{atencionData?.pacienteData?.email}</span>
+                  </div>
                   <div class="flex items-center gap-2">
                     <Phone size={16} />
                     <span>{atencionData?.pacienteData?.celular}</span>
@@ -129,6 +137,12 @@ const ModalAtencion = ({ atencionId, onClose }) => {
                     <MapPin size={16} />
                     <span>Direccion {atencionData?.pacienteData?.direccion}</span>
                   </div>
+
+
+                </div>
+                <div
+                  class=" flex gap-2 flex-col text-sm capitalize text-muted-foreground"
+                >
                   <div class="flex items-center gap-2">
                     <MapIcon size={16} />
                     <span>Ciudad {atencionData?.pacienteData?.ciudad}</span>
@@ -137,12 +151,6 @@ const ModalAtencion = ({ atencionId, onClose }) => {
                     <MapIcon size={16} />
                     <span>Provincia {atencionData?.pacienteData?.provincia}</span>
                   </div>
-
-
-                </div>
-                <div
-                  class=" flex gap-2 flex-col text-sm capitalize text-muted-foreground"
-                >
                   <div class="flex items-center gap-2">
                     <FileChartColumn size={16} />
                     <span>Obra Social {atencionData?.pacienteData?.obraSocial}</span>
@@ -215,24 +223,33 @@ const ModalAtencion = ({ atencionId, onClose }) => {
 
             <DivReact>
               <div className="flex items-start justify-between gap-2">
-                <DivReact>
-                  <h2 className="text-lg font-semibold ">
+                <div className="w-full flex flex-col items-center justify-start">
+                  <h2 className="text- font-semibold ">
                     Motivo de Consulta
                   </h2>
-                </DivReact>
-                <DivReact>
-                  <h2 className="text-lg font-semibold ">
+                  <DivReact>
+                  <p className="text-sm break-all">{atencionData?.atencionData?.motivoConsulta}</p>
+                  </DivReact>
+                </div>
+                <div className="w-full flex flex-col items-center justify-start">
+                  <h2 className="text font-semibold ">
                     Tratamiento
                   </h2>
-                </DivReact>
+                  <DivReact>
+                        <p className="text-sm break-all">{atencionData?.atencionData?.tratamiento}</p>
+                  </DivReact>
+                </div>
               </div>
             </DivReact>
+            {/* diagnosticos */}
             <DivReact>
               <h2 className="text-lg font-semibold ">Diagnostico</h2>
+              <ConfeccionTablaDiagnosticoHistoriaModal arrayDiagnosticos={atencionData.diagnosticoAtencionData} />
             </DivReact>
-
+            {/* medicamentos */}
             <DivReact>
               <h2 className="text-lg font-semibold ">Medicamentos</h2>
+              <ConfeccionTablaMedicamentosHistoriaModal arrayMedicamentos={atencionData.medicamentosAtencionData} />
             </DivReact>
 
 

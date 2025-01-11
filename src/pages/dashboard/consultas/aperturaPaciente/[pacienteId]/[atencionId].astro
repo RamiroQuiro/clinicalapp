@@ -44,6 +44,8 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
         .orderBy(desc(signosVitales.created_at))
         .limit(4);
 
+
+      
       // Procesar los datos
       const signosVitalesData = [
         "temperatura",
@@ -57,15 +59,12 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
         "talla",
         "imc",
       ].map((tipo) => {
-        const historial = fecthSignosVitalesData
-          .map((sv) => parseFloat(sv[tipo])) // Convertir valores a número (si aplica)
-          .filter((value) => !isNaN(value)); // Filtrar valores inválidos
-        return {
-          tipo,
-          historial,
-        };
+        const historial = fecthSignosVitalesData.map((sv) => {
+          return {valor:parseFloat(sv[tipo]), fecha:sv.created_at}
+        })
+        return {tipo,historial,};
       });
-
+      // console.log('mapando en el array',signosVitalesData)
       // traer ultiumas visitas
 
       const historialVisitaData = await trx

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
 import { atencion } from "../../context/store";
+import formatDate from "../../utils/formatDate";
 
 const ContenedorSignosVitales = ({ svg, medida, label, name,historialSignos }) => {
   const $signosVitales = useStore(atencion);
@@ -29,15 +30,17 @@ return (
   <div className="flex group items-center justify-start py-2 px-1 relative border-gray-200/70 rounded-lg">
     <div className="flex items-center justify-start relative gap-1">
       {/* Tooltip dinámico */}
-      <div className="hidden absolute bg-primary-textoTitle/80 backdrop-blur-sm text-primary-bg-claro animate-aparecer rounded-lg border p-2 top0 group-hover:flex z-50 right-full w-28 items-start">
+      <div className="hidden absolute bg-primary-textoTitle/80 border-primary-400  backdrop-blur-sm text-primary-bg-claro animate-aparecer rounded-lg border p-2 top0 group-hover:flex z-50 right-full w-32 items-start">
         <div className="flex flex-col text-xs">
           <p className="font-bold">Historial:</p>
           {historial?.length > 0 ? (
-            historial.map((valor, index) => (
+            historial.map((currentValor, index) => {
+              let formatDate=new Date(currentValor.fecha).toLocaleDateString()
+              return(
               <span key={index} className="text-gray-100">
-                - {valor}
+                -{currentValor.valor} | -{formatDate}
               </span>
-            ))
+            )})
           ) : (
             <span className="text-gray-400">Sin datos</span>
           )}
