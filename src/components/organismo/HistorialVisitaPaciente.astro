@@ -1,4 +1,5 @@
 ---
+import formatDate from "../../utils/formatDate";
 import Button1 from "../atomos/Button1.astro";
 import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
 import DivBox1 from "../atomos/DivBox1.astro";
@@ -16,8 +17,8 @@ interface RecentVisitsProps {
   visitas: Visitas[];
 }
 
-const { visitas } = Astro.props as RecentVisitsProps;
-console.log(visitas)
+const { visitas,colorMap } = Astro.props as RecentVisitsProps;
+console.log('visitas ->',visitas)
 const cabeceraColumn = [
   {
     id: 1,
@@ -64,8 +65,11 @@ const cabeceraColumn = [
       <tbody>
         {
           visitas.map((visit, index) => (
-            <tr class="border-b last:border-0 odd:bg-primary-bg-componentes/50">
-              <td class=" text-xs  px-2 py-2.5">{visit.fecha}</td>
+            <tr
+            style={{
+              backgroundColor: colorMap[visit.id],}}
+            class="border-b last:border-0 odd:bg-primary-bg-componentes/50">
+              <td class=" text-xs  px-2 py-2.5">{formatDate(visit.fecha,1)}</td>
               <td class=" text-xs break-all  px-2 py-2.5">{visit.motivo}</td>
               <td class=" text-xs  px-2 py-2.5">{visit.diagnosticos}</td>
               <td class=" text-xs  px-2 py-2.5 break-after-all">

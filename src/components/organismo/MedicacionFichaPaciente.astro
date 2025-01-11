@@ -6,13 +6,13 @@ import DivBox1 from "../atomos/DivBox1.astro";
 import TRTableMedicamento from "../moleculas/TRTableMedicamento.astro";
 
 
-const {medicacion}=Astro.props as MedicationsProps
+const {medicacion,colorMap}=Astro.props as MedicationsProps
 
 
 const cabeceraColumn=[
   {
     id:1,
-    label:'medicamentos'
+    label:'medicamento'
   },
   {
     id:2,
@@ -21,6 +21,10 @@ const cabeceraColumn=[
   {
     id:3,
     label:'frecuencia',
+  },
+  {
+    id:4,
+    label:'duracion'
   },
   {
     id:4,
@@ -55,8 +59,8 @@ const cabeceraColumn=[
           </tr>
         </thead>
         <tbody>
-          {medicacion.length>=1&&medicacion?.slice(0,4).map((medicacion:Medication, index) => (
-            <TRTableMedicamento medication={medicacion}/>
+          {medicacion.length>=1&&medicacion?.slice(0,6).map((medicacion:Medication, index) => (
+            <TRTableMedicamento colorMap={colorMap} medication={medicacion}/>
           ))}
         </tbody>
       </table>

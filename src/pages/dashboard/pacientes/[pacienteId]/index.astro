@@ -31,15 +31,13 @@ import Button1 from "../../../../components/atomos/Button1.astro";
 const { pacienteId } = Astro.params;
 const userId = "sakflsdk";
 
-
-export async function getPacienteData(pacienteId:string) {
+export async function getPacienteData(pacienteId: string) {
   try {
     const result = await db.transaction(async (trx) => {
       // Consulta del paciente
-      const pacienteData =( await trx
-        .select()
-        .from(pacientes)
-        .where(eq(pacientes.id, pacienteId))).at(0);
+      const pacienteData = (
+        await trx.select().from(pacientes).where(eq(pacientes.id, pacienteId))
+      ).at(0);
 
       if (!pacienteData) {
         throw new Error("Paciente no encontrado");
@@ -55,6 +53,7 @@ export async function getPacienteData(pacienteId:string) {
       // Historial de visitas
       const historialVisitas = await trx
         .select({
+          id:atenciones.id,
           fecha: atenciones.created_at,
           motivo: atenciones.motivoConsulta,
           diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as(
@@ -63,10 +62,24 @@ export async function getPacienteData(pacienteId:string) {
           tratamiento: atenciones.tratamiento,
         })
         .from(atenciones)
-        .rightJoin(diagnostico,eq(diagnostico.atencionId,atenciones.id))
+        .rightJoin(diagnostico, eq(diagnostico.atencionId, atenciones.id))
         .where(eq(atenciones.pacienteId, pacienteId))
         .groupBy(atenciones.id)
         .orderBy(desc(atenciones.created_at));
+
+        // voy a crear un mapa o objeto de colores segun el id de la atencion, los key del objeto seran el id, y se asignara el color de la paleta denro de la funcion generatColor
+      const generateColor = (index) => {
+        const colors = ["#A5CDFE38","#DCECFF","#FCE3D590",  "#FFD2B2", "#E25B3250"];
+        return colors[index % colors.length]; // Reutiliza colores si hay más atenciones que colores.
+      };
+
+      // Crear el mapa de colores
+      const colorMap = historialVisitas.reduce((map, atencion, index) => {
+        map[atencion.id] = generateColor(index);
+        return map;
+      }, {});
+      console.log('este es el historial de visitas ->',colorMap)
+
 
       // Antecedentes
       const arrayAntecedente = await trx
@@ -96,6 +109,7 @@ export async function getPacienteData(pacienteId:string) {
         arrayAntecedente,
         arrayArchivosAdjuntos,
         arrayNotasMedicas,
+        colorMap
       };
     });
 
@@ -106,8 +120,15 @@ export async function getPacienteData(pacienteId:string) {
   }
 }
 
-const {arrayAntecedente,arrayArchivosAdjuntos,arrayNotasMedicas,historialVisitas,medicamentosData,pacienteData}=await getPacienteData(pacienteId)
-
+const {
+  arrayAntecedente,
+  arrayArchivosAdjuntos,
+  arrayNotasMedicas,
+  historialVisitas,
+  medicamentosData,
+  pacienteData,
+  colorMap
+} = await getPacienteData(pacienteId);
 ---
 
 <LayoutDash>
@@ -129,10 +150,10 @@ const {arrayAntecedente,arrayArchivosAdjuntos,arrayNotasMedicas,historialVisitas
           <DivBox1>
             <Antecedentes antecedentes={arrayAntecedente} />
           </DivBox1>
-          <HistorialVisitaPaciente visitas={historialVisitas} />
+          <HistorialVisitaPaciente colorMap={colorMap} visitas={historialVisitas} />
         </Div1Atencion>
         <Div1Atencion>
-          <MedicacionFichaPaciente medicacion={medicamentosData} />
+          <MedicacionFichaPaciente colorMap={colorMap} medicacion={medicamentosData} />
           <ArchivosAdjuntosPaciente documentos={arrayArchivosAdjuntos} />
           <NotasMedicas userId={userId} notes={arrayNotasMedicas} />
         </Div1Atencion>

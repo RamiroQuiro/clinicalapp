@@ -1,4 +1,4 @@
-const formatDate = (fecha) => {
+const formatDate = (fecha,tipo) => {
     const date = new Date(fecha);
     const opciones = {
       weekday: "short",
@@ -7,7 +7,12 @@ const formatDate = (fecha) => {
       day: "numeric",
     };
   
-    return date.toLocaleDateString('es-AR',opciones)
+  if (!tipo) {
+      return date.toLocaleDateString('es-AR',opciones)
+  }
+  if (tipo==1) {
+    return date.toLocaleDateString('es-AR')
+  }
   };
 
   export default formatDate
