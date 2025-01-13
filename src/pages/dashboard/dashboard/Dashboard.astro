@@ -13,12 +13,13 @@ import {
 } from "lucide-react";
 import db from "../../../db";
 import { atenciones, pacientes, users } from "../../../db/schema";
-import { desc, eq, between, sql, and, gt, lte, count } from "drizzle-orm";
+import { desc, eq, between, sql, and, gt, lte, count, asc, gte } from "drizzle-orm";
 import DivBox1 from "../../../components/atomos/DivBox1.astro";
 import ContenedorTitleBotonera from "../../../components/atomos/ContenedorTitleBotonera.astro";
 import H2 from "../../../components/atomos/H2.astro";
 import Button1 from "../../../components/atomos/Button1.astro";
 import { atencion } from "../../../context/store";
+import GraficosTendencias from "./componente/GraficosTendencias.astro";
 
 // const insertData=await db.insert(users).values({
 //   id:'sakflsdk',
@@ -43,39 +44,35 @@ const dataDB = async (userId) => {
         .from(pacientes)
         .where(eq(pacientes.userId, userId));
 
-      // Fecha actual
+      // Fecha actual y rango de los últimos 7 días
       const today = new Date();
-      const todayStartMañana = new Date(today.setHours(0, 0, 0, 0)).toISOString(); // Formato ISO string
-      const todayStartTarde = new Date(today.setHours(12, 0, 0, 0)).toISOString(); // Formato ISO string
-      const todayEndTarde = new Date(today.setHours(23, 59, 59, 999)).toISOString(); // Formato ISO string
-
+      const sieteDiasAtras = new Date(today.setDate(today.getDate() - 7));
+      const startOfDay = sieteDiasAtras.setHours(0, 0, 0, 0);
+      const endOfToday = new Date().setHours(23, 59, 59, 999);
       // Obtener cantidad de atenciones turno mañana
-      const atencionesManana =( await trx
-      .select({
-          total:count()
-        })
-        .from(atenciones)
-        .where(
-          and(
-            eq(atenciones.userId, userId),
-            gt(atenciones.created_at, todayStartMañana), // Comparación con strings
-            lte(atenciones.created_at, todayEndTarde) // Comparación con strings
-          )
-        )).at(0)
-
-      // Obtener cantidad de atenciones turno tarde
-      const atencionesTarde = (await trx
+     // Obtener datos agrupados por fecha y turno
+     const atencionesPorDia = await trx
         .select({
-          total:count()
+          fecha: sql`DATE(${atenciones.created_at})`.as("fecha"),
+          turno: sql`CASE
+            WHEN strftime('%H', ${atenciones.created_at}) < '12' THEN 'mañana'
+            ELSE 'tarde'
+          END`.as("turno"),
+          total: count().as("total"),
         })
         .from(atenciones)
         .where(
-          and(
+        and(
             eq(atenciones.userId, userId),
-            gt(atenciones.created_at, todayStartTarde), // Comparación con strings
-            lte(atenciones.created_at, todayEndTarde) // Comparación con strings
+            gte(atenciones.created_at, new Date(startOfDay).toISOString()),
+            lte(atenciones.created_at, new Date(endOfToday).toISOString())
           )
-        )).at(0)
+        )
+        .groupBy(sql`DATE(${atenciones.created_at}), turno`)
+        .orderBy(asc(sql`DATE(${atenciones.created_at})`));
+     
+
+
 
       // Obtener las últimas 6 atenciones
       const ultimasAtenciones = await trx
@@ -97,8 +94,7 @@ const dataDB = async (userId) => {
 
       return {
         pacientesData,
-        atencionesManana,
-        atencionesTarde,
+        atencionesPorDia,
         ultimasAtenciones,
       };
     });
@@ -110,7 +106,7 @@ const dataDB = async (userId) => {
   }
 };
 
-const { pacientesData, atencionesManana, atencionesTarde, ultimasAtenciones } =
+const { pacientesData,atencionesPorDia, ultimasAtenciones } =
   await dataDB("sakflsdk");
 
 const stats = [
@@ -127,7 +123,17 @@ const stats = [
     change: "+3.2%",
   },
 ];
-console.log("atecniones tarde", ultimasAtenciones);
+const today = new Date();
+const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())); //si o si converitr en 0,0,0,0 el horario
+
+const atencionesDelDia = atencionesPorDia.filter(atencion => {
+  const atencionFecha = new Date(atencion.fecha);
+  return atencionFecha.toISOString() === utcToday.toISOString()
+});
+
+console.log("atecniones tarde");
+const atencionTurnoTarde=atencionesDelDia?.filter(turno=>turno.turno=="tarde")[0].total
+const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana")[0].total
 ---
 
 <div class="container py-4 gap-4 px-2 flex flex-col w- w-[97%]">
@@ -137,15 +143,18 @@ console.log("atecniones tarde", ultimasAtenciones);
     <DivBox1 class="p-6">
       <div class="flex w-full items-start justify-between">
         <div class="flex flex-col items-start justify-normal w-full">
-          <p class="text-sm font-medium text-gray-600">Consultas Hoy <span class="text-2xl ml-3 text-primary-texto">{atencionesManana.total + atencionesTarde.total}</span></p>
+          <p class="text-sm font-medium text-gray-600">Consultas Hoy <span class="text-2xl ml-3 text-primary-texto">{atencionesDelDia?.reduce((acc,turno)=>{
+            acc=++turno.total
+            return acc
+          },0)}</span></p>
           <div class="flex w-full items-center justify-between pr-4">
             <div>
               <p class="text-sm font-medium text-gray-600">Mañana</p>
-              <h3 class="mt-1 text-xl font-semibold">{atencionesManana.total}</h3>
+              <h3 class="mt-1 text-xl font-semibold">{atencionTurnoManana}</h3>
             </div>
             <div>
               <p class="text-sm font-medium text-gray-600">Tarde</p>
-              <h3 class="mt-1 text-xl font-semibold">{atencionesTarde.total}</h3>
+              <h3 class="mt-1 text-xl font-semibold">{atencionTurnoTarde}</h3>
             </div>
           </div>
         </div>
@@ -186,14 +195,7 @@ console.log("atecniones tarde", ultimasAtenciones);
       <PacienteList ultimasAtenciones={ultimasAtenciones} />
     </DivBox1>
     <DivBox1>
-      <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">
-          Gráfico de Tendencias
-        </h2>
-        <div class="h-64 flex items-center justify-center text-gray-400">
-          Gráfico de tendencias aquí
-        </div>
-      </div>
+     <GraficosTendencias data={atencionesPorDia}/>
     </DivBox1>
   </div>
   <div class="mt-8">

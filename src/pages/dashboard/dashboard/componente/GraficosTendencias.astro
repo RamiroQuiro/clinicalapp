@@ -1,0 +1,102 @@
+---
+import ContenedorTitleBotonera from "../../../../components/atomos/ContenedorTitleBotonera.astro";
+import H2 from "../../../../components/atomos/H2.astro";
+
+const { data } = Astro.props;
+console.log(data);
+---
+
+<ContenedorTitleBotonera>
+  <H2>Gráfico de Tendencias</H2>
+</ContenedorTitleBotonera>
+<div class="bg-white p-6 rounded-lg shadow-sm">
+  <div class="h-64 flex items-center justify-center text-gray-400">
+    <canvas id="atencionSemanales" class="w-full h-full"></canvas>
+  </div>
+</div>
+
+<script
+  type="text/javascript"
+  src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+<script define:vars={{ data }}>
+  // Agrupar los datos por fecha y separar por turno
+  const datosAgrupados = data.reduce((acc, curr) => {
+    const fecha = curr.fecha;
+    if (!acc[fecha]) {
+      acc[fecha] = { mañana: 0, tarde: 0 };
+    }
+    acc[fecha][curr.turno] = curr.total;
+    return acc;
+  }, {});
+
+  // Convertir a un array para el gráfico
+  const datosParaGrafico = Object.entries(datosAgrupados).map(
+    ([fecha, turnos]) => ({
+      fecha,
+      ...turnos, // mañana y tarde
+    })
+  );
+  console.log(data, datosAgrupados, datosParaGrafico);
+
+  const initGrafico = () => {
+    const labels = datosParaGrafico.map((data) => data.fecha);
+    const dataMañana = datosParaGrafico.map((data) => data.mañana);
+    const dataTarde = datosParaGrafico.map((data) => data.tarde);
+  // Calcular el total de atenciones por día
+  const dataTotal = datosParaGrafico.map(
+    (data) => (data.mañana || 0) + (data.tarde || 0)
+  );
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: "Turno Mañana",
+          data: dataMañana,
+          backgroundColor: "#5FA5FA90",
+          borderRadius: 10,
+        },
+        {
+          label: "Turno Tarde",
+          data: dataTarde,
+          backgroundColor: "#FA6D5F50",
+          borderRadius: 10,
+        },
+        {
+        label: "Total Atención", // Nueva línea de totales
+        data: dataTotal,
+        type: "line", // Tipo de gráfico para este dataset
+        borderColor: "#FAF75FFF",
+        backgroundColor: "#FAF75FFF",
+        fill:false, // No llenar bajo la línea
+      },
+      ],
+    };
+
+    const config = {
+      type: "bar",
+      data: chartData,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "top",
+          },
+          title: {
+            display: true,
+            text: "Atenciones Anteriores",
+          },
+        },
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            stacked: true,
+          },
+        },
+      },
+    };
+    new Chart(document.getElementById("atencionSemanales"), config);
+  };
+  initGrafico();
+</script>
