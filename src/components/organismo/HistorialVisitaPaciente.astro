@@ -65,9 +65,10 @@ const cabeceraColumn = [
         {
           visitas.map((visit, index) => (
             <tr
+            onclick={`document.location.href='/dashboard/consultas/${visit.id}'`}
             style={{
-              backgroundColor: colorMap[visit.id],}}
-            class="border-b last:border-0 odd:bg-primary-bg-componentes/50">
+              backgroundColor: colorMap[visit.id]}}
+            class="border-b cursor-pointer  last:border-0 odd:bg-primary-bg-componentes/50">
               <td class=" text-xs  px-2 py-2.5">{formatDate(visit.fecha,1)}</td>
               <td class=" text-xs break-all  px-2 py-2.5">{visit.motivo}</td>
               <td class=" text-xs  px-2 py-2.5">{visit.diagnosticos}</td>

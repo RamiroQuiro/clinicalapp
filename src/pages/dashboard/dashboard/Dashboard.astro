@@ -12,12 +12,13 @@ import {
   Users,
 } from "lucide-react";
 import db from "../../../db";
-import { pacientes, users } from "../../../db/schema";
-import { eq } from "drizzle-orm";
+import { atenciones, pacientes, users } from "../../../db/schema";
+import { desc, eq, between, sql, and, gt, lte, count } from "drizzle-orm";
 import DivBox1 from "../../../components/atomos/DivBox1.astro";
 import ContenedorTitleBotonera from "../../../components/atomos/ContenedorTitleBotonera.astro";
 import H2 from "../../../components/atomos/H2.astro";
 import Button1 from "../../../components/atomos/Button1.astro";
+import { atencion } from "../../../context/store";
 
 // const insertData=await db.insert(users).values({
 //   id:'sakflsdk',
@@ -26,35 +27,99 @@ import Button1 from "../../../components/atomos/Button1.astro";
 //   email:'a@a.com',
 //   password:'asdfsadf'
 // })
+// condicionar con usuarioID
 
-const pacientesArray = await db
-  .select({
-    id: pacientes.id,
-    nombre: pacientes.nombre,
-    apellido: pacientes.apellido,
-    dni: pacientes.dni,
-  })
-  .from(pacientes);
+const dataDB = async (userId) => {
+  try {
+    const result = await db.transaction(async (trx) => {
+      // Obtener pacientes del usuario
+      const pacientesData = await trx
+        .select({
+          id: pacientes.id,
+          nombre: pacientes.nombre,
+          apellido: pacientes.apellido,
+          dni: pacientes.dni,
+        })
+        .from(pacientes)
+        .where(eq(pacientes.userId, userId));
+
+      // Fecha actual
+      const today = new Date();
+      const todayStartMañana = new Date(today.setHours(0, 0, 0, 0)).toISOString(); // Formato ISO string
+      const todayStartTarde = new Date(today.setHours(12, 0, 0, 0)).toISOString(); // Formato ISO string
+      const todayEndTarde = new Date(today.setHours(23, 59, 59, 999)).toISOString(); // Formato ISO string
+
+      // Obtener cantidad de atenciones turno mañana
+      const atencionesManana =( await trx
+      .select({
+          total:count()
+        })
+        .from(atenciones)
+        .where(
+          and(
+            eq(atenciones.userId, userId),
+            gt(atenciones.created_at, todayStartMañana), // Comparación con strings
+            lte(atenciones.created_at, todayEndTarde) // Comparación con strings
+          )
+        )).at(0)
+
+      // Obtener cantidad de atenciones turno tarde
+      const atencionesTarde = (await trx
+        .select({
+          total:count()
+        })
+        .from(atenciones)
+        .where(
+          and(
+            eq(atenciones.userId, userId),
+            gt(atenciones.created_at, todayStartTarde), // Comparación con strings
+            lte(atenciones.created_at, todayEndTarde) // Comparación con strings
+          )
+        )).at(0)
+
+      // Obtener las últimas 6 atenciones
+      const ultimasAtenciones = await trx
+        .select({
+          id: atenciones.id,
+          finAtencion: atenciones.finAtencion,
+          inicioAtencion: atenciones.inicioAtencion,
+          pacienteId:atenciones.pacienteId,
+          nombre:pacientes.nombre,
+          apellido:pacientes.apellido,
+          obraSocial:pacientes.obraSocial,
+          dni:pacientes.dni
+        })
+        .from(atenciones)
+        .innerJoin(pacientes,eq(pacientes.id,atenciones.pacienteId))
+        .where(eq(atenciones.userId, userId))
+        .orderBy(desc(atenciones.created_at))
+        .limit(6);
+
+      return {
+        pacientesData,
+        atencionesManana,
+        atencionesTarde,
+        ultimasAtenciones,
+      };
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error en la transacción:", error);
+    throw new Error("Ocurrió un error al procesar la solicitud");
+  }
+};
+
+const { pacientesData, atencionesManana, atencionesTarde, ultimasAtenciones } =
+  await dataDB("sakflsdk");
 
 const stats = [
   {
     title: "Pacientes Totales",
-    value: "1,234",
+    value: pacientesData.length,
     icon: Users,
-    change: "+12.5%",
   },
-  {
-    title: "Consultas Hoy",
-    value: "15",
-    icon: Activity,
-    change: "+4.5%",
-  },
-  {
-    title: "Tiempo Promedio",
-    value: "24m",
-    icon: Clock,
-    change: "-2.5%",
-  },
+
   {
     title: "Historias Actualizadas",
     value: "89%",
@@ -62,12 +127,33 @@ const stats = [
     change: "+3.2%",
   },
 ];
+console.log("atecniones tarde", ultimasAtenciones);
 ---
 
 <div class="container py-4 gap-4 px-2 flex flex-col w- w-[97%]">
-  <Header arrayPacientes={pacientesArray} />
+  <Header arrayPacientes={pacientesData} />
 
   <div class="flex items-center gap-4 justify-evenly">
+    <DivBox1 class="p-6">
+      <div class="flex w-full items-start justify-between">
+        <div class="flex flex-col items-start justify-normal w-full">
+          <p class="text-sm font-medium text-gray-600">Consultas Hoy <span class="text-2xl ml-3 text-primary-texto">{atencionesManana.total + atencionesTarde.total}</span></p>
+          <div class="flex w-full items-center justify-between pr-4">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Mañana</p>
+              <h3 class="mt-1 text-xl font-semibold">{atencionesManana.total}</h3>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Tarde</p>
+              <h3 class="mt-1 text-xl font-semibold">{atencionesTarde.total}</h3>
+            </div>
+          </div>
+        </div>
+
+       
+      </div>
+      <div class="mt-4" />
+    </DivBox1>
     {
       stats.map((stat, index) => {
         let Icon = stat.icon;
@@ -82,13 +168,7 @@ const stats = [
                 <Icon className="w-5" />
               </div>
             </div>
-            <div class="mt-4">
-              <span
-                class={`text-sm ${stat.change.startsWith("+") ? "text-green-600" : "text-red-600"}`}
-              >
-                {stat.change} vs. mes anterior
-              </span>
-            </div>
+            <div class="mt-4" />
           </DivBox1>
         );
       })
@@ -98,15 +178,14 @@ const stats = [
   <div class="flex items-start justify-normal gap-4 w-full">
     <DivBox1>
       <ContenedorTitleBotonera>
-        <H2>Pacientes Recientes</H2>
-        <div>
+        <H2>Ultimas Atenciones</H2>
+        <!-- <div>
           <Button1>ver más</Button1>
-        </div>
+        </div> -->
       </ContenedorTitleBotonera>
-      <PacienteList />
+      <PacienteList ultimasAtenciones={ultimasAtenciones} />
     </DivBox1>
     <DivBox1>
-    
       <div class="bg-white p-6 rounded-lg shadow-sm">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">
           Gráfico de Tendencias

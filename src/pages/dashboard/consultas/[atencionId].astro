@@ -1,0 +1,40 @@
+---
+import { Backpack, HistoryIcon } from "lucide-react";
+import MainDashboard from "../../../components/atomos/MainDashboard.astro";
+import LayoutDash from "../../../components/layouts/LayoutDash.astro";
+import AtencionExistente from "../../../components/organismo/AtencionExistente";
+import ButtonBackHistory from "../../../components/atomos/ButtonBackHistory.astro";
+
+const { atencionId } = Astro.params;
+let atencionData: {};
+try {
+  const response = await fetch(`${Astro.url.origin}/api/pacientes/atencion`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json", // Especifica el tipo de contenido
+      "X-Atencion-Id": atencionId, // Aquí envías el id como header personalizado
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error al obtener los datos de la atención");
+  }
+  const data = await response.json();
+  atencionData = data.data;
+  console.log(data.data);
+} catch (err) {
+  console.log(err);
+} finally {
+  console.log("finalizacion de la peticion");
+}
+---
+
+<LayoutDash>
+  <MainDashboard>
+    <div class=" flex w-11/12">
+<div class="pr-2 py-3">
+  <ButtonBackHistory/>
+</div>
+      <AtencionExistente atencionData={atencionData} client:load />
+    </div>
+  </MainDashboard>
+</LayoutDash>

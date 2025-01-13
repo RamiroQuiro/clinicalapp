@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import formatDate from "../../../../utils/formatDate";
 import { EyeClosed, LogOut, Outdent, TypeOutline } from "lucide-react";
-import ModalAtencion from "./HistoriaClinicaModal";
+import ModalAtencion from "./ModalAtencion";
 
 export default function ConfeccionTablaVisitas({ historialVisitaData }) {
   const [modalData, setModalData] = useState(null); // Estado para los datos del modal

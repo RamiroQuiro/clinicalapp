@@ -7,6 +7,7 @@ const useBusquedaFiltros = (arr, opcionesFiltrado) => {
   const busquedaFiltros = useCallback(
     (arr, search) => {
       if (!search) return arr; // Si no hay búsqueda, devolvemos el array original
+      if(search=='00') return arr
       return arr?.filter((item) => {
         if(opcionesFiltrado.length==0){
           if(item.toUpperCase().includes(search.toUpperCase())){

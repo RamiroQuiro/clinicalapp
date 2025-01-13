@@ -1,6 +1,8 @@
 ---
 import { Activity, Clock } from "lucide-react";
-
+import formatDate from "../../../../utils/formatDate";
+import extraerHora from "../../../../utils/extraerHora";
+const {ultimasAtenciones}=Astro.props
 
 const patients = [
   {
@@ -32,21 +34,21 @@ const patients = [
 <div class=" rounded-lg w-full">
 
     <div class="flex flex-col gap-2 items-center justify-normal w-full">
-      {patients.map((patient) => (
-        <div class="py-1 px-4 w-full hover:bg-gray-50 bg-primary-bg-componentes transition-colors">
+      {ultimasAtenciones?.map((aten) => (
+        <a href={`/dashboard/consultas/${aten.id}`} class="py-1 px-4 w-full rounded-lg hover:bg-white  hover:shadow-md hover:-translate-y-0.5 duration-200 bg-primary-bg-componentes -colors cursor-pointer">
           <div class="flex justify-between items-center">
             <div>
-              <h3 class="font-medium text-gray-800">{patient.name}</h3>
+              <h3 class="font-medium text-gray-800">{aten.nombre}{' '}{aten.apellido}</h3>
               <div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
                 <Clock class="w-4 h-4" />
-                <span>Última visita: {patient.lastVisit}</span>
+                <span>Última visita: {formatDate(aten.inicioAtencion)}{extraerHora(aten.inicioAtencion)}</span>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span class={`text-sm `}>{patient.obraSocial}</span>
+              <span class={`text-sm capitalize`}>{aten.obraSocial}</span>
             </div>
           </div>
-        </div>
+        </a>
       ))}
     </div>
   </div>

@@ -89,56 +89,5 @@ const horaInicio=new Date()
     dataIds: { atencionId, pacienteId, userId: iduser, isDisable,inicioAtencion:horaInicio },
   });
 
-  const fecthingSignosVitales = async () => {
-    try {
-      const response = await fetch("/api/pacientes/atencion/signosVitales", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          idHistoriaClinica: atenciondId,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data);
-        atencion.set({
-          ...atencion.get(),
-          signosVitales: data.data,
-        });
-      } else {
-        console.error(
-          "Error al obtener los signos vitales:",
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error("Error al realizar la solicitud:", error);
-    }
-  };
 
-  const fetchgingTratamiento = async () => {
-    try {
-      const response = await fetch("/api/pacientes/atencion/tratamiento", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          idHistoriaClinica: atenciondId,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        let tratamientoGet = data.data.tratamiento;
-        atencion.set({ ...atencion.get(), tratamiento: tratamientoGet });
-      } else {
-        console.error(
-          "Error al obtener los signos vitales:",
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error("Error al realizar la solicitud:", error);
-    }
-  };
-  fetchgingTratamiento();
-  fecthingSignosVitales();
 </script>
