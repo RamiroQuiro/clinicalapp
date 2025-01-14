@@ -31,11 +31,10 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
       <Button1 id="fichaPaciente">Ficha del Paciente</Button1>
     </div>
     <div
-      class="flex bg-white px-3 animate-aparecer py-2 rounded-2xl border gap-3 md:fixed bottom-5 left-[40%]"
+      class="flex bg-white px-3 animate-aparecer py-2 rounded-2xl border gap-3 md:fixed bottom-5 left-[47.5%]"
       id="fixed-buttons"
     >
-      <Button1 id="finalizarConsulta">finalizar consulta</Button1>
-      <Button1 id="fichaPaciente">Ficha del Paciente</Button1>
+      <Button1 id="finalizarConsultaFixed">finalizar consulta</Button1>
     </div>
   </div>
   <SignosVitalesForm
@@ -54,6 +53,7 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   const fixedButtons = document.getElementById("fixed-buttons");
 
   const btnFinalizar = document.getElementById("finalizarConsulta");
+  const btnFinalizarFixed = document.getElementById("finalizarConsultaFixed");
   const btnFichaPaciente = document.getElementById("fichaPaciente");
   let dataAtencion = {};
   atencion.subscribe((state) => {
@@ -76,7 +76,7 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
 
   observer.observe(buttonsContainer);
 
-  btnFinalizar?.addEventListener("click", async () => {
+const funcionParaGuardarAtencion=async () => {
     const finAtencion=new Date()
     dataAtencion.dataIds.finAtencion=finAtencion
     try {
@@ -96,7 +96,11 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
     } catch (error) {
       console.log(error);
     }
-  });
+  }
+
+
+  btnFinalizar?.addEventListener("click",funcionParaGuardarAtencion );
+  btnFinalizarFixed?.addEventListener("click",funcionParaGuardarAtencion );
   btnFichaPaciente?.addEventListener("click", () => {
     document.location.href = `/dashboard/pacientes/${dataAtencion.dataIds.pacienteId}`;
   });

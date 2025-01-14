@@ -4,30 +4,7 @@ import formatDate from "../../../../utils/formatDate";
 import extraerHora from "../../../../utils/extraerHora";
 const {ultimasAtenciones}=Astro.props
 
-const patients = [
-  {
-    id: 1,
-    name: 'María García',
-    lastVisit: '2024-03-10',
-    status: 'Estable',
-    obraSocial:'particular'
-  },
-  {
-    id: 2,
-    name: 'Juan Pérez',
-    lastVisit: '2024-03-09',
-    status: 'En observación',
-    obraSocial:'IOSEP'
-  },
-  {
-    id: 3,
-    name: 'Ana Martínez',
-    lastVisit: '2024-03-08',
-    status: 'Crítico',
-    statusColor: 'text-red-500',
-    obraSocial:'OSDE'
-  },
-];
+
 ---
 
 
@@ -41,7 +18,7 @@ const patients = [
               <h3 class="font-medium text-gray-800">{aten.nombre}{' '}{aten.apellido}</h3>
               <div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
                 <Clock class="w-4 h-4" />
-                <span>Última visita: {formatDate(aten.inicioAtencion)}{extraerHora(aten.inicioAtencion)}</span>
+                <span class="pr-2">Última visita: {formatDate(aten.inicioAtencion)}{extraerHora(aten.inicioAtencion)}</span>
               </div>
             </div>
             <div class="flex items-center gap-2">

@@ -22,7 +22,7 @@ const atencion=atom({
     },
     tratamiento:'',
     signosVitales:{},
-    motivoInicial:'',
+    motivoInicial:'sin motivo',
     motivoConsulta:'',
     diagnosticos:[],
     medicamentos:[]
