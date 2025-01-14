@@ -4,7 +4,7 @@ import { busqueda } from '../../context/store'
 import useBusquedaFiltros from '../../hook/useBusquedaFiltro'
 import { generateId } from 'lucia'
 
-export default function FormularioDeBusqueda({ value, arrayABuscar, id,placeholder,opcionesFiltrado,onACtion}) {
+export default function FormularioDeBusqueda({ value, arrayABuscar, id,placeholder,opcionesFiltrado,onACtion,handleNoHayRegistro}) {
     // const [clientSelect, setClientSelect] = useState([])
     const arr = []
     const $pacienteSelect = useStore(busqueda)
@@ -52,7 +52,7 @@ export default function FormularioDeBusqueda({ value, arrayABuscar, id,placehold
                         ))
                     ) : (<>
                         <span className='text-xs py-2 px-3 border-y w-full font-semibold'>No se encontro registros</span>
-                        <button className='text-xs py-2 px-3 text-primary-100 font-semibold'>+ Agregar registro</button>
+                      {handleNoHayRegistro&&  <button onClick={()=>handleNoHayRegistro(search,setSearch)} className='text-xs py-2 px-3 text-primary-100 font-semibold'>+ Agregar registro</button>}
                         </>
                     )}
                 </div>

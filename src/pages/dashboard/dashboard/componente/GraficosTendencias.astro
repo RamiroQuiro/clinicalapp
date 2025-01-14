@@ -3,15 +3,17 @@ import ContenedorTitleBotonera from "../../../../components/atomos/ContenedorTit
 import H2 from "../../../../components/atomos/H2.astro";
 
 const { data } = Astro.props;
-console.log(data);
 ---
 
 <ContenedorTitleBotonera>
   <H2>Gráfico de Tendencias</H2>
 </ContenedorTitleBotonera>
-<div class="bg-white p-6 rounded-lg shadow-sm">
+<div class="bg-white p-6 rounded-lg shadow-sm flex flex-col items-start justify-normal gap-3">
   <div class="h-64 flex items-center justify-center text-gray-400">
     <canvas id="atencionSemanales" class="w-full h-full"></canvas>
+  </div>
+  <div class="w-full bg- flex items-center justify-center text-gray-400">
+    <canvas id="motivosIniciales" class="w-full h-full"></canvas>
   </div>
 </div>
 
@@ -20,7 +22,7 @@ console.log(data);
   src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 <script define:vars={{ data }}>
   // Agrupar los datos por fecha y separar por turno
-  const datosAgrupados = data.reduce((acc, curr) => {
+  const datosAgrupados = data.atencionesPorDia.reduce((acc, curr) => {
     const fecha = curr.fecha;
     if (!acc[fecha]) {
       acc[fecha] = { mañana: 0, tarde: 0 };
@@ -36,7 +38,7 @@ console.log(data);
       ...turnos, // mañana y tarde
     })
   );
-  console.log(data, datosAgrupados, datosParaGrafico);
+  
 
   const initGrafico = () => {
     const labels = datosParaGrafico.map((data) => data.fecha);
@@ -65,8 +67,8 @@ console.log(data);
         label: "Total Atención", // Nueva línea de totales
         data: dataTotal,
         type: "line", // Tipo de gráfico para este dataset
-        borderColor: "#FAF75FFF",
-        backgroundColor: "#FAF75FFF",
+        borderColor: "#2B60E380",
+        backgroundColor: "#2B60E380",
         fill:false, // No llenar bajo la línea
       },
       ],
@@ -98,5 +100,35 @@ console.log(data);
     };
     new Chart(document.getElementById("atencionSemanales"), config);
   };
+
+  const initGraficoMotivosIniciales=()=>{
+    const configDonut = {
+  type: "polarArea",
+  data: {
+    labels: data.datosMotivoConsulta.map((s) => s.motivoInicial),
+    datasets: [
+      {
+        data: data.datosMotivoConsulta.map((s) => s.total),
+        backgroundColor: ["#5FA5FA50", "#FAF75F80", "#5FD6FA50","#FA6D5F50","#9BE32B50"],
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Motivo Inicial de Atención'
+      }
+    }
+  },
+};
+new Chart(document.getElementById("motivosIniciales"), configDonut);
+
+  }
   initGrafico();
+  initGraficoMotivosIniciales()
 </script>

@@ -8,7 +8,7 @@ export default {
           100: "#5FA5FA",
           150: "#5FA5FA50",
           200: "#5FD6FA",
-          300: "#DFFA5F",
+          300: "#FAF75FFF",
           400: "#FA6D5F",
           500: "#9BE32B",
           600: "#2B60E3",

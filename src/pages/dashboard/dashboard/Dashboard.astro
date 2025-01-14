@@ -71,6 +71,10 @@ const dataDB = async (userId) => {
         .groupBy(sql`DATE(${atenciones.created_at}), turno`)
         .orderBy(asc(sql`DATE(${atenciones.created_at})`));
      
+      const datosMotivoConsulta=await trx.select({
+        motivoInicial:atenciones.motivoInicial,
+        total:count(),
+      }).from(atenciones).where(eq(atenciones.userId,userId)).groupBy(atenciones.motivoInicial)
 
 
 
@@ -94,6 +98,7 @@ const dataDB = async (userId) => {
 
       return {
         pacientesData,
+        datosMotivoConsulta,
         atencionesPorDia,
         ultimasAtenciones,
       };
@@ -106,7 +111,7 @@ const dataDB = async (userId) => {
   }
 };
 
-const { pacientesData,atencionesPorDia, ultimasAtenciones } =
+const { pacientesData,atencionesPorDia, ultimasAtenciones,datosMotivoConsulta } =
   await dataDB("sakflsdk");
 
 const stats = [
@@ -131,7 +136,8 @@ const atencionesDelDia = atencionesPorDia.filter(atencion => {
   return atencionFecha.toISOString() === utcToday.toISOString()
 });
 
-console.log("atecniones tarde");
+const dataGraficos={atencionesPorDia,datosMotivoConsulta}
+console.log(dataGraficos)
 const atencionTurnoTarde=atencionesDelDia?.filter(turno=>turno.turno=="tarde")[0].total
 const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana")[0].total
 ---
@@ -195,7 +201,7 @@ const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana"
       <PacienteList ultimasAtenciones={ultimasAtenciones} />
     </DivBox1>
     <DivBox1>
-     <GraficosTendencias data={atencionesPorDia}/>
+     <GraficosTendencias data={dataGraficos}/>
     </DivBox1>
   </div>
   <div class="mt-8">
