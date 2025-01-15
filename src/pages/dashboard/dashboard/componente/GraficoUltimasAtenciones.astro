@@ -30,11 +30,7 @@ const { data } = Astro.props;
   // Convertir a un array para el gráfico
   const datosParaGrafico = Object.entries(datosAgrupados).map(
     ([fecha, turnos]) => {
-      const formateoFecha = new Date(fecha).toLocaleDateString("es-AR", {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
-      });
+      const formateoFecha = fecha
       return {
         fecha: formateoFecha,
         ...turnos, // mañana y tarde}
