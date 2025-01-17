@@ -1,10 +1,8 @@
 import { sql } from "drizzle-orm";
-import { text } from "drizzle-orm/mysql-core";
-import { sqliteTable } from "drizzle-orm/sqlite-core";
-import { FileChartColumn } from "lucide-react";
+import {text, sqliteTable } from "drizzle-orm/sqlite-core";
 
 export const antecedente = sqliteTable("antecedente", {
-    id: text("id").primaryKey().unique(),
+    id: text("id").primaryKey(),
     antecedente:text('antecedente').notNull(),
     pacienteId: text("pacienteId").notNull(), // Relación con el paciente
     tipo: text("tipo").notNull(), // Ejemplo: "Personal", "Familiar", "Hábitos"

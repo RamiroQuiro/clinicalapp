@@ -11,3 +11,4 @@ export {tratamiento} from './tratamiento';
 export {turnos} from './turnos';
 export {users} from './users';
 export {atenciones} from './atenciones';
+export {listaDeEspera} from './listaDeEspera';  

@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { users } from "./users";
 import { pacientes } from "./pacientes";
 
 export const atenciones = sqliteTable("atenciones", {

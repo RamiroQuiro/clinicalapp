@@ -1,13 +1,17 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable,text } from "drizzle-orm/sqlite-core";
 
-export const listaDeEspera=sqliteTable('listaDeEspera',{
-    id:text('id').primaryKey().unique(),
-    pacienteId:text('pacienteId').notNull(),
-    userId:text('userId').notNull(),
-    fecha:text('fecha').notNull(),
-    hora:text('hora').notNull(),
-    orden:integer('orden',{mode:'number'}),
-    estado:text('estado').default('pendiente'),
-    motivoConsulta:text('motivoConsulta').notNull(),
-    activo: integer('activo',{mode:'boolean'}).default(true),
-})
+export const listaDeEspera = sqliteTable("listaDeEspera", {
+    id: text('id').primaryKey(),
+    pacienteId: text('pacienteId'),
+    nombre: text('nombre').notNull(),
+    apellido: text('apellido').notNull(),
+    isExist:integer('isExist',{mode:'boolean'}).default(false),
+    dni: text('dni').notNull(),
+    userId: text('userId').notNull(),
+    fecha: text('fecha').notNull(),
+    orden:integer('orden'),
+    hora: text('hora').notNull(),
+    motivoConsulta: text('motivoConsulta').notNull(),
+    estado: text('estado').default('pendiente'),
+    activo: text('activo').default('true'),
+});

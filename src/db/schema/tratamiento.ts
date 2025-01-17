@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
-import { text } from "drizzle-orm/mysql-core";
-import { sqliteTable } from "drizzle-orm/sqlite-core";
+import { sqliteTable,text } from "drizzle-orm/sqlite-core";
 
 export const tratamiento= sqliteTable('tratamiento',{
     id:text('id').primaryKey().unique(),
