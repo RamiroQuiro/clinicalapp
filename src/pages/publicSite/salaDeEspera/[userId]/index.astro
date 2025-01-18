@@ -2,12 +2,12 @@
 import Layout from "../../../../layouts/Layout.astro";
 import SalaEspera from "./components/SalaEspera";
 
+const {userId} = Astro.params
 ---
 
 <Layout>
-    <h1>esta en la parte de la o el secretario/a</h1>
 <div class="bg-primary-bg-componentes flex items-center justify-center w-full">
 
-    <SalaEspera client:load/>
+    <SalaEspera userId={userId} client:load/>
 </div>
 </Layout>

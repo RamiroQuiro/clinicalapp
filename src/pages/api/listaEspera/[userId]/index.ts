@@ -4,15 +4,15 @@ import { listaDeEspera, pacientes } from "@/db/schema";
 import db from "@/db";
 import { nanoid } from "nanoid";
 
-export const GET: APIRoute = async ({ request ,params}) => {
-    
+export const GET: APIRoute = async ({ request, params }) => {
+
     const listaEsperaDB = await db.select().from(listaDeEspera).where(eq(listaDeEspera.userId, params.userId))
     return new Response(JSON.stringify(listaEsperaDB), {
         status: 200,
     });
 
 }
-export const POST: APIRoute = async ({ request ,params}) => {
+export const POST: APIRoute = async ({ request, params }) => {
     const data = await request.json();
     const { userId } = params
     console.log(data);
@@ -24,8 +24,8 @@ export const POST: APIRoute = async ({ request ,params}) => {
 
     try {
         const isPacienteExiste = (await db.select().from(pacientes).where(eq(pacientes.dni, data.dni))).at(0)
-        const fechaHoy=new Date()
-        const horaHoy=fechaHoy.getHours()
+        const fechaHoy = new Date()
+        const horaHoy = fechaHoy.getHours()
         if (isPacienteExiste) {
             const insertarPaciente = await db.insert(listaDeEspera).values({
                 id: nanoid(),
@@ -39,13 +39,13 @@ export const POST: APIRoute = async ({ request ,params}) => {
                 userId: userId,
                 isExist: true,
             }).returning()
-            return new Response(JSON.stringify({status:200,msg:'paciente agregado a la lista de espera',data:insertarPaciente}), {
+            return new Response(JSON.stringify({ status: 200, msg: 'paciente agregado a la lista de espera', data: insertarPaciente }), {
                 headers: { "content-type": "application/json" },
             });
         }
         const insertarPaciente = await db.insert(listaDeEspera).values({
             id: nanoid(),
-            
+
             nombre: data.nombre,
             apellido: data.apellido,
             dni: data.dni,
@@ -56,7 +56,7 @@ export const POST: APIRoute = async ({ request ,params}) => {
             isExist: false,
         }).returning()
 
-        return new Response(JSON.stringify({status:200,msg:'paciente agregado a la lista de espera',data:insertarPaciente}), {
+        return new Response(JSON.stringify({ status: 200, msg: 'paciente agregado a la lista de espera', data: insertarPaciente }), {
             headers: { "content-type": "application/json" },
         });
     } catch (error) {
@@ -66,3 +66,19 @@ export const POST: APIRoute = async ({ request ,params}) => {
         });
     }
 };
+
+
+export const DELETE: APIRoute = async ({ request, params }) => {
+    const { userId } = params
+    const data = await request.json()
+    try {
+        const deletPacienteEnEspera = await db.delete(listaDeEspera).where(eq(listaDeEspera.dni, data.dni)).returning()
+        return new Response(JSON.stringify({ status: 200, msg: 'eliminado correctamen   te', data: deletPacienteEnEspera }), {
+            headers: { "content-type": "application/json" },
+        });
+    } catch (error) {
+        console.log(error)
+        return new Response(JSON.stringify({ status: 500, msg: 'error al eliminar' }))
+    }
+
+}

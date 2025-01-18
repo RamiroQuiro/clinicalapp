@@ -13,12 +13,23 @@ import {
 } from "lucide-react";
 import db from "../../../db";
 import { atenciones, pacientes, users } from "../../../db/schema";
-import { desc, eq, between, sql, and, gt, lte, count, asc, gte } from "drizzle-orm";
+import {
+  desc,
+  eq,
+  between,
+  sql,
+  and,
+  gt,
+  lte,
+  count,
+  asc,
+  gte,
+} from "drizzle-orm";
 import DivBox1 from "../../../components/atomos/DivBox1.astro";
 import ContenedorTitleBotonera from "../../../components/atomos/ContenedorTitleBotonera.astro";
 import H2 from "../../../components/atomos/H2.astro";
 import GraficoUltimasAtenciones from "./componente/GraficoUltimasAtenciones.astro";
-import SalaEspera from './componente/SalaEspera'
+import SalaEspera from "./componente/SalaEspera";
 import GraficoMotivosIniciales from "./componente/GraficoMotivosIniciales.astro";
 import ListaDeEspera from "./componente/ListaDeEspera.astro";
 
@@ -51,8 +62,8 @@ const dataDB = async (userId) => {
       const startOfDay = sieteDiasAtras.setHours(0, 0, 0, 0);
       const endOfToday = new Date().setHours(23, 59, 59, 999);
       // Obtener cantidad de atenciones turno mañana
-     // Obtener datos agrupados por fecha y turno
-     const atencionesPorDia = await trx
+      // Obtener datos agrupados por fecha y turno
+      const atencionesPorDia = await trx
         .select({
           fecha: sql`DATE(${atenciones.created_at})`.as("fecha"),
           turno: sql`CASE
@@ -63,21 +74,23 @@ const dataDB = async (userId) => {
         })
         .from(atenciones)
         .where(
-        and(
+          and(
             eq(atenciones.userId, userId),
             gte(atenciones.created_at, new Date(startOfDay).toISOString()),
-            lte(atenciones.created_at, new Date(endOfToday).toISOString())
-          )
+            lte(atenciones.created_at, new Date(endOfToday).toISOString()),
+          ),
         )
         .groupBy(sql`DATE(${atenciones.created_at}), turno`)
         .orderBy(asc(sql`DATE(${atenciones.created_at})`));
-     
-      const datosMotivoConsulta=await trx.select({
-        motivoInicial:atenciones.motivoInicial,
-        total:count(),
-      }).from(atenciones).where(eq(atenciones.userId,userId)).groupBy(atenciones.motivoInicial)
 
-
+      const datosMotivoConsulta = await trx
+        .select({
+          motivoInicial: atenciones.motivoInicial,
+          total: count(),
+        })
+        .from(atenciones)
+        .where(eq(atenciones.userId, userId))
+        .groupBy(atenciones.motivoInicial);
 
       // Obtener las últimas 6 atenciones
       const ultimasAtenciones = await trx
@@ -85,14 +98,14 @@ const dataDB = async (userId) => {
           id: atenciones.id,
           finAtencion: atenciones.finAtencion,
           inicioAtencion: atenciones.inicioAtencion,
-          pacienteId:atenciones.pacienteId,
-          nombre:pacientes.nombre,
-          apellido:pacientes.apellido,
-          obraSocial:pacientes.obraSocial,
-          dni:pacientes.dni
+          pacienteId: atenciones.pacienteId,
+          nombre: pacientes.nombre,
+          apellido: pacientes.apellido,
+          obraSocial: pacientes.obraSocial,
+          dni: pacientes.dni,
         })
         .from(atenciones)
-        .innerJoin(pacientes,eq(pacientes.id,atenciones.pacienteId))
+        .innerJoin(pacientes, eq(pacientes.id, atenciones.pacienteId))
         .where(eq(atenciones.userId, userId))
         .orderBy(desc(atenciones.created_at))
         .limit(6);
@@ -112,8 +125,12 @@ const dataDB = async (userId) => {
   }
 };
 
-const { pacientesData,atencionesPorDia, ultimasAtenciones,datosMotivoConsulta } =
-  await dataDB("sakflsdk");
+const {
+  pacientesData,
+  atencionesPorDia,
+  ultimasAtenciones,
+  datosMotivoConsulta,
+} = await dataDB("sakflsdk");
 
 const stats = [
   {
@@ -130,16 +147,22 @@ const stats = [
   },
 ];
 const today = new Date();
-const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())); //si o si converitr en 0,0,0,0 el horario
+const utcToday = new Date(
+  Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
+); //si o si converitr en 0,0,0,0 el horario
 
-const atencionesDelDia = atencionesPorDia.filter(atencion => {
+const atencionesDelDia = atencionesPorDia.filter((atencion) => {
   const atencionFecha = new Date(atencion.fecha);
-  return atencionFecha.toISOString() === utcToday.toISOString()
+  return atencionFecha.toISOString() === utcToday.toISOString();
 });
 
-const dataGraficos={atencionesPorDia,datosMotivoConsulta}
-const atencionTurnoTarde=atencionesDelDia?.filter(turno=>turno.turno=="tarde")[0]?.total
-const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana")[0]?.total
+const dataGraficos = { atencionesPorDia, datosMotivoConsulta };
+const atencionTurnoTarde = atencionesDelDia?.filter(
+  (turno) => turno.turno == "tarde",
+)[0]?.total;
+const atencionTurnoManana = atencionesDelDia?.filter(
+  (turno) => turno.turno == "mañana",
+)[0]?.total;
 ---
 
 <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
@@ -149,10 +172,15 @@ const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana"
     <DivBox1 class="p-6">
       <div class="flex w-full items-start justify-between">
         <div class="flex flex-col items-start justify-normal w-full">
-          <p class="text-sm font-medium text-gray-600">Consultas Hoy <span class="text-2xl ml-3 text-primary-texto">{atencionesDelDia?.reduce((acc,turno)=>{
-            acc=++turno.total
-            return acc
-          },0)}</span></p>
+          <p class="text-sm font-medium text-gray-600">
+            Consultas Hoy <span class="text-2xl ml-3 text-primary-texto"
+              >{
+                atencionesDelDia?.reduce((acc, turno) => {
+                  acc = ++turno.total;
+                  return acc;
+                }, 0)
+              }</span>
+          </p>
           <div class="flex w-full items-center justify-between pr-4">
             <div>
               <p class="text-sm font-medium text-gray-600">Mañana</p>
@@ -164,10 +192,8 @@ const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana"
             </div>
           </div>
         </div>
-
-       
       </div>
-      <div class="mt-4" />
+      <div class="mt-4"></div>
     </DivBox1>
     {
       stats.map((stat, index) => {
@@ -190,10 +216,9 @@ const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana"
     }
   </div>
 
-
-  <div class="flex items-start justify-normal gap-2 w-full">
+  <div class="flex items-start justify-between gap-2 w-full">
     <!-- ultimas atenciones -->
-    <DivBox1 styleDiv="w-1/3">
+    <DivBox1 styleDiv="w-[30%]">
       <ContenedorTitleBotonera>
         <H2>Ultimas Atenciones</H2>
         <!-- <div>
@@ -203,21 +228,19 @@ const atencionTurnoManana=atencionesDelDia?.filter(turno=>turno.turno=="mañana"
       <PacienteList ultimasAtenciones={ultimasAtenciones} />
     </DivBox1>
     <!-- proximas atencxiones -->
- <ListaDeEspera/>
-      <!-- graficos -->
-      <div class="flex flex-col  gap-3 w-1/2 items-stretch justify-normal ">
-
-        <DivBox1 styleDiv="w12">
-          <GraficoUltimasAtenciones data={atencionesPorDia}/>
-        </DivBox1>
-        <DivBox1 tyleDiv="w1/2">
-          <GraficoMotivosIniciales data={datosMotivoConsulta}/>
-        </DivBox1>
-      </div>
+    <ListaDeEspera />
+    <!-- graficos -->
+    <div class="flex flex-col gap-3 w-[40%] items-stretch justify-normal">
+      <DivBox1 styleDiv="w12">
+        <GraficoUltimasAtenciones data={atencionesPorDia} />
+      </DivBox1>
+      <DivBox1 tyleDiv="w1/2">
+        <GraficoMotivosIniciales data={datosMotivoConsulta} />
+      </DivBox1>
+    </div>
   </div>
   <!-- botones de acciones -->
   <!-- <div class="mt-8">
     <QuickActions />
   </div> -->
 </div>
-
