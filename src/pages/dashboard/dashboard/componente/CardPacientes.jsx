@@ -2,7 +2,6 @@ import React from 'react';
 import { UserPlus, UserCog, XCircle } from 'lucide-react';
 
 export default function CardPacientes({ paciente, index,handleDelete,handleAtender }) {
-
   return (
     <li className='w-full border-y py-2 px-3 items-center shadow-sm justify-between bg-white flex hover:bg-gray-50 transition-colors duration-150' key={index}>
       <div className='flex flex-col items-start justify-normal w-3/5'>
@@ -51,7 +50,7 @@ export default function CardPacientes({ paciente, index,handleDelete,handleAtend
         {/* boton de eliminar */}
         <div className='relative group'>
           <button 
-          onClick={handleDelete}
+          onClick={()=>handleDelete(paciente.id)}
             className='text-xs bg-primary-400 p-1.5 rounded-lg text-white hover:bg-primary-400/80 transition-colors duration-150'
           >
             <XCircle className="w-4 h-4" />

@@ -30,10 +30,10 @@ export default function AtencionExistente({ atencionData, onClose }) {
             <DivReact>
 
                 <div className="w-full items-center justify-evenly gap-2  flex">
-                    <p className="capitalize font- tracking-tight">Motivo Incial: {atencionData.atencionData?.motivoInicial || 'dolor de pecho'}</p>
-                    <p className="capitalize font- tracking-tight"> hora de inicio:  {extraerHora(atencionData.atencionData.inicioAtencion)}</p>
-                    <p className="capitalize font- tracking-tight"> hora de finalizacion:  {extraerHora(atencionData.atencionData?.finAtencion) || '0:00'}</p>
-                    <p className="capitalize font- tracking-tight"> duración:  {Number.parseFloat(atencionData.atencionData?.duracionAtencion).toFixed(0) || '0:00'} minutos </p>
+                    <p className="capitalize font- tracking-tight">Motivo Incial: {atencionData?.atencionData?.motivoInicial || 'dolor de pecho'}</p>
+                    <p className="capitalize font- tracking-tight"> hora de inicio:  {extraerHora(atencionData?.atencionData?.inicioAtencion)}</p>
+                    <p className="capitalize font- tracking-tight"> hora de finalizacion:  {extraerHora(atencionData?.atencionData?.finAtencion) || '0:00'}</p>
+                    <p className="capitalize font- tracking-tight"> duración:  {Number.parseFloat(atencionData?.atencionData?.duracionAtencion).toFixed(0) || '0:00'} minutos </p>
                 </div>
             </DivReact>
             {/* datos personales */}
@@ -192,12 +192,12 @@ export default function AtencionExistente({ atencionData, onClose }) {
             {/* diagnosticos */}
             <DivReact>
                 <h2 className="text-lg font-semibold ">Diagnostico</h2>
-                <ConfeccionTablaDiagnosticoHistoriaModal arrayDiagnosticos={atencionData.diagnosticoAtencionData} />
+                <ConfeccionTablaDiagnosticoHistoriaModal arrayDiagnosticos={atencionData?.diagnosticoAtencionData} />
             </DivReact>
             {/* medicamentos */}
             <DivReact>
                 <h2 className="text-lg font-semibold ">Medicamentos</h2>
-                <ConfeccionTablaMedicamentosHistoriaModal arrayMedicamentos={atencionData.medicamentosAtencionData} />
+                <ConfeccionTablaMedicamentosHistoriaModal arrayMedicamentos={atencionData?.medicamentosAtencionData} />
             </DivReact>
 
 

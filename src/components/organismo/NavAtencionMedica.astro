@@ -48,7 +48,6 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   import { atencion } from "../../context/store";
   import { showToast } from "../../utils/toast/toastShow";
 
-  let contextoAtencion = atencion.get();
   const buttonsContainer = document.getElementById("buttons-container");
   const fixedButtons = document.getElementById("fixed-buttons");
 
@@ -58,7 +57,7 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   let dataAtencion = {};
   atencion.subscribe((state) => {
     dataAtencion = state;
-    console.log(state)
+    console.log(state);
   });
 
   const observer = new IntersectionObserver(
@@ -71,14 +70,14 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
         fixedButtons.classList.add("hidden");
       }
     },
-    { root: null, threshold: 0.1 } // Umbral del 10% para detectar visibilidad
+    { root: null, threshold: 0.1 }, // Umbral del 10% para detectar visibilidad
   );
 
   observer.observe(buttonsContainer);
 
-const funcionParaGuardarAtencion=async () => {
-    const finAtencion=new Date()
-    dataAtencion.dataIds.finAtencion=finAtencion
+  const funcionParaGuardarAtencion = async () => {
+    const finAtencion = new Date();
+    dataAtencion.dataIds.finAtencion = finAtencion;
     try {
       const finalizar = await fetch("/api/pacientes/atencion/", {
         method: "POST",
@@ -96,20 +95,16 @@ const funcionParaGuardarAtencion=async () => {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
-
-  btnFinalizar?.addEventListener("click",funcionParaGuardarAtencion );
-  btnFinalizarFixed?.addEventListener("click",funcionParaGuardarAtencion );
+  btnFinalizar?.addEventListener("click", funcionParaGuardarAtencion);
+  btnFinalizarFixed?.addEventListener("click", funcionParaGuardarAtencion);
   btnFichaPaciente?.addEventListener("click", () => {
     document.location.href = `/dashboard/pacientes/${dataAtencion.dataIds.pacienteId}`;
   });
 </script>
 
 <style>
-
-.botoneraFixed{
-  
-}
-
+  .botoneraFixed {
+  }
 </style>

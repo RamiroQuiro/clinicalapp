@@ -49,9 +49,13 @@ const [loading, setLoading] = useState(false)
     socket.on('lista-actualizada', (aregarALista) => {
       setPacientes((prevPacientes) => [...prevPacientes, aregarALista[0]]);
     });
+    socket.on('paciente-eliminado', (paciente) => {
+      setPacientes((prevPacientes) => prevPacientes.filter((p) => p.id !== paciente[0].id));
+    });
 
     return () => {
       socket.off('lista-actualizada');
+      socket.off('paciente-eliminado');
     };
   }, []);
 

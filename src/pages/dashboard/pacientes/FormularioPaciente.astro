@@ -5,7 +5,9 @@ import InputDate from "../../../components/atomos/InputDate";
 import ContenedorBoton from "../../../components/moleculas/ContenedorBoton.astro";
 import ContenedorInputForm from "../../../components/moleculas/ContenedorInputForm.astro";
 import ContenedorInputSelected from "../../../components/moleculas/ContenedorInputSelected.astro";
-const { user } = Astro.props;
+const { user,paciente } = Astro.props;
+
+const { pacienteId } = Astro.params;
 ---
 
 <FormCont id="formularioCliente" title="Nuevo Paciente">
@@ -19,46 +21,71 @@ const { user } = Astro.props;
       type="text"
       name="nombre"
       styleInput=""
+      value={paciente?.nombre}
     />
     <ContenedorInputForm
       label="* apellido"
       type="text"
-      name="apellido"
+      name="apellido" 
       styleInput=""
+      value={paciente?.apellido}
     />
-    <ContenedorInputForm label="* dni" type="number" name="dni" />
+    <ContenedorInputForm label="* dni" type="number" name="dni" value={paciente?.dni} />
   </div>
 
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
- 
-  <ContenedorInputSelected options={[{id:1,value:"masculino"},{id:2,value:"fenemino"}]} name="sexo" label="* genero"/>
+    <ContenedorInputSelected
+      options={[
+        { id: 1, value: "masculino" },
+        { id: 2, value: "fenemino" },
+      ]}
+      name="sexo"
+      label="* genero"
+      value={paciente?.sexo}
+    />
 
-    <ContenedorInputForm label="* email" type="email" name="email" />
-    <ContenedorInputForm label="celular" type="text" name="celular" />
+    <ContenedorInputForm label="* email" type="email" name="email" value={paciente?.email} />
+    <ContenedorInputForm label="celular" type="text" name="celular"  value={paciente?.celular} />
   </div>
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
-    <ContenedorInputForm label="direccion" type="text" name="direccion" />
-    <ContenedorInputForm label="ciudad" type="text" name="ciudad" />
-    <ContenedorInputForm label="provincia" type="text" name="provincia" />
+    <ContenedorInputForm label="direccion" type="text" name="direccion" value={paciente?.direccion} />
+    <ContenedorInputForm label="ciudad" type="text" name="ciudad" value={paciente?.ciudad} />
+    <ContenedorInputForm label="provincia" type="text" name="provincia" value={paciente?.provincia} />
   </div>
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
-
-  <ContenedorInputForm label="obraSocial" type="text" name="obraSocial" />
-  <ContenedorInputForm label="N° Obra Social" type="text" name="nObraSocial" />
+    <ContenedorInputForm label="obraSocial" type="text" name="obraSocial" value={paciente?.obraSocial} />
+    <ContenedorInputForm
+      label="N° Obra Social"
+      type="text"
+      name="nObraSocial"
+      value={paciente?.nObraSocial}
+    />
   </div>
   <div class="text-xs text-left flex flex-col items-start gap-">
     <p>Fecha de Nacimiento</p>
-    <InputDate label="Fecha de Nacimiento"name="fNacimiento"  client:load/>
+    <InputDate label="Fecha de Nacimiento" name="fNacimiento" client:load value={paciente?.fNacimiento} />
   </div>
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
-    <ContenedorInputForm label="estatura en centimetros" type="number" name="estatura" />
-    <ContenedorInputForm label="grupo Sanguineo" type="text" name="grupoSanguineo" />
+    <ContenedorInputForm
+      label="estatura en centimetros"
+      type="number"
+      name="estatura"
+      value={paciente?.estatura}
+    />
+    <ContenedorInputForm
+      label="grupo Sanguineo"
+      type="text"
+      name="grupoSanguineo"
+      value={paciente?.grupoSanguineo}
+    />
   </div>
   <ContenedorBoton>
     <Button1 type="submit">Agregar</Button1>
   </ContenedorBoton>
   <div class="h-6 text-center w-full">
-    <span class="items-center text-sm text-primary-texto">* campos requeridos </span>
+    <span class="items-center text-sm text-primary-texto"
+      >* campos requeridos
+    </span>
     <p
       id="errores"
       class="text-xs font-semibold tracking-wider text-primary-400"
@@ -67,59 +94,91 @@ const { user } = Astro.props;
   </div>
 </FormCont>
 
-<script>
+<script define:vars={{ pacienteId }}>
   const formulario = document.getElementById("formularioCliente");
   const userId = document.querySelector("[data-user-id]");
   const erroresShow = document.getElementById("errores");
+
+  // mandar el formulario
   formulario.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
     formData.append("userId", userId.id);
     const data = Object.fromEntries(formData.entries());
-
-    // Validación del formulario
-    const camposRequeridos = [
-      "nombre",
-      "apellido",
-      "dni",
-      "celular",
-      "direccion",
-    ];
-    const camposFaltantes = camposRequeridos.filter((campo) => !data[campo]);
-
-    if (camposFaltantes.length > 0) {
-      erroresShow.textContent =
-        "Por favor, complete todos los campos requeridos.";
-      return;
-    }
-    try {
-      const response = await fetch("/api/pacientes/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json(); // Leer respuesta JSON
-      if (result.code==400){
-        erroresShow.textContent = result.msg;
-        return;
-      }else  if (result.code==200) {
-        erroresShow.textContent = "Paciente creado exitosamente.";
-        window.location.reload();
-      } 
+    
+    // condicionar el formulario para actualizar o crear un paciente
+    if (pacienteId) {
       
-      
-      else {
-        // Manejo explícito de errores por status
-        erroresShow.textContent =
-          result.message || "Error al crear el paciente.";
+      formData.append("id", pacienteId);
+      const data = Object.fromEntries(formData.entries());
+      try {
+        const response = await fetch("/api/pacientes/create", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json(); // Leer respuesta JSON
+        if (result.code == 400) {
+          erroresShow.textContent = result.msg;
+          return;
+        } else if (result.code == 200) {
+          erroresShow.textContent = "Paciente actualizado exitosamente.";
+          window.location.reload();
+        } else {
+          // Manejo explícito de errores por status
+          erroresShow.textContent =
+            result.message || "Error al actualizar el paciente.";
+        }
+      } catch (error) {
+        console.error("Error al enviar los datos:", error);
+        erroresShow.textContent = "Error de conexión al servidor.";
       }
-    } catch (error) {
-      console.error("Error al enviar los datos:", error);
-      erroresShow.textContent = "Error de conexión al servidor.";
+
+
+    } else {
+      // Validación del formulario
+      const camposRequeridos = [
+        "nombre",
+        "apellido",
+        "dni",
+        "celular",
+        "direccion",
+      ];
+      const camposFaltantes = camposRequeridos.filter((campo) => !data[campo]);
+
+      if (camposFaltantes.length > 0) {
+        erroresShow.textContent =
+          "Por favor, complete todos los campos requeridos.";
+        return;
+      }
+      try {
+        const response = await fetch("/api/pacientes/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json(); // Leer respuesta JSON
+        if (result.code == 400) {
+          erroresShow.textContent = result.msg;
+          return;
+        } else if (result.code == 200) {
+          erroresShow.textContent = "Paciente creado exitosamente.";
+          window.location.reload();
+        } else {
+          // Manejo explícito de errores por status
+          erroresShow.textContent =
+            result.message || "Error al crear el paciente.";
+        }
+      } catch (error) {
+        console.error("Error al enviar los datos:", error);
+        erroresShow.textContent = "Error de conexión al servidor.";
+      }
     }
   });
 </script>

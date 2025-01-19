@@ -1,16 +1,10 @@
 import type { APIRoute } from "astro";
-import db from "../../../../db";
 import { eq } from "drizzle-orm";
-import {
-  atenciones,
-  diagnostico,
-  medicamento,
-  pacientes,
-  signosVitales,
-  users,
-} from "../../../../db/schema";
+
 import { generateId } from "lucia";
 import calcularIMC from "../../../../utils/calcularIMC";
+import { atenciones, diagnostico, medicamento, pacientes, signosVitales } from "@/db/schema";
+import db from "@/db";
 
 export const POST: APIRoute = async ({ request }) => {
   const {
@@ -125,6 +119,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 export const GET: APIRoute = async ({ request }) => {
   const atencionId = request.headers.get("X-Atencion-Id");
+console.log('endpoint',atencionId)
   if (!atencionId) {
     return new Response(
       JSON.stringify({ error: "ID de paciente no proporcionado" }),

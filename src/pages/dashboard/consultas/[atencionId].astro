@@ -1,26 +1,59 @@
 ---
-import { Backpack, HistoryIcon } from "lucide-react";
-import MainDashboard from "../../../components/atomos/MainDashboard.astro";
-import LayoutDash from "../../../components/layouts/LayoutDash.astro";
-import AtencionExistente from "../../../components/organismo/AtencionExistente";
-import ButtonBackHistory from "../../../components/atomos/ButtonBackHistory.astro";
+import ButtonBackHistory from "@/components/atomos/ButtonBackHistory.astro";
+import MainDashboard from "@/components/atomos/MainDashboard.astro";
+import LayoutDash from "@/components/layouts/LayoutDash.astro";
+import AtencionExistente from "@/components/organismo/AtencionExistente";
+import db from "@/db";
+import {
+  atenciones,
+  diagnostico,
+  medicamento,
+  pacientes,
+  signosVitales,
+} from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 const { atencionId } = Astro.params;
 let atencionData: {};
 try {
-  const response = await fetch(`${Astro.url.origin}/api/pacientes/atencion`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json", // Especifica el tipo de contenido
-      "X-Atencion-Id": atencionId, // Aquí envías el id como header personalizado
-    },
+  const result = await db.transaction(async (trx) => {
+    const atencionData = (
+      await trx
+        .select()
+        .from(atenciones)
+
+        .where(eq(atenciones.id, atencionId))
+    ).at(0);
+    if (!atencionData) {
+      console.log("no se encontro atencion")
+    }
+    const pacienteData = (
+      await trx
+        .select()
+        .from(pacientes)
+        .where(eq(pacientes.id, atencionData.pacienteId))
+    ).at(0);
+    const medicamentosAtencionData = await trx
+      .select()
+      .from(medicamento)
+      .where(eq(medicamento.atencionId, atencionId));
+    const diagnosticoAtencionData = await trx
+      .select()
+      .from(diagnostico)
+      .where(eq(diagnostico.atencionId, atencionId));
+    const signosVitalesAtencion = await trx
+      .select()
+      .from(signosVitales)
+      .where(eq(signosVitales.atencionId, atencionId));
+    return {
+      atencionData,
+      pacienteData,
+      medicamentosAtencionData,
+      diagnosticoAtencionData,
+      signosVitalesAtencion,
+    };
   });
-  if (!response.ok) {
-    throw new Error("Error al obtener los datos de la atención");
-  }
-  const data = await response.json();
-  atencionData = data.data;
-  console.log(data.data);
+  atencionData = result;
 } catch (err) {
   console.log(err);
 } finally {
@@ -30,10 +63,10 @@ try {
 
 <LayoutDash>
   <MainDashboard>
-    <div class=" flex w-11/12">
-<div class="pr-2 py-3">
-  <ButtonBackHistory/>
-</div>
+    <div class="flex w-11/12">
+      <div class="pr-2 py-3">
+        <ButtonBackHistory />
+      </div>
       <AtencionExistente atencionData={atencionData} client:load />
     </div>
   </MainDashboard>

@@ -6,6 +6,7 @@ export type pacienteType = {
   apellido: string;
   sexo: string;
   dni: number;
+  estatura: string;
   fNacimiento: string;
   srcPhoto?: string;
   celular?: string;

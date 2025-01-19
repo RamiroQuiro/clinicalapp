@@ -71,8 +71,9 @@ export const POST: APIRoute = async ({ request, params }) => {
 export const DELETE: APIRoute = async ({ request, params }) => {
     const { userId } = params
     const data = await request.json()
+    console.log(data)
     try {
-        const deletPacienteEnEspera = await db.delete(listaDeEspera).where(eq(listaDeEspera.dni, data.dni)).returning()
+        const deletPacienteEnEspera = await db.delete(listaDeEspera).where(eq(listaDeEspera.id, data)).returning()
         return new Response(JSON.stringify({ status: 200, msg: 'eliminado correctamen   te', data: deletPacienteEnEspera }), {
             headers: { "content-type": "application/json" },
         });

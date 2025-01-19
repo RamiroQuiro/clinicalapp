@@ -37,11 +37,12 @@ io.on('connection', (socket) => {
   });
 
 // eliminar paciente
-  socket.on('eliminar-paciente', async (id) => {
-    console.log('Paciente eliminado:', id);
+  socket.on('eliminar-paciente', async (paciente) => {
+    console.log('Paciente eliminado:', paciente);
     try {
-      const response = await fetch(`http://localhost:4321/api/listaEspera/${id}`, {
+      const response = await fetch(`http://localhost:4321/api/listaEspera/${paciente.userId}`, {
         method: 'DELETE',
+        body: JSON.stringify(paciente),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -50,7 +51,7 @@ io.on('connection', (socket) => {
       const data = await response.json()
       console.log(data)
       if (response.status === 200) {
-        io.emit('lista-actualizada', data.data);
+        io.emit('paciente-eliminado', data.data);
       }
 
     } catch (error) {

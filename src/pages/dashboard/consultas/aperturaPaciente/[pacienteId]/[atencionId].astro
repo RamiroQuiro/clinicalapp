@@ -9,9 +9,7 @@ import {
   diagnostico,
   pacientes,
   signosVitales,
-} from "../../../../../db/schema";
-import type { pacienteType } from "../../../../../types";
-import { generateId } from "lucia";
+} from "@/db/schema";
 import { medicamento } from "../../../../../db/schema/medicamento";
 import IndexAtencion from "./IndexAtencion.astro";
 const { pacienteId, atencionId } = Astro.params;

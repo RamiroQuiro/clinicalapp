@@ -112,7 +112,6 @@ export default function FormularioArchivosAdjuntos({ pacienteId }) {
     // }
 
     try {
-      console.log(formData)
       const response = await fetch(`/api/pacientes/documentos/${pacienteId}`, {
         method: "POST",
         headers: {

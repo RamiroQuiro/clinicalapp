@@ -21,7 +21,6 @@ const { dataIds, isExistMedicamentos } = Astro.props;
     atencion,
     dataFormularioContexto,
   } from "../../../../../context/store";
-  import { showToast } from "../../../../../utils/toast/toastShow";
   const btnModal = document.getElementById("modal-medicamentos");
 
   btnModal?.addEventListener("click", () => {

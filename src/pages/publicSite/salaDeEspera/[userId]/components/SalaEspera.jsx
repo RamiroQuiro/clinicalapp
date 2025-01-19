@@ -59,9 +59,12 @@ const SalaEspera = ({ userId }) => {
         background: 'bg-primary-100'
       });
     });
-
+    socket.on('paciente-eliminado', (paciente) => {
+      setPacientes((prevPacientes) => prevPacientes.filter((p) => p.id !== paciente[0].id));
+    });
     return () => {
       socket.off('lista-actualizada');
+      socket.off('paciente-eliminado');
     };
   }, [userId]);
 
