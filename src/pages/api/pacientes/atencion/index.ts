@@ -46,14 +46,18 @@ export const POST: APIRoute = async ({ request }) => {
       const duracionMilisegundos = new Date(dataIds.finAtencion) - new Date(dataIds.inicioAtencion);
       const duracionMinutos = Math.floor(duracionMilisegundos / 1000 / 60); // Duración en minutos
       
+      // Ajustar la fecha a la zona horaria local (UTC-3)
+      const fechaLocal = new Date();
+      const fechaISO = new Date(fechaLocal.getTime() - (fechaLocal.getTimezoneOffset() * 60000)).toISOString();
+      
       await tx.insert(atenciones).values({
         id: dataIds.atencionId,
         pacienteId: dataIds.pacienteId,
         userId: dataIds.userId,
-        fecha: new Date().toISOString(),
-        inicioAtencion: dataIds.inicioAtencion,
-        finAtencion:dataIds.finAtencion,
-        duracionAtencion:duracionMinutos,
+        fecha: fechaISO,
+        inicioAtencion: new Date(dataIds.inicioAtencion).toISOString(),
+        finAtencion: new Date(dataIds.finAtencion).toISOString(),
+        duracionAtencion: duracionMinutos,
         tratamiento,
         motivoConsulta,
         motivoInicial,

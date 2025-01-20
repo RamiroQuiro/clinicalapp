@@ -70,9 +70,9 @@ const dataDB = async (userId) => {
 
       const atencionesPorDia = await trx
         .select({
-          fecha: sql`DATE(${atenciones.created_at})`.as("fecha"),
+          fecha: sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`.as("fecha"),
           turno: sql`CASE
-            WHEN strftime('%H', ${atenciones.created_at}) < '12' THEN 'mañana'
+            WHEN strftime('%H', datetime(${atenciones.created_at}, 'localtime')) < '12' THEN 'mañana'
             ELSE 'tarde'
           END`.as("turno"),
           total: count().as("total"),
@@ -81,12 +81,12 @@ const dataDB = async (userId) => {
         .where(
           and(
             eq(atenciones.userId, userId),
-            gte(atenciones.created_at, new Date(startOfDay).toISOString()),
-            lte(atenciones.created_at, new Date(endOfToday).toISOString()),
+            gte(atenciones.created_at, startOfDay.toISOString()),
+            lte(atenciones.created_at, endOfToday.toISOString()),
           ),
         )
-        .groupBy(sql`DATE(${atenciones.created_at}), turno`)
-        .orderBy(asc(sql`DATE(${atenciones.created_at})`));
+        .groupBy(sql`DATE(datetime(${atenciones.created_at}, 'localtime')), turno`)
+        .orderBy(asc(sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`));
       
       // console.log('Atenciones por día:', JSON.stringify(atencionesPorDia, null, 2));
    
