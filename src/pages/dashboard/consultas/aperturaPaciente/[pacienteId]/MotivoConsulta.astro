@@ -1,12 +1,10 @@
 ---
-import Button1 from "../../../../../components/atomos/Button1.astro";
 import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
 import H2 from "../../../../../components/atomos/H2.astro";
 import ContenedorAtencion from "../../../../../components/moleculas/ContenedorAtencion.astro";
-import ContenedorInputSelected from "../../../../../components/moleculas/ContenedorInputSelected.astro";
 import ContenedorMotivoInicial from "./ContenedorMotivoInicial.astro";
 
-const { dataIds, isExistHC } = Astro.props;
+const {  isExistHC } = Astro.props;
 ---
 
 <ContenedorAtencion
@@ -31,9 +29,7 @@ const { dataIds, isExistHC } = Astro.props;
       name="motivoConsulta"
       id="formularioConsulta"
       placeholder="Motivo de consulta y sintomas..."
-    >
-      {isExistHC.motivoConsulta}
-    </textarea>
+    >{isExistHC?.motivoConsulta}</textarea>
   </form>
   <span
     id="notificacion"

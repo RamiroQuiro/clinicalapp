@@ -5,7 +5,6 @@ import Button1 from "../atomos/Button1.astro";
 import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
 import ContenedorAntecedentesAtencion from "./ContenedorAntecedentesAtencion.astro";
 import ContenedorDatosPersonalesAtencion from "./ContenedorDatosPersonalesAtencion.astro";
-import ContenedorAlertaAtencion from "./ContenedorAlertaAtencion.astro";
 const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   Astro.props as pacienteType;
 ---
@@ -57,7 +56,6 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   let dataAtencion = {};
   atencion.subscribe((state) => {
     dataAtencion = state;
-    console.log(state);
   });
 
   const observer = new IntersectionObserver(
@@ -76,6 +74,13 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   observer.observe(buttonsContainer);
 
   const funcionParaGuardarAtencion = async () => {
+
+if(!dataAtencion.dataIds.finAtencion ||  !dataAtencion.motivoConsulta){
+  showToast('no hay data para guardar', {
+    background: 'bg-primary-400',
+  });
+  return
+}
     const finAtencion = new Date();
     dataAtencion.dataIds.finAtencion = finAtencion;
     try {

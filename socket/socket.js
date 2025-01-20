@@ -49,7 +49,6 @@ io.on('connection', (socket) => {
       })
 
       const data = await response.json()
-      console.log(data)
       if (response.status === 200) {
         io.emit('paciente-eliminado', data.data);
       }
