@@ -56,13 +56,18 @@ const dataDB = async (userId) => {
         .from(pacientes)
         .where(eq(pacientes.userId, userId));
 
-      // Fecha actual y rango de los últimos 7 días
-      const today = new Date();
-      const sieteDiasAtras = new Date(today.setDate(today.getDate() - 7));
-      const startOfDay = sieteDiasAtras.setHours(0, 0, 0, 0);
-      const endOfToday = new Date().setHours(23, 59, 59, 999);
-      // Obtener cantidad de atenciones turno mañana
-      // Obtener datos agrupados por fecha y turno
+          // Fecha actual y rango de los últimos 7 días
+          const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const sieteDiasAtras = new Date(today);
+      sieteDiasAtras.setDate(today.getDate() - 6); // 6 días para incluir el día actual
+      
+      const startOfDay = sieteDiasAtras;
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfToday = new Date(today);
+      endOfToday.setHours(23, 59, 59, 999);
+
       const atencionesPorDia = await trx
         .select({
           fecha: sql`DATE(${atenciones.created_at})`.as("fecha"),
@@ -82,7 +87,9 @@ const dataDB = async (userId) => {
         )
         .groupBy(sql`DATE(${atenciones.created_at}), turno`)
         .orderBy(asc(sql`DATE(${atenciones.created_at})`));
-
+      
+      // console.log('Atenciones por día:', JSON.stringify(atencionesPorDia, null, 2));
+   
       const datosMotivoConsulta = await trx
         .select({
           motivoInicial: atenciones.motivoInicial,
@@ -153,16 +160,19 @@ const utcToday = new Date(
 
 const atencionesDelDia = atencionesPorDia.filter((atencion) => {
   const atencionFecha = new Date(atencion.fecha);
-  return atencionFecha.toISOString() === utcToday.toISOString();
+  const fechaAtencion = new Date(atencionFecha.getFullYear(), atencionFecha.getMonth(), atencionFecha.getDate());
+  const fechaHoy = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return fechaAtencion.getTime() === fechaHoy.getTime();
 });
 
 const dataGraficos = { atencionesPorDia, datosMotivoConsulta };
 const atencionTurnoTarde = atencionesDelDia?.filter(
-  (turno) => turno.turno == "tarde",
-)[0]?.total;
+  (turno) => turno.turno === "tarde",
+)[0]?.total || 0;
 const atencionTurnoManana = atencionesDelDia?.filter(
-  (turno) => turno.turno == "mañana",
-)[0]?.total;
+  (turno) => turno.turno === "mañana",
+)[0]?.total || 0;
+
 ---
 
 <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
@@ -174,12 +184,7 @@ const atencionTurnoManana = atencionesDelDia?.filter(
         <div class="flex flex-col items-start justify-normal w-full">
           <p class="text-sm font-medium text-gray-600">
             Consultas Hoy <span class="text-2xl ml-3 text-primary-texto"
-              >{
-                atencionesDelDia?.reduce((acc, turno) => {
-                  acc = ++turno.total;
-                  return acc;
-                }, 0)
-              }</span>
+              >{atencionTurnoManana + atencionTurnoTarde}</span>
           </p>
           <div class="flex w-full items-center justify-between pr-4">
             <div>

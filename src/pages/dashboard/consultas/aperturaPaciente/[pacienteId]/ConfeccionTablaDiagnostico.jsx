@@ -7,7 +7,6 @@ import { RenderActionsEditDeletDiagnostico } from '../../../../../components/tab
 export default function ConfeccionTablaDiagnostico({ isExistDiagnosticos }) {
 
   const $diagnosticosStore=useStore(atencion).diagnosticos
-  console.log($diagnosticosStore)
   const columns = [
     {
       label: "diagnostico",
