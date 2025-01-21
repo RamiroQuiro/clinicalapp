@@ -1,11 +1,13 @@
 ---
-import SignosVitalesForm from "../../pages/dashboard/consultas/aperturaPaciente/[pacienteId]/SignosVitalesForm.astro";
-import type { pacienteType } from "../../types";
-import Button1 from "../atomos/Button1.astro";
-import ButtonBackHistory from "../atomos/ButtonBackHistory.astro";
-import ContenedorAntecedentesAtencion from "./ContenedorAntecedentesAtencion.astro";
-import ContenedorDatosPersonalesAtencion from "./ContenedorDatosPersonalesAtencion.astro";
-import ContenedorAlertaAtencion from "./ContenedorAlertaAtencion.astro";
+import FormularioPaciente from '@/pages/dashboard/pacientes/FormularioPaciente.astro';
+import SignosVitalesForm from '../../pages/dashboard/consultas/aperturaPaciente/[pacienteId]/SignosVitalesForm.astro';
+import type { pacienteType } from '../../types';
+import Button1 from '../atomos/Button1.astro';
+import ButtonBackHistory from '../atomos/ButtonBackHistory.astro';
+import ModalEditarPerfil from '../moleculas/ModalEditarPerfil.astro';
+import ContenedorAntecedentesAtencion from './ContenedorAntecedentesAtencion.astro';
+import ContenedorDatosPersonalesAtencion from './ContenedorDatosPersonalesAtencion.astro';
+import Button2 from '../atomos/Button2.astro';
 const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   Astro.props as pacienteType;
 ---
@@ -13,22 +15,21 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
 <div
   class="h z-50 relative border py-4 px-4 bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-2 gap-y-2"
 >
-  <div
-    class="flex w-full md:flex-row items-stretch md:items-center mb-2 flex-1"
-  >
+  <div class="flex w-full md:flex-row items-stretch md:items-center mb-2 flex-1">
     <!-- boton de vovler history -->
     <ButtonBackHistory />
-    <div
-      class="flex w-full h-full items-stretch md:gap-2 justify-start pr-4 gap-y-2 ml-2"
-    >
+    <div class="flex w-full h-full items-stretch md:gap-2 justify-start pr-4 gap-y-2 ml-2">
       <!-- datos personales -->
       <ContenedorDatosPersonalesAtencion pacienteData={pacienteData} />
       <!-- antecedentes -->
       <ContenedorAntecedentesAtencion antecedentes={antecedentes} />
     </div>
-    <div class="flex flex-col gap-3" id="buttons-container">
+    <div class="w-[130px] tracking-tight break-all flex flex-col gap-3" id="buttons-container">
+      <ModalEditarPerfil>
+        <FormularioPaciente user paciente={pacienteData} />
+      </ModalEditarPerfil>
       <Button1 id="finalizarConsulta">finalizar consulta</Button1>
-      <Button1 id="fichaPaciente">Ficha del Paciente</Button1>
+      <Button2 id="fichaPaciente">Ficha del Paciente</Button2>
     </div>
     <div
       class="flex bg-white px-3 animate-aparecer py-2 rounded-2xl border gap-3 md:fixed bottom-5 left-[47.5%]"
@@ -40,66 +41,72 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   <SignosVitalesForm
     signosVitalesData={signosVitalesData}
     dataIds={dataIds}
-    isExistHC={isExistHC ? isExistHC : ""}
+    isExistHC={isExistHC ? isExistHC : ''}
   />
 </div>
 
 <script>
-  import { atencion } from "../../context/store";
-  import { showToast } from "../../utils/toast/toastShow";
+  import { atencion } from '../../context/store';
+  import { showToast } from '../../utils/toast/toastShow';
 
-  const buttonsContainer = document.getElementById("buttons-container");
-  const fixedButtons = document.getElementById("fixed-buttons");
+  const buttonsContainer = document.getElementById('buttons-container');
+  const fixedButtons = document.getElementById('fixed-buttons');
 
-  const btnFinalizar = document.getElementById("finalizarConsulta");
-  const btnFinalizarFixed = document.getElementById("finalizarConsultaFixed");
-  const btnFichaPaciente = document.getElementById("fichaPaciente");
+  const btnFinalizar = document.getElementById('finalizarConsulta');
+  const btnFinalizarFixed = document.getElementById('finalizarConsultaFixed');
+  const btnFichaPaciente = document.getElementById('fichaPaciente');
   let dataAtencion = {};
-  atencion.subscribe((state) => {
+  atencion.subscribe(state => {
     dataAtencion = state;
-    console.log(state);
+    // console.log(state)
   });
 
   const observer = new IntersectionObserver(
     ([entry]) => {
       if (!entry.isIntersecting) {
         // Botones no están visibles -> Mostrar los botones fijos
-        fixedButtons.classList.remove("hidden");
+        fixedButtons.classList.remove('hidden');
       } else {
         // Botones están visibles -> Ocultar los botones fijos
-        fixedButtons.classList.add("hidden");
+        fixedButtons.classList.add('hidden');
       }
     },
-    { root: null, threshold: 0.1 }, // Umbral del 10% para detectar visibilidad
+    { root: null, threshold: 0.1 } // Umbral del 10% para detectar visibilidad
   );
 
   observer.observe(buttonsContainer);
 
   const funcionParaGuardarAtencion = async () => {
+    if (!dataAtencion.dataIds || !dataAtencion.motivoConsulta) {
+      showToast('no hay data para guardar', {
+        background: 'bg-primary-400',
+      });
+      return;
+    }
     const finAtencion = new Date();
     dataAtencion.dataIds.finAtencion = finAtencion;
     try {
-      const finalizar = await fetch("/api/pacientes/atencion/", {
-        method: "POST",
+      const finalizar = await fetch('/api/pacientes/atencion/', {
+        method: 'POST',
         body: JSON.stringify({
           data: dataAtencion,
-          msg: "finalizar consulta",
+          msg: 'finalizar consulta',
         }),
       });
       const data = await finalizar.json();
 
       if (data.status == 200) {
-        showToast("atecion cerrada");
-        document.location.href = "/dashboard/";
+        showToast('atecion cerrada');
+        document.location.href = '/dashboard/';
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  btnFinalizar?.addEventListener("click", funcionParaGuardarAtencion);
-  btnFinalizarFixed?.addEventListener("click", funcionParaGuardarAtencion);
-  btnFichaPaciente?.addEventListener("click", () => {
+  btnFinalizar?.addEventListener('click', funcionParaGuardarAtencion);
+  btnFinalizarFixed?.addEventListener('click', funcionParaGuardarAtencion);
+  btnFichaPaciente?.addEventListener('click', () => {
     document.location.href = `/dashboard/pacientes/${dataAtencion.dataIds.pacienteId}`;
   });
 </script>

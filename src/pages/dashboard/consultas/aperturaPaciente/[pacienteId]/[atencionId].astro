@@ -1,30 +1,24 @@
 ---
-import { desc, eq, sql } from "drizzle-orm";
-import MainDashboard from "../../../../../components/atomos/MainDashboard.astro";
-import LayoutDash from "../../../../../components/layouts/LayoutDash.astro";
-import db from "../../../../../db";
-import {
-  antecedente,
-  atenciones,
-  diagnostico,
-  pacientes,
-  signosVitales,
-} from "@/db/schema";
-import { medicamento } from "../../../../../db/schema/medicamento";
-import IndexAtencion from "./IndexAtencion.astro";
+import { antecedente, atenciones, diagnostico, pacientes, signosVitales } from '@/db/schema';
+import { desc, eq } from 'drizzle-orm';
+import MainDashboard from '../../../../../components/atomos/MainDashboard.astro';
+import LayoutDash from '../../../../../components/layouts/LayoutDash.astro';
+import db from '../../../../../db';
+import { medicamento } from '../../../../../db/schema/medicamento';
+import IndexAtencion from './IndexAtencion.astro';
 const { pacienteId, atencionId } = Astro.params;
 
 const dataIds = {
-  estado: "pendienta",
+  estado: 'pendienta',
   atencionId,
-  userId: "sakflsdk",
+  userId: 'sakflsdk',
   pacienteId: pacienteId,
 };
 // tengo q implemtar type para historiClinica
 
 const dataFetchPaciente = async (idPaciente, idAtencion) => {
   try {
-    const result = await db.transaction(async (trx) => {
+    const result = await db.transaction(async trx => {
       // Buscar paciente
       const pacienteData = (
         await trx.select().from(pacientes).where(eq(pacientes.id, idPaciente))
@@ -42,25 +36,23 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
         .orderBy(desc(signosVitales.created_at))
         .limit(4);
 
-
-      
       // Procesar los datos
       const signosVitalesData = [
-        "temperatura",
-        "pulso",
-        "frecuenciaCardiaca",
-        "frecuenciaRespiratoria",
-        "tensionArterial",
-        "saturacionOxigeno",
-        "glucosa",
-        "peso",
-        "talla",
-        "imc",
-      ].map((tipo) => {
-        const historial = fecthSignosVitalesData.map((sv) => {
-          return {valor:parseFloat(sv[tipo]), fecha:sv.created_at}
-        })
-        return {tipo,historial,};
+        'temperatura',
+        'pulso',
+        'frecuenciaCardiaca',
+        'frecuenciaRespiratoria',
+        'tensionArterial',
+        'saturacionOxigeno',
+        'glucosa',
+        'peso',
+        'talla',
+        'imc',
+      ].map(tipo => {
+        const historial = fecthSignosVitalesData.map(sv => {
+          return { valor: parseFloat(sv[tipo]), fecha: sv.created_at };
+        });
+        return { tipo, historial };
       });
       // console.log('mapando en el array',signosVitalesData)
       // traer ultiumas visitas
@@ -71,7 +63,7 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
         .where(eq(atenciones.pacienteId, pacienteId))
         .orderBy(desc(atenciones.created_at))
         .limit(4);
-      if (!pacienteData) throw new Error("Paciente no encontrado");
+      if (!pacienteData) throw new Error('Paciente no encontrado');
 
       // Verificar si existe atención
       const atencionData = (
@@ -100,18 +92,18 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
           diagnosticoData,
           antecedentesData,
           signosVitalesData,
-          historialVisitaData
+          historialVisitaData,
         };
       }
 
       // Si no hay atención, devolver solo datos del paciente
-      return { pacienteData, signosVitalesData, antecedentesData ,historialVisitaData};
+      return { pacienteData, signosVitalesData, antecedentesData, historialVisitaData };
     });
 
     return result; // Resultado de la transacción
   } catch (error) {
-    console.error("Error en la transacción:", error);
-    throw new Error("Ocurrió un error al procesar la solicitud");
+    console.error('Error en la transacción:', error);
+    throw new Error('Ocurrió un error al procesar la solicitud');
   }
 };
 
@@ -122,13 +114,11 @@ const {
   diagnosticoData,
   signosVitalesData,
   medicamentosData,
-  historialVisitaData
+  historialVisitaData,
 } = await dataFetchPaciente(pacienteId, atencionId);
-
-
 ---
 
-<LayoutDash>
+<LayoutDash title={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}>
   <MainDashboard
     dataIds={dataIds}
     h1={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}

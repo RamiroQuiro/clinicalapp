@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { nanoid } from 'nanoid';
+import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { showToast } from '../../../../utils/toast/toastShow';
 import CardPacientes from './CardPacientes';
@@ -8,49 +9,55 @@ const socket = io('localhost:5000'); // Cambia el puerto si usas otro
 
 const SalaEspera = ({ user }) => {
   const [pacientes, setPacientes] = useState([]);
-  const [nuevoPaciente, setNuevoPaciente] = useState({ nombre: '', apellido: '', motivoInicial: '', dni: '', userId: user?.id });
-const [loading, setLoading] = useState(false)
+  const [nuevoPaciente, setNuevoPaciente] = useState({
+    nombre: '',
+    apellido: '',
+    motivoConsulta: '',
+    dni: '',
+    userId: user?.id,
+  });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setNuevoPaciente((state) => ({
-      ...state, [name]: value
-    }))
-  }
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setNuevoPaciente(state => ({
+      ...state,
+      [name]: value,
+    }));
+  };
   useEffect(() => {
     // traer la data de la base de datos de los pacientes en espéra
 
     const fetchPacientes = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-
         const response = await fetch(`/api/listaEspera/${user?.id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json', // Especifica el tipo de contenido
-          }
+          },
         });
         if (!response.ok) {
-          throw new Error("Error al obtener los datos de la atención");
+          throw new Error('Error al obtener los datos de la atención');
         }
         const data = await response.json();
         setPacientes(data);
-        setLoading(false)
+        setLoading(false);
       } catch (err) {
         showToast(err.message, {
-          background: 'bg-primaryu-400'
-        })
-        setLoading(false)
+          background: 'bg-primaryu-400',
+        });
+        setLoading(false);
         console.log(err);
       }
-    }
-    fetchPacientes()
+    };
+    fetchPacientes();
     // Escucha los cambios en la lista
-    socket.on('lista-actualizada', (aregarALista) => {
-      setPacientes((prevPacientes) => [...prevPacientes, aregarALista[0]]);
+    socket.on('lista-actualizada', aregarALista => {
+      setPacientes(prevPacientes => [...prevPacientes, aregarALista[0]]);
     });
-    socket.on('paciente-eliminado', (paciente) => {
-      setPacientes((prevPacientes) => prevPacientes.filter((p) => p.id !== paciente[0].id));
+    socket.on('paciente-eliminado', paciente => {
+      setPacientes(prevPacientes => prevPacientes.filter(p => p.id !== paciente[0].id));
     });
 
     return () => {
@@ -60,52 +67,100 @@ const [loading, setLoading] = useState(false)
   }, []);
 
   const agregarPaciente = () => {
-    if (!nuevoPaciente.motivoConsulta || !nuevoPaciente.dni || !nuevoPaciente.nombre || !nuevoPaciente.apellido) {
+    if (
+      !nuevoPaciente.motivoConsulta ||
+      !nuevoPaciente.dni ||
+      !nuevoPaciente.nombre ||
+      !nuevoPaciente.apellido
+    ) {
       showToast('no hay data para guardar', {
         background: 'bg-primary-400',
       });
-      return
+      return;
     }
     socket.emit('agregar-paciente', nuevoPaciente);
     setNuevoPaciente({ nombre: '', apellido: '', motivoConsulta: '', dni: '', userId: user?.id }); // Limpia el input
   };
 
-  const handleDelete = (id) => {
-    console.log('eliminando paciente oooo',id)
+  const handleDelete = id => {
+    console.log('eliminando paciente oooo', id);
     socket.emit('eliminar-paciente', id);
-  }
-  const handleAtender = (id) => {
-    socket.emit('atender-paciente', id);
-  }
-  return (
-    <div className='w-full flex flex-col items-start justify-normal gap-3'>
+  };
+  const handleAtender = async paciente => {
+    socket.emit('atender-paciente', paciente.id);
 
+    if (paciente.pacienteId) {
+      let idAtencion = nanoid(13);
+      document.location.href = `dashboard/consultas/aperturaPaciente/${paciente.pacienteId}/${idAtencion}`;
+    } else {
+      try {
+        const response = await fetch('/api/pacientes/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paciente),
+        });
+
+        const result = await response.json(); // Leer respuesta JSON
+        console.log(result);
+        if (result.code == 400) {
+          showToast(result.msg, {
+            background: 'bg-primary-400',
+          });
+          return;
+        } else if (result.code == 200) {
+          let idAtencion = nanoid(13);
+          document.location.href = `dashboard/consultas/aperturaPaciente/${result.data.id}/${idAtencion}`;
+        } else {
+          // Manejo explícito de errores por status
+          erroresShow.textContent = result.message || 'Error al crear el paciente.';
+        }
+      } catch (error) {
+        console.error('Error al enviar los datos:', error);
+        erroresShow.textContent = 'Error de conexión al servidor.';
+      }
+    }
+  };
+  return (
+    <div className="w-full flex flex-col items-start justify-normal gap-3">
       {/* formulario */}
-      <details className='w-full flex items-start '>
-        <summary className='p-1 mb-2 rounded-lg text-left cursor-pointer items-center  text-sm e duration-200 hover:bg-primary-100/20'>
+      <details className="w-full flex items-start ">
+        <summary className="p-1 mb-2 rounded-lg text-left cursor-pointer items-center  text-sm e duration-200 hover:bg-primary-100/20">
           agregar Pacientes
         </summary>
-        <FormularioCargaListaEspera nuevoPaciente={nuevoPaciente} handleChange={handleChange} agregarPaciente={agregarPaciente} />
+        <FormularioCargaListaEspera
+          nuevoPaciente={nuevoPaciente}
+          handleChange={handleChange}
+          agregarPaciente={agregarPaciente}
+        />
       </details>
-      <div className='flex flex-col w-full  items-start 500 justify-between gap-2 bg-primary-bg-componentes p-2 '>
-        <div className='flex w-full pri items-start justify-between gap-2 text-sm text-primary-textoTitle'>
-          <p className='w-2/4 text-left'>Datos Paciente</p>
-          <p className='w-1/5'>N° Turno</p>
-          <p className='w-1/5'>accion</p>
+      <div className="flex flex-col w-full  items-start 500 justify-between gap-2 bg-primary-bg-componentes p-2 ">
+        <div className="flex w-full pri items-start justify-between gap-2 text-sm text-primary-textoTitle">
+          <p className="w-2/4 text-left">Datos Paciente</p>
+          <p className="w-1/5">N° Turno</p>
+          <p className="w-1/5">accion</p>
         </div>
-        <ul className='flex w-full items-start justify-normal gap-2 flex-col'>
-          {loading ?
-            (<li className='h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex' >
-              <p className='animate-pulse'>Esperado datos...</p>
-            </li>)
-           : pacientes.length === 0 ?
-            (<li className='h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex' >
+
+        <ul className="flex w-full items-start justify-normal gap-2 flex-col">
+          {loading ? (
+            <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
+              <p className="animate-pulse">Esperado datos...</p>
+            </li>
+          ) : pacientes.length === 0 ? (
+            <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
               <p>No hay pacientes en espera</p>
-            </li>)
-            :
+            </li>
+          ) : (
             pacientes?.map((paciente, index) => (
-           <CardPacientes handleAtender={handleAtender} handleDelete={handleDelete} paciente={paciente} index={index}/>
-            ))}
+              <CardPacientes
+                handleAtender={handleAtender}
+                handleDelete={handleDelete}
+                paciente={paciente}
+                index={index}
+              />
+            ))
+          )}
         </ul>
       </div>
     </div>

@@ -13,7 +13,7 @@ export type pacienteType = {
   direccion?: string;
   ciudad?: string;
   provincia?: string;
-  obraSocial?:string;
+  obraSocial?: string;
   pais?: string;
   updated_at?: string;
   created_at: string;
@@ -32,7 +32,8 @@ export type responseAPIType = {
   msg: string;
   code?: number;
   status?: string;
-  baody?: string;
+  body?: string;
+  data?: pacienteType;
 };
 
 export type optionsSelectInputType = {
@@ -47,19 +48,19 @@ export interface Antecedente {
   estado: string;
   observacion?: string;
   descripcion?: string;
-  tipo: "personal" | "familiar";
+  tipo: 'personal' | 'familiar';
   condicion?: boolean;
 }
 
 export interface AntecedentesMedicosProps {
-  antedecentes:Antecedente[];
+  antedecentes: Antecedente[];
 }
 
 export interface Medication {
   nombre: string;
   dosis: string;
   frecuencia: string;
-  estado: "activo" | "completado" | "suspendido";
+  estado: 'activo' | 'completado' | 'suspendido';
 }
 
 export interface MedicationsProps {
@@ -67,35 +68,35 @@ export interface MedicationsProps {
 }
 export interface Documentos {
   nombre: string;
-  tipo: "laboratorios" | "rayosx" | "prescripcion" |"electrocardiograma"| "otros"|"derivacion";
+  tipo: 'laboratorios' | 'rayosx' | 'prescripcion' | 'electrocardiograma' | 'otros' | 'derivacion';
   fecha: string;
   tamaño: string;
-  estado: "pendiente" | "revisar" | "archivado";
-  src:string
+  estado: 'pendiente' | 'revisar' | 'archivado';
+  src: string;
 }
 
 export interface DocumentosAdjuntosProps {
   documentos: Documentos[];
 }
 
-export type signosVitalesTypes={
-  id:string,
-  historiaClinica:string,
-  pacienteId:string,
-  userId:string,
-  update_at?:string,
-  created_at?:string,
-  deleted_ar?:string,
-  temperatura?:string,
-  pulso?:string,
-  respiracion?:string,
-  tensionArterial?:string,
-  saturacionOxigeno?:string,
-  glucosa?:string,
-  peso?:string,
-  talla?:string,
-  imc?:string,
-  frecuenciaCardiaca?:string,
-  frecuenciaRespiratoria?:string,
-  dolor?:string
-}
+export type signosVitalesTypes = {
+  id: string;
+  historiaClinica: string;
+  pacienteId: string;
+  userId: string;
+  update_at?: string;
+  created_at?: string;
+  deleted_ar?: string;
+  temperatura?: string;
+  pulso?: string;
+  respiracion?: string;
+  tensionArterial?: string;
+  saturacionOxigeno?: string;
+  glucosa?: string;
+  peso?: string;
+  talla?: string;
+  imc?: string;
+  frecuenciaCardiaca?: string;
+  frecuenciaRespiratoria?: string;
+  dolor?: string;
+};

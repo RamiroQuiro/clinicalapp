@@ -1,11 +1,11 @@
 ---
-import Button1 from "../atomos/Button1.astro";
+import Button1 from '../atomos/Button1.astro';
 ---
 
 <div class="w-full flex flex-col gap-2 text-sm">
-    <button
+  <button
     id="modal-perfil"
-    class="px-4 py-2 bg-primary-100 text-white rounded-md hover:bg-primary/90 transition-colors"
+    class="px-4 py-2 bg-primary-100 text-white rounded-lg hover:bg-primary/90 transition-colors"
   >
     Editar Perfil
   </button>
@@ -13,14 +13,9 @@ import Button1 from "../atomos/Button1.astro";
     id={`dialog-modal-perfil`}
     class="modal print:hidden duration-300 open:fixed open:flex flex-col w-full md:open:min-w-[30vw] md:open:max-w-[40vw] open:min-h-[50vh] rounded-lg border-l-2 border-primary-100 backdrop:bg-primary-texto/80 open:backdrop:backdrop-blur-sm"
   >
-    <div
-      id="dataId"
-      class="relative flex flex-col w-full h-full p-3 print:hidden modal"
-    >
+    <div id="dataId" class="relative flex flex-col w-full h-full p-3 print:hidden modal">
       <form method="dialog">
-        <Button1 slot="close" id="cerrarModal" style="absolute top-1 right-1 "
-          >✕</Button1
-        >
+        <Button1 slot="close" id="cerrarModal" style="absolute top-1 right-1 ">✕</Button1>
       </form>
       <slot />
 
@@ -30,8 +25,8 @@ import Button1 from "../atomos/Button1.astro";
 </div>
 
 <script>
-  const btnModal = document.getElementById("modal-perfil");
-  btnModal?.addEventListener("click", () => {
+  const btnModal = document.getElementById('modal-perfil');
+  btnModal?.addEventListener('click', () => {
     const modal = document.getElementById(`dialog-modal-perfil`);
     modal.showModal();
     // e.showModal()
