@@ -1,37 +1,16 @@
 ---
-import Header from "./componente/Header.astro";
-import StatsCard from "./componente/StatsCard.astro";
-import PacienteList from "./componente/PacienteList.astro";
-import QuickActions from "./componente/QuickAction.astro";
-import {
-  Activity,
-  AlertTriangle,
-  Calendar,
-  Clock,
-  FileText,
-  Users,
-} from "lucide-react";
-import db from "../../../db";
-import { atenciones, pacientes, users } from "../../../db/schema";
-import {
-  desc,
-  eq,
-  between,
-  sql,
-  and,
-  gt,
-  lte,
-  count,
-  asc,
-  gte,
-} from "drizzle-orm";
-import DivBox1 from "../../../components/atomos/DivBox1.astro";
-import ContenedorTitleBotonera from "../../../components/atomos/ContenedorTitleBotonera.astro";
-import H2 from "../../../components/atomos/H2.astro";
-import GraficoUltimasAtenciones from "./componente/GraficoUltimasAtenciones.astro";
-import SalaEspera from "./componente/SalaEspera";
-import GraficoMotivosIniciales from "./componente/GraficoMotivosIniciales.astro";
-import ListaDeEspera from "./componente/ListaDeEspera.astro";
+import { and, asc, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { FileText, Users } from 'lucide-react';
+import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleBotonera.astro';
+import DivBox1 from '../../../components/atomos/DivBox1.astro';
+import H2 from '../../../components/atomos/H2.astro';
+import db from '../../../db';
+import { atenciones, pacientes } from '../../../db/schema';
+import GraficoMotivosIniciales from './componente/GraficoMotivosIniciales.astro';
+import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astro';
+import Header from './componente/Header.astro';
+import ListaDeEspera from './componente/ListaDeEspera.astro';
+import PacienteList from './componente/PacienteList.astro';
 
 // const insertData=await db.insert(users).values({
 //   id:'sakflsdk',
@@ -42,9 +21,9 @@ import ListaDeEspera from "./componente/ListaDeEspera.astro";
 // })
 // condicionar con usuarioID
 
-const dataDB = async (userId) => {
+const dataDB = async userId => {
   try {
-    const result = await db.transaction(async (trx) => {
+    const result = await db.transaction(async trx => {
       // Obtener pacientes del usuario
       const pacientesData = await trx
         .select({
@@ -56,40 +35,40 @@ const dataDB = async (userId) => {
         .from(pacientes)
         .where(eq(pacientes.userId, userId));
 
-          // Fecha actual y rango de los últimos 7 días
-          const now = new Date();
+      // Fecha actual y rango de los últimos 7 días
+      const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const sieteDiasAtras = new Date(today);
       sieteDiasAtras.setDate(today.getDate() - 6); // 6 días para incluir el día actual
-      
+
       const startOfDay = sieteDiasAtras;
       startOfDay.setHours(0, 0, 0, 0);
-      
+
       const endOfToday = new Date(today);
       endOfToday.setHours(23, 59, 59, 999);
 
       const atencionesPorDia = await trx
         .select({
-          fecha: sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`.as("fecha"),
+          fecha: sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`.as('fecha'),
           turno: sql`CASE
             WHEN strftime('%H', datetime(${atenciones.created_at}, 'localtime')) < '12' THEN 'mañana'
             ELSE 'tarde'
-          END`.as("turno"),
-          total: count().as("total"),
+          END`.as('turno'),
+          total: count().as('total'),
         })
         .from(atenciones)
         .where(
           and(
             eq(atenciones.userId, userId),
             gte(atenciones.created_at, startOfDay.toISOString()),
-            lte(atenciones.created_at, endOfToday.toISOString()),
-          ),
+            lte(atenciones.created_at, endOfToday.toISOString())
+          )
         )
         .groupBy(sql`DATE(datetime(${atenciones.created_at}, 'localtime')), turno`)
         .orderBy(asc(sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`));
-      
+
       // console.log('Atenciones por día:', JSON.stringify(atencionesPorDia, null, 2));
-   
+
       const datosMotivoConsulta = await trx
         .select({
           motivoInicial: atenciones.motivoInicial,
@@ -127,52 +106,46 @@ const dataDB = async (userId) => {
 
     return result;
   } catch (error) {
-    console.error("Error en la transacción:", error);
-    throw new Error("Ocurrió un error al procesar la solicitud");
+    console.error('Error en la transacción:', error);
+    throw new Error('Ocurrió un error al procesar la solicitud');
   }
 };
 
-const {
-  pacientesData,
-  atencionesPorDia,
-  ultimasAtenciones,
-  datosMotivoConsulta,
-} = await dataDB("sakflsdk");
+const { pacientesData, atencionesPorDia, ultimasAtenciones, datosMotivoConsulta } =
+  await dataDB('sakflsdk');
 
 const stats = [
   {
-    title: "Pacientes Totales",
+    title: 'Pacientes Totales',
     value: pacientesData.length,
     icon: Users,
   },
 
   {
-    title: "Historias Actualizadas",
-    value: "89%",
+    title: 'Historias Actualizadas',
+    value: '89%',
     icon: FileText,
-    change: "+3.2%",
+    change: '+3.2%',
   },
 ];
 const today = new Date();
-const utcToday = new Date(
-  Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
-); //si o si converitr en 0,0,0,0 el horario
+const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())); //si o si converitr en 0,0,0,0 el horario
 
-const atencionesDelDia = atencionesPorDia.filter((atencion) => {
+const atencionesDelDia = atencionesPorDia.filter(atencion => {
   const atencionFecha = new Date(atencion.fecha);
-  const fechaAtencion = new Date(atencionFecha.getFullYear(), atencionFecha.getMonth(), atencionFecha.getDate());
+  const fechaAtencion = new Date(
+    atencionFecha.getFullYear(),
+    atencionFecha.getMonth(),
+    atencionFecha.getDate()
+  );
   const fechaHoy = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   return fechaAtencion.getTime() === fechaHoy.getTime();
 });
 
-const dataGraficos = { atencionesPorDia, datosMotivoConsulta };
-const atencionTurnoTarde = atencionesDelDia?.filter(
-  (turno) => turno.turno === "tarde",
-)[0]?.total || 0;
-const atencionTurnoManana = atencionesDelDia?.filter(
-  (turno) => turno.turno === "mañana",
-)[0]?.total || 0;
-
+const atencionTurnoTarde =
+  atencionesDelDia?.filter(turno => turno.turno === 'tarde')[0]?.total || 0;
+const atencionTurnoManana =
+  atencionesDelDia?.filter(turno => turno.turno === 'mañana')[0]?.total || 0;
 ---
 
 <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
@@ -184,7 +157,8 @@ const atencionTurnoManana = atencionesDelDia?.filter(
         <div class="flex flex-col items-start justify-normal w-full">
           <p class="text-sm font-medium text-gray-600">
             Consultas Hoy <span class="text-2xl ml-3 text-primary-texto"
-              >{atencionTurnoManana + atencionTurnoTarde}</span>
+              >{atencionTurnoManana + atencionTurnoTarde}</span
+            >
           </p>
           <div class="flex w-full items-center justify-between pr-4">
             <div>
