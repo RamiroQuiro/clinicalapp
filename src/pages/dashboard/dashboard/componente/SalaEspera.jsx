@@ -103,7 +103,6 @@ const SalaEspera = ({ user }) => {
         });
 
         const result = await response.json(); // Leer respuesta JSON
-        console.log(result);
         if (result.code == 400) {
           showToast(result.msg, {
             background: 'bg-primary-400',
