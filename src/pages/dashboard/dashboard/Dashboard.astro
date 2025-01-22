@@ -1,6 +1,6 @@
 ---
 import { and, asc, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
-import { Activity, Clock, Users } from 'lucide-react';
+import { FileText, Users } from 'lucide-react';
 import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleBotonera.astro';
 import DivBox1 from '../../../components/atomos/DivBox1.astro';
 import H2 from '../../../components/atomos/H2.astro';
@@ -11,8 +11,6 @@ import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astr
 import Header from './componente/Header.astro';
 import ListaDeEspera from './componente/ListaDeEspera.astro';
 import PacienteList from './componente/PacienteList.astro';
-import StatsAtencionesDelDia from './componente/StatsAtencionesDelDia.astro';
-import StatsCard from './componente/StatsCard.astro';
 
 // const insertData=await db.insert(users).values({
 //   id:'sakflsdk',
@@ -80,46 +78,6 @@ const dataDB = async userId => {
         .where(eq(atenciones.userId, userId))
         .groupBy(atenciones.motivoInicial);
 
-      // Fecha actual y primer día del mes
-      const primerDiaMes = new Date(now.getFullYear(), now.getMonth(), 1);
-      primerDiaMes.setHours(0, 0, 0, 0);
-
-      const ultimoDiaMes = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      ultimoDiaMes.setHours(23, 59, 59, 999);
-
-      // Obtener atenciones del mes actual
-      const atencionesMes = await trx
-        .select({
-          id: atenciones.id,
-          created_at: atenciones.created_at,
-        })
-        .from(atenciones)
-        .where(
-          and(
-            eq(atenciones.userId, userId),
-            gte(atenciones.created_at, primerDiaMes.toISOString()),
-            lte(atenciones.created_at, ultimoDiaMes.toISOString())
-          )
-        );
-
-      // Obtener tiempo promedio de consultas del día
-      const atencionesDuracion = await trx
-        .select({
-          duracion:
-            sql`avg((julianday(${atenciones.finAtencion}) - julianday(${atenciones.inicioAtencion})) * 24 * 60)`.as(
-              'duracionPromedio'
-            ), // Convertir a minutos
-        })
-        .from(atenciones)
-        .where(
-          and(
-            eq(atenciones.userId, userId),
-            sql`DATE(${atenciones.created_at}) = DATE('now')`,
-            sql`${atenciones.finAtencion} IS NOT NULL`,
-            sql`${atenciones.inicioAtencion} IS NOT NULL`
-          )
-        );
-
       // Obtener las últimas 6 atenciones
       const ultimasAtenciones = await trx
         .select({
@@ -140,10 +98,8 @@ const dataDB = async userId => {
 
       return {
         pacientesData,
-        atencionesPorDia,
-        atencionesMes,
         datosMotivoConsulta,
-        duracionPromedio: Math.round(atencionesDuracion[0]?.duracion || 0),
+        atencionesPorDia,
         ultimasAtenciones,
       };
     });
@@ -155,14 +111,8 @@ const dataDB = async userId => {
   }
 };
 
-const {
-  pacientesData,
-  atencionesPorDia,
-  atencionesMes,
-  datosMotivoConsulta,
-  duracionPromedio,
-  ultimasAtenciones,
-} = await dataDB('sakflsdk');
+const { pacientesData, atencionesPorDia, ultimasAtenciones, datosMotivoConsulta } =
+  await dataDB('sakflsdk');
 
 const stats = [
   {
@@ -170,55 +120,76 @@ const stats = [
     value: pacientesData.length,
     icon: Users,
   },
+
   {
-    title: 'Atenciones del Mes',
-    value: atencionesMes.length,
-    icon: Activity,
-    subtitle: 'este mes',
-  },
-  {
-    title: 'Tiempo Promedio',
-    value: duracionPromedio,
-    icon: Clock,
-    subtitle: 'minutos por consulta',
+    title: 'Historias Actualizadas',
+    value: '89%',
+    icon: FileText,
+    change: '+3.2%',
   },
 ];
+const today = new Date();
+const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())); //si o si converitr en 0,0,0,0 el horario
 
 const atencionesDelDia = atencionesPorDia.filter(atencion => {
-  const today = new Date();
-  const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())); //si o si converitr en 0,0,0,0 el horario
   const atencionFecha = new Date(atencion.fecha);
-  return atencionFecha.toISOString() === utcToday.toISOString();
+  const fechaAtencion = new Date(
+    atencionFecha.getFullYear(),
+    atencionFecha.getMonth(),
+    atencionFecha.getDate()
+  );
+  const fechaHoy = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return fechaAtencion.getTime() === fechaHoy.getTime();
 });
 
 const atencionTurnoTarde =
   atencionesDelDia?.filter(turno => turno.turno === 'tarde')[0]?.total || 0;
-console.log('atencion tarde ->', atencionesDelDia);
 const atencionTurnoManana =
   atencionesDelDia?.filter(turno => turno.turno === 'mañana')[0]?.total || 0;
-console.log('atencion tarde ->', atencionTurnoTarde);
 ---
 
 <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
   <Header arrayPacientes={pacientesData} />
 
   <div class="flex items-center gap-2 justify-evenly">
-    <StatsAtencionesDelDia
-      atencionTurnoManana={atencionTurnoManana}
-      atencionTurnoTarde={atencionTurnoTarde}
-    />
+    <DivBox1 class="p-6">
+      <div class="flex w-full items-start justify-between">
+        <div class="flex flex-col items-start justify-normal w-full">
+          <p class="text-sm font-medium text-gray-600">
+            Consultas Hoy <span class="text-2xl ml-3 text-primary-texto"
+              >{atencionTurnoManana + atencionTurnoTarde}</span
+            >
+          </p>
+          <div class="flex w-full items-center justify-between pr-4">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Mañana</p>
+              <h3 class="mt-1 text-xl font-semibold">{atencionTurnoManana}</h3>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Tarde</p>
+              <h3 class="mt-1 text-xl font-semibold">{atencionTurnoTarde}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4"></div>
+    </DivBox1>
     {
       stats.map((stat, index) => {
         let Icon = stat.icon;
         return (
-          <StatsCard
-            key={index}
-            title={stat.title}
-            value={stat}
-            icon={Icon}
-            color={stat.color}
-            trend={stat.trend}
-          />
+          <DivBox1 key={index} class="p-6">
+            <div class="flex w-full items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">{stat.title}</p>
+                <h3 class="mt-1 text-2xl font-semibold">{stat.value}</h3>
+              </div>
+              <div class={`rounded-full bg-primary-150 p-2`}>
+                <Icon className="w-5" />
+              </div>
+            </div>
+            <div class="mt-4" />
+          </DivBox1>
         );
       })
     }
