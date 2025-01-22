@@ -122,47 +122,53 @@ const SalaEspera = ({ user }) => {
     }
   };
   return (
-    <div className="w-full flex flex-col items-start justify-normal gap-3">
-      {/* formulario */}
-      <details className="w-full flex items-start ">
-        <summary className="p-1 mb-2 rounded-lg text-left cursor-pointer items-center  text-sm e duration-200 hover:bg-primary-100/20">
-          agregar Pacientes
-        </summary>
-        <FormularioCargaListaEspera
-          nuevoPaciente={nuevoPaciente}
-          handleChange={handleChange}
-          agregarPaciente={agregarPaciente}
-        />
-      </details>
-      <div className="flex flex-col w-full  items-start 500 justify-between gap-2 bg-primary-bg-componentes p-2 ">
-        <div className="flex w-full pri items-start justify-between gap-2 text-sm text-primary-textoTitle">
-          <p className="w-2/4 text-left">Datos Paciente</p>
-          <p className="w-1/5">N° Turno</p>
-          <p className="w-1/5">accion</p>
-        </div>
-
-        <ul className="flex w-full items-start justify-normal gap-2 flex-col">
-          {loading ? (
-            <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
-              <p className="animate-pulse">Esperado datos...</p>
-            </li>
-          ) : pacientes.length === 0 ? (
-            <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
-              <p>No hay pacientes en espera</p>
-            </li>
-          ) : (
-            pacientes?.map((paciente, index) => (
-              <CardPacientes
-                handleAtender={handleAtender}
-                handleDelete={handleDelete}
-                paciente={paciente}
-                index={index}
-              />
-            ))
-          )}
-        </ul>
+    <>
+      <div className="flex border-b pb-2 justify-between items-center text-primary-textoTitle w-full mb-2">
+        <h2 className="text-lg font-semibold ">Lista de Espera</h2>
+        <span className="md:text-2xl">{pacientes.length}</span>
       </div>
-    </div>
+      <div className="w-full flex flex-col items-start justify-normal gap-3">
+        {/* formulario */}
+        <details className="w-full flex items-start ">
+          <summary className="p-1 mb-2 rounded-lg text-left cursor-pointer items-center  text-sm e duration-200 hover:bg-primary-100/20">
+            agregar Pacientes
+          </summary>
+          <FormularioCargaListaEspera
+            nuevoPaciente={nuevoPaciente}
+            handleChange={handleChange}
+            agregarPaciente={agregarPaciente}
+          />
+        </details>
+        <div className="flex flex-col w-full  items-start 500 justify-between gap-2 bg-primary-bg-componentes p-2 ">
+          <div className="flex w-full pri items-start justify-between gap-2 text-sm text-primary-textoTitle">
+            <p className="w-2/4 text-left">Datos Paciente</p>
+            <p className="w-1/5">N° Turno</p>
+            <p className="w-1/5">accion</p>
+          </div>
+
+          <ul className="flex w-full items-start justify-normal gap-2 flex-col">
+            {loading ? (
+              <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
+                <p className="animate-pulse">Esperado datos...</p>
+              </li>
+            ) : pacientes.length === 0 ? (
+              <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
+                <p>No hay pacientes en espera</p>
+              </li>
+            ) : (
+              pacientes?.map((paciente, index) => (
+                <CardPacientes
+                  handleAtender={handleAtender}
+                  handleDelete={handleDelete}
+                  paciente={paciente}
+                  index={index}
+                />
+              ))
+            )}
+          </ul>
+        </div>
+      </div>
+    </>
   );
 };
 

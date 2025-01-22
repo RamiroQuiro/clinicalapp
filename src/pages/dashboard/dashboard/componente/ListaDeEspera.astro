@@ -1,7 +1,5 @@
 ---
-import ContenedorTitleBotonera from '../../../../components/atomos/ContenedorTitleBotonera.astro';
 import DivBox1 from '../../../../components/atomos/DivBox1.astro';
-import H2 from '../../../../components/atomos/H2.astro';
 import SalaEspera from './SalaEspera';
 
 let user = {
@@ -12,12 +10,6 @@ let user = {
 ---
 
 <DivBox1 styleDiv="w-[35%]">
-  <ContenedorTitleBotonera>
-    <H2>Lista de Espera</H2>
-    <!-- <div>
-        <Button1>ver más</Button1>
-      </div> -->
-  </ContenedorTitleBotonera>
   <div class="text-center w-full capitalize">
     <SalaEspera user={user} client:load />
   </div>
