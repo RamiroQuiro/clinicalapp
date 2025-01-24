@@ -95,22 +95,26 @@ export async function GET({ request }) {
     const searchData = await searchResponse.json();
     console.log('Resultados obtenidos:', searchData);
 
-    // Transformar los resultados al formato que necesitamos
-    // - code: código CIE (puede estar en diferentes campos según el tipo de entidad)
-    // - title: descripción del diagnóstico
-    // - id: identificador único
-    // - chapter: capítulo al que pertenece
+    // Función para limpiar las etiquetas HTML (como <em>)
+    function cleanHTML(text) {
+      return text.replace(/<[^>]*>/g, ''); // Elimina todas las etiquetas HTML
+    }
+
+    // Obtener el código del diagnóstico (en CIE-11, puede estar en diferentes campos)
+    const obtenerCodigo = entity => {
+      return entity.code || entity.stem || entity.theCode || 'No disponible';
+    };
+
+    // Transformar los resultados al formato requerido
     const results =
       searchData.destinationEntities?.map(entity => ({
-        code: entity.code || entity.stem || entity.theCode,
-        title: entity.title,
-        id: entity.id,
-        chapter: entity.chapter,
+        title: cleanHTML(entity.title), // Título del diagnóstico
+        cie10: obtenerCodigo(entity), // Código CIE-10 o CIE-11
+        id: entity.id.split('/').pop(), // Extraemos el ID al final de la URL
+        chapter: entity.chapter || 'Desconocido', // Capítulo (si está disponible)
       })) || [];
 
-    console.log('Resultados transformados:', results);
-
-    // Devolver los resultados
+    // Retornar los resultados en formato JSON
     return new Response(JSON.stringify(results), {
       status: 200,
       headers: {

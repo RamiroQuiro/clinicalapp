@@ -9,6 +9,13 @@ export default function FormularioBusquedaCie() {
   const timeoutId = useRef(null);
 
   const handleSearch = async e => {
+    if (e.target.value === '') {
+      setResultado([]); // Limpiar resultados
+      setBuscando(false); // Detener la animación de búsqueda (si aplica)
+      setSearch(''); // Limpiar el estado del search
+      return; // Terminar ejecución
+    }
+
     setSearch(e.target.value);
 
     if (timeoutId.current) {
@@ -50,35 +57,58 @@ export default function FormularioBusquedaCie() {
           value={search}
           handleChange={handleSearch}
           name=""
-          type="text"
+          type="search"
           id=""
         />
         <button className="bg-primary-texto/50 hover:bg-primary-texto duration-300 p-1 rounded-lg ">
           <SquarePlus className="w-6 h-6 stroke-white" />
         </button>
       </div>
-      {buscando && (
-        <div
-          tabIndex={0}
-          className="absolute animate-aparecer top-[110%] left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
-        >
-          <span className="text-green-700 inline-flex font-semibold animate-pulse ">
-            <FileSearch /> Buscando...
-          </span>
-        </div>
+      {/* resultados */}
+
+      {search.length >= 3 && (
+        <>
+          {buscando && (
+            <div
+              tabIndex={0}
+              className="absolute animate-aparecer top-[110%] max-h-fit left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
+            >
+              <span className="text-primary-200 inline-flex font-semibold animate-pulse ">
+                <FileSearch /> Buscando...
+              </span>
+            </div>
+          )}
+          {resultado.length > 0 && (
+            <div
+              tabIndex={0}
+              className="gap-2 flex flex-col absolute animate-aparecer top-[115%] left-0 w-full border overflow-y-scroll rounded-lg p-0.5  bg-white text-sm text-primary-texto"
+            >
+              {resultado.status == 500 && <span className="text-primary-400">Error al buscar</span>}
+              {resultado.length == 0 ? (
+                <span className="text-primary-400">No se encontraron resultados</span>
+              ) : (
+                resultado.length > 1 &&
+                resultado?.map((entity, i) => (
+                  <li
+                    className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
+                    key={i}
+                  >
+                    <div className="flex-1 border-r">
+                      <h2>{entity.title}</h2>
+                    </div>
+                    <div className="border-r px-1">
+                      <p>capitulo{entity.chapter}</p>
+                    </div>
+                    <a href={entity.id} target="_blank">
+                      {entity.id}
+                    </a>
+                  </li>
+                ))
+              )}
+            </div>
+          )}
+        </>
       )}
-      {resultado.length > 0 ||
-        (resultado.status == 500 && (
-          <div
-            tabIndex={0}
-            className="absolute animate-aparecer top-[110%] left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
-          >
-            <span className="text-primary-400">
-              {' '}
-              {resultado.status == 500 && 'Error al buscar'}
-            </span>
-          </div>
-        ))}
     </div>
   );
 }
