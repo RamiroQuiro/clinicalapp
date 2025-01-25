@@ -8,6 +8,43 @@ export default function FormularioBusquedaCie() {
   const [buscando, setBuscando] = useState(false);
   const timeoutId = useRef(null);
 
+
+  //   funcion para buscar los cie 11
+  const bucarCie11 = async query => {
+    try {
+      const fetching = await fetch(`/api/cie11/search?q=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await fetching.json();
+      console.log(data);
+      setResultado(data);
+      setBuscando(false);
+    } catch (error) {
+      setBuscando(false);
+      console.log(error);
+    }
+  };
+  //   funcion para buscar los cie 11
+  const buscarEntity = async entityID => {
+    try {
+      const fetching = await fetch(`/api/cie11/${entityID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await fetching.json();
+      console.log('busqeda de entity',data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+
   const handleSearch = async e => {
     if (e.target.value === '') {
       setResultado([]); // Limpiar resultados
@@ -30,24 +67,6 @@ export default function FormularioBusquedaCie() {
     console.log(search);
   };
 
-  //   funcion para buscar los cie 11
-  const bucarCie11 = async query => {
-    try {
-      const fetching = await fetch(`/api/cie11/search?q=${encodeURIComponent(query)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await fetching.json();
-      console.log(data);
-      setResultado(data);
-      setBuscando(false);
-    } catch (error) {
-      setBuscando(false);
-      console.log(error);
-    }
-  };
 
   return (
     <div className="w-full flex items-center justify-between gap-2 relative">
@@ -91,7 +110,7 @@ export default function FormularioBusquedaCie() {
                 resultado?.map((entity, i) => (
                   <li
                     className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
-                    key={i}
+                    key={entity.id}
                   >
                     <div className="flex-1 border-r">
                       <h2>{entity.title}</h2>
@@ -99,9 +118,9 @@ export default function FormularioBusquedaCie() {
                     <div className="border-r px-1">
                       <p>capitulo{entity.chapter}</p>
                     </div>
-                    <a href={entity.id} target="_blank">
-                      {entity.id}
-                    </a>
+                    <div className="border-r px-1">
+                      <p>{entity.cie11}</p>
+                    </div>
                   </li>
                 ))
               )}
