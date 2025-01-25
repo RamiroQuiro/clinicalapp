@@ -1,9 +1,9 @@
 ---
-import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
-import H2 from "../../../../../components/atomos/H2.astro";
-import ContenedeorModal from "../../../../../components/organismo/ContenedeorModal.astro";
-import FormularioDiagnosticos from "../../../../../components/organismo/FormularioDiagnosticos.astro";
-import ContenedorTabla from "./ContenedorTabla.astro";
+import ContenedorTitleBotonera from '../../../../../components/atomos/ContenedorTitleBotonera.astro';
+import H2 from '../../../../../components/atomos/H2.astro';
+import ContenedeorModal from '../../../../../components/organismo/ContenedeorModal.astro';
+import FormularioDiagnosticos from '../../../../../components/organismo/FormularioDiagnosticos.astro';
+import ContenedorTabla from './ContenedorTabla.astro';
 
 const { isExistDiagnosticos } = Astro.props;
 ---
@@ -16,22 +16,18 @@ const { isExistDiagnosticos } = Astro.props;
       <!-- <DiagnosticosContenedor client:load  isExistDiagnosticos={isExistDiagnosticos}/> -->
     </ContenedeorModal>
   </div>
-
 </ContenedorTitleBotonera>
 
-  <ContenedorTabla isExistDiagnosticos={isExistDiagnosticos} />
+<ContenedorTabla isExistDiagnosticos={isExistDiagnosticos} />
 
-  <script >
-import { dataFormularioContexto } from "../../../../../context/store";
+<script>
+  import { dataFormularioContexto } from '../../../../../context/store';
 
-    
-    
-      const btnModal = document.getElementById(`dialogDiagnostico`);
-      const modal = document.getElementById(`modal-dialogDiagnostico`);
-      btnModal?.addEventListener("click", (e) => {
-        dataFormularioContexto.set({})
-        modal.showModal();
-        // e.showModal()
-      });
-    </script>
-    
+  const btnModal = document.getElementById(`dialogDiagnostico`);
+  const modal = document.getElementById(`modal-dialogDiagnostico`);
+  btnModal?.addEventListener('click', e => {
+    dataFormularioContexto.set({});
+    modal.showModal();
+    // e.showModal()
+  });
+</script>

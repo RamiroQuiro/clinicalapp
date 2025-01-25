@@ -1,37 +1,38 @@
-import React from 'react'
-import Table from '../../../../../components/tablaComponentes/Table'
-import {  RenderActionsEditDeletMedicamentos,  } from '../../../../../components/tablaComponentes/RenderBotonesActions'
-import { useStore } from '@nanostores/react'
-import { atencion } from '../../../../../context/store'
+import { useStore } from '@nanostores/react';
+import { RenderActionsEditDeletMedicamentos } from '../../../../../components/tablaComponentes/RenderBotonesActions';
+import Table from '../../../../../components/tablaComponentes/Table';
+import { atencion } from '../../../../../context/store';
 
-export default function ConfeccionTablaMedicamentos({  }) {
-const $medicamentosStore=useStore(atencion).medicamentos
-console.log($medicamentosStore)
+export default function ConfeccionTablaMedicamentos({}) {
+  const $medicamentosStore = useStore(atencion).medicamentos;
   const columns = [
     {
-      label: "Medicamento",
+      label: 'Medicamento',
       id: 1,
     },
     {
-      label: "Dosis",
+      label: 'Dosis',
       id: 2,
     },
     {
-      label: "Frecuencia",
+      label: 'Frecuencia',
       id: 3,
     },
     {
-        label:'Duracion',
-        id:4,
+      label: 'Duracion',
+      id: 4,
     },
     {
-        label:'Accion',
-        id:5,
-    }
-  ]
-
+      label: 'Accion',
+      id: 5,
+    },
+  ];
 
   return (
-    <Table columnas={columns} arrayBody={$medicamentosStore} renderBotonActions={RenderActionsEditDeletMedicamentos} />
-  )
+    <Table
+      columnas={columns}
+      arrayBody={$medicamentosStore}
+      renderBotonActions={RenderActionsEditDeletMedicamentos}
+    />
+  );
 }

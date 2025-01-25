@@ -1,17 +1,15 @@
 ---
-import Button1 from "../atomos/Button1.astro";
-import FormCont from "../atomos/FormCont.astro";
-import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
+import FormularioBusquedaCie from '@/pages/dashboard/consultas/aperturaPaciente/[pacienteId]/FormularioBusquedaCie';
+import Button1 from '../atomos/Button1.astro';
+import FormCont from '../atomos/FormCont.astro';
+import ContenedorInputForm from '../moleculas/ContenedorInputForm.astro';
+import DiagnosticosContenedor from './DiagnosticosContenedor';
 ---
 
 <FormCont title="agregar diagnostico" id="formularioDiagnostico">
+  <FormularioBusquedaCie client:load />
   <div class="w-full">
-    <ContenedorInputForm
-      id="diagnostico"
-      label="diagnostico"
-      name="diagnostico"
-      type="text"
-    />
+    <ContenedorInputForm id="diagnostico" label="diagnostico" name="diagnostico" type="text" />
   </div>
   <div class="w-full">
     <label class="text-xs capitalize">observaciones:</label>
@@ -22,9 +20,7 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
       id="observacionesDiagnostico"></textarea>
   </div>
   <div class="w-full flex items-center justify-between">
-    <div
-      class="w-full h-7 0 py-2 flex text-primary-400 font-semibold tracking-wider text-xs"
-    >
+    <div class="w-full h-7 0 py-2 flex text-primary-400 font-semibold tracking-wider text-xs">
       <p class="capitalize animate-aparecer" id="errores"></p>
     </div>
     <Button1 id="guardarDiagnostico">agregar</Button1>
@@ -32,27 +28,27 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
 </FormCont>
 
 <script>
-  import { generateId } from "lucia";
-  import { atencion, dataFormularioContexto } from "../../context/store";
+  import { generateId } from 'lucia';
+  import { atencion, dataFormularioContexto } from '../../context/store';
 
-  const textArea = document.getElementById("observacionesDiagnostico");
-  const diagnostico = document.getElementById("diagnostico");
-  const btnEnviar = document.getElementById("guardarDiagnostico");
-  const errores = document.getElementById("errores");
+  const textArea = document.getElementById('observacionesDiagnostico');
+  const diagnostico = document.getElementById('diagnostico');
+  const btnEnviar = document.getElementById('guardarDiagnostico');
+  const errores = document.getElementById('errores');
 
   // Objeto para almacenar el diagnóstico actual
   let currentDiagnostico = {
-    id: "",
-    diagnostico: "",
-    observaciones: "",
+    id: '',
+    diagnostico: '',
+    observaciones: '',
   };
 
   // Suscripción al contexto para cargar los datos iniciales
-  dataFormularioContexto.subscribe((data) => {
+  dataFormularioContexto.subscribe(data => {
     currentDiagnostico = {
-      id: data?.id || "",
-      diagnostico: data?.diagnostico || "",
-      observaciones: data?.observaciones || "",
+      id: data?.id || '',
+      diagnostico: data?.diagnostico || '',
+      observaciones: data?.observaciones || '',
     };
 
     // Rellena los campos del formulario con los datos existentes
@@ -60,12 +56,12 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
     textArea.value = currentDiagnostico.observaciones;
   });
 
-  btnEnviar?.addEventListener("click", (e) => {
+  btnEnviar?.addEventListener('click', e => {
     e.preventDefault();
     // Validar campos obligatorios
     if (!diagnostico.value.trim()) {
-      errores.textContent = "Ingrese un diagnóstico";
-      setTimeout(() => (errores.textContent = ""), 2000);
+      errores.textContent = 'Ingrese un diagnóstico';
+      setTimeout(() => (errores.textContent = ''), 2000);
       return;
     }
     // Crea o actualiza el diagnóstico en el contexto
@@ -74,7 +70,7 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
 
     if (isEditing) {
       // Actualizar diagnóstico existente
-      const updatedDiagnosticos = dataContext.diagnosticos.map((diag) =>
+      const updatedDiagnosticos = dataContext.diagnosticos.map(diag =>
         diag.id === currentDiagnostico.id
           ? { ...diag, diagnostico: diagnostico.value, observaciones: textArea.value }
           : diag
@@ -97,10 +93,10 @@ import ContenedorInputForm from "../moleculas/ContenedorInputForm.astro";
     }
 
     // Limpiar el formulario y cerrar el modal
-    diagnostico.value = "";
-    textArea.value = "";
-    currentDiagnostico = { id: "", diagnostico: "", observaciones: "" };
-    errores.textContent = "";
-    document.getElementById("modal-dialogDiagnostico").close();
+    diagnostico.value = '';
+    textArea.value = '';
+    currentDiagnostico = { id: '', diagnostico: '', observaciones: '' };
+    errores.textContent = '';
+    document.getElementById('modal-dialogDiagnostico').close();
   });
 </script>

@@ -14,10 +14,7 @@ export default function DiagnosticosContenedor({ isExistDiagnosticos }) {
         observaciones: ''
     })
     const $atencionStore = useStore(atencion)
-
     const [arrayDiagnosticos, setArrayDiagnosticos] = useState(isExistDiagnosticos)
-
-
 
     const handleChange = (e) => {
         setDiagnostico({
@@ -25,6 +22,7 @@ export default function DiagnosticosContenedor({ isExistDiagnosticos }) {
             [e.target.name]: e.target.value
         })
     }
+
     const handleAddDiagnostico = (e) => {
         e.preventDefault()
         if (!diagnostico.diagnostico) {
@@ -40,7 +38,6 @@ export default function DiagnosticosContenedor({ isExistDiagnosticos }) {
         }))
         atencion.set({ ...$atencionStore, diagnosticos: [...$atencionStore.diagnosticos, diagnostico] })
     }
-
 
     const handleEdit = async (updateDiag) => {
         try {
@@ -87,10 +84,8 @@ export default function DiagnosticosContenedor({ isExistDiagnosticos }) {
 
     return (
         <div className='w-full  rounded-lg  px-2'>
-
             <div className='flex items-start justify-between w-full gap-1 '>
                 <div className='flex flex-col relative items-start w-full  gap-2 justify-between '>
-
                     <ContenedorAgregarDiagnostico value={diagnostico.diagnostico} name='diagnostico' type={'text'} handleChange={handleChange} >
                         Diagnostico
                     </ContenedorAgregarDiagnostico>
