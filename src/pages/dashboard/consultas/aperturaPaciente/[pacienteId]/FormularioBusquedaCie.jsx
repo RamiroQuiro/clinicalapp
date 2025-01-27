@@ -8,7 +8,35 @@ export default function FormularioBusquedaCie() {
   const [buscando, setBuscando] = useState(false);
   const timeoutId = useRef(null);
 
+<<<<<<< HEAD
   // Manejador de búsqueda en tiempo real
+=======
+
+  //   funcion para buscar los cie 11
+  const bucarCie11 = async query => {
+    try {
+      const fetching = await fetch(`/api/cie11/search?q=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await fetching.json();
+      setResultado(data);
+      setBuscando(false);
+    } catch (error) {
+      setBuscando(false);
+      console.log(error);
+    }
+  };
+const handleSelectDiagnositco = entity => {
+  setSearch(entity.title)
+  setResultado([]); // Limpiar resultados
+  setBuscando(false); // Detener la animación de búsqueda (si aplica)
+}
+
+
+>>>>>>> d36a9f422a0e5073a2f450d1f0013f6c06286cdd
   const handleSearch = async e => {
     const inputValue = e.target.value.trim();
 

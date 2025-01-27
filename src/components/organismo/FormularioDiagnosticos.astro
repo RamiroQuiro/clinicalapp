@@ -7,9 +7,14 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
 ---
 
 <FormCont title="agregar diagnostico" id="formularioDiagnostico">
+  <!-- // aqui quisiera que vaya la herramienta -->
   <FormularioBusquedaCie client:load />
-  <div class="w-full">
+
+  <div class="w-full flex items-center justify-between gap-2">
     <ContenedorInputForm id="diagnostico" label="diagnostico" name="diagnostico" type="text" />
+    <div class="w-1/3">
+      <ContenedorInputForm id="codigoCIE" label="codigo CIE" name="codigoCIE" type="text" />
+    </div>
   </div>
   <div class="w-full">
     <label class="text-xs capitalize">observaciones:</label>
@@ -28,11 +33,12 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
 </FormCont>
 
 <script>
-  import { generateId } from 'lucia';
+  import { nanoid } from 'nanoid';
   import { atencion, dataFormularioContexto } from '../../context/store';
 
   const textArea = document.getElementById('observacionesDiagnostico');
   const diagnostico = document.getElementById('diagnostico');
+  const codigoCIE = document.getElementById('codigoCIE');
   const btnEnviar = document.getElementById('guardarDiagnostico');
   const errores = document.getElementById('errores');
 
@@ -40,19 +46,23 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
   let currentDiagnostico = {
     id: '',
     diagnostico: '',
+    codigoCIE: '',
     observaciones: '',
   };
 
   // Suscripción al contexto para cargar los datos iniciales
   dataFormularioContexto.subscribe(data => {
+    console.log(data);
     currentDiagnostico = {
       id: data?.id || '',
       diagnostico: data?.diagnostico || '',
+      codigoCIE: data?.codigoCIE || '',
       observaciones: data?.observaciones || '',
     };
 
     // Rellena los campos del formulario con los datos existentes
     diagnostico.value = currentDiagnostico.diagnostico;
+    codigoCIE.value = currentDiagnostico.codigoCIE;
     textArea.value = currentDiagnostico.observaciones;
   });
 
@@ -72,7 +82,12 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
       // Actualizar diagnóstico existente
       const updatedDiagnosticos = dataContext.diagnosticos.map(diag =>
         diag.id === currentDiagnostico.id
-          ? { ...diag, diagnostico: diagnostico.value, observaciones: textArea.value }
+          ? {
+              ...diag,
+              diagnostico: diagnostico.value,
+              codigoCIE: codigoCIE.value,
+              observaciones: textArea.value,
+            }
           : diag
       );
       atencion.set({
@@ -82,8 +97,9 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
     } else {
       // Crear nuevo diagnóstico
       const newDiagnostico = {
-        id: generateId(13),
+        id: nanoid(13),
         diagnostico: diagnostico.value,
+        codigoCIE: codigoCIE.value,
         observaciones: textArea.value,
       };
       atencion.set({
@@ -94,8 +110,9 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
 
     // Limpiar el formulario y cerrar el modal
     diagnostico.value = '';
+    codigoCIE.value = '';
     textArea.value = '';
-    currentDiagnostico = { id: '', diagnostico: '', observaciones: '' };
+    currentDiagnostico = { id: '', diagnostico: '', codigoCIE: '', observaciones: '' };
     errores.textContent = '';
     document.getElementById('modal-dialogDiagnostico').close();
   });

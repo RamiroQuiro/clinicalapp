@@ -8,8 +8,7 @@
  * WHO_CLIENT_ID=tu_client_id
  * WHO_CLIENT_SECRET=tu_client_secret
  *
- * @param {Request} request - Objeto Request de la API
- * @returns {Response} - Respuesta JSON con los resultados de la búsqueda
+
  */
 
 export async function GET({ request }) {
@@ -67,7 +66,7 @@ export async function GET({ request }) {
     // - useFlexisearch: true para búsqueda más flexible
     // - flatResults: true para resultados simplificados
     // - releaseId: versión de CIE-11 a usar
-    const searchUrl = `https://id.who.int/icd/entity/search?q=${encodeURIComponent(query)}&useFlexisearch=true&flatResults=true`;
+    const searchUrl = `https://id.who.int/icd/release/11/2023-01/mms/search?q=${encodeURIComponent(query)}`;
 
     // Hacer la petición a la API de búsqueda
     const searchResponse = await fetch(searchUrl, {
@@ -109,7 +108,8 @@ export async function GET({ request }) {
     const results =
       searchData.destinationEntities?.map(entity => ({
         title: cleanHTML(entity.title), // Título del diagnóstico
-        cie10: obtenerCodigo(entity), // Código CIE-10 o CIE-11
+        cie10: obtenerCodigo(entity),
+        cie11:entity.theCode, // Código CIE-10 o CIE-11
         id: entity.id.split('/').pop(), // Extraemos el ID al final de la URL
         chapter: entity.chapter || 'Desconocido', // Capítulo (si está disponible)
       })) || [];
