@@ -8,106 +8,112 @@ export default function FormularioBusquedaCie() {
   const [buscando, setBuscando] = useState(false);
   const timeoutId = useRef(null);
 
+  // Manejador de búsqueda en tiempo real
   const handleSearch = async e => {
-    if (e.target.value === '') {
-      setResultado([]); // Limpiar resultados
-      setBuscando(false); // Detener la animación de búsqueda (si aplica)
-      setSearch(''); // Limpiar el estado del search
-      return; // Terminar ejecución
+    const inputValue = e.target.value.trim();
+
+    if (inputValue === '') {
+      // Si el campo está vacío, limpiamos todo
+      setResultado([]);
+      setBuscando(false);
+      setSearch('');
+      return;
     }
 
-    setSearch(e.target.value);
+    setSearch(inputValue);
 
     if (timeoutId.current) {
-      clearTimeout(timeoutId.current);
+      clearTimeout(timeoutId.current); // Limpiar cualquier búsqueda pendiente
     }
-    if (e.target.value.length >= 3) {
+
+    if (inputValue.length >= 3) {
       setBuscando(true);
       timeoutId.current = setTimeout(async () => {
-        const data = await bucarCie11(e.target.value);
+        await bucarCie11(inputValue); // Buscar después de 2 segundos
       }, 2000);
     }
-    console.log(search);
   };
 
-  //   funcion para buscar los cie 11
+  // Buscar CIE-11 en el backend
   const bucarCie11 = async query => {
     try {
-      const fetching = await fetch(`/api/cie11/search?q=${encodeURIComponent(query)}`, {
+      const response = await fetch(`/api/cie11/search?q=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      const data = await fetching.json();
-      console.log(data);
+
+      const data = await response.json();
       setResultado(data);
       setBuscando(false);
     } catch (error) {
+      console.error(error);
       setBuscando(false);
-      console.log(error);
     }
+  };
+
+  // Renderizar resultados con manejo adicional
+  const renderResultados = () => {
+    if (resultado.length === 0) {
+      return <span className="text-primary-400">No se encontraron resultados</span>;
+    }
+
+    return resultado.map((entity, i) => (
+      <li
+        key={i}
+        className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
+        onClick={() => console.log(`Seleccionaste: ${entity.title}`)} // Aquí podrías manejar una acción
+      >
+        <div className="flex-1 border-r">
+          <h2>{entity.title}</h2>
+        </div>
+        <div className="border-r px-1">
+          <p>Capítulo: {entity.chapter}</p>
+        </div>
+        <div className="px-1">
+          <p>Código: {entity.code}</p>
+        </div>
+        <a href={entity.id} target="_blank" rel="noopener noreferrer">
+          {entity.id}
+        </a>
+      </li>
+    ));
   };
 
   return (
     <div className="w-full flex items-center justify-between gap-2 relative">
       <div className="w-full flex items-center justify-between text-sm gap-2">
         <InputComponenteJsx
-          placeholder="Busqueda"
+          placeholder="Buscar CIE-11"
           value={search}
           handleChange={handleSearch}
-          name=""
+          name="busqueda"
           type="search"
-          id=""
+          id="busqueda-cie11"
         />
-        <button className="bg-primary-texto/50 hover:bg-primary-texto duration-300 p-1 rounded-lg ">
+        <button
+          className="bg-primary-texto/50 hover:bg-primary-texto duration-300 p-1 rounded-lg"
+          onClick={() => console.log('Agregar nuevo registro')} // Acción al hacer clic en el botón
+        >
           <SquarePlus className="w-6 h-6 stroke-white" />
         </button>
       </div>
-      {/* resultados */}
 
+      {/* Resultados */}
       {search.length >= 3 && (
-        <>
-          {buscando && (
-            <div
-              tabIndex={0}
-              className="absolute animate-aparecer top-[110%] max-h-fit left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
-            >
-              <span className="text-primary-200 inline-flex font-semibold animate-pulse ">
-                <FileSearch /> Buscando...
-              </span>
-            </div>
+        <div
+          tabIndex={0}
+          className="absolute animate-aparecer top-[110%] max-h-fit left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
+        >
+          {buscando ? (
+            <span className="text-primary-200 inline-flex font-semibold animate-pulse">
+              <FileSearch /> Buscando...
+            </span>
+          ) : (
+            <ul className="gap-2 flex flex-col">{renderResultados()}</ul>
           )}
-          {resultado.length > 0 && (
-            <div
-              tabIndex={0}
-              className="gap-2 flex flex-col absolute animate-aparecer top-[115%] left-0 w-full border overflow-y-scroll rounded-lg p-0.5  bg-white text-sm text-primary-texto"
-            >
-              {resultado.status == 500 && <span className="text-primary-400">Error al buscar</span>}
-              {resultado.length == 0 ? (
-                <span className="text-primary-400">No se encontraron resultados</span>
-              ) : (
-                resultado.length > 1 &&
-                resultado?.map((entity, i) => (
-                  <li
-                    className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
-                    key={i}
-                  >
-                    <div className="flex-1 border-r">
-                      <h2>{entity.title}</h2>
-                    </div>
-                    <div className="border-r px-1">
-                      <p>capitulo{entity.chapter}</p>
-                    </div>
-                    <a href={entity.id} target="_blank">
-                      {entity.id}
-                    </a>
-                  </li>
-                ))
-              )}
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );
