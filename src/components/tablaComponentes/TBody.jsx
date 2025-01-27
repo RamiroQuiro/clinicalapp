@@ -1,14 +1,13 @@
-import React, { useState } from "react";
-import Tr from "./Tr";
-import { useStore } from "@nanostores/react";
-import { columnSelectTable, filtrosBusquedaPrestamos } from "../../context/store";
+import { useStore } from '@nanostores/react';
+import { useState } from 'react';
+import { columnSelectTable, filtroBusqueda } from '../../context/store';
+import Tr from './Tr';
 
 export default function TBody({ arrayBody, onClickFila, renderBotonActions }) {
   const $columnSelectTable = useStore(columnSelectTable);
-  const $filtros = useStore(filtrosBusquedaPrestamos);
+  const $filtros = useStore(filtroBusqueda);
   const [sortSelect, setSortSelect] = useState($columnSelectTable.seleccion);
-
-  const onClick = (href) => {
+  const onClick = href => {
     document.location.href = href;
   };
 
@@ -26,22 +25,6 @@ export default function TBody({ arrayBody, onClickFila, renderBotonActions }) {
       ) : (
         arrayBody
           ?.sort((a, b) => a - b)
-          .filter((element) => {
-            if ($filtros.filtro === "todos") {
-              return element;
-            }
-            if (element.estado === $filtros.filtro) {
-              return element;
-            }
-            if ($filtros.filtro === "vencimientos") {
-              let f1 = new Date(element.fechaVencimiento);
-              let f2 = new Date($filtros.fecha);
-              f1.setHours(0, 0, 0, 0);
-              f2.setHours(0, 0, 0, 0);
-              return f1.getTime() === f2.getTime();
-            }
-            return false;
-          })
           .map((client, i) => (
             <Tr
               data={client}

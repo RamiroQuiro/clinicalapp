@@ -1,5 +1,5 @@
 import { useStore } from '@nanostores/react';
-import { generateId } from 'lucia';
+import { nanoid } from 'nanoid';
 import { busqueda } from '../../context/store';
 import useBusquedaFiltros from '../../hook/useBusquedaFiltro';
 
@@ -26,7 +26,7 @@ export default function FormularioDeBusqueda({
       pacienteSelect: leg,
     });
     if (opcionesFiltrado?.length >= 1) {
-      const idAtencion = generateId(13);
+      const idAtencion = nanoid(13);
       document.location.href = `/dashboard/consultas/aperturaPaciente/${leg.id}/${idAtencion}`;
       setSearch('');
     }

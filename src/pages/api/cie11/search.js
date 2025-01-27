@@ -109,7 +109,7 @@ export async function GET({ request }) {
       searchData.destinationEntities?.map(entity => ({
         title: cleanHTML(entity.title), // Título del diagnóstico
         cie10: obtenerCodigo(entity),
-        cie11:entity.theCode, // Código CIE-10 o CIE-11
+        cie11: entity.theCode, // Código CIE-10 o CIE-11
         id: entity.id.split('/').pop(), // Extraemos el ID al final de la URL
         chapter: entity.chapter || 'Desconocido', // Capítulo (si está disponible)
       })) || [];

@@ -8,10 +8,6 @@ export default function FormularioBusquedaCie() {
   const [buscando, setBuscando] = useState(false);
   const timeoutId = useRef(null);
 
-<<<<<<< HEAD
-  // Manejador de búsqueda en tiempo real
-=======
-
   //   funcion para buscar los cie 11
   const bucarCie11 = async query => {
     try {
@@ -29,119 +25,101 @@ export default function FormularioBusquedaCie() {
       console.log(error);
     }
   };
-const handleSelectDiagnositco = entity => {
-  setSearch(entity.title)
-  setResultado([]); // Limpiar resultados
-  setBuscando(false); // Detener la animación de búsqueda (si aplica)
-}
+  const handleSelectDiagnositco = entity => {
+    setSearch(entity.title);
+    setResultado([]); // Limpiar resultados
+    setBuscando(false); // Detener la animación de búsqueda (si aplica)
+  };
 
-
->>>>>>> d36a9f422a0e5073a2f450d1f0013f6c06286cdd
   const handleSearch = async e => {
-    const inputValue = e.target.value.trim();
-
-    if (inputValue === '') {
-      // Si el campo está vacío, limpiamos todo
-      setResultado([]);
-      setBuscando(false);
-      setSearch('');
-      return;
+    if (e.target.value === '') {
+      setResultado([]); // Limpiar resultados
+      setBuscando(false); // Detener la animación de búsqueda (si aplica)
+      setSearch(''); // Limpiar el estado del search
+      return; // Terminar ejecución
     }
 
-    setSearch(inputValue);
+    setSearch(e.target.value);
 
     if (timeoutId.current) {
-      clearTimeout(timeoutId.current); // Limpiar cualquier búsqueda pendiente
+      clearTimeout(timeoutId.current);
     }
-
-    if (inputValue.length >= 3) {
+    if (e.target.value.length >= 3) {
       setBuscando(true);
       timeoutId.current = setTimeout(async () => {
-        await bucarCie11(inputValue); // Buscar después de 2 segundos
+        const data = await bucarCie11(e.target.value);
       }, 2000);
     }
   };
 
-  // Buscar CIE-11 en el backend
-  const bucarCie11 = async query => {
-    try {
-      const response = await fetch(`/api/cie11/search?q=${encodeURIComponent(query)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  const hanldeSelectDiagnositco = codeEntity => {
+    document.getElementById('codigoCIE').value = codeEntity.cie11;
+    document.getElementById('diagnostico').value = codeEntity.title;
 
-      const data = await response.json();
-      setResultado(data);
-      setBuscando(false);
-    } catch (error) {
-      console.error(error);
-      setBuscando(false);
-    }
-  };
-
-  // Renderizar resultados con manejo adicional
-  const renderResultados = () => {
-    if (resultado.length === 0) {
-      return <span className="text-primary-400">No se encontraron resultados</span>;
-    }
-
-    return resultado.map((entity, i) => (
-      <li
-        key={i}
-        className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
-        onClick={() => console.log(`Seleccionaste: ${entity.title}`)} // Aquí podrías manejar una acción
-      >
-        <div className="flex-1 border-r">
-          <h2>{entity.title}</h2>
-        </div>
-        <div className="border-r px-1">
-          <p>Capítulo: {entity.chapter}</p>
-        </div>
-        <div className="px-1">
-          <p>Código: {entity.code}</p>
-        </div>
-        <a href={entity.id} target="_blank" rel="noopener noreferrer">
-          {entity.id}
-        </a>
-      </li>
-    ));
+    setSearch('');
+    setResultado([]);
   };
 
   return (
     <div className="w-full flex items-center justify-between gap-2 relative">
       <div className="w-full flex items-center justify-between text-sm gap-2">
         <InputComponenteJsx
-          placeholder="Buscar CIE-11"
+          placeholder="Busqueda"
           value={search}
           handleChange={handleSearch}
-          name="busqueda"
+          name=""
           type="search"
-          id="busqueda-cie11"
+          id=""
         />
-        <button
-          className="bg-primary-texto/50 hover:bg-primary-texto duration-300 p-1 rounded-lg"
-          onClick={() => console.log('Agregar nuevo registro')} // Acción al hacer clic en el botón
-        >
+        <button className="bg-primary-texto/50 hover:bg-primary-texto duration-300 p-1 rounded-lg ">
           <SquarePlus className="w-6 h-6 stroke-white" />
         </button>
       </div>
+      {/* resultados */}
 
-      {/* Resultados */}
       {search.length >= 3 && (
-        <div
-          tabIndex={0}
-          className="absolute animate-aparecer top-[110%] max-h-fit left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
-        >
-          {buscando ? (
-            <span className="text-primary-200 inline-flex font-semibold animate-pulse">
-              <FileSearch /> Buscando...
-            </span>
-          ) : (
-            <ul className="gap-2 flex flex-col">{renderResultados()}</ul>
+        <>
+          {buscando && (
+            <div
+              tabIndex={0}
+              className="absolute animate-aparecer top-[110%] max-h-fit left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
+            >
+              <span className="text-primary-200 inline-flex font-semibold animate-pulse ">
+                <FileSearch /> Buscando...
+              </span>
+            </div>
           )}
-        </div>
+          {resultado.length > 0 && (
+            <div
+              tabIndex={0}
+              className="gap-2 flex flex-col absolute animate-aparecer top-[115%] left-0 w-full border overflow-y-scroll rounded-lg p-0.5  bg-white text-sm text-primary-texto"
+            >
+              {resultado.status == 500 && <span className="text-primary-400">Error al buscar</span>}
+              {resultado.length == 0 ? (
+                <span className="text-primary-400">No se encontraron resultados</span>
+              ) : (
+                resultado.length > 1 &&
+                resultado?.map((entity, i) => (
+                  <li
+                    onClick={() => hanldeSelectDiagnositco(entity)}
+                    className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
+                    key={entity.id}
+                  >
+                    <div className="flex-1 border-r">
+                      <h2>{entity.title}</h2>
+                    </div>
+                    <div className="border-r px-1">
+                      <p>capitulo{entity.chapter}</p>
+                    </div>
+                    <div className="border-r px-1">
+                      <p>{entity.cie11}</p>
+                    </div>
+                  </li>
+                ))
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

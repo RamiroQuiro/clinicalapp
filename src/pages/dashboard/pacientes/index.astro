@@ -7,8 +7,8 @@ import MainDashboard from '../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../components/layouts/LayoutDash.astro';
 import ContenedorDiv1 from '../../../components/moleculas/ContenedorDiv1.astro';
 import ContenedorModal from '../../../components/organismo/ContenedeorModal.astro';
-import FormularioBusqueda from '../../../components/organismo/FormularioDeBusqueda';
 import ContenedorTablaPaciente from './ContenedorTablaPaciente.astro';
+import FiltroPacientes from './FiltroPacientes';
 import FormularioCliente from './FormularioPaciente.astro';
 let user = {
   id: 'sakflsdk',
@@ -30,12 +30,7 @@ const pacientesData = await db
   <MainDashboard title="Pacientes" h1="Pacientes">
     <ContenedorDiv1>
       <div class="w-full flex justify-between items-center gap-4">
-        <FormularioBusqueda
-          arrayABuscar={pacientesData}
-          opcionesFiltrado={['nombre', 'apellido', 'dni']}
-          placeholder={'Busqueda de pacientes...'}
-          client:load
-        />
+        <FiltroPacientes client:load />
         <ContenedorModal open="Crear" id="dialogPaciente">
           <FormularioCliente user={user} />
         </ContenedorModal>

@@ -1,16 +1,16 @@
 ---
-import Button1 from "../../../../../components/atomos/Button1.astro";
-import ContenedorTitleBotonera from "../../../../../components/atomos/ContenedorTitleBotonera.astro";
-import Div1Atencion from "../../../../../components/atomos/Div1Atencion.astro";
-import Div2Atencion from "../../../../../components/atomos/Div2Atencion.astro";
-import DivBox1 from "../../../../../components/atomos/DivBox1.astro";
-import H2 from "../../../../../components/atomos/H2.astro";
-import NavAtencionMedica from "../../../../../components/organismo/NavAtencionMedica.astro";
-import ConfeccionTablaVisitas from "../../../pacientes/[pacienteId]/ConfeccionTablaVisitas";
-import DiagnosticoContainer from "./DiagnosticoContainer.astro";
-import MedicacionContainar from "./MedicacionContainar.astro";
-import MotivoConsulta from "./MotivoConsulta.astro";
-import TratamientoContenedor from "./TratamientoContenedor.astro";
+import Button1 from '../../../../../components/atomos/Button1.astro';
+import ContenedorTitleBotonera from '../../../../../components/atomos/ContenedorTitleBotonera.astro';
+import Div1Atencion from '../../../../../components/atomos/Div1Atencion.astro';
+import Div2Atencion from '../../../../../components/atomos/Div2Atencion.astro';
+import DivBox1 from '../../../../../components/atomos/DivBox1.astro';
+import H2 from '../../../../../components/atomos/H2.astro';
+import NavAtencionMedica from '../../../../../components/organismo/NavAtencionMedica.astro';
+import ConfeccionTablaVisitas from '../../../pacientes/[pacienteId]/ConfeccionTablaVisitas';
+import DiagnosticoContainer from './DiagnosticoContainer.astro';
+import MedicacionContainar from './MedicacionContainar.astro';
+import MotivoConsulta from './MotivoConsulta.astro';
+import TratamientoContenedor from './TratamientoContenedor.astro';
 
 const {
   dataIds,
@@ -20,10 +20,12 @@ const {
   isExistMedicamentos,
   signosVitalesData,
   antecedentes,
-  historialVisitaData
+  historialVisitaData,
 } = Astro.props;
 
+console.log('hay diagnosticos ->', isExistDiagnosticos);
 ---
+
 <div
   class="container py-2 gap-2 px-2 flex flex-col w-[97%]"
   id="containerAtencion"
@@ -35,8 +37,8 @@ const {
   <!-- nav en donde van, datos del paciente, dni,sexo,celular,mail, la fecha de apertura de la atencion, un buton de ficha, para ir a la ficha del paciente y al finailar la coumna dos botonos, terminar consulta y cancelar consulta
  en la 2 fila, los signos vitales con su boton de guardar -->
   <NavAtencionMedica
-  signosVitalesData={signosVitalesData}
-  antecedentes={antecedentes}
+    signosVitalesData={signosVitalesData}
+    antecedentes={antecedentes}
     pacienteData={pacienteData}
     isExistHC={isExistHC}
     dataIds={dataIds}
@@ -56,16 +58,13 @@ const {
           <H2>Ultimas Visitas</H2>
           <Button1>ver historial</Button1>
         </ContenedorTitleBotonera>
-        <ConfeccionTablaVisitas historialVisitaData={historialVisitaData} client:load/>
+        <ConfeccionTablaVisitas historialVisitaData={historialVisitaData} client:load />
       </DivBox1>
     </Div1Atencion>
     <Div1Atencion>
       <!-- box de medicametos, al mismo estilo que el diagnostico,m se proporcionar un nombre, dosis, frecuencia y duracion para que pueda guardar mas de un medicamento con su respectivos datos -->
       <Div2Atencion estilo="flex-[2]">
-        <MotivoConsulta
-          isExistHC={isExistHC&&isExistHC}
-          dataIds={dataIds}
-        />
+        <MotivoConsulta isExistHC={isExistHC && isExistHC} dataIds={dataIds} />
       </Div2Atencion>
       <Div2Atencion estilo=" flex-1">
         <TratamientoContenedor />
@@ -75,19 +74,17 @@ const {
 </div>
 
 <script>
-  import { atencion } from "../../../../../context/store";
+  import { atencion } from '../../../../../context/store';
 
-  const dataset = document.getElementById("containerAtencion");
+  const dataset = document.getElementById('containerAtencion');
   const iduser = dataset?.dataset.userid;
   const pacienteId = dataset?.dataset.pacienteid;
   const isDisable = dataset?.dataset.fin;
   const atencionId = dataset?.dataset.atencionid;
 
-const horaInicio=new Date()
+  const horaInicio = new Date();
   atencion.set({
     ...atencion.get(),
-    dataIds: { atencionId, pacienteId, userId: iduser, isDisable,inicioAtencion:horaInicio },
+    dataIds: { atencionId, pacienteId, userId: iduser, isDisable, inicioAtencion: horaInicio },
   });
-
-
 </script>

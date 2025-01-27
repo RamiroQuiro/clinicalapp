@@ -1,41 +1,38 @@
 ---
-import { eq } from "drizzle-orm";
-import db from "../../../db";
-import { pacientes} from "../../../db/schema";
-import type { pacienteType } from "../../../types";
-import { generateId } from "lucia";
-import DivBox1 from "../../../components/atomos/DivBox1.astro";
-import ConfeccionTablaPaciente from "./ConfeccionTablaPaciente";
-const {user}=Astro.props
+import { eq } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
+import DivBox1 from '../../../components/atomos/DivBox1.astro';
+import db from '../../../db';
+import { pacientes } from '../../../db/schema';
+import type { pacienteType } from '../../../types';
+import ConfeccionTablaPaciente from './ConfeccionTablaPaciente';
+const { user } = Astro.props;
 
-
-let pacientesData=[]
+let pacientesData = [];
 try {
-  const dataDB:pacienteType[]=await db.select().from(pacientes).where(eq(pacientes.userId,user.id))
-  console.log(user)
-  const idHC=generateId(15)
+  const dataDB: pacienteType[] = await db
+    .select()
+    .from(pacientes)
+    .where(eq(pacientes.userId, user.id));
+  console.log(user);
 
-  pacientesData= dataDB.map(paciente=>{
-      return {
-        href:`/dashboard/consultas/aperturaPaciente/${paciente.id}/${idHC}`,
-          id:paciente.id,
-          nombreApellido:`${paciente.nombre}  ${paciente.apellido} `,
-          dni:paciente.dni,
-          edad:paciente.edad,
-          sexo:paciente.sexo,
-          celular:paciente.celular
-      }
-  })
+  pacientesData = dataDB.map(paciente => {
+    const idHC = nanoid(15);
+    return {
+      href: `/dashboard/consultas/aperturaPaciente/${paciente.id}/${idHC}`,
+      id: paciente.id,
+      nombreApellido: `${paciente.nombre}  ${paciente.apellido} `,
+      dni: paciente.dni,
+      edad: paciente.edad,
+      sexo: paciente.sexo,
+      celular: paciente.celular,
+    };
+  });
 } catch (error) {
-  console.log(error)
+  console.log(error);
 }
-
-
-
-
-
 ---
 
 <DivBox1 styleDiv="w-full">
- <ConfeccionTablaPaciente pacientesData={pacientesData} client:load/>
+  <ConfeccionTablaPaciente pacientesData={pacientesData} client:load />
 </DivBox1>
