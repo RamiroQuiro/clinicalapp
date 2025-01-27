@@ -1,39 +1,42 @@
 import { useStore } from '@nanostores/react';
-import { useState } from 'react';
-import { columnSelectTable, filtroBusqueda } from '../../context/store';
+import { columnSelectTable } from '../../context/store';
 import Tr from './Tr';
 
-export default function TBody({ arrayBody, onClickFila, renderBotonActions }) {
-  const $columnSelectTable = useStore(columnSelectTable);
-  const $filtros = useStore(filtroBusqueda);
-  const [sortSelect, setSortSelect] = useState($columnSelectTable.seleccion);
-  const onClick = href => {
-    document.location.href = href;
+export default function TBody({ arrayBody, renderBotonActions }) {
+  const $columnSelect = useStore(columnSelectTable);
+
+  const sortData = data => {
+    if (!$columnSelect.seleccion) return data;
+
+    return [...data].sort((a, b) => {
+      const aValue = $columnSelect.seleccion(a);
+      const bValue = $columnSelect.seleccion(b);
+
+      if (typeof aValue === 'string') {
+        return $columnSelect.asc ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+
+      return $columnSelect.asc ? aValue - bValue : bValue - aValue;
+    });
   };
+
+  const sortedData = sortData(arrayBody || []);
 
   return (
     <tbody>
-      {arrayBody?.length === 0 ? (
+      {!sortedData.length ? (
         <tr>
           <td
             colSpan={Object.keys(arrayBody[0] || {}).length + 1}
-            className="border-b last:border-0 text-xs font-semibold bg-white"
+            className="border-b last:border-0 text-xs font-semibold bg-white text-center p-4"
           >
             No hay elementos para mostrar
           </td>
         </tr>
       ) : (
-        arrayBody
-          ?.sort((a, b) => a - b)
-          .map((client, i) => (
-            <Tr
-              data={client}
-              id={client.id}
-              key={i}
-              styleTr="hover:bg- duration-300 cursor-pointer border-b  odd:bg-gray-50"
-              renderBotonActions={renderBotonActions} // Corregido
-            />
-          ))
+        sortedData.map((item, i) => (
+          <Tr key={item.id || i} data={item} renderBotonActions={renderBotonActions} />
+        ))
       )}
     </tbody>
   );
