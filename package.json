@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev node src/socket/socket.js",
     "build": "astro build",
     "preview": "astro preview",
     "seed": "node src/db/seed.ts",

@@ -19,7 +19,6 @@ export default function FormularioBusquedaCie() {
         },
       });
       const data = await fetching.json();
-      console.log(data);
       setResultado(data);
       setBuscando(false);
     } catch (error) {
@@ -27,22 +26,11 @@ export default function FormularioBusquedaCie() {
       console.log(error);
     }
   };
-  //   funcion para buscar los cie 11
-  const buscarEntity = async entityID => {
-    try {
-      const fetching = await fetch(`/api/cie11/${entityID}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await fetching.json();
-      console.log('busqeda de entity',data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+const handleSelectDiagnositco = entity => {
+  setSearch(entity.title)
+  setResultado([]); // Limpiar resultados
+  setBuscando(false); // Detener la animación de búsqueda (si aplica)
+}
 
 
   const handleSearch = async e => {
@@ -109,6 +97,7 @@ export default function FormularioBusquedaCie() {
                 resultado.length > 1 &&
                 resultado?.map((entity, i) => (
                   <li
+                  onClick={hanldeSelectDiagnositco(entity)} 
                     className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
                     key={entity.id}
                   >

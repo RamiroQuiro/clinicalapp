@@ -190,10 +190,8 @@ const atencionesDelDia = atencionesPorDia.filter(atencion => {
 
 const atencionTurnoTarde =
   atencionesDelDia?.filter(turno => turno.turno === 'tarde')[0]?.total || 0;
-console.log('atencion tarde ->', atencionesDelDia);
 const atencionTurnoManana =
   atencionesDelDia?.filter(turno => turno.turno === 'mañana')[0]?.total || 0;
-console.log('atencion tarde ->', atencionTurnoTarde);
 ---
 
 <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">

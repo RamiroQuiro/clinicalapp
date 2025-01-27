@@ -30,7 +30,7 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
 </FormCont>
 
 <script>
-  import { generateId } from 'lucia';
+  import { nanoid } from 'nanoid';
   import { atencion, dataFormularioContexto } from '../../context/store';
 
   const textArea = document.getElementById('observacionesDiagnostico');
@@ -84,7 +84,7 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
     } else {
       // Crear nuevo diagnóstico
       const newDiagnostico = {
-        id: generateId(13),
+        id: nanoid(13),
         diagnostico: diagnostico.value,
         observaciones: textArea.value,
       };
