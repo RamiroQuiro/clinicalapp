@@ -48,7 +48,7 @@ export default function FormularioBusquedaCie() {
       setBuscando(true);
       timeoutId.current = setTimeout(async () => {
         const data = await bucarCie11(e.target.value);
-      }, 2000);
+      }, 1500);
     }
   };
 
@@ -84,7 +84,7 @@ export default function FormularioBusquedaCie() {
               tabIndex={0}
               className="absolute animate-aparecer top-[110%] max-h-fit left-0 w-full border rounded-lg p-3 bg-white text-sm text-primary-texto"
             >
-              <span className="text-primary-200 inline-flex font-semibold animate-pulse ">
+              <span className="text-gray-500 inline-flex font-semibold animate-pulse ">
                 <FileSearch /> Buscando...
               </span>
             </div>

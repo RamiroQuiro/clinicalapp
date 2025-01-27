@@ -1,22 +1,16 @@
 ---
-import ButtonBackHistory from "@/components/atomos/ButtonBackHistory.astro";
-import MainDashboard from "@/components/atomos/MainDashboard.astro";
-import LayoutDash from "@/components/layouts/LayoutDash.astro";
-import AtencionExistente from "@/components/organismo/AtencionExistente";
-import db from "@/db";
-import {
-  atenciones,
-  diagnostico,
-  medicamento,
-  pacientes,
-  signosVitales,
-} from "@/db/schema";
-import { eq } from "drizzle-orm";
+import ButtonBackHistory from '@/components/atomos/ButtonBackHistory.astro';
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import AtencionExistente from '@/components/organismo/AtencionExistente';
+import db from '@/db';
+import { atenciones, diagnostico, medicamento, pacientes, signosVitales } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 const { atencionId } = Astro.params;
 let atencionData: {};
 try {
-  const result = await db.transaction(async (trx) => {
+  const result = await db.transaction(async trx => {
     const atencionData = (
       await trx
         .select()
@@ -25,13 +19,10 @@ try {
         .where(eq(atenciones.id, atencionId))
     ).at(0);
     if (!atencionData) {
-      console.log("no se encontro atencion")
+      console.log('no se encontro atencion');
     }
     const pacienteData = (
-      await trx
-        .select()
-        .from(pacientes)
-        .where(eq(pacientes.id, atencionData.pacienteId))
+      await trx.select().from(pacientes).where(eq(pacientes.id, atencionData.pacienteId))
     ).at(0);
     const medicamentosAtencionData = await trx
       .select()
@@ -57,7 +48,7 @@ try {
 } catch (err) {
   console.log(err);
 } finally {
-  console.log("finalizacion de la peticion");
+  console.log('finalizacion de la peticion');
 }
 ---
 

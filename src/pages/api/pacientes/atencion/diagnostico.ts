@@ -1,15 +1,16 @@
-import { generateId } from "lucia";
-import { eq } from "drizzle-orm";
-import type { APIRoute } from "astro";
-import db from "../../../../db";
-import { historiaClinica } from "../../../../db/schema/historiaClinica";
-import { diagnostico } from "../../../../db/schema";
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import { generateId } from 'lucia';
+import db from '../../../../db';
+import { diagnostico } from '../../../../db/schema';
+import { historiaClinica } from '../../../../db/schema/historiaClinica';
 
 type DiagnosticoType = {
   id?: string;
   diagnostico: string;
   observaciones?: string;
   tratamiento?: string;
+  codigoCIE: string;
 };
 
 type RequestDiagnosticosFront = {
@@ -23,23 +24,20 @@ type RequestDiagnosticosFront = {
 
 export const POST: APIRoute = async ({ request }) => {
   const data: RequestDiagnosticosFront = await request.json();
-  console.log("endpoint ->", data);
+  console.log('endpoint ->', data);
 
   try {
     // Verificar si existe la historia clínica
     const isExists = (
-      await db
-        .select()
-        .from(historiaClinica)
-        .where(eq(historiaClinica.id, data.dataIds.hcId))
+      await db.select().from(historiaClinica).where(eq(historiaClinica.id, data.dataIds.hcId))
     ).at(0);
 
-    console.log("Historia clínica encontrada:", isExists);
+    console.log('Historia clínica encontrada:', isExists);
     if (!isExists) {
       return new Response(
         JSON.stringify({
           status: 400,
-          msg: "La historia clínica no existe",
+          msg: 'La historia clínica no existe',
         }),
         { status: 400 }
       );
@@ -80,15 +78,15 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "Medicamentos guardados correctamente",
+        msg: 'Medicamentos guardados correctamente',
       })
     );
   } catch (error) {
-    console.error("Error al guardar los medicamentos:", error);
+    console.error('Error al guardar los medicamentos:', error);
     return new Response(
       JSON.stringify({
         status: 500,
-        msg: "Error al guardar los medicamentos",
+        msg: 'Error al guardar los medicamentos',
         error: error.message,
       }),
       { status: 500 }
@@ -100,21 +98,18 @@ export const PUT: APIRoute = async ({ request }) => {
   const data: DiagnosticoType = await request.json();
 
   try {
-    const update = await db
-      .update(diagnostico)
-      .set(data)
-      .where(eq(diagnostico.id, data.id));
+    const update = await db.update(diagnostico).set(data).where(eq(diagnostico.id, data.id));
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "actualizacion correcta",
+        msg: 'actualizacion correcta',
       })
     );
   } catch (error) {
     return new Response(
       JSON.stringify({
         status: 404,
-        msg: "error al guardar",
+        msg: 'error al guardar',
       })
     );
   }
@@ -123,21 +118,19 @@ export const PUT: APIRoute = async ({ request }) => {
 export const DELETE: APIRoute = async ({ request }) => {
   const { id }: { id: string } = await request.json();
   try {
-    const deletDiag = await db
-      .delete(diagnostico)
-      .where(eq(diagnostico.id, id));
+    const deletDiag = await db.delete(diagnostico).where(eq(diagnostico.id, id));
 
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "eliminacion correcta",
+        msg: 'eliminacion correcta',
       })
     );
   } catch (error) {
     return new Response(
       JSON.stringify({
         status: 404,
-        msg: "error al eliminar",
+        msg: 'error al eliminar',
       })
     );
   }
