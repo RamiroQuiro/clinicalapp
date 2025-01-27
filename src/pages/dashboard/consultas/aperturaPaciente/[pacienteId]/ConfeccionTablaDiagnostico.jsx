@@ -1,8 +1,7 @@
-import React from 'react'
-import Table from '../../../../../components/tablaComponentes/Table'
 import { useStore } from '@nanostores/react'
-import { atencion } from '../../../../../context/store'
 import { RenderActionsEditDeletDiagnostico } from '../../../../../components/tablaComponentes/RenderBotonesActions'
+import Table from '../../../../../components/tablaComponentes/Table'
+import { atencion } from '../../../../../context/store'
 
 export default function ConfeccionTablaDiagnostico({ isExistDiagnosticos }) {
 
@@ -13,12 +12,16 @@ export default function ConfeccionTablaDiagnostico({ isExistDiagnosticos }) {
       id: 1,
     },
     {
-      label: "observaciones",
+      label: "codigo",
       id: 2,
     },
     {
-      label: "accion",
+      label: "observaciones",
       id: 3,
+    },
+    {
+      label: "accion",
+      id: 4,
     },
   ]
 
@@ -26,10 +29,11 @@ export default function ConfeccionTablaDiagnostico({ isExistDiagnosticos }) {
     return {
       id: diag.id,
       diagnostico: diag.diagnostico,
+      codigoCIE: diag.codigoCIE,
       observaciones: diag.observaciones
     }
   })
   return (
-    <Table columnas={columns} arrayBody={$diagnosticosStore} renderBotonActions={RenderActionsEditDeletDiagnostico} />
+    <Table columnas={columns} arrayBody={newArrayDiagnosticos} renderBotonActions={RenderActionsEditDeletDiagnostico} />
   )
 }

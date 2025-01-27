@@ -56,6 +56,15 @@ const handleSelectDiagnositco = entity => {
   };
 
 
+const hanldeSelectDiagnositco=(codeEntity)=>{
+document.getElementById('codigoCIE').value=codeEntity.cie11
+document.getElementById('diagnostico').value=codeEntity.title
+
+  setSearch('')
+  setResultado([])
+  
+}
+
   return (
     <div className="w-full flex items-center justify-between gap-2 relative">
       <div className="w-full flex items-center justify-between text-sm gap-2">
@@ -97,7 +106,7 @@ const handleSelectDiagnositco = entity => {
                 resultado.length > 1 &&
                 resultado?.map((entity, i) => (
                   <li
-                  onClick={hanldeSelectDiagnositco(entity)} 
+                  onClick={()=>hanldeSelectDiagnositco(entity)} 
                     className="w-full flex gap-1 items-start justify-between bg-primary-bg-componentes hover:bg-gray-300 hover:text-primary-textoTitle duration-300  rounded-lg py-1 px-3   shadow-sm cursor-pointer"
                     key={entity.id}
                   >
