@@ -11,6 +11,7 @@ export default function FormularioDeBusqueda({
   opcionesFiltrado,
   onACtion,
   handleNoHayRegistro,
+  isClickend,
 }) {
   // const [clientSelect, setClientSelect] = useState([])
   const arr = [];
@@ -25,7 +26,7 @@ export default function FormularioDeBusqueda({
     busqueda.set({
       pacienteSelect: leg,
     });
-    if (opcionesFiltrado?.length >= 1) {
+    if (opcionesFiltrado?.length >= 1 && isClickend) {
       const idAtencion = nanoid(13);
       document.location.href = `/dashboard/consultas/aperturaPaciente/${leg.id}/${idAtencion}`;
       setSearch('');

@@ -1,3 +1,4 @@
+import { ClipboardCopy } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
@@ -121,11 +122,27 @@ const SalaEspera = ({ user }) => {
       }
     }
   };
+
+  const handleCopy = () => {
+    navigator.clipboard
+      .writeText(`http://localhost:4321/publicSite/salaDeEspera/${user?.id}`)
+      .then(() => {
+        showToast('Link copiado', {
+          background: 'bg-green-600',
+        });
+      });
+  };
   return (
     <>
       <div className="flex border-b pb-2 justify-between items-center text-primary-textoTitle w-full mb-2">
         <h2 className="text-lg font-semibold ">Lista de Espera</h2>
         <span className="md:text-2xl">{pacientes.length}</span>
+        <div className="relative group cursor-pointer" onClick={handleCopy}>
+          <ClipboardCopy />
+          <div className="absolute hidden group-hover:flex -top-8 left-1/2  animate-aparecer  -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
+            Copiar Link
+          </div>
+        </div>
       </div>
       <div className="w-full flex flex-col items-start justify-normal gap-3">
         {/* formulario */}
