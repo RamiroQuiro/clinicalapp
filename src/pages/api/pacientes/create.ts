@@ -1,6 +1,6 @@
 import { lucia } from '@/lib/auth';
 import { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
 import db from '../../../db';
 import { pacientes } from '../../../db/schema';
@@ -26,7 +26,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response('No autorizado', { status: 401 });
     }
 
-    const isUser = await db.select().from(pacientes).where(eq(pacientes.dni, data.dni));
+    const isUser = await db
+      .select()
+      .from(pacientes)
+      .where(and(eq(pacientes.dni, data.dni), eq(pacientes.userId, data.userId)));
 
     if (isUser[0]) {
       const response: responseAPIType = {

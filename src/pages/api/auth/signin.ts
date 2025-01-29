@@ -37,6 +37,7 @@ export async function POST({ request, locals, redirect, cookies }: APIContext): 
   cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
   // Crear una cookie con los datos del usuario
   const userData = {
+    id: findUser.id,
     nombre: findUser.nombre,
     apellido: findUser.apellido,
     email: findUser.email,

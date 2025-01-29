@@ -72,6 +72,7 @@ export async function POST({ request, redirect, cookies }: APIContext): Promise<
 
   // Crear una cookie con los datos del usuario
   const userData = {
+    id: newUser.id,
     nombre: newUser.nombre,
     apellido: newUser.apellido,
     email: newUser.email,
