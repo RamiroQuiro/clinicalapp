@@ -26,6 +26,7 @@ function isAdminRoute(pathname) {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+
   try {
     if (context.request.method !== "GET") {
       const originHeader = context.request.headers.get("Origin");
