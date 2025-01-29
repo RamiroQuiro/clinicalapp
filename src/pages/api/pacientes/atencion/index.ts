@@ -3,10 +3,11 @@ import { eq } from 'drizzle-orm';
 
 import db from '@/db';
 import { atenciones, diagnostico, medicamento, pacientes, signosVitales } from '@/db/schema';
+import { lucia } from '@/lib/auth';
 import { generateId } from 'lucia';
 import calcularIMC from '../../../../utils/calcularIMC';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   const {
     data: {
       dataIds,
@@ -20,6 +21,14 @@ export const POST: APIRoute = async ({ request }) => {
   } = await request.json();
 
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     const isExistPaciente = (
       await db.select().from(pacientes).where(eq(pacientes.id, dataIds.pacienteId))
     ).at(0);
@@ -118,9 +127,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, cookies }) => {
   const atencionId = request.headers.get('X-Atencion-Id');
-  console.log('endpoint', atencionId);
   if (!atencionId) {
     return new Response(JSON.stringify({ error: 'ID de paciente no proporcionado' }), {
       status: 400,
@@ -128,6 +136,14 @@ export const GET: APIRoute = async ({ request }) => {
     });
   }
 
+  const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+  if (!sessionId) {
+    return new Response('No autorizado', { status: 401 });
+  }
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session) {
+    return new Response('No autorizado', { status: 401 });
+  }
   const result = await db.transaction(async trx => {
     const atencionData = (
       await trx

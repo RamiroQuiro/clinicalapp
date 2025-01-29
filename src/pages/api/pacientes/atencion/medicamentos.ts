@@ -1,9 +1,10 @@
-import { generateId } from "lucia";
-import { eq } from "drizzle-orm";
-import type { APIRoute } from "astro";
-import db from "../../../../db";
-import { historiaClinica } from "../../../../db/schema/historiaClinica";
-import { medicamento } from "../../../../db/schema/medicamento";
+import { lucia } from '@/lib/auth';
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import { generateId } from 'lucia';
+import db from '../../../../db';
+import { historiaClinica } from '../../../../db/schema/historiaClinica';
+import { medicamento } from '../../../../db/schema/medicamento';
 
 type MedicamentoType = {
   id?: string;
@@ -22,17 +23,22 @@ type RequestMedicamentosFront = {
   };
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   const data: RequestMedicamentosFront = await request.json();
   // console.log("endpoint meidcamento->", data);
 
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     // Verificar si existe la historia clínica
     const isExists = (
-      await db
-        .select()
-        .from(historiaClinica)
-        .where(eq(historiaClinica.id, data.dataIds.hcId))
+      await db.select().from(historiaClinica).where(eq(historiaClinica.id, data.dataIds.hcId))
     ).at(0);
 
     // console.log("Historia clínica encontrada:", isExists);
@@ -40,7 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(
         JSON.stringify({
           status: 400,
-          msg: "La historia clínica no existe",
+          msg: 'La historia clínica no existe',
         }),
         { status: 400 }
       );
@@ -62,15 +68,15 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "Medicamentos guardados correctamente",
+        msg: 'Medicamentos guardados correctamente',
       })
     );
   } catch (error) {
-    console.error("Error al guardar los medicamentos:", error);
+    console.error('Error al guardar los medicamentos:', error);
     return new Response(
       JSON.stringify({
         status: 500,
-        msg: "Error al guardar los medicamentos",
+        msg: 'Error al guardar los medicamentos',
         error: error.message,
       }),
       { status: 500 }

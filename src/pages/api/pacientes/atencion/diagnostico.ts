@@ -1,3 +1,4 @@
+import { lucia } from '@/lib/auth';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
@@ -22,11 +23,20 @@ type RequestDiagnosticosFront = {
   };
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   const data: RequestDiagnosticosFront = await request.json();
   console.log('endpoint ->', data);
 
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     // Verificar si existe la historia clínica
     const isExists = (
       await db.select().from(historiaClinica).where(eq(historiaClinica.id, data.dataIds.hcId))
@@ -94,10 +104,19 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const PUT: APIRoute = async ({ request }) => {
+export const PUT: APIRoute = async ({ request, cookies }) => {
   const data: DiagnosticoType = await request.json();
 
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     const update = await db.update(diagnostico).set(data).where(eq(diagnostico.id, data.id));
     return new Response(
       JSON.stringify({
@@ -115,9 +134,18 @@ export const PUT: APIRoute = async ({ request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ request }) => {
+export const DELETE: APIRoute = async ({ request, cookies }) => {
   const { id }: { id: string } = await request.json();
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     const deletDiag = await db.delete(diagnostico).where(eq(diagnostico.id, id));
 
     return new Response(

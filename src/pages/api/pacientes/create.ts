@@ -1,3 +1,4 @@
+import { lucia } from '@/lib/auth';
 import { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
@@ -5,7 +6,7 @@ import db from '../../../db';
 import { pacientes } from '../../../db/schema';
 import { pacienteType, type responseAPIType } from '../../../types/index';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   const data: pacienteType = await request.json();
   console.log(data);
   if (!data.nombre || !data.dni || !data.userId) {
@@ -15,6 +16,16 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
+
     const isUser = await db.select().from(pacientes).where(eq(pacientes.dni, data.dni));
 
     if (isUser[0]) {
@@ -63,10 +74,18 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const PUT: APIRoute = async ({ request }) => {
+export const PUT: APIRoute = async ({ request, cookies }) => {
   const data: pacienteType = await request.json();
-  console.log(data);
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     const isExistPaciente = (await db.select().from(pacientes).where(eq(pacientes.id, data.id))).at(
       0
     );

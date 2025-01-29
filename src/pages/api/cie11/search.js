@@ -11,8 +11,16 @@
 
  */
 
-export async function GET({ request }) {
+export async function GET({ request, cookies }) {
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     // Verifica las credenciales antes de continuar
     if (!import.meta.env.WHO_CLIENT_ID || !import.meta.env.WHO_CLIENT_SECRET) {
       throw new Error('Las credenciales de la OMS no están configuradas en el entorno');

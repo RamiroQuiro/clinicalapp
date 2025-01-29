@@ -1,28 +1,37 @@
-import type { APIRoute } from "astro";
-import db from "../../../../db";
-import {} from "../../../../db/schema";
-import { generateId } from "lucia";
-import { notasMedicas } from "../../../../db/schema/notasMedicas";
+import { lucia } from '@/lib/auth';
+import type { APIRoute } from 'astro';
+import { generateId } from 'lucia';
+import db from '../../../../db';
+import {} from '../../../../db/schema';
+import { notasMedicas } from '../../../../db/schema/notasMedicas';
 
-export const POST: APIRoute = async ({ request, params }) => {
+export const POST: APIRoute = async ({ request, params, cookies }) => {
   const data = await request.json();
   const { pacienteId } = params;
 
-  console.log("enpditn de antecedentes", data, pacienteId);
+  // console.log('enpditn de antecedentes', data, pacienteId);
 
   try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
     const id = generateId(13);
     const insertArchivos = await db.insert(notasMedicas).values({
       id: id,
       pacienteId,
-      userId:data.userId,
+      userId: data.userId,
       descripcion: data.descripcion,
     });
 
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "guardado nota correcto  ",
+        msg: 'guardado nota correcto  ',
       })
     );
   } catch (error) {
@@ -30,7 +39,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     return new Response(
       JSON.stringify({
         status: 400,
-        msg: "error al guardar antecedentes",
+        msg: 'error al guardar antecedentes',
       })
     );
   }
