@@ -49,19 +49,21 @@ export async function POST({ request, redirect, cookies }: APIContext): Promise<
   // Hacemos hash de la contraseña
   const hashPassword = await bcrypt.hash(password, 12);
 
-  const newUser = await db
-    .insert(users)
-    .values([
-      {
-        id: userId,
-        email: email,
-        nombre: nombre,
-        apellido: apellido,
-        password: hashPassword,
-      },
-    ])
-    .returning();
-
+  const newUser = (
+    await db
+      .insert(users)
+      .values([
+        {
+          id: userId,
+          email: email,
+          nombre: nombre,
+          apellido: apellido,
+          password: hashPassword,
+        },
+      ])
+      .returning()
+  ).at(0);
+  console.log('NUEV USUARIO->', newUser);
   const session = await lucia.createSession(userId, {
     nombre: nombre,
     apellido: apellido,
@@ -79,7 +81,7 @@ export async function POST({ request, redirect, cookies }: APIContext): Promise<
   };
 
   const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '7d' }); // Firmar la cookie
-  cookies.set('user_data', token, {
+  cookies.set('userData', token, {
     httpOnly: true,
     secure: import.meta.env.NODE_ENV === 'production', // Solo enviar en HTTPS en producción
     sameSite: 'strict',

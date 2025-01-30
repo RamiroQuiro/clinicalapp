@@ -22,7 +22,7 @@ import StatsCard from './componente/StatsCard.astro';
 //   password:'asdfsadf'
 // })
 // condicionar con usuarioID
-
+const { user, session } = Astro.locals;
 const dataDB = async userId => {
   try {
     const result = await db.transaction(async trx => {
@@ -159,7 +159,7 @@ const {
   datosMotivoConsulta,
   duracionPromedio,
   ultimasAtenciones,
-} = await dataDB('sakflsdk');
+} = await dataDB(session?.userId);
 
 const stats = [
   {
