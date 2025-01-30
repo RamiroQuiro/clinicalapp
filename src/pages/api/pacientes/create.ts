@@ -3,12 +3,13 @@ import { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
 import db from '../../../db';
-import { pacientes } from '../../../db/schema';
+import { atencionPaciente, doctoresPacientes, pacientes } from '../../../db/schema';
 import { pacienteType, type responseAPIType } from '../../../types/index';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const data: pacienteType = await request.json();
   console.log(data);
+
   if (!data.nombre || !data.dni || !data.userId) {
     return new Response('Datos incompletos requeridos', {
       status: 400,
@@ -26,53 +27,93 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response('No autorizado', { status: 401 });
     }
 
-    const isUser = await db
-      .select()
-      .from(pacientes)
-      .where(and(eq(pacientes.dni, data.dni), eq(pacientes.userId, data.userId)));
+    // Usar una transacción para garantizar la atomicidad
+    const result = await db.transaction(async trx => {
+      // Verificar si el paciente ya existe en la tabla `pacientes`
+      const isPacienteExistente = await trx
+        .select()
+        .from(pacientes)
+        .where(eq(pacientes.dni, data.dni));
 
-    if (isUser[0]) {
-      const response: responseAPIType = {
-        code: 400,
-        msg: 'DNI ya registrado con un paciente',
-      };
-      return new Response(JSON.stringify(response));
-    }
+      let pacienteId;
 
-    const id = generateId(13);
-    const createPaciente = await db
-      .insert(pacientes)
-      .values({
-        nombre: data.nombre,
-        email: data.email,
-        dni: data.dni,
-        fNacimiento: data.fNacimiento,
-        ciudad: data.ciudad,
-        direccion: data.direccion,
-        estatura: data.estatura,
-        provincia: data.provincia,
+      if (isPacienteExistente[0]) {
+        // Si el paciente ya existe, usar su ID
+        pacienteId = isPacienteExistente[0].id;
+      } else {
+        // Si no existe, crear un nuevo paciente
+        pacienteId = generateId(15);
+        await trx.insert(pacientes).values({
+          id: pacienteId,
+          nombre: data.nombre,
+          email: data.email,
+          dni: data.dni,
+          fNacimiento: data.fNacimiento,
+          apellido: data.apellido,
+          sexo: data.sexo,
+          created_at: new Date().toISOString(),
+        });
+      }
+
+      // Insertar en `atencionPaciente`
+      await trx.insert(atencionPaciente).values({
+        id: generateId(15),
+        pacienteId: pacienteId,
         userId: data.userId,
-        apellido: data.apellido,
-        celular: data.celular,
-        sexo: data.sexo,
-        obraSocial: data.obraSocial,
-        id,
         created_at: new Date().toISOString(),
-      })
-      .returning();
+        direccion: data.direccion || null,
+        celular: data.celular || null,
+        estatura: data.estatura || null,
+        pais: data.pais || null,
+        provincia: data.provincia || null,
+        ciudad: data.ciudad || null,
+        obraSocial: data.obraSocial || null,
+        email: data.email || null,
+        srcPhoto: data.srcPhoto || null,
+        grupoSanguineo: data.grupoSanguineo || null,
+      });
+
+      // Verificar si ya existe una relación entre el usuario y el paciente
+      const isRelacionExistente = await trx
+        .select()
+        .from(doctoresPacientes)
+        .where(
+          and(
+            eq(doctoresPacientes.userId, data.userId),
+            eq(doctoresPacientes.pacienteId, pacienteId)
+          )
+        );
+
+      if (isRelacionExistente[0]) {
+        throw new Error('El paciente ya está asociado a este usuario');
+      }
+
+      // Crear la relación en `doctoresPacientes`
+      await trx.insert(doctoresPacientes).values({
+        userId: data.userId,
+        pacienteId: pacienteId,
+      });
+
+      return pacienteId;
+    });
 
     const response: responseAPIType = {
       code: 200,
-      msg: 'Paciente creado con éxito',
-      data: createPaciente[0],
+      msg: 'Paciente creado y asociado con éxito',
+      data: { id: result },
     };
     return new Response(JSON.stringify(response), {
       headers: { 'content-type': 'application/json' },
     });
   } catch (error) {
     console.error(error);
-    return new Response('error', {
+    const response: responseAPIType = {
+      code: 500,
+      msg: error.message || 'Error interno del servidor',
+    };
+    return new Response(JSON.stringify(response), {
       status: 500,
+      headers: { 'content-type': 'application/json' },
     });
   }
 };
@@ -89,10 +130,11 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
     if (!session) {
       return new Response('No autorizado', { status: 401 });
     }
+
+    // Verificar si el paciente existe
     const isExistPaciente = (await db.select().from(pacientes).where(eq(pacientes.id, data.id))).at(
       0
     );
-
     if (!isExistPaciente) {
       const response: responseAPIType = {
         code: 400,
@@ -101,31 +143,63 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify(response));
     }
 
-    const newData = Object.entries(data).reduce((acc, [key, value]) => {
-      if (value) {
+    // Filtrar solo los campos que tienen valores
+    const newDataPaciente = Object.entries(data).reduce((acc, [key, value]) => {
+      if (value && key !== 'userId') {
         acc[key] = value;
       }
       return acc;
     }, {});
 
-    console.log('enspoint de actualizaar ->', newData);
+    // Actualizar el paciente en la tabla `pacientes`
     const updatePaciente = await db
       .update(pacientes)
-      .set(newData)
+      .set(newDataPaciente)
       .where(eq(pacientes.id, data.id))
       .returning();
 
+    // Filtrar campos específicos para `atencionPaciente`
+    const newDataAtencionPaciente = {
+      direccion: data.direccion || null,
+      celular: data.celular || null,
+      estatura: data.estatura || null,
+      pais: data.pais || null,
+      provincia: data.provincia || null,
+      ciudad: data.ciudad || null,
+      obraSocial: data.obraSocial || null,
+      email: data.email || null,
+      srcPhoto: data.srcPhoto || null,
+      grupoSanguineo: data.grupoSanguineo || null,
+    };
+
+    // Actualizar la tabla `atencionPaciente`
+    await db
+      .update(atencionPaciente)
+      .set(newDataAtencionPaciente)
+      .where(
+        and(
+          eq(atencionPaciente.pacienteId, data.id),
+          eq(atencionPaciente.userId, data.userId) // Asegurarse de actualizar solo la relación del usuario actual
+        )
+      );
+
     const response: responseAPIType = {
       code: 200,
-      msg: 'Paciente actualizado con éxito',
+      msg: 'Paciente y datos de atención actualizados con éxito',
+      data: updatePaciente[0],
     };
     return new Response(JSON.stringify(response), {
       headers: { 'content-type': 'application/json' },
     });
   } catch (error) {
     console.error(error);
-    return new Response('error', {
+    const response: responseAPIType = {
+      code: 500,
+      msg: 'Error interno del servidor',
+    };
+    return new Response(JSON.stringify(response), {
       status: 500,
+      headers: { 'content-type': 'application/json' },
     });
   }
 };

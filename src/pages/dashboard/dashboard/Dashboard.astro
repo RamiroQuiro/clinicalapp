@@ -5,7 +5,7 @@ import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleB
 import DivBox1 from '../../../components/atomos/DivBox1.astro';
 import H2 from '../../../components/atomos/H2.astro';
 import db from '../../../db';
-import { atenciones, pacientes } from '../../../db/schema';
+import { atenciones, atencionPaciente, doctoresPacientes, pacientes } from '../../../db/schema';
 import GraficoMotivosIniciales from './componente/GraficoMotivosIniciales.astro';
 import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astro';
 import Header from './componente/Header.astro';
@@ -14,19 +14,11 @@ import PacienteList from './componente/PacienteList.astro';
 import StatsAtencionesDelDia from './componente/StatsAtencionesDelDia.astro';
 import StatsCard from './componente/StatsCard.astro';
 
-// const insertData=await db.insert(users).values({
-//   id:'sakflsdk',
-//   nombre:'Name',
-//   apellido:'Man',
-//   email:'a@a.com',
-//   password:'asdfsadf'
-// })
-// condicionar con usuarioID
 const { user, session } = Astro.locals;
 const dataDB = async userId => {
   try {
     const result = await db.transaction(async trx => {
-      // Obtener pacientes del usuario
+      // Obtener pacientes del usuario (doctor)
       const pacientesData = await trx
         .select({
           id: pacientes.id,
@@ -35,7 +27,8 @@ const dataDB = async userId => {
           dni: pacientes.dni,
         })
         .from(pacientes)
-        .where(eq(pacientes.userId, userId));
+        .innerJoin(doctoresPacientes, eq(doctoresPacientes.pacienteId, pacientes.id)) // Unir con doctoresPacientes
+        .where(eq(doctoresPacientes.userId, userId)); // Filtrar por el usuario (userId)
 
       // Fecha actual y rango de los últimos 7 días
       const now = new Date();
@@ -49,6 +42,7 @@ const dataDB = async userId => {
       const endOfToday = new Date(today);
       endOfToday.setHours(23, 59, 59, 999);
 
+      // Obtener atenciones por día
       const atencionesPorDia = await trx
         .select({
           fecha: sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`.as('fecha'),
@@ -61,7 +55,7 @@ const dataDB = async userId => {
         .from(atenciones)
         .where(
           and(
-            eq(atenciones.userId, userId),
+            eq(atenciones.userId, userId), // Filtrar por el usuario (userId)
             gte(atenciones.created_at, startOfDay.toISOString()),
             lte(atenciones.created_at, endOfToday.toISOString())
           )
@@ -69,15 +63,14 @@ const dataDB = async userId => {
         .groupBy(sql`DATE(datetime(${atenciones.created_at}, 'localtime')), turno`)
         .orderBy(asc(sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`));
 
-      // console.log('Atenciones por día:', JSON.stringify(atencionesPorDia, null, 2));
-
+      // Obtener datos de motivo de consulta
       const datosMotivoConsulta = await trx
         .select({
           motivoInicial: atenciones.motivoInicial,
           total: count(),
         })
         .from(atenciones)
-        .where(eq(atenciones.userId, userId))
+        .where(eq(atenciones.userId, userId)) // Filtrar por el usuario (userId)
         .groupBy(atenciones.motivoInicial);
 
       // Fecha actual y primer día del mes
@@ -85,6 +78,7 @@ const dataDB = async userId => {
       primerDiaMes.setHours(0, 0, 0, 0);
       const ultimoDiaMes = new Date(now.getFullYear(), now.getMonth() + 1, 0);
       ultimoDiaMes.setHours(23, 59, 59, 999);
+
       // Obtener atenciones del mes actual
       const atencionesMes = await trx
         .select({
@@ -94,11 +88,12 @@ const dataDB = async userId => {
         .from(atenciones)
         .where(
           and(
-            eq(atenciones.userId, userId),
+            eq(atenciones.userId, userId), // Filtrar por el usuario (userId)
             gte(atenciones.created_at, primerDiaMes.toISOString()),
             lte(atenciones.created_at, ultimoDiaMes.toISOString())
           )
         );
+
       // Obtener tiempo promedio de consultas del día
       const atencionesDuracion = await trx
         .select({
@@ -110,7 +105,7 @@ const dataDB = async userId => {
         .from(atenciones)
         .where(
           and(
-            eq(atenciones.userId, userId),
+            eq(atenciones.userId, userId), // Filtrar por el usuario (userId)
             sql`DATE(${atenciones.created_at}) = DATE('now')`,
             sql`${atenciones.finAtencion} IS NOT NULL`,
             sql`${atenciones.inicioAtencion} IS NOT NULL`
@@ -126,12 +121,19 @@ const dataDB = async userId => {
           pacienteId: atenciones.pacienteId,
           nombre: pacientes.nombre,
           apellido: pacientes.apellido,
-          obraSocial: pacientes.obraSocial,
+          obraSocial: atencionPaciente.obraSocial, // Obra social específica del usuario
           dni: pacientes.dni,
         })
         .from(atenciones)
         .innerJoin(pacientes, eq(pacientes.id, atenciones.pacienteId))
-        .where(eq(atenciones.userId, userId))
+        .innerJoin(
+          atencionPaciente,
+          and(
+            eq(atencionPaciente.pacienteId, pacientes.id),
+            eq(atencionPaciente.userId, userId) // Filtrar por el usuario (userId)
+          )
+        )
+        .where(eq(atenciones.userId, userId)) // Filtrar por el usuario (userId)
         .orderBy(desc(atenciones.created_at))
         .limit(6);
 
@@ -151,7 +153,6 @@ const dataDB = async userId => {
     throw new Error('Ocurrió un error al procesar la solicitud');
   }
 };
-
 const {
   pacientesData,
   atencionesPorDia,

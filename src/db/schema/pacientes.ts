@@ -2,28 +2,15 @@ import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const pacientes = sqliteTable('pacientes', {
-  id: text('id').primaryKey(),
-  nombre: text('nombre').notNull(),
-  userId: text('userId').notNull().unique(),
-  apellido: text('apellido').notNull(),
-  dni: integer('dni', { mode: 'number' }),
-  email: text('email'),
-  fNacimiento: text('fNacimiento')
+  id: text('id').primaryKey(), // ID único del paciente
+  nombre: text('nombre').notNull(), // Nombre del paciente
+  apellido: text('apellido').notNull(), // Apellido del paciente
+  dni: integer('dni', { mode: 'number' }).unique(), // DNI único
+  fNacimiento: text('fNacimiento') // Fecha de nacimiento
     .notNull()
     .default(sql`(current_timestamp)`),
-  srcPhoto: text('srcPhoto'),
-  celular: text('celular'),
-  estatura: text('estatura'),
-  obraSocial: text('obraSocial'),
-  sexo: text('sexo'),
-  direccion: text('direccion'),
-  ciudad: text('ciudad'),
-  grupoSanguineo: text('grupoSanguinieo'),
-  provincia: text('provincia'),
-  pais: text('pais'),
-  updated_at: text('updated_at'),
-  created_at: text('created_at')
+  sexo: text('sexo'), // Sexo del paciente
+  created_at: text('created_at') // Fecha de creación
     .notNull()
     .default(sql`(current_timestamp)`),
-  deleted_at: text('deleted_at'),
 });

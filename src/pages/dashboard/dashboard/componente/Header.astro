@@ -5,6 +5,8 @@ import ContenedeorModal from '../../../../components/organismo/ContenedeorModal.
 import FormularioDeBusqueda from '../../../../components/organismo/FormularioDeBusqueda';
 import FormularioPaciente from '../../pacientes/FormularioPaciente.astro';
 const { arrayPacientes, isClickend } = Astro.props;
+const { user, session } = Astro.locals;
+console.log(user.id);
 ---
 
 <div class="mb-4 w-full flex items-center gap-2 justify-center bg">
@@ -20,12 +22,6 @@ const { arrayPacientes, isClickend } = Astro.props;
   </div>
 
   <ContenedeorModal open="Crear Paciente" id="modal-PacienteDashboard">
-    <FormularioPaciente
-      user={{
-        id: 'sakflsdk',
-        title: 'CLIENTES',
-        nombreApellido: 'ramiro quiroga',
-      }}
-    />
+    <FormularioPaciente user={user} />
   </ContenedeorModal>
 </div>

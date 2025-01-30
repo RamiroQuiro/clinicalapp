@@ -11,6 +11,8 @@
 
  */
 
+import { lucia } from '@/lib/auth';
+
 export async function GET({ request, cookies }) {
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
