@@ -38,7 +38,8 @@ const {
 const { pacienteId } = Astro.params;
 const ocupacion = [];
 const maritalStatus = 'casado';
-
+const { session } = Astro.locals;
+const userId = session?.userId;
 function calcularEdad(fechaNacimiento) {
   const hoy = new Date();
   const fechaNac = new Date(fechaNacimiento);
@@ -176,7 +177,7 @@ let edad = calcularEdad(fNacimiento);
         Exportar HC
       </button>
       <a
-        href={`/dashboard/consultas/aperturaPaciente/${id}/${idAtencion}`}
+        href={`/dashboard/consultas/aperturaPaciente/${pacienteId}/${idAtencion}`}
         class="px-4 py-2 bg-primary text- border border-primary-texto/20 cursor-pointer duration-150 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow-md 0 transition-colors"
       >
         Nueva Atencion
