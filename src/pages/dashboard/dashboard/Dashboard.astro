@@ -5,7 +5,7 @@ import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleB
 import DivBox1 from '../../../components/atomos/DivBox1.astro';
 import H2 from '../../../components/atomos/H2.astro';
 import db from '../../../db';
-import { atenciones, atencionPaciente, doctoresPacientes, pacientes } from '../../../db/schema';
+import { atenciones, doctoresPacientes, fichaPaciente, pacientes } from '../../../db/schema';
 import GraficoMotivosIniciales from './componente/GraficoMotivosIniciales.astro';
 import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astro';
 import Header from './componente/Header.astro';
@@ -15,6 +15,7 @@ import StatsAtencionesDelDia from './componente/StatsAtencionesDelDia.astro';
 import StatsCard from './componente/StatsCard.astro';
 
 const { user, session } = Astro.locals;
+console.log('dachboar ->', user, session);
 const dataDB = async userId => {
   try {
     const result = await db.transaction(async trx => {
@@ -121,16 +122,16 @@ const dataDB = async userId => {
           pacienteId: atenciones.pacienteId,
           nombre: pacientes.nombre,
           apellido: pacientes.apellido,
-          obraSocial: atencionPaciente.obraSocial, // Obra social específica del usuario
+          obraSocial: fichaPaciente.obraSocial || null, // Obra social específica del usuario
           dni: pacientes.dni,
         })
         .from(atenciones)
         .innerJoin(pacientes, eq(pacientes.id, atenciones.pacienteId))
         .innerJoin(
-          atencionPaciente,
+          fichaPaciente,
           and(
-            eq(atencionPaciente.pacienteId, pacientes.id),
-            eq(atencionPaciente.userId, userId) // Filtrar por el usuario (userId)
+            eq(fichaPaciente.pacienteId, pacientes.id),
+            eq(fichaPaciente.userId, userId) // Filtrar por el usuario (userId)
           )
         )
         .where(eq(atenciones.userId, userId)) // Filtrar por el usuario (userId)

@@ -5,56 +5,99 @@ import InputDate from '../../../components/atomos/InputDate';
 import ContenedorBoton from '../../../components/moleculas/ContenedorBoton.astro';
 import ContenedorInputForm from '../../../components/moleculas/ContenedorInputForm.astro';
 import ContenedorInputSelected from '../../../components/moleculas/ContenedorInputSelected.astro';
-const { user, paciente } = Astro.props;
 
+const { user, paciente } = Astro.props;
+const { session } = Astro.locals;
 const { pacienteId } = Astro.params;
+const userId = session?.userId;
 ---
 
 <FormCont id="formularioCliente" title="Nuevo Paciente">
-  <div id={user?.id} data-user-id class="flex md:flex-row items-center gap-2 w-full justify-normal">
+  <div
+    id={session?.userId}
+    data-user-id
+    class="flex md:flex-row items-center gap-2 w-full justify-normal"
+  >
+    <!-- Campo DNI con evento input -->
+    <ContenedorInputForm
+      label="* dni"
+      type="number"
+      name="dni"
+      id="dni"
+      value={paciente?.dni}
+      onInput="handleDNIInput(event)"
+    />
+    <!-- Campos principales deshabilitados inicialmente -->
     <ContenedorInputForm
       label="* nombre"
       type="text"
       name="nombre"
+      id="nombre"
       styleInput=""
       value={paciente?.nombre}
+      readOnly
     />
     <ContenedorInputForm
       label="* apellido"
       type="text"
       name="apellido"
+      id="apellido"
       styleInput=""
       value={paciente?.apellido}
+      readOnly
     />
-    <ContenedorInputForm label="* dni" type="number" name="dni" value={paciente?.dni} />
   </div>
 
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
+    <!-- Campo de selección para el sexo -->
     <ContenedorInputSelected
       options={[
         { id: 1, value: 'masculino' },
-        { id: 2, value: 'fenemino' },
+        { id: 2, value: 'femenino' }, // Corregí "fenemino" a "femenino"
       ]}
       name="sexo"
+      id="sexo"
+      readOnly
       label="* genero"
       value={paciente?.sexo}
     />
 
-    <ContenedorInputForm label="* email" type="email" name="email" value={paciente?.email} />
-    <ContenedorInputForm label="celular" type="text" name="celular" value={paciente?.celular} />
+    <ContenedorInputForm
+      label="* email"
+      type="email"
+      name="email"
+      id="email"
+      value={paciente?.email}
+    />
+    <ContenedorInputForm
+      label="celular"
+      type="text"
+      name="celular"
+      id="celular"
+      value={paciente?.celular}
+    />
   </div>
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
     <ContenedorInputForm
-      label="direccion"
+      label="domicilio"
       type="text"
-      name="direccion"
-      value={paciente?.direccion}
+      id="domicilio"
+      readOnly
+      name="domicilio"
+      value={paciente?.domicilio}
     />
-    <ContenedorInputForm label="ciudad" type="text" name="ciudad" value={paciente?.ciudad} />
+    <ContenedorInputForm
+      label="ciudad"
+      type="text"
+      name="ciudad"
+      id="ciudad"
+      value={paciente?.ciudad}
+    />
     <ContenedorInputForm
       label="provincia"
       type="text"
       name="provincia"
+      id="provincia"
       value={paciente?.provincia}
     />
   </div>
@@ -63,12 +106,14 @@ const { pacienteId } = Astro.params;
       label="obraSocial"
       type="text"
       name="obraSocial"
+      id="obraSocial"
       value={paciente?.obraSocial}
     />
     <ContenedorInputForm
       label="N° Obra Social"
       type="text"
       name="nObraSocial"
+      id="nObraSocial"
       value={paciente?.nObraSocial}
     />
   </div>
@@ -77,6 +122,8 @@ const { pacienteId } = Astro.params;
     <InputDate
       label="Fecha de Nacimiento"
       name="fNacimiento"
+      readOnly
+      id="fNacimiento"
       client:load
       value={paciente?.fNacimiento}
     />
@@ -86,12 +133,14 @@ const { pacienteId } = Astro.params;
       label="estatura en centimetros"
       type="number"
       name="estatura"
+      id="estatura"
       value={paciente?.estatura}
     />
     <ContenedorInputForm
       label="grupo Sanguineo"
       type="text"
       name="grupoSanguineo"
+      id="grupoSanguineo"
       value={paciente?.grupoSanguineo}
     />
   </div>
@@ -104,19 +153,92 @@ const { pacienteId } = Astro.params;
   </div>
 </FormCont>
 
-<script define:vars={{ pacienteId }}>
+<script define:vars={{ pacienteId, userId }}>
   const formulario = document.getElementById('formularioCliente');
-  const userId = document.querySelector('[data-user-id]');
   const erroresShow = document.getElementById('errores');
+  const dniInput = document.getElementById('dni');
+  const nombreInput = document.getElementById('nombre');
+  const apellidoInput = document.getElementById('apellido');
+  const sexoInput = document.getElementById('sexo');
+  const fNacimientoInput = document.getElementById('fNacimiento');
+  const domicilioInput = document.getElementById('domicilio');
+  const emailInput = document.getElementById('email');
+  const celularInput = document.getElementById('celular');
+  const ciudadInput = document.getElementById('ciudad');
+  const provinciaInput = document.getElementById('provincia');
+  const obraSocialInput = document.getElementById('obraSocial');
+  const nObraSocialInput = document.getElementById('nObraSocial');
+  const estaturaInput = document.getElementById('estatura');
+  const grupoSanguineoInput = document.getElementById('grupoSanguineo');
+  let timeoutId;
+
+  // Función para manejar el evento input del DNI
+  const handleDNIInput = async event => {
+    clearTimeout(timeoutId); // Limpiar el timeout anterior
+
+    // Esperar 1 segundo después de que el usuario deje de escribir
+    timeoutId = setTimeout(async () => {
+      const dni = event.target.value;
+
+      if (!dni) {
+        // Si el campo DNI está vacío, deshabilitar los campos principales
+        nombreInput.readOnly = true;
+        apellidoInput.readOnly = true;
+        domicilioInput.readOnly = true;
+        sexoInput.readOnly = true;
+        fNacimientoInput.readOnly = true;
+        return;
+      }
+
+      try {
+        // Hacer una petición al servidor para verificar si el DNI existe
+        const response = await fetch(`/api/pacientes/checkDni?dni=${dni}`);
+        const result = await response.json();
+
+        if (result.exists) {
+          // Si el paciente existe, deshabilitar los campos principales y mostrar los datos
+          nombreInput.value = result.paciente.nombre;
+          apellidoInput.value = result.paciente.apellido;
+          domicilioInput.value = result.paciente.domicilio || '';
+          sexoInput.value = result.paciente.sexo || 'masculino'; // Valor por defecto
+          fNacimientoInput.value = result.paciente.fNacimiento || '';
+
+          nombreInput.readOnly = true;
+          apellidoInput.readOnly = true;
+          domicilioInput.readOnly = true;
+          sexoInput.readOnly = true;
+          fNacimientoInput.readOnly = true;
+        } else {
+          // Si el paciente no existe, habilitar los campos principales
+          nombreInput.value = '';
+          apellidoInput.value = '';
+          domicilioInput.value = '';
+          sexoInput.value = '';
+          fNacimientoInput.value = '';
+          nombreInput.readOnly = false;
+          apellidoInput.readOnly = false;
+          domicilioInput.readOnly = false;
+          sexoInput.readOnly = false;
+          fNacimientoInput.readOnly = false;
+        }
+      } catch (error) {
+        console.error('Error al verificar el DNI:', error);
+        erroresShow.textContent = 'Error al verificar el DNI. Intente nuevamente.';
+      }
+    }, 1000); // Esperar 1 segundo
+  };
+
+  // Asignar la función al evento input del DNI
+  dniInput.addEventListener('input', handleDNIInput);
 
   // mandar el formulario
   formulario.addEventListener('submit', async e => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
-    formData.append('userId', userId.id);
+    formData.append('userId', userId);
     const data = Object.fromEntries(formData.entries());
-
+    console.log(data);
     // condicionar el formulario para actualizar o crear un paciente
     if (pacienteId) {
       formData.append('id', pacienteId);
@@ -146,7 +268,7 @@ const { pacienteId } = Astro.params;
       }
     } else {
       // Validación del formulario
-      const camposRequeridos = ['nombre', 'apellido', 'dni', 'celular', 'direccion'];
+      const camposRequeridos = ['nombre', 'apellido', 'dni', 'domicilio'];
       const camposFaltantes = camposRequeridos.filter(campo => !data[campo]);
 
       if (camposFaltantes.length > 0) {
@@ -169,8 +291,11 @@ const { pacienteId } = Astro.params;
         } else if (result.code == 200) {
           erroresShow.textContent = 'Paciente creado exitosamente.';
           window.location.reload();
+        } else if (result.code == 500) {
+          erroresShow.textContent = 'Paciente creado para este profesional.';
         } else {
           // Manejo explícito de errores por status
+          console.log(result);
           erroresShow.textContent = result.message || 'Error al crear el paciente.';
         }
       } catch (error) {

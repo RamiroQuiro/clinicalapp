@@ -1,7 +1,4 @@
 ---
-import db from '@/db';
-import { pacientes } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import Button2 from '../../../components/atomos/Button2.astro';
 import MainDashboard from '../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../components/layouts/LayoutDash.astro';
@@ -9,17 +6,7 @@ import ContenedorDiv1 from '../../../components/moleculas/ContenedorDiv1.astro';
 import ContenedorModal from '../../../components/organismo/ContenedeorModal.astro';
 import ContenedorTablaPaciente from './ContenedorTablaPaciente.astro';
 import FiltroPacientes from './FiltroPacientes';
-import FormularioCliente from './FormularioPaciente.astro';
-const { user, session } = Astro.locals;
-const pacientesData = await db
-  .select({
-    id: pacientes.id,
-    nombre: pacientes.nombre,
-    apellido: pacientes.apellido,
-    dni: pacientes.dni,
-  })
-  .from(pacientes)
-  .where(eq(pacientes.userId, session?.userId));
+import FormularioPaciente from './FormularioPaciente.astro';
 ---
 
 <LayoutDash title="Pacientes">
@@ -28,11 +15,11 @@ const pacientesData = await db
       <div class="w-full flex justify-between items-center gap-4">
         <FiltroPacientes client:load />
         <ContenedorModal open="Crear" id="dialogPaciente">
-          <FormularioCliente user={user} />
+          <FormularioPaciente />
         </ContenedorModal>
         <Button2>pdf</Button2>
       </div>
-      <ContenedorTablaPaciente user={user} />
+      <ContenedorTablaPaciente />
     </ContenedorDiv1>
   </MainDashboard>
 </LayoutDash>

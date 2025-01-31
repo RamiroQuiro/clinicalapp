@@ -1,6 +1,13 @@
 ---
-import { antecedente, atenciones, diagnostico, pacientes, signosVitales } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import {
+  antecedente,
+  atenciones,
+  diagnostico,
+  fichaPaciente,
+  pacientes,
+  signosVitales,
+} from '@/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
 import MainDashboard from '../../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../../components/layouts/LayoutDash.astro';
 import db from '../../../../../db';
@@ -8,12 +15,8 @@ import { medicamento } from '../../../../../db/schema/medicamento';
 import IndexAtencion from './IndexAtencion.astro';
 const { pacienteId, atencionId } = Astro.params;
 
-const dataIds = {
-  estado: 'pendienta',
-  atencionId,
-  userId: 'sakflsdk',
-  pacienteId: pacienteId,
-};
+const { user, session } = Astro.locals;
+let errorData;
 // tengo q implemtar type para historiClinica
 
 const dataFetchPaciente = async (idPaciente, idAtencion) => {
@@ -21,8 +24,40 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
     const result = await db.transaction(async trx => {
       // Buscar paciente
       const pacienteData = (
-        await trx.select().from(pacientes).where(eq(pacientes.id, idPaciente))
+        await trx
+          .select({
+            nombre: pacientes.nombre,
+            apellido: pacientes.apellido,
+            dni: pacientes.dni,
+            sexo: pacientes.sexo,
+            celular: fichaPaciente.celular,
+            email: fichaPaciente.email,
+            provincia: fichaPaciente.provincia,
+            nObraSocial: fichaPaciente.nObraSocial,
+            obraSocial: fichaPaciente.obraSocial,
+            ciudad: fichaPaciente.ciudad,
+            grupoSanguineo: fichaPaciente.grupoSanguineo,
+            estatura: fichaPaciente.estatura,
+            domicilio: pacientes.domicilio,
+          })
+          .from(pacientes)
+          .innerJoin(
+            fichaPaciente,
+            and(
+              eq(fichaPaciente.pacienteId, pacientes.id),
+              eq(fichaPaciente.userId, session?.userId) // Filtrar por el usuario (userId)
+            )
+          )
+          .where(eq(pacientes.id, idPaciente))
       ).at(0);
+
+      if (!pacienteData) {
+        return {
+          error: true,
+          message: 'Paciente no encontrado',
+          data: null,
+        };
+      }
       // buscar antecedentes del paciente
       const antecedentesData = await trx
         .select()
@@ -116,28 +151,44 @@ const {
   medicamentosData,
   historialVisitaData,
 } = await dataFetchPaciente(pacienteId, atencionId);
+console.log('paciente data', pacienteData);
+if (!pacienteData) {
+  errorData = {
+    msg: 'Error al buscar el paceinte, intentelo de nuevo 🙈',
+  };
+}
+const dataIds = {
+  userId: session?.userId,
+  pacienteId,
+  atencionId,
+};
 ---
 
-<LayoutDash title={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}>
-  <MainDashboard
-    dataIds={dataIds}
-    h1={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}
-  >
+<LayoutDash title={`Atención a ${pacienteData?.nombre} ${pacienteData?.apellido}`}>
+  <MainDashboard h1={`Atención a ${pacienteData?.nombre} ${pacienteData?.apellido}`}>
     <!-- {
       !isExistHC&&
       <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
         <p>Atencion Finalziada</p>
       </div>
     } -->
-    <IndexAtencion
-      antecedentes={antecedentesData}
-      dataIds={dataIds}
-      signosVitalesData={signosVitalesData}
-      pacienteData={pacienteData}
-      isExistHC={atencionData}
-      isExistDiagnosticos={diagnosticoData}
-      isExistMedicamentos={medicamentosData}
-      historialVisitaData={historialVisitaData}
-    />
+    {
+      !errorData ? (
+        <IndexAtencion
+          antecedentes={antecedentesData}
+          dataIds={dataIds}
+          signosVitalesData={signosVitalesData}
+          pacienteData={pacienteData}
+          isExistHC={atencionData}
+          isExistDiagnosticos={diagnosticoData}
+          isExistMedicamentos={medicamentosData}
+          historialVisitaData={historialVisitaData}
+        />
+      ) : (
+        <div class="w-screen h-screen flex items-center justify-center  text-primary-textoTitle text-xl font-bold -translate-y-10 ">
+          {errorData.msg}
+        </div>
+      )
+    }
   </MainDashboard>
 </LayoutDash>

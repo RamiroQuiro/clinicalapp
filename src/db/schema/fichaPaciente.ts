@@ -3,7 +3,7 @@ import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { pacientes } from './pacientes';
 import { users } from './users';
 
-export const atencionPaciente = sqliteTable('atencionPaciente', {
+export const fichaPaciente = sqliteTable('fichaPaciente', {
   id: text('id').primaryKey(), // ID único del registro
   pacienteId: text('pacienteId') // Relación con la tabla `pacientes`
     .notNull()
@@ -12,6 +12,7 @@ export const atencionPaciente = sqliteTable('atencionPaciente', {
     .notNull()
     .references(() => users.id),
   obraSocial: text('obraSocial'), // Obra social del paciente
+  nObraSocial: text('nObraSocial'),
   historialMedico: text('historialMedico'), // Historial médico
   observaciones: text('observaciones'), // Observaciones del doctor
   email: text('email'), // Email del paciente (específico para este doctor)
