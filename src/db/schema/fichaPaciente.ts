@@ -12,6 +12,7 @@ export const fichaPaciente = sqliteTable('fichaPaciente', {
     .notNull()
     .references(() => users.id),
   obraSocial: text('obraSocial'), // Obra social del paciente
+  nObraSocial: text('nObraSocial'),
   historialMedico: text('historialMedico'), // Historial médico
   observaciones: text('observaciones'), // Observaciones del doctor
   email: text('email'), // Email del paciente (específico para este doctor)

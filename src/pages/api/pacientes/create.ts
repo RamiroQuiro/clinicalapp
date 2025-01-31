@@ -168,6 +168,7 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
       provincia: data.provincia || null,
       ciudad: data.ciudad || null,
       obraSocial: data.obraSocial || null,
+      nObraSocial: data.nObraSocial || null,
       email: data.email || null,
       srcPhoto: data.srcPhoto || null,
       grupoSanguineo: data.grupoSanguineo || null,

@@ -1,46 +1,66 @@
 ---
-import { desc, eq, sql } from "drizzle-orm";
-import MainDashboard from "../../../../components/atomos/MainDashboard.astro";
-import LayoutDash from "../../../../components/layouts/LayoutDash.astro";
-import HistorialVisitaPaciente from "../../../../components/organismo/HistorialVisitaPaciente.astro";
-import db from "../../../../db";
+import db from '@/db';
 import {
-  diagnostico,
-  medicamento,
-  pacientes,
   antecedente,
   archivosAdjuntos,
   atenciones,
-} from "../../../../db/schema";
-import type {
-  AntecedentesMedicosProps,
-  DocumentosAdjuntosProps,
-  pacienteType,
-} from "../../../../types";
-import PacienteHeader from "../../../../components/organismo/PacienteHeader.astro";
-import MedicacionFichaPaciente from "../../../../components/organismo/MedicacionFichaPaciente.astro";
-import Antecedentes from "../../../../components/organismo/Antecedentes.astro";
-import Div1Atencion from "../../../../components/atomos/Div1Atencion.astro";
-import ArchivosAdjuntosPaciente from "../../../../components/organismo/ArchivosAdjuntosPaciente.astro";
-import DivBox1 from "../../../../components/atomos/DivBox1.astro";
-import NotasMedicas from "../../../../components/organismo/NotasMedicas.astro";
-import { notasMedicas } from "../../../../db/schema/notasMedicas";
-import ContenedorCharts from "../../../../components/moleculas/ContenedorCharts.astro";
-import Button1 from "../../../../components/atomos/Button1.astro";
+  diagnostico,
+  fichaPaciente,
+  medicamento,
+  pacientes,
+} from '@/db/schema';
+import { and, desc, eq, sql } from 'drizzle-orm';
+import Button1 from '../../../../components/atomos/Button1.astro';
+import Div1Atencion from '../../../../components/atomos/Div1Atencion.astro';
+import DivBox1 from '../../../../components/atomos/DivBox1.astro';
+import MainDashboard from '../../../../components/atomos/MainDashboard.astro';
+import LayoutDash from '../../../../components/layouts/LayoutDash.astro';
+import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.astro';
+import Antecedentes from '../../../../components/organismo/Antecedentes.astro';
+import ArchivosAdjuntosPaciente from '../../../../components/organismo/ArchivosAdjuntosPaciente.astro';
+import HistorialVisitaPaciente from '../../../../components/organismo/HistorialVisitaPaciente.astro';
+import MedicacionFichaPaciente from '../../../../components/organismo/MedicacionFichaPaciente.astro';
+import NotasMedicas from '../../../../components/organismo/NotasMedicas.astro';
+import PacienteHeader from '../../../../components/organismo/PacienteHeader.astro';
+import { notasMedicas } from '../../../../db/schema/notasMedicas';
 
 const { pacienteId } = Astro.params;
-const userId = "sakflsdk";
+const { session } = Astro.locals;
+const userId = session?.userId;
 
-export async function getPacienteData(pacienteId: string) {
+export async function getPacienteData(pacienteId: string, userId: string) {
   try {
-    const result = await db.transaction(async (trx) => {
+    const result = await db.transaction(async trx => {
       // Consulta del paciente
       const pacienteData = (
-        await trx.select().from(pacientes).where(eq(pacientes.id, pacienteId))
+        await trx
+          .select({
+            nombre: pacientes.nombre,
+            apellido: pacientes.apellido,
+            dni: pacientes.dni,
+            sexo: pacientes.sexo,
+            celular: fichaPaciente.celular,
+            email: fichaPaciente.email,
+            obraSocial: fichaPaciente.obraSocial,
+            nObraSocial: fichaPaciente.nObraSocial,
+            ciudad: fichaPaciente.ciudad,
+            provincia: fichaPaciente.provincia,
+            grupoSanguineo: fichaPaciente.grupoSanguineo,
+            estatura: fichaPaciente.estatura,
+            domicilio: pacientes.domicilio,
+          })
+          .from(pacientes)
+          .innerJoin(
+            fichaPaciente,
+            and(
+              eq(fichaPaciente.pacienteId, pacienteId),
+              eq(fichaPaciente.userId, userId) // Filtrar por el usuario (userId)
+            )
+          )
+          .where(eq(pacientes.id, pacienteId))
       ).at(0);
-
       if (!pacienteData) {
-        throw new Error("Paciente no encontrado");
+        throw new Error('Paciente no encontrado');
       }
 
       // Medicamentos asociados
@@ -53,12 +73,10 @@ export async function getPacienteData(pacienteId: string) {
       // Historial de visitas
       const historialVisitas = await trx
         .select({
-          id:atenciones.id,
+          id: atenciones.id,
           fecha: atenciones.created_at,
           motivo: atenciones.motivoConsulta,
-          diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as(
-            "diagnosticos"
-          ),
+          diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as('diagnosticos'),
           tratamiento: atenciones.tratamiento,
         })
         .from(atenciones)
@@ -67,9 +85,9 @@ export async function getPacienteData(pacienteId: string) {
         .groupBy(atenciones.id)
         .orderBy(desc(atenciones.created_at));
 
-        // voy a crear un mapa o objeto de colores segun el id de la atencion, los key del objeto seran el id, y se asignara el color de la paleta denro de la funcion generatColor
-      const generateColor = (index) => {
-        const colors = ["#A5CDFE38","#DCECFF45","#FCE3D54C",  "#FFD2B2BD", "#E25B3250"];
+      // voy a crear un mapa o objeto de colores segun el id de la atencion, los key del objeto seran el id, y se asignara el color de la paleta denro de la funcion generatColor
+      const generateColor = index => {
+        const colors = ['#A5CDFE38', '#DCECFF45', '#FCE3D54C', '#FFD2B2BD', '#E25B3250'];
         return colors[index % colors.length]; // Reutiliza colores si hay más atenciones que colores.
       };
 
@@ -78,7 +96,6 @@ export async function getPacienteData(pacienteId: string) {
         map[atencion.id] = generateColor(index);
         return map;
       }, {});
-
 
       // Antecedentes
       const arrayAntecedente = await trx
@@ -108,14 +125,14 @@ export async function getPacienteData(pacienteId: string) {
         arrayAntecedente,
         arrayArchivosAdjuntos,
         arrayNotasMedicas,
-        colorMap
+        colorMap,
       };
     });
 
     return result; // Transacción exitosa
   } catch (error) {
-    console.error("Error en la transacción:", error);
-    throw new Error("Ocurrió un error al procesar la solicitud");
+    console.error('Error en la transacción:', error);
+    throw new Error('Ocurrió un error al procesar la solicitud');
   }
 }
 
@@ -126,9 +143,9 @@ const {
   historialVisitas,
   medicamentosData,
   pacienteData,
-  colorMap
-} = await getPacienteData(pacienteId);
-
+  colorMap,
+} = await getPacienteData(pacienteId, userId);
+console.log(pacienteData);
 ---
 
 <LayoutDash>
