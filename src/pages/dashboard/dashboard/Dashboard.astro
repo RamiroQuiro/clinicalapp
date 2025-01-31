@@ -15,6 +15,7 @@ import StatsAtencionesDelDia from './componente/StatsAtencionesDelDia.astro';
 import StatsCard from './componente/StatsCard.astro';
 
 const { user, session } = Astro.locals;
+console.log('dachboar ->', user, session);
 const dataDB = async userId => {
   try {
     const result = await db.transaction(async trx => {

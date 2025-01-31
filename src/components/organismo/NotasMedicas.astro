@@ -1,10 +1,10 @@
 ---
-import formatDate from "../../utils/formatDate";
-import Button1 from "../atomos/Button1.astro";
-import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
-import DivBox1 from "../atomos/DivBox1.astro";
-import ModalNotasMedicas from "../moleculas/ModalNotasMedicas.astro";
-import FormularioNotasMedicas from "./FormularioNotasMedicas.astro";
+import formatDate from '../../utils/formatDate';
+import Button1 from '../atomos/Button1.astro';
+import ContenedorTitleBotonera from '../atomos/ContenedorTitleBotonera.astro';
+import DivBox1 from '../atomos/DivBox1.astro';
+import ModalNotasMedicas from '../moleculas/ModalNotasMedicas.astro';
+import FormularioNotasMedicas from './FormularioNotasMedicas.astro';
 
 interface Note {
   created_at: string;
@@ -14,12 +14,10 @@ interface Note {
 
 interface DoctorNotesProps {
   notes: Note[];
-  userId:string
+  userId: string;
 }
 
-
-const {notes,userId}=Astro.props as DoctorNotesProps
-
+const { notes, userId } = Astro.props as DoctorNotesProps;
 ---
 
 <DivBox1>
@@ -27,26 +25,28 @@ const {notes,userId}=Astro.props as DoctorNotesProps
     <h2 class="text-lg font-semibold capitalize">notas medico</h2>
     <div class="flex items-center justify-normal gap-2">
       <Button1>ver más</Button1>
-      <ModalNotasMedicas client:visible>
-        <FormularioNotasMedicas userId={userId}/>
+      <ModalNotasMedicas>
+        <FormularioNotasMedicas userId={userId} />
       </ModalNotasMedicas>
     </div>
   </ContenedorTitleBotonera>
-    
-    <div class="space-y-4">
-      {notes.map((note, index) => {
-        
-const fechaFormateada=formatDate(note.created_at)
+
+  <div class="space-y-4">
+    {
+      notes.map((note, index) => {
+        const fechaFormateada = formatDate(note.created_at);
         return (
-        <div class="p-2 rounded-md bg-primary-bg-componentes border flex flex-col">
-          <div class="flex justify-between items-start ">
-            <div>
-              <span class="text-sm font-medium">{'Dr. Name'}</span>
-              <span class="text-sm text-muted-foreground ml-2">{fechaFormateada}</span>
+          <div class="p-2 rounded-md bg-primary-bg-componentes border flex flex-col">
+            <div class="flex justify-between items-start ">
+              <div>
+                <span class="text-sm font-medium">{'Dr. Name'}</span>
+                <span class="text-sm text-muted-foreground ml-2">{fechaFormateada}</span>
+              </div>
             </div>
+            <p class="text-sm text-primary-texto whitespace-pre-line">{note.descripcion}</p>
           </div>
-          <p class="text-sm text-primary-texto whitespace-pre-line">{note.descripcion}</p>
-        </div>
-      )})}
-    </div>
-  </DivBox1>
+        );
+      })
+    }
+  </div>
+</DivBox1>
