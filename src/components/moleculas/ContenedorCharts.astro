@@ -1,26 +1,24 @@
 ---
-import ContenedorChartjs from "../atomos/ContenedorChartjs.astro";
-
-const { userId } = Astro.props;
+import ContenedorChartjs from '../atomos/ContenedorChartjs.astro';
+const { session } = Astro.locals;
 const { pacienteId } = Astro.params;
+console.log('contenedorCharts', pacienteId);
 ---
 
 <div
   id="dataId"
-  data-userid={userId}
-  data-pacienteid={pacienteId}
   class="flex h-72 overflow-x-auto items-center gap-4 p-4 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-gray-400"
 >
-<ContenedorChartjs>
-  <canvas id="pesoChart" class="w-full h-full"></canvas>
-</ContenedorChartjs>
+  <ContenedorChartjs>
+    <canvas id="pesoChart" class="w-full h-full"></canvas>
+  </ContenedorChartjs>
   <ContenedorChartjs>
     <canvas id="imc" class="w-full h-full"></canvas>
   </ContenedorChartjs>
   <ContenedorChartjs>
     <canvas id="temperatura" class="w-full h-full"></canvas>
   </ContenedorChartjs>
- 
+
   <ContenedorChartjs>
     <canvas id="frecuenciaCardiaca" class="w-full h-full"></canvas>
   </ContenedorChartjs>
@@ -31,253 +29,251 @@ const { pacienteId } = Astro.params;
   <!-- Agrega más gráficos aquí -->
 </div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"
+></script>
 
-  <script>
-    const pacienteId = document.getElementById("dataId")?.dataset.pacienteid;
-  
-    // Variable global para almacenar los datos
-    let signosVitalesData = null;
-    let labels = [];
-  
-    async function fetchSignosVitales() {
-      try {
-        const response = await fetch(
-          `/api/pacientes/signosVitales/${pacienteId}`
-        );
-        const data = await response.json();
-        if (data.status !== 200) {
-          console.error("Error al obtener los datos:", data.msg);
-          return null;
-        }
-        // Formatear las fechas
-        labels = data.data.map((item) => {
-          const newDate = new Date(item.created_at);
-          return newDate.toLocaleDateString("es-AR");
-        });
-        return data.data;
-      } catch (error) {
-        console.error("Error fetching data:", error);
+<script define:vars={{ pacienteId }}>
+  // const pacienteId = document.getElementById('dataId')?.dataset.pacienteid;
+
+  // Variable global para almacenar los datos
+  let signosVitalesData = null;
+  let labels = [];
+
+  async function fetchSignosVitales() {
+    try {
+      const response = await fetch(`/api/pacientes/signosVitales/${pacienteId}`);
+      const data = await response.json();
+      if (data.status !== 200) {
+        console.error('Error al obtener los datos:', data.msg);
         return null;
       }
+      // Formatear las fechas
+      labels = data.data.map(item => {
+        const newDate = new Date(item.created_at);
+        return newDate.toLocaleDateString('es-AR');
+      });
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return null;
     }
-  
-    async function initCharts() {
-      // Realizar una única llamada al backend
-      signosVitalesData = await fetchSignosVitales();
-      if (!signosVitalesData) return;
-  
-      // Inicializar cada gráfico con los datos obtenidos
-      initTemperaturaChart(signosVitalesData);
-      initFrecuenciaCardiacaChart(signosVitalesData);
-      initFrecuenciaRespiratoriaChart(signosVitalesData);
-      initIMCChart(signosVitalesData);
-      initPesoChart(signosVitalesData);
-    }
-  
-    function initTemperaturaChart(data) {
-      const temperaturas = data.map((item) => item.temperatura);
-      console.log(temperaturas)
-      const chartData = {
-        labels: labels,
-        datasets: [
-          {
-            label: "Temperatura (°C)",
-            data: temperaturas,
-            borderColor: "#FF5733",
-            backgroundColor: "rgba(255, 87, 51, 0.5)",
-            borderWidth: 2,
-          },
-        ],
-      };
-  
-      const config = {
-        type: "line",
-        data: chartData,
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Evolución de la Temperatura" },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Temperatura (°C)" },
-            },
+  }
+
+  async function initCharts() {
+    // Realizar una única llamada al backend
+    signosVitalesData = await fetchSignosVitales();
+    if (!signosVitalesData) return;
+
+    // Inicializar cada gráfico con los datos obtenidos
+    initTemperaturaChart(signosVitalesData);
+    initFrecuenciaCardiacaChart(signosVitalesData);
+    initFrecuenciaRespiratoriaChart(signosVitalesData);
+    initIMCChart(signosVitalesData);
+    initPesoChart(signosVitalesData);
+  }
+
+  function initTemperaturaChart(data) {
+    const temperaturas = data.map(item => item.temperatura);
+    console.log(temperaturas);
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Temperatura (°C)',
+          data: temperaturas,
+          borderColor: '#FF5733',
+          backgroundColor: 'rgba(255, 87, 51, 0.5)',
+          borderWidth: 2,
+        },
+      ],
+    };
+
+    const config = {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Evolución de la Temperatura' },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Temperatura (°C)' },
           },
         },
-      };
-  
-      new Chart(document.getElementById("temperatura"), config);
-    }
-  
-    function initFrecuenciaCardiacaChart(data) {
-      const frecuencias = data.map((item) => item.frecuenciaCardiaca);
-      const chartData = {
-        labels: labels,
-        datasets: [
-          {
-            label: "Frecuencia Cardíaca (lpm)",
-            data: frecuencias,
-            borderColor: "#2B82E3",
-            backgroundColor: "rgba(43, 130, 227, 0.5)",
-            borderWidth: 2,
-          },
-        ],
-      };
-  
-      const config = {
-        type: "line",
-        data: chartData,
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Evolución de la Frecuencia Cardíaca" },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Frecuencia Cardíaca (lpm)" },
-            },
+      },
+    };
+
+    new Chart(document.getElementById('temperatura'), config);
+  }
+
+  function initFrecuenciaCardiacaChart(data) {
+    const frecuencias = data.map(item => item.frecuenciaCardiaca);
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Frecuencia Cardíaca (lpm)',
+          data: frecuencias,
+          borderColor: '#2B82E3',
+          backgroundColor: 'rgba(43, 130, 227, 0.5)',
+          borderWidth: 2,
+        },
+      ],
+    };
+
+    const config = {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Evolución de la Frecuencia Cardíaca' },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Frecuencia Cardíaca (lpm)' },
           },
         },
-      };
-  
-      new Chart(document.getElementById("frecuenciaCardiaca"), config);
-    }
-  
-    function initFrecuenciaRespiratoriaChart(data) {
-      const frecuencias = data.map((item) => item.frecuenciaRespiratoria);
-      const chartData = {
-        labels: labels,
-        datasets: [
-          {
-            label: "Frecuencia Respiratoria",
-            data: frecuencias,
-            borderColor: "#2B82E3",
-            backgroundColor: "rgba(43, 130, 227, 0.5)",
-            borderWidth: 2,
-          },
-        ],
-      };
-  
-      const config = {
-        type: "line",
-        data: chartData,
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Evolución de la Frecuencia Respiratoria" },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Frecuencia Respiratoria" },
-            },
+      },
+    };
+
+    new Chart(document.getElementById('frecuenciaCardiaca'), config);
+  }
+
+  function initFrecuenciaRespiratoriaChart(data) {
+    const frecuencias = data.map(item => item.frecuenciaRespiratoria);
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Frecuencia Respiratoria',
+          data: frecuencias,
+          borderColor: '#2B82E3',
+          backgroundColor: 'rgba(43, 130, 227, 0.5)',
+          borderWidth: 2,
+        },
+      ],
+    };
+
+    const config = {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Evolución de la Frecuencia Respiratoria' },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Frecuencia Respiratoria' },
           },
         },
-      };
-  
-      new Chart(document.getElementById("frecuenciaRespiratoria"), config);
-    }
-  
-    function initIMCChart(data) {
-      const imcs = data.map((item) => item.imc);
-      const chartData = {
-        labels: labels,
-        datasets: [
-          {
-            label: "IMC (kg/m²)",
-            data: imcs,
-            borderColor: "#28A745",
-            backgroundColor: "rgba(40, 167, 69, 0.5)",
-            borderWidth: 2,
-          },
-        ],
-      };
-  
-      const config = {
-        type: "line",
-        data: chartData,
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Evolución del IMC" },
-          },
-          scales: {
-            y: {
-              beginAtZero: false,
-              title: { display: true, text: "IMC (kg/m²)" },
-            },
+      },
+    };
+
+    new Chart(document.getElementById('frecuenciaRespiratoria'), config);
+  }
+
+  function initIMCChart(data) {
+    const imcs = data.map(item => item.imc);
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'IMC (kg/m²)',
+          data: imcs,
+          borderColor: '#28A745',
+          backgroundColor: 'rgba(40, 167, 69, 0.5)',
+          borderWidth: 2,
+        },
+      ],
+    };
+
+    const config = {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Evolución del IMC' },
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            title: { display: true, text: 'IMC (kg/m²)' },
           },
         },
-      };
-  
-      new Chart(document.getElementById("imc"), config);
-    }
-  
-    function initPesoChart(data) {
-      const pesos = data.map((item) => item.peso);
-      console.log(pesos)
-      const chartData = {
-        labels: labels,
-        datasets: [
-          {
-            label: "Peso (kg)",
-            data: pesos,
-            borderColor: "#A77228FF",
-            backgroundColor: "rgba(167, 114, 40, 0.5)",
-            borderWidth: 2,
-          },
-        ],
-      };
-  
-      const config = {
-        type: "line",
-        data: chartData,
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Evolución del Peso" },
-          },
-          scales: {
-            y: {
-              beginAtZero: false,
-              title: { display: true, text: "Peso (kg)" },
-            },
+      },
+    };
+
+    new Chart(document.getElementById('imc'), config);
+  }
+
+  function initPesoChart(data) {
+    const pesos = data.map(item => item.peso);
+    console.log(pesos);
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Peso (kg)',
+          data: pesos,
+          borderColor: '#A77228FF',
+          backgroundColor: 'rgba(167, 114, 40, 0.5)',
+          borderWidth: 2,
+        },
+      ],
+    };
+
+    const config = {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Evolución del Peso' },
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            title: { display: true, text: 'Peso (kg)' },
           },
         },
-      };
-  
-      new Chart(document.getElementById("pesoChart"), config);
-    }
-  
-    // Inicializar los gráficos
-    initCharts();
-  </script>
-  
+      },
+    };
+
+    new Chart(document.getElementById('pesoChart'), config);
+  }
+
+  // Inicializar los gráficos
+  initCharts();
+</script>
 
 <style>
   .scrollbar-thin::-webkit-scrollbar {
-    height:6px;
+    height: 6px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background:rgba(6, 114, 246, 0.498);
+    background: rgba(6, 114, 246, 0.498);
     border-radius: 2px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(6, 114, 246, 0.8)
+    background: rgba(6, 114, 246, 0.8);
   }
 </style>

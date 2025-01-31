@@ -85,7 +85,7 @@ export async function POST({ request, redirect, cookies }: APIContext): Promise<
     httpOnly: true,
     secure: import.meta.env.NODE_ENV === 'production', // Solo enviar en HTTPS en producción
     sameSite: 'strict',
-    maxAge: 3600, // 1 hora
+    maxAge: 7 * 24 * 3600, // 7 días en segundos
     path: '/',
   });
 

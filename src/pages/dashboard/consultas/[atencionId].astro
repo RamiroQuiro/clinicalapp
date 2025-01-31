@@ -4,26 +4,61 @@ import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import AtencionExistente from '@/components/organismo/AtencionExistente';
 import db from '@/db';
-import { atenciones, diagnostico, medicamento, pacientes, signosVitales } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import {
+  atenciones,
+  diagnostico,
+  fichaPaciente,
+  medicamento,
+  pacientes,
+  signosVitales,
+} from '@/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 const { atencionId } = Astro.params;
+
+const { session } = Astro.locals;
 let atencionData: {};
 try {
   const result = await db.transaction(async trx => {
-    const atencionData = (
+    const consultaAtencion = (
       await trx
         .select()
         .from(atenciones)
 
         .where(eq(atenciones.id, atencionId))
     ).at(0);
-    if (!atencionData) {
+    if (!consultaAtencion) {
       console.log('no se encontro atencion');
     }
+    // Buscar paciente
     const pacienteData = (
-      await trx.select().from(pacientes).where(eq(pacientes.id, atencionData.pacienteId))
+      await trx
+        .select({
+          nombre: pacientes.nombre,
+          apellido: pacientes.apellido,
+          dni: pacientes.dni,
+          sexo: pacientes.sexo,
+          celular: fichaPaciente.celular,
+          email: fichaPaciente.email,
+          provincia: fichaPaciente.provincia,
+          nObraSocial: fichaPaciente.nObraSocial,
+          obraSocial: fichaPaciente.obraSocial,
+          ciudad: fichaPaciente.ciudad,
+          grupoSanguineo: fichaPaciente.grupoSanguineo,
+          estatura: fichaPaciente.estatura,
+          domicilio: pacientes.domicilio,
+        })
+        .from(pacientes)
+        .innerJoin(
+          fichaPaciente,
+          and(
+            eq(fichaPaciente.pacienteId, pacientes.id),
+            eq(fichaPaciente.userId, session?.userId) // Filtrar por el usuario (userId)
+          )
+        )
+        .where(eq(pacientes.id, consultaAtencion.pacienteId))
     ).at(0);
+
     const medicamentosAtencionData = await trx
       .select()
       .from(medicamento)
@@ -45,6 +80,7 @@ try {
     };
   });
   atencionData = result;
+  console.log('signosVitales', atencionData.signosVitalesAtencion);
 } catch (err) {
   console.log(err);
 } finally {

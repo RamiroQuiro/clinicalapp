@@ -1,11 +1,11 @@
+import db from '@/db';
+import { signosVitales } from '@/db/schema';
 import { lucia } from '@/lib/auth';
 import { eq } from 'drizzle-orm';
-import db from '../../../../db';
-import { signosVitales } from '../../../../db/schema';
 
 export const GET: APIRoute = async ({ request, params, cookies }) => {
   const { pacienteId } = params;
-  // console.log("esto es el reques->", request.headers.get("idHistoriaClinica"));
+  console.log('esto es el id del paceinte ->', pacienteId);
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
