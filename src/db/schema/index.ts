@@ -1,9 +1,9 @@
 export { archivosAdjuntos } from './archivosAdjuntos';
 export { antecedente } from './atecedentes';
 export { atenciones } from './atenciones';
-export { atencionPaciente } from './atencionPaciente';
 export { diagnostico } from './diagnostico';
 export { doctoresPacientes } from './doctoresPacientes';
+export { fichaPaciente } from './fichaPaciente';
 export { historiaClinica } from './historiaClinica';
 export { listaDeEspera } from './listaDeEspera';
 export { medicamento } from './medicamento';

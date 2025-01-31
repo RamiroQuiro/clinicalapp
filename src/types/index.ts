@@ -1,25 +1,33 @@
 export type pacienteType = {
   id: string;
-  userId: string;
-  email: string;
   nombre: string;
   apellido: string;
   sexo: string;
   dni: number;
-  estatura: string;
   fNacimiento: string;
-  srcPhoto?: string;
-  celular?: string;
-  direccion?: string;
-  ciudad?: string;
-  provincia?: string;
-  obraSocial?: string;
-  pais?: string;
   updated_at?: string;
   created_at: string;
   deleted_at?: string;
 };
 
+export type fichaPaciente = {
+  id: string;
+  pacienteId: string;
+  userId: string;
+  direccion?: string | null;
+  celular?: string | null;
+  estatura?: string | null;
+  pais?: string | null;
+  provincia?: string | null;
+  ciudad?: string | null;
+  obraSocial?: string | null;
+  email?: string | null;
+  srcPhoto?: string | null;
+  grupoSanguineo?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+  deleted_at?: string | null;
+};
 export type DiagnosticosTypes = {
   id?: number;
   diagnostico: string;

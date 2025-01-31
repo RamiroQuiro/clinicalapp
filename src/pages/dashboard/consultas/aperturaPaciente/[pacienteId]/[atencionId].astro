@@ -1,6 +1,13 @@
 ---
-import { antecedente, atenciones, diagnostico, pacientes, signosVitales } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import {
+  antecedente,
+  atenciones,
+  diagnostico,
+  fichaPaciente,
+  pacientes,
+  signosVitales,
+} from '@/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
 import MainDashboard from '../../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../../components/layouts/LayoutDash.astro';
 import db from '../../../../../db';
@@ -8,12 +15,8 @@ import { medicamento } from '../../../../../db/schema/medicamento';
 import IndexAtencion from './IndexAtencion.astro';
 const { pacienteId, atencionId } = Astro.params;
 
-const dataIds = {
-  estado: 'pendienta',
-  atencionId,
-  userId: 'sakflsdk',
-  pacienteId: pacienteId,
-};
+const { user, session } = Astro.locals;
+console.log(user, session);
 // tengo q implemtar type para historiClinica
 
 const dataFetchPaciente = async (idPaciente, idAtencion) => {
@@ -21,7 +24,27 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
     const result = await db.transaction(async trx => {
       // Buscar paciente
       const pacienteData = (
-        await trx.select().from(pacientes).where(eq(pacientes.id, idPaciente))
+        await trx
+          .select({
+            nombre: pacientes.nombre,
+            apellido: pacientes.apellido,
+            dni: pacientes.dni,
+            sexo: pacientes.sexo,
+            celular: fichaPaciente.celular,
+            email: fichaPaciente.email,
+            obraSocial: fichaPaciente.obraSocial,
+            estatura: fichaPaciente.estatura,
+            domicilio: pacientes.domicilio,
+          })
+          .from(pacientes)
+          .innerJoin(
+            fichaPaciente,
+            and(
+              eq(fichaPaciente.pacienteId, pacientes.id),
+              eq(fichaPaciente.userId, session?.userId) // Filtrar por el usuario (userId)
+            )
+          )
+          .where(eq(pacientes.id, idPaciente))
       ).at(0);
       // buscar antecedentes del paciente
       const antecedentesData = await trx
@@ -116,13 +139,16 @@ const {
   medicamentosData,
   historialVisitaData,
 } = await dataFetchPaciente(pacienteId, atencionId);
+console.log(pacienteData);
+const dataIds = {
+  userId: user?.id,
+  pacienteId,
+  atencionId,
+};
 ---
 
 <LayoutDash title={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}>
-  <MainDashboard
-    dataIds={dataIds}
-    h1={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}
-  >
+  <MainDashboard h1={`Atención a ${pacienteData.nombre} ${pacienteData.apellido}`}>
     <!-- {
       !isExistHC&&
       <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">

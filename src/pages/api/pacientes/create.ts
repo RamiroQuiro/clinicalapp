@@ -3,11 +3,11 @@ import { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
 import db from '../../../db';
-import { atencionPaciente, doctoresPacientes, pacientes } from '../../../db/schema';
+import { doctoresPacientes, fichaPaciente, pacientes } from '../../../db/schema';
 import { pacienteType, type responseAPIType } from '../../../types/index';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  const data: pacienteType = await request.json();
+  const data = await request.json();
   console.log(data);
 
   if (!data.nombre || !data.dni || !data.userId) {
@@ -55,8 +55,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         });
       }
 
-      // Insertar en `atencionPaciente`
-      await trx.insert(atencionPaciente).values({
+      // Insertar en `fichaPaciente`
+      await trx.insert(fichaPaciente).values({
         id: generateId(15),
         pacienteId: pacienteId,
         userId: data.userId,
@@ -120,6 +120,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 export const PUT: APIRoute = async ({ request, cookies }) => {
   const data: pacienteType = await request.json();
+  console.log('endpoint create', data);
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
@@ -158,9 +159,9 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
       .where(eq(pacientes.id, data.id))
       .returning();
 
-    // Filtrar campos específicos para `atencionPaciente`
+    // Filtrar campos específicos para `fichaPaciente`
     const newDataAtencionPaciente = {
-      direccion: data.direccion || null,
+      domicilio: data.domicilio || null,
       celular: data.celular || null,
       estatura: data.estatura || null,
       pais: data.pais || null,
@@ -172,14 +173,14 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
       grupoSanguineo: data.grupoSanguineo || null,
     };
 
-    // Actualizar la tabla `atencionPaciente`
+    // Actualizar la tabla `fichaPaciente`
     await db
-      .update(atencionPaciente)
+      .update(fichaPaciente)
       .set(newDataAtencionPaciente)
       .where(
         and(
-          eq(atencionPaciente.pacienteId, data.id),
-          eq(atencionPaciente.userId, data.userId) // Asegurarse de actualizar solo la relación del usuario actual
+          eq(fichaPaciente.pacienteId, data.id),
+          eq(fichaPaciente.userId, data.userId) // Asegurarse de actualizar solo la relación del usuario actual
         )
       );
 

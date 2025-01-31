@@ -6,12 +6,17 @@ import ContenedorBoton from '../../../components/moleculas/ContenedorBoton.astro
 import ContenedorInputForm from '../../../components/moleculas/ContenedorInputForm.astro';
 import ContenedorInputSelected from '../../../components/moleculas/ContenedorInputSelected.astro';
 const { user, paciente } = Astro.props;
-
+const { session } = Astro.locals;
 const { pacienteId } = Astro.params;
+const userId = session?.userId;
 ---
 
 <FormCont id="formularioCliente" title="Nuevo Paciente">
-  <div id={user?.id} data-user-id class="flex md:flex-row items-center gap-2 w-full justify-normal">
+  <div
+    id={session?.userId}
+    data-user-id
+    class="flex md:flex-row items-center gap-2 w-full justify-normal"
+  >
     <ContenedorInputForm
       label="* nombre"
       type="text"
@@ -45,10 +50,10 @@ const { pacienteId } = Astro.params;
   </div>
   <div class="flex md:flex-row items-center gap-2 w-full justify-normal">
     <ContenedorInputForm
-      label="direccion"
+      label="domicilio"
       type="text"
-      name="direccion"
-      value={paciente?.direccion}
+      name="domicilio"
+      value={paciente?.domicilio}
     />
     <ContenedorInputForm label="ciudad" type="text" name="ciudad" value={paciente?.ciudad} />
     <ContenedorInputForm
@@ -104,17 +109,18 @@ const { pacienteId } = Astro.params;
   </div>
 </FormCont>
 
-<script define:vars={{ pacienteId }}>
+<script define:vars={{ pacienteId, userId }}>
   const formulario = document.getElementById('formularioCliente');
-  const userId = document.querySelector('[data-user-id]');
   const erroresShow = document.getElementById('errores');
+
+  // console.log('este es el formulari maan men', session.userId);
 
   // mandar el formulario
   formulario.addEventListener('submit', async e => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
-    formData.append('userId', userId.id);
+    formData.append('userId', userId);
     const data = Object.fromEntries(formData.entries());
 
     // condicionar el formulario para actualizar o crear un paciente
