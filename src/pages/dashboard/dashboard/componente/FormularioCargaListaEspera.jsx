@@ -4,6 +4,15 @@ import InputComponenteJsx from './InputComponenteJsx';
 const FormularioCargaListaEspera = ({ nuevoPaciente, handleChange, agregarPaciente }) => {
   return (
     <div className=" rounded-lg  w-full flex flex-col items-start justify-normal gap-2 p-2 text-sm">
+      <InputComponenteJsx
+        value={nuevoPaciente?.dni}
+        handleChange={handleChange}
+        name="dni"
+        disable={true}
+        type="number"
+        id="dni"
+        placeholder="DNI"
+      />
       <div className="flex items-center gap-1 justify-between w-full">
         <InputComponenteJsx
           value={nuevoPaciente?.nombre}
@@ -24,16 +33,6 @@ const FormularioCargaListaEspera = ({ nuevoPaciente, handleChange, agregarPacien
           placeholder="Apellido"
         />
       </div>
-
-      <InputComponenteJsx
-        value={nuevoPaciente?.dni}
-        handleChange={handleChange}
-        name="dni"
-        disable={true}
-        type="number"
-        id="dni"
-        placeholder="DNI"
-      />
 
       <textarea
         className="w-full py-2 px-3 text-primary-textoTitle rounded-lg bg-white border-primary-150 border shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-100/50"

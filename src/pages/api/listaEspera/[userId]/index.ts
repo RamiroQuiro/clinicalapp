@@ -1,10 +1,11 @@
 import db from '@/db';
-import { listaDeEspera, pacientes } from '@/db/schema';
+import { listaDeEspera } from '@/db/schema';
 import { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 export const GET: APIRoute = async ({ request, params }) => {
+  console.log('peticion del get');
   const listaEsperaDB = await db
     .select()
     .from(listaDeEspera)
@@ -13,65 +14,49 @@ export const GET: APIRoute = async ({ request, params }) => {
     status: 200,
   });
 };
-export const POST: APIRoute = async ({ request, params }) => {
-  const data = await request.json();
-  const { userId } = params;
-  // console.log(data);
-  if (!data.apellido || !data.nombre || !data.dni || !data.userId) {
-    return new Response('Datos incompletos requeridos', {
-      status: 400,
-    });
-  }
-
+export const POST: APIRoute = async ({ params, request }) => {
   try {
-    const isPacienteExiste = (
-      await db.select().from(pacientes).where(eq(pacientes.dni, data.dni))
-    ).at(0);
+    const { userId } = params;
+    const body = await request.json();
+    console.log(body);
+    // Validar que el userId existe
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'userId es requerido' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
+    if (!body.apellido || !body.nombre || !body.dni || !body.userId) {
+      return new Response('Datos incompletos requeridos', {
+        status: 400,
+      });
+    }
+
+    // const isPacienteExiste = (
+    //   await db.select().from(pacientes).where(eq(pacientes.dni, body.dni))
+    // ).at(0);
     const fechaHoy = new Date();
     const horaHoy = fechaHoy.getHours();
-    if (isPacienteExiste) {
-      const insertarPaciente = await db
-        .insert(listaDeEspera)
-        .values({
-          id: nanoid(),
-          pacienteId: isPacienteExiste.id,
-          nombre: data.nombre,
-          apellido: data.apellido,
-          dni: data.dni,
-          motivoConsulta: data.motivoConsulta,
-          fecha: fechaHoy.toISOString(),
-          hora: horaHoy,
-          userId: userId,
-          isExist: true,
-        })
-        .returning();
-      return new Response(
-        JSON.stringify({
-          status: 200,
-          msg: 'paciente agregado a la lista de espera',
-          data: insertarPaciente,
-        }),
-        {
-          headers: { 'content-type': 'application/json' },
-        }
-      );
-    }
+
     const insertarPaciente = await db
       .insert(listaDeEspera)
       .values({
-        id: nanoid(),
-
-        nombre: data.nombre,
-        apellido: data.apellido,
-        dni: data.dni,
-        motivoConsulta: data.motivoConsulta,
+        id: nanoid(10),
+        pacienteId: body.id,
+        nombre: body.nombre,
+        apellido: body.apellido,
+        dni: body.dni,
+        motivoConsulta: body.motivoConsulta,
         fecha: fechaHoy.toISOString(),
         hora: horaHoy,
         userId: userId,
-        isExist: false,
+        isExist: true,
       })
       .returning();
-
+    console.log(insertarPaciente);
     return new Response(
       JSON.stringify({
         status: 200,
@@ -93,7 +78,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 export const DELETE: APIRoute = async ({ request, params }) => {
   const { userId } = params;
   const data = await request.json();
-  console.log(data);
+  console.log('paceinte a agregar -> e', data);
   try {
     const deletPacienteEnEspera = await db
       .delete(listaDeEspera)

@@ -31,6 +31,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (context.request.method !== 'GET') {
       const originHeader = context.request.headers.get('Origin');
       const hostHeader = context.request.headers.get('Host');
+      console.log('Origin:', originHeader);
+      console.log('Host:', hostHeader);
       if (!originHeader || !hostHeader || !verifyRequestOrigin(originHeader, [hostHeader])) {
         return new Response(null, {
           status: 403,
@@ -82,7 +84,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
 
     // Si la cookie no existe, redirigimos al usuario a la página de inicio de sesión
-    if (!context.locals.session) {
+    if (!context.locals.session || !context.locals.user) {
       return Response.redirect(new URL('/login', context.url));
     }
 

@@ -80,12 +80,12 @@ export async function POST({ request, redirect, cookies }: APIContext): Promise<
     email: newUser.email,
   };
 
-  const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '7d' }); // Firmar la cookie
+  const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '14d' }); // Firmar la cookie
   cookies.set('userData', token, {
     httpOnly: true,
     secure: import.meta.env.NODE_ENV === 'production', // Solo enviar en HTTPS en producción
     sameSite: 'strict',
-    maxAge: 7 * 24 * 3600, // 7 días en segundos
+    maxAge: 14 * 24 * 3600, // 14 días en segundos
     path: '/',
   });
 

@@ -20,12 +20,13 @@ io.on('connection', socket => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Origin: 'http://localhost:4321', // Añade manualmente el encabezado Origin
         },
         body: JSON.stringify(paciente),
+        credentials: 'include', // Importante si estás usando cookies de sesión
       });
 
       const data = await response.json();
-      console.log(data);
       if (response.status === 200) {
         io.emit('lista-actualizada', data.data);
       }
@@ -64,6 +65,7 @@ io.on('connection', socket => {
         body: JSON.stringify(paciente),
         headers: {
           'Content-Type': 'application/json',
+          Origin: 'http://localhost:4321', // Añade manualmente el encabezado Origin
         },
       });
 

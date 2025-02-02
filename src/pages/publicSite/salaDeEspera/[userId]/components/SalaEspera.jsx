@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { showToast } from '../../../../../utils/toast/toastShow';
 
-const socket = io('localhost:5000');
+const socket = io('/');
 
 const SalaEspera = ({ userId }) => {
   const [pacientes, setPacientes] = useState([]);
@@ -78,7 +78,7 @@ const SalaEspera = ({ userId }) => {
   }, [userId]);
 
   const agregarPaciente = () => {
-    console.log(nuevoPaciente);
+    console.log('este es el nuevoPAceinte salaEspera', nuevoPaciente);
     if (
       !nuevoPaciente.motivoConsulta ||
       !nuevoPaciente.dni ||
@@ -105,7 +105,7 @@ const SalaEspera = ({ userId }) => {
     <div className="flex flex-col md:flex-row items-start gap-4">
       {/* Formulario de registro */}
       <div className="w-full md:w-1/2 bg-white rounded-lg border border-gray-200 p-4">
-        <h2 className="text-lg font-semibold text-primary-textoTitle mb-4">Registrar Paciente</h2>
+        <h2 className="text-lg font-semibold text-primary-textoTitle mb-4">Cargar Paciente</h2>
 
         <FormularioCargaListaEspera
           nuevoPaciente={nuevoPaciente}

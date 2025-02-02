@@ -6,7 +6,7 @@ import { showToast } from '../../../../utils/toast/toastShow';
 import CardPacientes from './CardPacientes';
 import FormularioCargaListaEspera from './FormularioCargaListaEspera';
 
-const socket = io('localhost:5000'); // Cambia el puerto si usas otro
+const socket = io('/'); // Cambia el puerto si usas otro
 
 const SalaEspera = ({ user }) => {
   const [pacientes, setPacientes] = useState([]);
@@ -146,7 +146,7 @@ const SalaEspera = ({ user }) => {
       </div>
       <div className="w-full flex flex-col items-start justify-normal gap-3">
         {/* formulario */}
-        <details className="w-full flex items-start ">
+        <details className="w-full flex flex-col items-start ">
           <summary className="p-1 mb-2 rounded-lg text-left cursor-pointer items-center  text-sm e duration-200 hover:bg-primary-100/20">
             agregar Pacientes
           </summary>
