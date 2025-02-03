@@ -60,7 +60,7 @@ export default function FormularioPerfilAvatar({ user }) {
     }
   };
   return (
-    <div className="md:w-1/3 flex items-center gap-3">
+    <div className="md:w-full flex items-center gap-3 mr-4 pr-4 border-r">
       <div className="md:w-52 md:h-52 w-28 h-28 flex fle m-auto items-center justify-center overflow-hidden rounded-lg shadow ">
         {previewUrl ? (
           <div className="relative w-full h-full group">
