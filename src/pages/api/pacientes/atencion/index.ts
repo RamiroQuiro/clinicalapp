@@ -1,8 +1,16 @@
 import type { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import db from '@/db';
-import { atenciones, diagnostico, medicamento, pacientes, signosVitales } from '@/db/schema';
+import {
+  atenciones,
+  diagnostico,
+  fichaPaciente,
+  medicamento,
+  pacientes,
+  signosVitales,
+  users,
+} from '@/db/schema';
 import { lucia } from '@/lib/auth';
 import { generateId } from 'lucia';
 import calcularIMC from '../../../../utils/calcularIMC';
@@ -147,9 +155,24 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   const result = await db.transaction(async trx => {
     const atencionData = (
       await trx
-        .select()
+        .select({
+          id: atenciones.id,
+          userId: atenciones.userId,
+          pacienteId: atenciones.pacienteId,
+          motivoConsulta: atenciones.motivoConsulta,
+          motivoInicial: atenciones.motivoInicial,
+          fecha: atenciones.fecha,
+          tratamiento: atenciones.tratamiento,
+          estado: atenciones.estado,
+          created_at: atenciones.created_at,
+          inicioAtencion: atenciones.inicioAtencion,
+          finAtencion: atenciones.finAtencion,
+          duracionAtencion: atenciones.duracionAtencion,
+          nombreDoctor: users.nombre,
+          apellidoDoctor: users.apellido,
+        })
         .from(atenciones)
-
+        .innerJoin(users, eq(users.id, atenciones.userId))
         .where(eq(atenciones.id, atencionId))
     ).at(0);
     if (!atencionData) {
@@ -161,7 +184,31 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       );
     }
     const pacienteData = (
-      await trx.select().from(pacientes).where(eq(pacientes.id, atencionData.pacienteId))
+      await trx
+        .select({
+          nombre: pacientes.nombre,
+          apellido: pacientes.apellido,
+          dni: pacientes.dni,
+          sexo: pacientes.sexo,
+          celular: fichaPaciente.celular,
+          email: fichaPaciente.email,
+          provincia: fichaPaciente.provincia,
+          nObraSocial: fichaPaciente.nObraSocial,
+          obraSocial: fichaPaciente.obraSocial,
+          ciudad: fichaPaciente.ciudad,
+          grupoSanguineo: fichaPaciente.grupoSanguineo,
+          estatura: fichaPaciente.estatura,
+          domicilio: pacientes.domicilio,
+        })
+        .from(pacientes)
+        .innerJoin(
+          fichaPaciente,
+          and(
+            eq(fichaPaciente.pacienteId, pacientes.id),
+            eq(fichaPaciente.userId, session?.userId) // Filtrar por el usuario (userId)
+          )
+        )
+        .where(eq(pacientes.id, atencionData.pacienteId))
     ).at(0);
     const medicamentosAtencionData = await trx
       .select()

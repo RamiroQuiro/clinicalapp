@@ -18,12 +18,16 @@ import DivReact from '../atomos/DivReact';
 
 export default function AtencionExistente({ atencionData, onClose }) {
   let edad = calcularEdad(atencionData?.pacienteData?.fNacimiento);
+  console.log(atencionData);
 
   return (
     <div className="flex flex-col items-start gap-2 justify-normal w-full print:fixed ">
       <div className="flex items-center  sticky top-0 py-3 bg-primary-bg-componentes justify-between w-full mb- pb-2 border-b ">
         <h2 className="text-xl font-semibold ">
-          Atención del día {formatDate(atencionData?.atencionData?.created_at)}, atención Dr. Name
+          Atención del día {formatDate(atencionData?.atencionData?.created_at)}, profesional:{' '}
+          <span className="capitalize">
+            {atencionData?.atencionData.nombreDoctor} {atencionData?.atencionData.apellidoDoctor}
+          </span>
         </h2>
 
         <div className="flex items-center justify-normal gap-2">
@@ -98,7 +102,7 @@ export default function AtencionExistente({ atencionData, onClose }) {
             </div>
             <div class="flex items-center gap-2">
               <MapPin size={16} />
-              <span>Direccion {atencionData?.pacienteData?.direccion}</span>
+              <span>Direccion {atencionData?.pacienteData?.domicilio}</span>
             </div>
           </div>
           <div class=" flex gap-2 flex-col text-sm capitalize text-muted-foreground">
@@ -179,7 +183,23 @@ export default function AtencionExistente({ atencionData, onClose }) {
         </div>
       </DivReact>
       {/* signos vitale> */}
-
+      <DivReact>
+        <h2 className="text- font-semibold mb-1 ">Signos Vitales</h2>
+        <div className="flex items-start justify-between px-4 gap-3">
+          <p className="border px-2 py-0.5 rounded-lg">
+            Peso: {atencionData?.signosVitalesAtencion?.peso}kg
+          </p>
+          <p className="border px-2 py-0.5 rounded-lg">
+            Temperatura: {atencionData?.signosVitalesAtencion?.temperatura}°
+          </p>
+          <p className="border px-2 py-0.5 rounded-lg">
+            Frecuencia Respiratoria: {atencionData?.signosVitalesAtencion?.frecuenciaRespiratoria}
+          </p>
+          <p className="border px-2 py-0.5 rounded-lg">
+            Tension Arterial: {atencionData?.signosVitalesAtencion?.tensionArterial}
+          </p>
+        </div>
+      </DivReact>
       <DivReact>
         <div className="flex items-start justify-between gap-2">
           <div className="w-full flex flex-col items-center justify-start">

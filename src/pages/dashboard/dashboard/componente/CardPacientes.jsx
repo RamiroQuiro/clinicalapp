@@ -2,7 +2,6 @@ import { XCircle } from 'lucide-react';
 import BotonRegistarAtender from './BotonRegistarAtender';
 
 export default function CardPacientes({ paciente, index, handleDelete, handleAtender }) {
-  console.log(paciente);
   return (
     <li
       className="w-full border-y py-2 px-3 items-center shadow-sm justify-between bg-white flex hover:bg-gray-50 transition-colors duration-150"

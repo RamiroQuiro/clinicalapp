@@ -11,24 +11,41 @@ import {
   medicamento,
   pacientes,
   signosVitales,
+  users,
 } from '@/db/schema';
+import formatDate from '@/utils/formatDate';
 import { and, eq } from 'drizzle-orm';
 
 const { atencionId } = Astro.params;
 
-const { session } = Astro.locals;
+const { user, session } = Astro.locals;
 let atencionData: {};
 try {
   const result = await db.transaction(async trx => {
-    const consultaAtencion = (
+    const atencionData = (
       await trx
-        .select()
+        .select({
+          id: atenciones.id,
+          userId: atenciones.userId,
+          pacienteId: atenciones.pacienteId,
+          motivoConsulta: atenciones.motivoConsulta,
+          motivoInicial: atenciones.motivoInicial,
+          fecha: atenciones.fecha,
+          tratamiento: atenciones.tratamiento,
+          estado: atenciones.estado,
+          created_at: atenciones.created_at,
+          inicioAtencion: atenciones.inicioAtencion,
+          finAtencion: atenciones.finAtencion,
+          duracionAtencion: atenciones.duracionAtencion,
+          nombreDoctor: users.nombre,
+          apellidoDoctor: users.apellido,
+        })
         .from(atenciones)
-
+        .innerJoin(users, eq(users.id, atenciones.userId))
         .where(eq(atenciones.id, atencionId))
     ).at(0);
-    if (!consultaAtencion) {
-      console.log('no se encontro atencion');
+    if (!atencionData) {
+      throw new Error('No se encontró la atención');
     }
     // Buscar paciente
     const pacienteData = (
@@ -36,6 +53,7 @@ try {
         .select({
           nombre: pacientes.nombre,
           apellido: pacientes.apellido,
+          fNacimiento: pacientes.fNacimiento,
           dni: pacientes.dni,
           sexo: pacientes.sexo,
           celular: fichaPaciente.celular,
@@ -56,9 +74,8 @@ try {
             eq(fichaPaciente.userId, session?.userId) // Filtrar por el usuario (userId)
           )
         )
-        .where(eq(pacientes.id, consultaAtencion.pacienteId))
+        .where(eq(pacientes.id, atencionData.pacienteId))
     ).at(0);
-
     const medicamentosAtencionData = await trx
       .select()
       .from(medicamento)
@@ -67,10 +84,9 @@ try {
       .select()
       .from(diagnostico)
       .where(eq(diagnostico.atencionId, atencionId));
-    const signosVitalesAtencion = await trx
-      .select()
-      .from(signosVitales)
-      .where(eq(signosVitales.atencionId, atencionId));
+    const signosVitalesAtencion = (
+      await trx.select().from(signosVitales).where(eq(signosVitales.atencionId, atencionId))
+    ).at(0);
     return {
       atencionData,
       pacienteData,
@@ -86,9 +102,12 @@ try {
 } finally {
   console.log('finalizacion de la peticion');
 }
+
+const fecha = formatDate(atencionData?.atencionData?.created_at);
+// console.log(atencionData);
 ---
 
-<LayoutDash>
+<LayoutDash title={`Atención del día ${fecha}`}>
   <MainDashboard>
     <div class="flex w-11/12">
       <div class="pr-2 py-3">

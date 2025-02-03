@@ -58,7 +58,6 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   let dataAtencion = {};
   atencion.subscribe(state => {
     dataAtencion = state;
-    console.log(state);
   });
 
   const observer = new IntersectionObserver(

@@ -52,7 +52,6 @@ import DiagnosticosContenedor from './DiagnosticosContenedor';
 
   // Suscripción al contexto para cargar los datos iniciales
   dataFormularioContexto.subscribe(data => {
-    console.log(data);
     currentDiagnostico = {
       id: data?.id || '',
       diagnostico: data?.diagnostico || '',

@@ -2,16 +2,15 @@
 import {
   antecedente,
   atenciones,
-  diagnostico,
   fichaPaciente,
   pacientes,
   signosVitales,
+  users,
 } from '@/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 import MainDashboard from '../../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../../components/layouts/LayoutDash.astro';
 import db from '../../../../../db';
-import { medicamento } from '../../../../../db/schema/medicamento';
 import IndexAtencion from './IndexAtencion.astro';
 const { pacienteId, atencionId } = Astro.params;
 
@@ -33,6 +32,7 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
             celular: fichaPaciente.celular,
             email: fichaPaciente.email,
             provincia: fichaPaciente.provincia,
+            fNacimiento: pacientes.fNacimiento,
             nObraSocial: fichaPaciente.nObraSocial,
             obraSocial: fichaPaciente.obraSocial,
             ciudad: fichaPaciente.ciudad,
@@ -93,43 +93,28 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
       // traer ultiumas visitas
 
       const historialVisitaData = await trx
-        .select()
+        .select({
+          id: atenciones.id,
+          userId: atenciones.userId,
+          pacienteId: atenciones.pacienteId,
+          motivoConsulta: atenciones.motivoConsulta,
+          motivoInicial: atenciones.motivoInicial,
+          fecha: atenciones.fecha,
+          tratamiento: atenciones.tratamiento,
+          estado: atenciones.estado,
+          created_at: atenciones.created_at,
+          inicioAtencion: atenciones.inicioAtencion,
+          finAtencion: atenciones.finAtencion,
+          duracionAtencion: atenciones.duracionAtencion,
+          nombreDoctor: users.nombre,
+          apellidoDoctor: users.apellido,
+        })
         .from(atenciones)
+        .innerJoin(users, eq(users.id, atenciones.userId))
         .where(eq(atenciones.pacienteId, pacienteId))
         .orderBy(desc(atenciones.created_at))
         .limit(4);
       if (!pacienteData) throw new Error('Paciente no encontrado');
-
-      // Verificar si existe atención
-      const atencionData = (
-        await trx.select().from(atenciones).where(eq(atenciones.id, idAtencion))
-      ).at(0);
-
-      if (atencionData) {
-        // Traer medicamentos asociados a la atención
-        const medicamentosData = await trx
-          .select()
-          .from(medicamento)
-          .where(eq(medicamento.atencionId, idAtencion))
-          .orderBy(desc(medicamento.created_at));
-
-        // Traer diagnósticos asociados a la atención
-        const diagnosticoData = await trx
-          .select()
-          .from(diagnostico)
-          .where(eq(diagnostico.atencionId, idAtencion))
-          .orderBy(desc(diagnostico.created_at));
-
-        return {
-          pacienteData,
-          atencionData,
-          medicamentosData,
-          diagnosticoData,
-          antecedentesData,
-          signosVitalesData,
-          historialVisitaData,
-        };
-      }
 
       // Si no hay atención, devolver solo datos del paciente
       return { pacienteData, signosVitalesData, antecedentesData, historialVisitaData };
@@ -145,13 +130,13 @@ const dataFetchPaciente = async (idPaciente, idAtencion) => {
 const {
   antecedentesData,
   pacienteData,
-  atencionData,
+
   diagnosticoData,
   signosVitalesData,
   medicamentosData,
   historialVisitaData,
 } = await dataFetchPaciente(pacienteId, atencionId);
-console.log('paciente data', pacienteData);
+console.log('paciente data', historialVisitaData);
 if (!pacienteData) {
   errorData = {
     msg: 'Error al buscar el paceinte, intentelo de nuevo 🙈',
@@ -179,7 +164,6 @@ const dataIds = {
           dataIds={dataIds}
           signosVitalesData={signosVitalesData}
           pacienteData={pacienteData}
-          isExistHC={atencionData}
           isExistDiagnosticos={diagnosticoData}
           isExistMedicamentos={medicamentosData}
           historialVisitaData={historialVisitaData}

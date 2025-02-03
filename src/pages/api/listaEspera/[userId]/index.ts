@@ -5,7 +5,6 @@ import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 export const GET: APIRoute = async ({ request, params }) => {
-  console.log('peticion del get');
   const listaEsperaDB = await db
     .select()
     .from(listaDeEspera)
@@ -18,7 +17,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   try {
     const { userId } = params;
     const body = await request.json();
-    console.log(body);
+    // console.log(body);
     // Validar que el userId existe
     if (!userId) {
       return new Response(JSON.stringify({ error: 'userId es requerido' }), {

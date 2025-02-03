@@ -6,7 +6,7 @@ import { showToast } from '../../../../utils/toast/toastShow';
 import CardPacientes from './CardPacientes';
 import FormularioCargaListaEspera from './FormularioCargaListaEspera';
 
-const socket = io('/'); // Cambia el puerto si usas otro
+const socket = io('localhost:5000'); // Cambia el puerto si usas otro
 
 const SalaEspera = ({ user }) => {
   const [pacientes, setPacientes] = useState([]);

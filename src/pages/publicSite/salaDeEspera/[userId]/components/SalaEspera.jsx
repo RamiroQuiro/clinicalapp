@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { showToast } from '../../../../../utils/toast/toastShow';
 
-const socket = io('/');
+const socket = io('localhost:5000');
 
 const SalaEspera = ({ userId }) => {
   const [pacientes, setPacientes] = useState([]);
@@ -78,7 +78,6 @@ const SalaEspera = ({ userId }) => {
   }, [userId]);
 
   const agregarPaciente = () => {
-    console.log('este es el nuevoPAceinte salaEspera', nuevoPaciente);
     if (
       !nuevoPaciente.motivoConsulta ||
       !nuevoPaciente.dni ||
