@@ -5,24 +5,5 @@ const { atencionTurnoManana, atencionTurnoTarde } = Astro.props;
 ---
 
 <DivBox1 styleDiv="w-full h-28">
-  <div class="flex w-full items-center justify-between">
-    <div class="flex flex-col items-center justify-center w-full">
-      <div class="flex w-full items-center gap-2 justify-between border-b pb-1 mb-1">
-        <p class="text-sm font-medium text-gray-600">Consultas Hoy</p>
-        <span class="text-2xl text-primary-texto">
-          {atencionTurnoManana + atencionTurnoTarde}
-        </span>
-      </div>
-      <div class="flex w-full items-center justify-between">
-        <div class="flex flex-col items-center justify-normal">
-          <p class="text-sm font-medium text-gray-600">Mañana</p>
-          <h3 class="mt-1 text-xl font-semibold">{atencionTurnoManana}</h3>
-        </div>
-        <div class="flex flex-col items-center justify-normal">
-          <p class="text-sm font-medium text-gray-600">Tarde</p>
-          <h3 class="mt-1 text-xl font-semibold">{atencionTurnoTarde}</h3>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="flex w-full items-center justify-between"></div>
 </DivBox1>

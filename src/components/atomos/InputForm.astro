@@ -1,26 +1,25 @@
 ---
-interface StringProps{
-    type: "string",
-    name: "string",
-    id: "string",
-    style: "string",
-    value: "string",
-    disabled: "boolean",
-    placeholder: "string"
+interface StringProps {
+  type: string;
+  name: string;
+  id: string;
+  style: string;
+  value: string;
+  disabled: boolean;
+  placeholder: string;
 }
 
-const {type,name,id,style,value,disabled,placeholder}=Astro.props
+const { type, name, id, style, value, disabled, placeholder } = Astro.props as StringProps;
 
 let hoy = new Date().toISOString().split('T')[0];
-
 ---
 
 <input
-value={type=='date'?hoy:value? value :null}
-type={type}
-placeholder={placeholder}
-name={name}
-id={name}
-class={`${style} w-full text-sm bg-white border   rounded group-hover:ring-1  border-gray-300  ring-primary-200/60 focus:ring-1 focus:border-primary-200/60   outline-none transition-colors duration-200 ease-in-out px-2 py-2`}
-disabled={disabled}
+  value={type == 'date' ? hoy : value ? value : null}
+  type={type}
+  placeholder={placeholder}
+  name={name}
+  id={name}
+  class={`${style} w-full text-sm bg-white border   rounded group-hover:ring-1  border-gray-300  ring-primary-200/60 focus:ring-1 focus:border-primary-200/60   outline-none transition-colors duration-200 ease-in-out px-2 py-2`}
+  disabled={disabled}
 />

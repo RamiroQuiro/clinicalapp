@@ -1,250 +1,101 @@
 ---
-import { and, asc, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
-import { Activity, Clock, Users } from 'lucide-react';
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleBotonera.astro';
 import DivBox1 from '../../../components/atomos/DivBox1.astro';
 import H2 from '../../../components/atomos/H2.astro';
-import db from '../../../db';
-import { atenciones, doctoresPacientes, fichaPaciente, pacientes } from '../../../db/schema';
+import { getDashboardData } from '../../../services/dashboard.services';
 import GraficoMotivosIniciales from './componente/GraficoMotivosIniciales.astro';
 import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astro';
 import Header from './componente/Header.astro';
 import ListaDeEspera from './componente/ListaDeEspera.astro';
 import PacienteList from './componente/PacienteList.astro';
 import StatsAtencionesDelDia from './componente/StatsAtencionesDelDia.astro';
-import StatsCard from './componente/StatsCard.astro';
-
+import ContentedorStatsDash from './componente/ContentedorStatsDash';
 const { user, session } = Astro.locals;
-const dataDB = async userId => {
-  try {
-    const result = await db.transaction(async trx => {
-      // Obtener pacientes del usuario (doctor)
-      const pacientesData = await trx
-        .select({
-          id: pacientes.id,
-          nombre: pacientes.nombre,
-          apellido: pacientes.apellido,
-          dni: pacientes.dni,
-        })
-        .from(pacientes)
-        .innerJoin(doctoresPacientes, eq(doctoresPacientes.pacienteId, pacientes.id)) // Unir con doctoresPacientes
-        .where(eq(doctoresPacientes.userId, userId)); // Filtrar por el usuario (userId)
 
-      // Fecha actual y rango de los últimos 7 días
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const sieteDiasAtras = new Date(today);
-      sieteDiasAtras.setDate(today.getDate() - 6); // 6 días para incluir el día actual
-
-      const startOfDay = sieteDiasAtras;
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfToday = new Date(today);
-      endOfToday.setHours(23, 59, 59, 999);
-
-      // Obtener atenciones por día
-      const atencionesPorDia = await trx
-        .select({
-          fecha: sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`.as('fecha'),
-          turno: sql`CASE
-            WHEN strftime('%H', datetime(${atenciones.created_at}, 'localtime')) < '12' THEN 'mañana'
-            ELSE 'tarde'
-          END`.as('turno'),
-          total: count().as('total'),
-        })
-        .from(atenciones)
-        .where(
-          and(
-            eq(atenciones.userId, userId), // Filtrar por el usuario (userId)
-            gte(atenciones.created_at, startOfDay.toISOString()),
-            lte(atenciones.created_at, endOfToday.toISOString())
-          )
-        )
-        .groupBy(sql`DATE(datetime(${atenciones.created_at}, 'localtime')), turno`)
-        .orderBy(asc(sql`DATE(datetime(${atenciones.created_at}, 'localtime'))`));
-
-      // Obtener datos de motivo de consulta
-      const datosMotivoConsulta = await trx
-        .select({
-          motivoInicial: atenciones.motivoInicial,
-          total: count(),
-        })
-        .from(atenciones)
-        .where(eq(atenciones.userId, userId)) // Filtrar por el usuario (userId)
-        .groupBy(atenciones.motivoInicial);
-
-      // Fecha actual y primer día del mes
-      const primerDiaMes = new Date(now.getFullYear(), now.getMonth(), 1);
-      primerDiaMes.setHours(0, 0, 0, 0);
-      const ultimoDiaMes = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      ultimoDiaMes.setHours(23, 59, 59, 999);
-
-      // Obtener atenciones del mes actual
-      const atencionesMes = await trx
-        .select({
-          id: atenciones.id,
-          created_at: atenciones.created_at,
-        })
-        .from(atenciones)
-        .where(
-          and(
-            eq(atenciones.userId, userId), // Filtrar por el usuario (userId)
-            gte(atenciones.created_at, primerDiaMes.toISOString()),
-            lte(atenciones.created_at, ultimoDiaMes.toISOString())
-          )
-        );
-
-      // Obtener tiempo promedio de consultas del día
-      const atencionesDuracion = await trx
-        .select({
-          duracion:
-            sql`avg((julianday(${atenciones.finAtencion}) - julianday(${atenciones.inicioAtencion})) * 24 * 60)`.as(
-              'duracionPromedio'
-            ), // Convertir a minutos
-        })
-        .from(atenciones)
-        .where(
-          and(
-            eq(atenciones.userId, userId), // Filtrar por el usuario (userId)
-            sql`DATE(${atenciones.created_at}) = DATE('now')`,
-            sql`${atenciones.finAtencion} IS NOT NULL`,
-            sql`${atenciones.inicioAtencion} IS NOT NULL`
-          )
-        );
-
-      // Obtener las últimas 6 atenciones
-      const ultimasAtenciones = await trx
-        .select({
-          id: atenciones.id,
-          finAtencion: atenciones.finAtencion,
-          inicioAtencion: atenciones.inicioAtencion,
-          pacienteId: atenciones.pacienteId,
-          nombre: pacientes.nombre,
-          apellido: pacientes.apellido,
-          obraSocial: fichaPaciente.obraSocial || null, // Obra social específica del usuario
-          dni: pacientes.dni,
-        })
-        .from(atenciones)
-        .innerJoin(pacientes, eq(pacientes.id, atenciones.pacienteId))
-        .innerJoin(
-          fichaPaciente,
-          and(
-            eq(fichaPaciente.pacienteId, pacientes.id),
-            eq(fichaPaciente.userId, userId) // Filtrar por el usuario (userId)
-          )
-        )
-        .where(eq(atenciones.userId, userId)) // Filtrar por el usuario (userId)
-        .orderBy(desc(atenciones.created_at))
-        .limit(6);
-
-      return {
-        pacientesData,
-        atencionesPorDia,
-        atencionesMes,
-        datosMotivoConsulta,
-        duracionPromedio: Math.round(atencionesDuracion[0]?.duracion || 0),
-        ultimasAtenciones,
-      };
-    });
-
-    return result;
-  } catch (error) {
-    console.error('Error en la transacción:', error);
-    throw new Error('Ocurrió un error al procesar la solicitud');
-  }
-};
 const {
-  pacientesData,
-  atencionesPorDia,
+  pacientes,
   atencionesMes,
-  datosMotivoConsulta,
-  duracionPromedio,
+  atencionesUlt7d,
+  motivos,
+  promedioDuracion,
   ultimasAtenciones,
-} = await dataDB(session?.userId);
+  atencionesHoy,
+} = await getDashboardData(user?.id);
 
-const stats = [
-  {
-    title: 'Pacientes Totales',
-    value: pacientesData.length,
-    icon: Users,
-  },
-  {
-    title: 'Atenciones del Mes',
-    value: atencionesMes.length,
-    icon: Activity,
-    subtitle: 'este mes',
-  },
-  {
-    title: 'Tiempo Promedio',
-    value: duracionPromedio,
-    icon: Clock,
-    subtitle: 'minutos por consulta',
-  },
-];
+// filtrar atenciones del día
+const today = new Date();
+const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 
-const atencionesDelDia = atencionesPorDia.filter(atencion => {
-  const today = new Date();
-  const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())); //si o si converitr en 0,0,0,0 el horario
+const atencionesDelDia = atencionesHoy.filter(atencion => {
   const atencionFecha = new Date(atencion.fecha);
-  return atencionFecha.toISOString() === utcToday.toISOString();
+  return (
+    atencionFecha.getUTCFullYear() === utcToday.getUTCFullYear() &&
+    atencionFecha.getUTCMonth() === utcToday.getUTCMonth() &&
+    atencionFecha.getUTCDate() === utcToday.getUTCDate()
+  );
 });
 
-const atencionTurnoTarde =
-  atencionesDelDia?.filter(turno => turno.turno === 'tarde')[0]?.total || 0;
-const atencionTurnoManana =
-  atencionesDelDia?.filter(turno => turno.turno === 'mañana')[0]?.total || 0;
+const atencionTurnoTarde = atencionesDelDia?.find(turno => turno.turno === 'tarde')?.total || 0;
+const atencionTurnoManana = atencionesDelDia?.find(turno => turno.turno === 'mañana')?.total || 0;
+
+// preparo las stats (antes tenías "stats" sin definir)
+const stats = [
+  { title: 'Pacientes', value: pacientes, color: 'blue', icon: '👤', trend: 'up' },
+  { title: 'Atenciones Mes', value: atencionesMes, color: 'green', icon: '📅', trend: 'neutral' },
+  {
+    title: 'Últimos 7 días',
+    value: atencionesUlt7d,
+    color: 'orange',
+    icon: '📊',
+    trend: 'neutral',
+  },
+  {
+    title: 'Prom. Duración',
+    value: promedioDuracion + ' min',
+    color: 'purple',
+    icon: '⏱️',
+    trend: 'neutral',
+  },
+];
 ---
 
-<div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
-  <Header arrayPacientes={pacientesData} isClickend={true} />
+<MainDashboard h1="Dashboard">
+  <div class="container py-4 gap-2 px-2 flex flex-col w-[97%]">
+    <Header isClickend={true} />
 
-  <div class="flex items-center gap-2 justify-evenly">
-    <StatsAtencionesDelDia
-      atencionTurnoManana={atencionTurnoManana}
-      atencionTurnoTarde={atencionTurnoTarde}
-    />
-    {
-      stats.map((stat, index) => {
-        let Icon = stat.icon;
-        return (
-          <StatsCard
-            key={index}
-            title={stat.title}
-            value={stat}
-            icon={Icon}
-            color={stat.color}
-            trend={stat.trend}
-          />
-        );
-      })
-    }
-  </div>
+    <div class="flex items-center gap-2 justify-evenly">
+      <ContentedorStatsDash client:load />
+    </div>
 
-  <div class="flex items-start justify-between gap-2 w-full">
-    <!-- ultimas atenciones -->
-    <DivBox1 styleDiv="w-[30%]">
-      <ContenedorTitleBotonera>
-        <H2>Ultimas Atenciones</H2>
-        <!-- <div>
-          <Button1>ver más</Button1>
-        </div> -->
-      </ContenedorTitleBotonera>
-      <PacienteList ultimasAtenciones={ultimasAtenciones} />
-    </DivBox1>
-    <!-- proximas atencxiones -->
-    <ListaDeEspera />
-    <!-- graficos -->
-    <div class="flex flex-col gap-3 w-[40%] items-stretch justify-normal">
-      <DivBox1 styleDiv="w12">
-        <GraficoUltimasAtenciones data={atencionesPorDia} />
+    <div class="flex items-start justify-between gap-2 w-full">
+      <!-- ultimas atenciones -->
+      <DivBox1 styleDiv="w-[30%]">
+        <ContenedorTitleBotonera>
+          <H2>Ultimas Atenciones</H2>
+        </ContenedorTitleBotonera>
+        <PacienteList ultimasAtenciones={ultimasAtenciones} />
       </DivBox1>
-      <DivBox1 tyleDiv="w1/2">
-        <GraficoMotivosIniciales data={datosMotivoConsulta} />
-      </DivBox1>
+
+      <!-- lista de espera -->
+      <ListaDeEspera />
+
+      <!-- graficos -->
+      <div class="flex flex-col gap-3 w-[40%] items-stretch justify-normal">
+        <DivBox1 styleDiv="w12">
+          <GraficoUltimasAtenciones data={atencionesDelDia} />
+        </DivBox1>
+        <DivBox1 styleDiv="w1/2">
+          <GraficoMotivosIniciales data={motivos} />
+        </DivBox1>
+      </div>
     </div>
   </div>
-  <!-- botones de acciones -->
-  <!-- <div class="mt-8">
-    <QuickActions />
-  </div> -->
-</div>
+</MainDashboard>
+
+<script>
+  import { fetchingDashboard } from '@/context/store';
+  const idUser = document.getElementById('mainDashboard')?.dataset.usisisi;
+  console.log(idUser);
+  fetchingDashboard(idUser);
+</script>

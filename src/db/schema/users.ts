@@ -14,6 +14,6 @@ export const users=sqliteTable("users",{
     ciudad:text('ciudad'),
     provincia:text('provincia'),
     pais:text('pais'),
-    created_at:text('created_at').notNull().default(sql`(current_timestamp)`),
+    created_at: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(strftime('%s', 'now'))`),
     
 })

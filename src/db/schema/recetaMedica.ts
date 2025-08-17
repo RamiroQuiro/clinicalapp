@@ -6,14 +6,14 @@ export const recetaMedica = sqliteTable("recetaMedica", {
   pacienteId: text("pacienteId").notNull(),
   medicoId: text("medicoId").notNull(),
   medicamentos: text("medicamentos").notNull(),
-  fecha: text("fecha").notNull(),
+  fecha: integer("fecha", { mode: "timestamp" }).notNull(),
   observaciones: text("observaciones"),
   horarios:text('horarios'),
   cantiada:text('cantidad'),
   activo: integer("activo", { mode: "boolean" }).default(true),
-  created_at: text("created_at")
+  created_at: integer("created_at", { mode: "timestamp" })
     .notNull()
-    .default(sql`(current_timestamp)`),
-  updated_at: text("updated_at"),
-  deleted_at: text("deleted_at"),
+    .default(sql`(strftime('%s', 'now'))`),
+  updated_at: integer("updated_at", { mode: "timestamp" }),
+  deleted_at: integer("deleted_at", { mode: "timestamp" }),
 });

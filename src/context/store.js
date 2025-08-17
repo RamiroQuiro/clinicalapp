@@ -31,12 +31,38 @@ const atencion = atom({
 const dataFormularioContexto = atom({});
 
 const usuarioActivo = atom({});
+const statsDashStore = atom({ loading: false, data: null, error: null });
+const fetchingDashboard = async userId => {
+  console.log('mandando el fetch', userId);
+  statsDashStore.set({ loading: true, data: null, error: null }); // Indicar que se está cargando
+  try {
+    const response = await fetch(`/api/users/dataDash/${userId}`);
+    const data = await response.json();
+    statsDashStore.set({ loading: false, data: data, error: null }); // Indicar que se está cargando
+  } catch (error) {
+    console.error(error);
+    statsDashStore.set({ loading: false, data: null, error: error }); // Indicar que se está cargando
+  }
+};
+
+const dashboardStore = atom({
+  pacientes: 0,
+  atencionesMes: 0,
+  atencionesUlt7d: [],
+  motivos: [],
+  promedioDuracion: null,
+  ultimasAtenciones: [],
+  atencionesPorDia: [],
+});
 export {
   atencion,
   busqueda,
   columnSelectTable,
+  dashboardStore,
   dataFormularioContexto,
+  fetchingDashboard,
   filtroBusqueda,
   reportPDF,
+  statsDashStore,
   usuarioActivo,
 };

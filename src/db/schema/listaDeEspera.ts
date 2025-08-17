@@ -8,7 +8,7 @@ export const listaDeEspera = sqliteTable('listaDeEspera', {
   isExist: integer('isExist', { mode: 'boolean' }).default(false),
   dni: text('dni').notNull(),
   userId: text('userId').notNull(),
-  fecha: text('fecha').notNull(),
+  fecha: integer('fecha', { mode: 'timestamp' }).notNull(),
   orden: integer('orden'),
   hora: text('hora').notNull(),
   motivoConsulta: text('motivoConsulta').notNull(),
