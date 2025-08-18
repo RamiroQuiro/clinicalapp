@@ -2,45 +2,48 @@
 import FormularioPaciente from '@/pages/dashboard/pacientes/FormularioPaciente.astro';
 import { generateId } from 'lucia';
 import {
-ArrowBigRightDash,
-Briefcase,
-Calendar,
-Heart,
-Mail,
-MapPin,
-Phone,
-User,
+  ArrowBigRightDash,
+  Briefcase,
+  Calendar,
+  Heart,
+  Mail,
+  MapPin,
+  Phone,
+  User,
 } from 'lucide-react';
 import DivBox1 from '../../components/atomos/DivBox1.astro';
-import type { pacienteType } from '../../types';
 import ButtonBackHistory from '../atomos/ButtonBackHistory.astro';
 import H2 from '../atomos/H2.astro';
 import ModalEditarPerfil from '../moleculas/ModalEditarPerfil.astro';
 
-const {
-  apellido,
-  dni,
-  email,
-  fNacimiento,
-  nombre,
-  sexo,
-  celular,
-  grupoSanguineo,
-  domicilio,
-  provincia,
-  id,
-  nObraSocial,
-  srcPhoto,
-  estatura,
-  obraSocial,
-  ciudad,
-} = Astro.props as pacienteType;
+// Datos de ejemplo para el paciente
+const patientData = {
+  id: 'pat_' + generateId(10),
+  nombre: 'Juan',
+  apellido: 'Pérez',
+  dni: 12345678,
+  email: 'juan.perez@ejemplo.com',
+  fNacimiento: new Date('1990-01-15'),
+  sexo: 'masculino',
+  celular: '+54 9 11 1234-5678',
+  grupoSanguineo: 'A+',
+  domicilio: 'Av. Siempre Viva 123',
+  provincia: 'Buenos Aires',
+  ciudad: 'CABA',
+  nObraSocial: '123456789',
+  obraSocial: 'OSDE',
+  estatura: 175,
+  peso: 75,
+  srcPhoto: '',
+};
+
 const { pacienteId } = Astro.params;
-const ocupacion = [];
-const maritalStatus = 'casado';
+const ocupacion = 'Empleado';
+const maritalStatus = 'Casado';
 const { session } = Astro.locals;
 const userId = session?.userId;
-function calcularEdad(fechaNacimiento) {
+
+function calcularEdad(fechaNacimiento: Date): number {
   const hoy = new Date();
   const fechaNac = new Date(fechaNacimiento);
   let edad = hoy.getFullYear() - fechaNac.getFullYear();
@@ -50,11 +53,13 @@ function calcularEdad(fechaNacimiento) {
   }
   return edad;
 }
-let idAtencion = generateId(13);
-let edad = calcularEdad(fNacimiento);
+
+const idAtencion = 'aten_' + generateId(10);
+const edad = calcularEdad(patientData.fNacimiento);
 ---
 
 <DivBox1>
+  <!-- Resto del componente usando patientData -->
   <div class="flex w-full md:flex-row items-start md:items-center gap-6 flex-1 flex-between">
     <div class="w-28">
       <svg
@@ -63,113 +68,78 @@ let edad = calcularEdad(fNacimiento);
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
         fill="#000000"
-        ><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
-          id="SVGRepo_tracerCarrier"
-          stroke-linecap="round"
-          stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
-          <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+        <g id="SVGRepo_iconCarrier">
           <title>ic_fluent_patient_24_regular</title>
           <desc>Created with Sketch.</desc>
           <g id="🔍-Product-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
             <g id="ic_fluent_patient_24_regular" fill="#3B3B3B" fill-rule="nonzero">
               <path
                 d="M17.75,2 C18.9926407,2 20,3.00735931 20,4.25 L20,19.754591 C20,20.9972317 18.9926407,22.004591 17.75,22.004591 L6.25,22.004591 C5.00735931,22.004591 4,20.9972317 4,19.754591 L4,4.25 C4,3.05913601 4.92516159,2.08435508 6.09595119,2.00519081 L6.25,2 L17.75,2 Z M18.5,16 L5.5,16 L5.5,19.754591 C5.5,20.1688046 5.83578644,20.504591 6.25,20.504591 L17.75,20.504591 C18.1642136,20.504591 18.5,20.1688046 18.5,19.754591 L18.5,16 Z M7.75128856,17.5 L16.25,17.5 C16.6642136,17.5 17,17.8357864 17,18.25 C17,18.6296958 16.7178461,18.943491 16.3517706,18.9931534 L16.25,19 L7.75128856,19 C7.337075,19 7.00128856,18.6642136 7.00128856,18.25 C7.00128856,17.8703042 7.28344245,17.556509 7.64951801,17.5068466 L7.75128856,17.5 L16.25,17.5 L7.75128856,17.5 Z M17.75,3.5 L6.25,3.5 L6.14822944,3.50684662 C5.78215388,3.55650904 5.5,3.87030423 5.5,4.25 L5.5,14.5 L8,14.5 L8,12.2455246 C8,11.5983159 8.49187466,11.0659907 9.12219476,11.0019782 L9.25,10.9955246 L14.75,10.9955246 C15.3972087,10.9955246 15.9295339,11.4873992 15.9935464,12.1177193 L16,12.2455246 L16,14.5 L18.5,14.5 L18.5,4.25 C18.5,3.83578644 18.1642136,3.5 17.75,3.5 Z M14.5,12.4955246 L9.5,12.4955246 L9.5,14.5 L14.5,14.5 L14.5,12.4955246 Z M12,4.99552458 C13.3807119,4.99552458 14.5,6.11481271 14.5,7.49552458 C14.5,8.87623646 13.3807119,9.99552458 12,9.99552458 C10.6192881,9.99552458 9.5,8.87623646 9.5,7.49552458 C9.5,6.11481271 10.6192881,4.99552458 12,4.99552458 Z M12,6.49552458 C11.4477153,6.49552458 11,6.94323983 11,7.49552458 C11,8.04780933 11.4477153,8.49552458 12,8.49552458 C12.5522847,8.49552458 13,8.04780933 13,7.49552458 C13,6.94323983 12.5522847,6.49552458 12,6.49552458 Z"
-                id="🎨-Color"
-              >
-              </path>
+                id="🎨-Color"></path>
             </g>
           </g>
-        </g></svg
-      >
+        </g>
+      </svg>
     </div>
-
-    <div class="flex-1 flex-col flex">
-      <div class="flex flex-col md:flex-row md:items-center gap-2 mb-4">
-        <ButtonBackHistory />
-        <H2 class="text-2xl font-bold text-foreground capitalize">
-          {nombre}{' '}{apellido}
-        </H2>
-        <span
-          class="px-2 py-1 text-xs font-medium rounded-full bg-primary-100/50 text-primary-foreground"
-        >
-          DNI: {dni}
-        </span>
-
-        <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-          Grupo: {grupoSanguineo}
-        </span>
+    <div class="flex flex-col gap-2 flex-1">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <H2 class="text-xl font-bold">
+            {patientData.nombre}
+            {patientData.apellido}
+          </H2>
+          <span class="text-sm text-gray-500">
+            <User className="inline-block w-4 h-4 mr-1" />
+            {patientData.sexo}, {edad} años
+          </span>
+        </div>
+        <div class="flex gap-2">
+          <ModalEditarPerfil>
+            <FormularioPaciente user={userId} pacienteId={patientData.id} />
+          </ModalEditarPerfil>
+          <ButtonBackHistory
+            class="px-4 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+          />
+        </div>
       </div>
 
-      <div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
         <div class="flex items-center gap-2">
-          <ArrowBigRightDash size={16} />
-          <span>{fNacimiento}</span>
+          <Phone className="w-4 h-4 text-gray-500" />
+          <span>{patientData.celular}</span>
         </div>
         <div class="flex items-center gap-2">
-          <Calendar size={16} />
-          <span>{edad} años • {sexo}</span>
+          <Mail className="w-4 h-4 text-gray-500" />
+          <span>{patientData.email}</span>
         </div>
         <div class="flex items-center gap-2">
-          <User size={16} />
-          <span>Genero {sexo}</span>
+          <Calendar className="w-4 h-4 text-gray-500" />
+          <span>{patientData.fNacimiento.toLocaleDateString('es-AR')}</span>
         </div>
         <div class="flex items-center gap-2">
-          <Mail size={16} />
-          <span>{email}</span>
+          <Heart className="w-4 h-4 text-gray-500" />
+          <span>{patientData.grupoSanguineo}</span>
         </div>
         <div class="flex items-center gap-2">
-          <Phone size={16} />
-          <span>{celular}</span>
+          <MapPin className="w-4 h-4 text-gray-500" />
+          <span>{patientData.domicilio}, {patientData.ciudad}, {patientData.provincia}</span>
         </div>
         <div class="flex items-center gap-2">
-          <MapPin size={16} />
-          <span>{domicilio}</span>
+          <Briefcase className="w-4 h-4 text-gray-500" />
+          <span>{ocupacion}, {maritalStatus}</span>
         </div>
         <div class="flex items-center gap-2">
-          <MapPin size={16} />
-          <span>{ciudad}</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <Briefcase size={16} />
-          <span>Obra Social: {obraSocial} | N°:{nObraSocial}</span>
-        </div>
-        {
-          maritalStatus && (
-            <div class="flex items-center gap-2">
-              <Heart size={16} />
-              <span>{maritalStatus}</span>
-            </div>
-          )
-        }
-        <div class="flex items-center gap-2">
-          <Heart size={16} />
-          <span>Estatura: {estatura}</span>
+          <ArrowBigRightDash className="w-4 h-4 text-gray-500" />
+          <span>Última visita: {new Date().toLocaleDateString('es-AR')}</span>
         </div>
       </div>
     </div>
-
     <div class="flex flex-col gap-2 text-sm">
       <ModalEditarPerfil>
-        <FormularioPaciente
-          user
-          paciente={{
-            apellido,
-            dni,
-            email,
-            fNacimiento,
-            nombre,
-            sexo,
-            celular,
-            domicilio,
-            id,
-            provincia,
-            nObraSocial,
-            srcPhoto,
-            estatura,
-            obraSocial,
-            ciudad,
-          }}
-        />
+        <FormularioPaciente user paciente={patientData} />
       </ModalEditarPerfil>
       <button
         class="px-4 py-2 bg-primary-200 w- text-white rounded-lg hover:bg-secondary/80 transition-colors"

@@ -1,9 +1,12 @@
 ---
 const { title, dataIds, h1 } = Astro.props;
+const { user, session } = Astro.locals;
 ---
 
 <main
-  class="top-12 md:right-0 z-40 w-[92vw]  rounded-tl-xl md:mb-16  print:hidden flex flex-col items-center justify-center"
+  id="mainDashboard"
+  data-usisisi={user?.id}
+  class="top-12 md:right-0 z-40 w-[92vw] rounded-tl-xl md:mb-16 print:hidden flex flex-col items-center justify-center"
 >
   {
     h1 && (
@@ -12,9 +15,7 @@ const { title, dataIds, h1 } = Astro.props;
       </div>
     )
   }
-  <div
-    class="w-full py flex flex-col items-center justify- rounded-lg h-full"
-  >
+  <div class="w-full py flex flex-col items-center justify- rounded-lg h-full">
     <slot />
   </div>
 </main>

@@ -6,12 +6,17 @@ export const pacientes = sqliteTable('pacientes', {
   nombre: text('nombre').notNull(), // Nombre del paciente
   apellido: text('apellido').notNull(), // Apellido del paciente
   dni: integer('dni', { mode: 'number' }).unique(), // DNI único
+  email: text('email'),
   domicilio: text('domicilio'),
-  fNacimiento: text('fNacimiento') // Fecha de nacimiento
+  sexo: text('sexo', { enum: ['masculino', 'femenino', 'otro'] }),
+  edad: text('edad'),
+  fNacimiento: integer('fNacimiento', { mode: 'timestamp' }) // Fecha de nacimiento
+    .notNull(),
+  celular: text('celular'),
+  created_at: integer('created_at', { mode: 'timestamp' }) // Fecha de creación
     .notNull()
-    .default(sql`(current_timestamp)`),
-  sexo: text('sexo'), // Sexo del paciente
-  created_at: text('created_at') // Fecha de creación
-    .notNull()
-    .default(sql`(current_timestamp)`),
+    .default(sql`(strftime('%s', 'now'))`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }),
+  deleted_at: integer('deleted_at', { mode: 'timestamp' }),
+  activo: integer('activo', { mode: 'boolean' }).default(true),
 });

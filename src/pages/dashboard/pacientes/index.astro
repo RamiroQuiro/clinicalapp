@@ -7,6 +7,8 @@ import ContenedorModal from '../../../components/organismo/ContenedeorModal.astr
 import ContenedorTablaPaciente from './ContenedorTablaPaciente.astro';
 import FiltroPacientes from './FiltroPacientes';
 import FormularioPaciente from './FormularioPaciente.astro';
+
+const { user } = Astro.locals;
 ---
 
 <LayoutDash title="Pacientes">
@@ -14,8 +16,8 @@ import FormularioPaciente from './FormularioPaciente.astro';
     <ContenedorDiv1>
       <div class="w-full flex justify-between items-center gap-4">
         <FiltroPacientes client:load />
-        <ContenedorModal open="Crear" id="dialogPaciente">
-          <FormularioPaciente />
+        <ContenedorModal label="Crear" id="dialogPaciente" title="Crear Paciente">
+          <FormularioPaciente user={user} />
         </ContenedorModal>
         <Button2>pdf</Button2>
       </div>

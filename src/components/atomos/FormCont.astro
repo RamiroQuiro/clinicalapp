@@ -1,16 +1,7 @@
 ---
-import Titulo1 from "./Titulo1.astro";
-
 const { action, id, title } = Astro.props;
 ---
 
-<form
-  id={id}
-  action={action}
-  class="flex flex-col items-start gap-2 pb-3 px-3 w-full"
->
-  <div class="text-primary-100 border-b w-full mb-2">
-    <Titulo1>{title}</Titulo1>
-  </div>
+<form id={id} action={action} class="flex flex-col items-start gap-2 pb-3 px-3 w-full">
   <slot />
 </form>

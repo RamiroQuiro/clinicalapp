@@ -1,36 +1,66 @@
 ---
-import Button1 from "../atomos/Button1.astro";
-import DialogModal from "../atomos/DialogModal.astro";
-
-const { id, open } = Astro.props;
+import Button1 from '../atomos/Button1.astro';
+import { CircleX } from 'lucide-react';
+const { id, label, title } = Astro.props;
 ---
 
-<Button1 id={id}>{open}</Button1>
+<div data-id={id}>
+  {label && <Button1 id={`modal-open-${id}`}>{label}</Button1>}
 
-<DialogModal id={id}>
-  <div id="dataId" data-id={id} class="relative flex flex-col w-full h-full p-3 print:hidden modal">
-    <slot name="main" />
-    <form method="dialog">
-      <slot name="close" />
-    </form>
-  </div>
-</DialogModal>
-<script >
-import { dataFormularioContexto } from "../../context/store";
+  <dialog
+    id={`dialog-modal-${id}`}
+    class="modal print:hidden relative duration-300 open:fixed open:flex flex-col w-full max-w-3xl rounded-lg backdrop:bg-primary-textoTitle/80 open:backdrop:backdrop-blur-sm max-h-[90vh] overflow-hidden"
+  >
+    {/* Header Fijo */}
+    <div
+      class="flex justify-between items-center p-4 border-b bg-primary-bg-componentes flex-shrink-0"
+    >
+      <h3 class="text-xl font-semibold text-gray-800">{title}</h3>
+      <button
+        id={`modal-close-${id}`}
+        class="text-gray-500 hover:text-red-600 transition-colors rounded-full p-1"
+      >
+        <CircleX size={24} />
+      </button>
+    </div>
 
-  const data=document.getElementById('dataId')?.dataset.id
+    {/* Contenido con Scroll */}
+    <div class="p-6 overflow-y-auto flex-grow">
+      <slot />
+    </div>
+  </dialog>
+</div>
 
-  const btnModal = document.getElementById(`${data}`);
-  const modal = document.getElementById(`modal-${data}`);
-  btnModal?.addEventListener("click", (e) => {
-    dataFormularioContexto.set({})
-    modal.showModal();
-    // e.showModal()
+<script define:vars={{ id }}>
+  const openBtn = document.getElementById(`modal-open-${id}`);
+  const closeBtn = document.getElementById(`modal-close-${id}`);
+  const dialog = document.getElementById(`dialog-modal-${id}`);
+
+  openBtn?.addEventListener('click', () => {
+    dialog?.showModal();
+  });
+
+  closeBtn?.addEventListener('click', () => {
+    dialog?.close();
+  });
+
+  // Opcional: cerrar al hacer clic en el backdrop
+  dialog?.addEventListener('click', event => {
+    if (event.target === dialog) {
+      dialog.close();
+    }
   });
 </script>
 
 <style>
   .modal {
-  z-index: 1000; /* Ajusta si es necesario */
-}
+    z-index: 1000; /* Ajusta si es necesario */
+  }
+  /* Elimina el padding por defecto del dialog */
+  dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  dialog {
+    padding: 0;
+  }
 </style>

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { pacientes } from './pacientes';
 import { users } from './users';
 
@@ -24,9 +24,9 @@ export const fichaPaciente = sqliteTable('fichaPaciente', {
   grupoSanguineo: text('grupoSanguinieo'), // Grupo sanguíneo
   provincia: text('provincia'), // Provincia del paciente
   pais: text('pais'), // País del paciente
-  updated_at: text('updated_at'), // Fecha de última actualización
-  created_at: text('created_at') // Fecha de creación
+  updated_at: integer('updated_at', { mode: 'timestamp' }), // Fecha de última actualización
+  created_at: integer('created_at', { mode: 'timestamp' }) // Fecha de creación
     .notNull()
-    .default(sql`(current_timestamp)`),
-  deleted_at: text('deleted_at'), // Fecha de eliminación (soft delete)
+    .default(sql`(strftime('%s', 'now'))`),
+  deleted_at: integer('deleted_at', { mode: 'timestamp' }), // Fecha de eliminación (soft delete)
 });
