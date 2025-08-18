@@ -1,7 +1,7 @@
 ---
 import DivBox1 from '@/components/atomos/DivBox1.astro';
 import db from '@/db';
-import { doctoresPacientes, pacientes } from '@/db/schema';
+import { pacienteProfesional, pacientes } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import ConfeccionTablaPaciente from './ConfeccionTablaPaciente';
@@ -13,14 +13,17 @@ try {
       id: pacientes.id,
       nombre: pacientes.nombre,
       apellido: pacientes.apellido,
+      sexo: pacientes.sexo,
+      edad: pacientes.edad,
+      celular: pacientes.celular,
       dni: pacientes.dni,
     })
     .from(pacientes)
-    .innerJoin(doctoresPacientes, eq(doctoresPacientes.pacienteId, pacientes.id))
+    .innerJoin(pacienteProfesional, eq(pacienteProfesional.pacienteId, pacientes.id))
     .where(
       and(
-        eq(doctoresPacientes.userId, session?.userId),
-        eq(doctoresPacientes.pacienteId, pacientes.id)
+        eq(pacienteProfesional.userId, session?.userId),
+        eq(pacienteProfesional.pacienteId, pacientes.id)
       )
     );
 

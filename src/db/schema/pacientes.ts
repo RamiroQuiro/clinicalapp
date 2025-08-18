@@ -8,9 +8,11 @@ export const pacientes = sqliteTable('pacientes', {
   dni: integer('dni', { mode: 'number' }).unique(), // DNI único
   email: text('email'),
   domicilio: text('domicilio'),
+  sexo: text('sexo', { enum: ['masculino', 'femenino', 'otro'] }),
+  edad: text('edad'),
   fNacimiento: integer('fNacimiento', { mode: 'timestamp' }) // Fecha de nacimiento
     .notNull(),
-  sexo: text('sexo'), // Sexo del paciente
+  celular: text('celular'),
   created_at: integer('created_at', { mode: 'timestamp' }) // Fecha de creación
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),

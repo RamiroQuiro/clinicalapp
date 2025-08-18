@@ -32,6 +32,7 @@ const dataFormularioContexto = atom({});
 
 const usuarioActivo = atom({});
 const statsDashStore = atom({ loading: false, data: null, error: null });
+
 const fetchingDashboard = async userId => {
   console.log('mandando el fetch', userId);
   statsDashStore.set({ loading: true, data: null, error: null }); // Indicar que se está cargando
@@ -54,6 +55,32 @@ const dashboardStore = atom({
   ultimasAtenciones: [],
   atencionesPorDia: [],
 });
+
+const pacientePerfilStore = atom({
+  loading: true,
+  data: null,
+  error: null,
+});
+const fetchPacientePerfil = async userId => {
+  try {
+    const response = await fetch(`/api/pacientes/historiaClinica/${userId}`);
+    const data = await response.json();
+    console.log('este es el fetch par el paciente perfil', data);
+    pacientePerfilStore.set({
+      loading: false,
+      data: data,
+      error: null,
+    });
+  } catch (error) {
+    console.log(error);
+    pacientePerfilStore.set({
+      loading: false,
+      data: null,
+      error: error,
+    });
+  }
+};
+
 export {
   atencion,
   busqueda,
@@ -61,7 +88,9 @@ export {
   dashboardStore,
   dataFormularioContexto,
   fetchingDashboard,
+  fetchPacientePerfil,
   filtroBusqueda,
+  pacientePerfilStore,
   reportPDF,
   statsDashStore,
   usuarioActivo,

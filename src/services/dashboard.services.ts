@@ -1,9 +1,9 @@
 import db from '@/db';
 import {
   atenciones,
-  doctoresPacientes,
   fichaPaciente,
   historiaClinica,
+  pacienteProfesional,
   pacientes,
 } from '@/db/schema';
 import { and, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
@@ -12,8 +12,8 @@ export async function getDashboardData(userId: string) {
   // Total de pacientes asociados al doctor
   const pacientesData = await db
     .select({ total: count() })
-    .from(doctoresPacientes)
-    .where(eq(doctoresPacientes.userId, userId));
+    .from(pacienteProfesional)
+    .where(eq(pacienteProfesional.userId, userId));
 
   // Atenciones del mes actual
   const atencionesMes = await db
