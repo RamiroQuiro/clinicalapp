@@ -44,31 +44,31 @@ export default function ContentedorStatsDash({}: Props) {
       subtitle: 'minutos por consulta',
     },
   ]);
-  console.log(data);
+  // console.log('data el contenedor de stat dash ->', data);
   useEffect(() => {
     if (data) {
       setstatsDash([
         {
           title: 'Pacientes Totales',
-          value: data?.pacientes ?? 0,
+          value: data?.data?.pacientes ?? 0,
           icon: Users,
         },
         {
           title: 'Atenciones del Mes',
-          value: data?.atencionesMes?.length ?? 0,
+          value: data?.data?.atencionesMes?.length ?? 0,
           icon: Activity,
           subtitle: 'este mes',
         },
         {
           title: 'Últimos 7 días',
-          value: data?.atencionesUlt7d?.length ?? 0,
+          value: data?.data?.atencionesUlt7d?.length ?? 0,
           color: 'orange',
           icon: ChartBar,
           trend: 'neutral',
         },
         {
           title: 'Tiempo Promedio',
-          value: data?.promedioDuracion || 0,
+          value: data?.data?.promedioDuracion || 0,
           icon: Clock,
           subtitle: 'minutos por consulta',
         },

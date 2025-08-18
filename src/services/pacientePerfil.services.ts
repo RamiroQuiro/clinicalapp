@@ -1,7 +1,6 @@
 // services/pacientes.service.ts
-import { db } from '@/db';
+import db from '@/db';
 import {
-  antecedente,
   archivosAdjuntos,
   atenciones,
   diagnostico,
@@ -10,7 +9,8 @@ import {
   notasMedicas,
   pacientes,
 } from '@/db/schema';
-import { desc, eq, sql } from 'drizzle-orm';
+import { antecedentes } from '@/db/schema/atecedentes';
+import { desc, eq } from 'drizzle-orm';
 
 function generateColor(index: number) {
   const colors = ['#A5CDFE38', '#DCECFF45', '#FCE3D54C', '#FFD2B2BD', '#E25B3250'];
@@ -63,16 +63,15 @@ export async function getPacienteData(pacienteId: string, userId: string) {
           id: atenciones.id,
           fecha: atenciones.created_at,
           motivo: atenciones.motivoConsulta,
-          diagnosticos: sql`GROUP_CONCAT(${diagnostico.diagnostico}, ', ')`.as('diagnosticos'),
         })
         .from(atenciones)
-        .rightJoin(diagnostico, eq(diagnostico.atencionId, atenciones.id))
+        .innerJoin(diagnostico, eq(diagnostico.atencionId, atenciones.id))
         .where(eq(atenciones.pacienteId, pacienteId))
         .groupBy(atenciones.id)
         .orderBy(desc(atenciones.created_at)),
 
       // antecedentes
-      db.select().from(antecedente).where(eq(antecedente.pacienteId, pacienteId)),
+      db.select().from(antecedentes).where(eq(antecedentes.pacienteId, pacienteId)),
 
       // archivos adjuntos
       db
@@ -90,6 +89,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
     ]);
 
     const pacienteData = pacienteDataRaw.at(0);
+    console.log('paciente en el getData ', pacienteData);
     if (!pacienteData) {
       throw new Error('Paciente no encontrado');
     }

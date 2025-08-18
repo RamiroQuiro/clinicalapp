@@ -19,6 +19,11 @@ export type fichaPaciente = {
   estatura?: string | null;
   pais?: string | null;
   provincia?: string | null;
+  domicilio?: string | null;
+  nombre: string;
+  apellido: string;
+  sexo?: string | null;
+  fNacimient: Date;
   ciudad?: string | null;
   obraSocial?: string | null;
   email?: string | null;

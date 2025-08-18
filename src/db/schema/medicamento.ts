@@ -1,13 +1,15 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { atenciones } from './atenciones';
+import { pacientes } from './pacientes';
 
 export const medicamento = sqliteTable('medicamentos', {
-  id: text('id').primaryKey().unique(),
+  id: text('id').primaryKey(),
   nombre: text('nombre').notNull(),
   descripcion: text('descripcion'),
   historiaClinicaId: text('historiaClinicaId'),
-  atencionId: text('atencionId').notNull(),
-  pacienteId: text('pacienteId').notNull(),
+  atencionId: text('atencionId').references(() => atenciones.id),
+  pacienteId: text('pacienteId').references(() => pacientes.id),
   userId: text('userId').notNull(),
   dosis: text('dosis'),
   frecuencia: text('frecuencia'),

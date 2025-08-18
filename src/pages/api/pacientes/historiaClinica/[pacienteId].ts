@@ -6,12 +6,12 @@ export const GET: APIRoute = async ({ params, locals }) => {
   const { pacienteId } = params;
   const { session, user } = locals;
   // fatna validar la autehcitacion
+
+  console.log('user en el endpoint', session);
   try {
-    const data = await getPacienteData(pacienteId as string, user?.id);
+    const data = await getPacienteData(pacienteId as string, user.id as string);
     console.log('data del paciente en el enpoint->', data);
-    return new Response(JSON.stringify(data), {
-      status: 200,
-    });
+    return createResponse(200, 'Paciente encontrado', data);
   } catch (error) {
     console.log(error);
     return createResponse(400, 'error al buscar', error);

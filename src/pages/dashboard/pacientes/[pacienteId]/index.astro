@@ -1,4 +1,5 @@
 ---
+import ArchivosAdjuntosPaciente from '@/components/organismo/ArchivosAdjuntosPaciente.astro';
 import Button1 from '../../../../components/atomos/Button1.astro';
 import Div1Atencion from '../../../../components/atomos/Div1Atencion.astro';
 import DivBox1 from '../../../../components/atomos/DivBox1.astro';
@@ -6,21 +7,19 @@ import MainDashboard from '../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../components/layouts/LayoutDash.astro';
 import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.astro';
 import Antecedentes from '../../../../components/organismo/Antecedentes.astro';
-import ArchivosAdjuntosPaciente from '../../../../components/organismo/ArchivosAdjuntosPaciente.astro';
 import HistorialVisitaPaciente from '../../../../components/organismo/HistorialVisitaPaciente.astro';
 import MedicacionFichaPaciente from '../../../../components/organismo/MedicacionFichaPaciente.astro';
 import NotasMedicas from '../../../../components/organismo/NotasMedicas.astro';
-import PacienteHeader from '../../../../components/organismo/PacienteHeader.astro';
+import PacienteHeader from './components/PacienteHeader.astro';
 
 const { pacienteId } = Astro.params;
-const { session } = Astro.locals;
-const userId = session?.userId;
+const { session, user } = Astro.locals;
 
 // console.log(pacienteData);
 ---
 
 <LayoutDash>
-  <MainDashboard h1="Ficha del paciente">
+  <MainDashboard h1="Ficha del paciente" pacienteId={pacienteId}>
     <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
       <PacienteHeader />
       <!-- <ContenedoresProgresoHistorial client:load/> -->
@@ -43,7 +42,7 @@ const userId = session?.userId;
         <Div1Atencion>
           <MedicacionFichaPaciente colorMap={[]} medicacion={[]} />
           <ArchivosAdjuntosPaciente documentos={[]} />
-          <NotasMedicas userId={userId} notes={[]} />
+          <NotasMedicas userId={user?.id} notes={[]} />
         </Div1Atencion>
       </div>
     </div>
@@ -51,6 +50,6 @@ const userId = session?.userId;
 </LayoutDash>
 <script>
   import { fetchPacientePerfil } from '@/context/store';
-  const idUser = document.getElementById('mainDashboard')?.dataset.usisisi;
-  fetchPacientePerfil(idUser);
+  const idPaciente = document.getElementById('mainDashboard')?.dataset.pasisisi;
+  fetchPacientePerfil(idPaciente);
 </script>

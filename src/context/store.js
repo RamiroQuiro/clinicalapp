@@ -61,9 +61,9 @@ const pacientePerfilStore = atom({
   data: null,
   error: null,
 });
-const fetchPacientePerfil = async userId => {
+const fetchPacientePerfil = async pacienteId => {
   try {
-    const response = await fetch(`/api/pacientes/historiaClinica/${userId}`);
+    const response = await fetch(`/api/pacientes/historiaClinica/${pacienteId}`);
     const data = await response.json();
     console.log('este es el fetch par el paciente perfil', data);
     pacientePerfilStore.set({

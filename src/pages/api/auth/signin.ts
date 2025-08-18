@@ -1,6 +1,7 @@
 import db from '@/db';
 import { users } from '@/db/schema';
 import { lucia } from '@/lib/auth';
+import { createResponse } from '@/utils/responseAPI';
 import type { APIContext } from 'astro';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
@@ -15,9 +16,9 @@ export async function POST({ request, locals, redirect, cookies }: APIContext): 
 
   //   verificar si el usuario existe
   const findUser = (await db.select().from(users).where(eq(users.email, email))).at(0);
-
+  console.log('aqui se esta ingresando con  ->', findUser);
   if (!findUser) {
-    return new Response(JSON.stringify({ data: 'email o contraseña incorrecta', status: 401 }));
+    return createResponse(400, 'email o contraseña incorrecta');
   }
 
   // crear usuario en DB
@@ -41,6 +42,7 @@ export async function POST({ request, locals, redirect, cookies }: APIContext): 
     nombre: findUser.nombre,
     apellido: findUser.apellido,
     email: findUser.email,
+    rol: findUser.rol,
   };
 
   const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '14d' }); // Firmar la cookie
