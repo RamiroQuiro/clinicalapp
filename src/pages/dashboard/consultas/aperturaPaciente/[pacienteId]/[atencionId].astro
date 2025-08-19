@@ -1,142 +1,17 @@
 ---
-import {
-  antecedente,
-  atenciones,
-  fichaPaciente,
-  pacientes,
-  signosVitales,
-  users,
-} from '@/db/schema';
-import { and, desc, eq } from 'drizzle-orm';
+import { getDatosNuevaAtencion } from '@/services/atenciones.services';
 import MainDashboard from '../../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../../components/layouts/LayoutDash.astro';
-import db from '../../../../../db';
-import IndexAtencion from './IndexAtencion.astro';
-const { pacienteId, atencionId } = Astro.params;
+import IndexAtencionV2 from './IndexAtencionV2.astro';
+const { pacienteId, atencionId } = Astro.params as { pacienteId: string; atencionId: string };
 
 const { user, session } = Astro.locals;
 let errorData;
 // tengo q implemtar type para historiClinica
 
-const dataFetchPaciente = async (idPaciente, idAtencion) => {
-  try {
-    const result = await db.transaction(async trx => {
-      // Buscar paciente
-      const pacienteData = (
-        await trx
-          .select({
-            nombre: pacientes.nombre,
-            apellido: pacientes.apellido,
-            dni: pacientes.dni,
-            sexo: pacientes.sexo,
-            celular: fichaPaciente.celular,
-            email: fichaPaciente.email,
-            provincia: fichaPaciente.provincia,
-            fNacimiento: pacientes.fNacimiento,
-            nObraSocial: fichaPaciente.nObraSocial,
-            obraSocial: fichaPaciente.obraSocial,
-            ciudad: fichaPaciente.ciudad,
-            grupoSanguineo: fichaPaciente.grupoSanguineo,
-            estatura: fichaPaciente.estatura,
-            domicilio: pacientes.domicilio,
-          })
-          .from(pacientes)
-          .innerJoin(
-            fichaPaciente,
-            and(
-              eq(fichaPaciente.pacienteId, pacientes.id),
-              eq(fichaPaciente.userId, session?.userId) // Filtrar por el usuario (userId)
-            )
-          )
-          .where(eq(pacientes.id, idPaciente))
-      ).at(0);
+const { pacienteData, signosVitalesData, antecedentesData, historialVisitaData } =
+  await getDatosNuevaAtencion(pacienteId, atencionId);
 
-      if (!pacienteData) {
-        return {
-          error: true,
-          message: 'Paciente no encontrado',
-          data: null,
-        };
-      }
-      // buscar antecedentes del paciente
-      const antecedentesData = await trx
-        .select()
-        .from(antecedente)
-        .where(eq(antecedente.pacienteId, idPaciente));
-      // buscar signosvitales anteriores
-      const fecthSignosVitalesData = await trx
-        .select()
-        .from(signosVitales)
-        .where(eq(signosVitales.pacienteId, pacienteId))
-        .orderBy(desc(signosVitales.created_at))
-        .limit(4);
-
-      // Procesar los datos
-      const signosVitalesData = [
-        'temperatura',
-        'pulso',
-        'frecuenciaCardiaca',
-        'frecuenciaRespiratoria',
-        'tensionArterial',
-        'saturacionOxigeno',
-        'glucosa',
-        'peso',
-        'talla',
-        'imc',
-      ].map(tipo => {
-        const historial = fecthSignosVitalesData.map(sv => {
-          return { valor: parseFloat(sv[tipo]), fecha: sv.created_at };
-        });
-        return { tipo, historial };
-      });
-      // console.log('mapando en el array',signosVitalesData)
-      // traer ultiumas visitas
-
-      const historialVisitaData = await trx
-        .select({
-          id: atenciones.id,
-          userId: atenciones.userId,
-          pacienteId: atenciones.pacienteId,
-          motivoConsulta: atenciones.motivoConsulta,
-          motivoInicial: atenciones.motivoInicial,
-          fecha: atenciones.fecha,
-          tratamiento: atenciones.tratamiento,
-          estado: atenciones.estado,
-          created_at: atenciones.created_at,
-          inicioAtencion: atenciones.inicioAtencion,
-          finAtencion: atenciones.finAtencion,
-          duracionAtencion: atenciones.duracionAtencion,
-          nombreDoctor: users.nombre,
-          apellidoDoctor: users.apellido,
-        })
-        .from(atenciones)
-        .innerJoin(users, eq(users.id, atenciones.userId))
-        .where(eq(atenciones.pacienteId, pacienteId))
-        .orderBy(desc(atenciones.created_at))
-        .limit(4);
-      if (!pacienteData) throw new Error('Paciente no encontrado');
-
-      // Si no hay atención, devolver solo datos del paciente
-      return { pacienteData, signosVitalesData, antecedentesData, historialVisitaData };
-    });
-
-    return result; // Resultado de la transacción
-  } catch (error) {
-    console.error('Error en la transacción:', error);
-    throw new Error('Ocurrió un error al procesar la solicitud');
-  }
-};
-
-const {
-  antecedentesData,
-  pacienteData,
-
-  diagnosticoData,
-  signosVitalesData,
-  medicamentosData,
-  historialVisitaData,
-} = await dataFetchPaciente(pacienteId, atencionId);
-console.log('paciente data', historialVisitaData);
 if (!pacienteData) {
   errorData = {
     msg: 'Error al buscar el paceinte, intentelo de nuevo 🙈',
@@ -147,6 +22,32 @@ const dataIds = {
   pacienteId,
   atencionId,
 };
+
+const diagnosticoData = [
+  {
+    tipo: 'Diagnostico1',
+    observaciones: 'Observaciones1',
+  },
+  {
+    tipo: 'Diagnostico2',
+    observaciones: 'Observaciones2',
+  },
+];
+
+const medicamentosData = [
+  {
+    nombre: 'Medicamento1',
+    dosis: 2,
+    frecuencia: 'diaria',
+    duracion: '2 semanas',
+  },
+  {
+    nombre: 'Medicamento2',
+    dosis: 1,
+    frecuencia: 'semanal',
+    duracion: '1 mes',
+  },
+];
 ---
 
 <LayoutDash title={`Atención a ${pacienteData?.nombre} ${pacienteData?.apellido}`}>
@@ -159,9 +60,8 @@ const dataIds = {
     } -->
     {
       !errorData ? (
-        <IndexAtencion
+        <IndexAtencionV2
           antecedentes={antecedentesData}
-          dataIds={dataIds}
           signosVitalesData={signosVitalesData}
           pacienteData={pacienteData}
           isExistDiagnosticos={diagnosticoData}

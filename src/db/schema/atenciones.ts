@@ -2,13 +2,12 @@ import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { historiaClinica } from './historiaClinica';
 import { pacientes } from './pacientes';
+import { tratamiento } from './tratamiento';
 import { users } from './users';
 
 export const atenciones = sqliteTable('atenciones', {
-  id: text('id').primaryKey().unique(),
-  historiaClinicaId: text('historiaClinicaId')
-    .notNull()
-    .references(() => historiaClinica.id),
+  id: text('id').primaryKey(),
+  historiaClinicaId: text('historiaClinicaId').references(() => historiaClinica.id),
   pacienteId: text('pacienteId')
     .notNull()
     .references(() => pacientes.id),
@@ -19,9 +18,12 @@ export const atenciones = sqliteTable('atenciones', {
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),
   motivoConsulta: text('motivoConsulta'),
+  tratamientoId: text('tratamientoId').references(() => tratamiento.id),
   motivoInicial: text('motivoInicial'),
   observaciones: text('observaciones'),
-  estado: text('estado').default('pendiente'),
+  estado: text('estado', { enum: ['pendiente', 'en_curso', 'enAtencion', 'finalizada'] }).default(
+    'pendiente'
+  ),
   inicioAtencion: integer('inicioAtencion', { mode: 'timestamp' }),
   finAtencion: integer('finAtencion', { mode: 'timestamp' }),
   duracionAtencion: integer('duracionAtencion', { mode: 'number' }),

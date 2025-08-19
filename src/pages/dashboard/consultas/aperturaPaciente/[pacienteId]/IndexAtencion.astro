@@ -26,13 +26,7 @@ const {
 // console.log('hay diagnosticos ->', isExistDiagnosticos);
 ---
 
-<div
-  class="container py-2 gap-2 px-2 flex flex-col w-[97%]"
-  id="containerAtencion"
-  data-userid={dataIds?.userId}
-  data-pacienteid={dataIds?.pacienteId}
-  data-atencionid={dataIds?.atencionId}
->
+<div class="p-4 gap-2 flex flex-col w-full" id="containerAtencion">
   <!-- nav en donde van, datos del paciente, dni,sexo,celular,mail, la fecha de apertura de la atencion, un buton de ficha, para ir a la ficha del paciente y al finailar la coumna dos botonos, terminar consulta y cancelar consulta
  en la 2 fila, los signos vitales con su boton de guardar -->
   <NavAtencionMedica
@@ -72,7 +66,7 @@ const {
   </div>
 </div>
 
-<script>
+<!-- <script>
   import { atencion } from '../../../../../context/store';
 
   const dataset = document.getElementById('containerAtencion');
@@ -86,4 +80,4 @@ const {
     ...atencion.get(),
     dataIds: { atencionId, pacienteId, userId: iduser, isDisable, inicioAtencion: horaInicio },
   });
-</script>
+</script> -->

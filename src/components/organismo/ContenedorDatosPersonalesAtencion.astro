@@ -1,49 +1,34 @@
 ---
-
-const {pacienteData}=Astro.props
+const { pacienteData } = Astro.props;
 ---
 
 <div
-class="flex border-x px-3 w-1/2 flex- items-start text-xs font- justify-start flex-wrap gap-2"
+  class="flex border-x px-3 w-1/2 flex- items-start text-sm h-full font- justify-start flex-wrap gap-2"
 >
-<p>
-  Nombre y Apellido: <span class="text-primary-textoTitle font-bold"
-    >{`${pacienteData.nombre} ${pacienteData.apellido}`}</span
-  >
-</p>
-<p>
-  DNI: <span class="text-primary-textoTitle font-bold"
-    >{pacienteData.dni}</span
-  >
-</p>
-<p>
-  Sexo: <span class="text-primary-textoTitle font-bold"
-    >{pacienteData.sexo}</span
-  >
-</p>
-<p>
-  Celular: <span class="text-primary-textoTitle font-bold"
-    >{pacienteData.celular}</span
-  >
-</p>
-<p>
-  Email: <span class="text-primary-textoTitle font-bold"
-    >{pacienteData.email}</span
-  >
-</p>
-<p>
-  Obra Social: <span class="text-primary-textoTitle font-bold"
-    >{pacienteData.obraSocial}</span
-  >
-</p>
-<p>
-  Estatura: <span class="text-primary-textoTitle font-bold"
-    >{pacienteData.estatura}</span
-  >
-</p>
-<p>
-  Domicilio: <span class="text-primary-textoTitle font-bold"
-    >{pacienteData.domicilio}</span
-  >
-</p>
+  <p>
+    Nombre y Apellido: <span class="text-primary-textoTitle font-bold"
+      >{`${pacienteData.nombre} ${pacienteData.apellido}`}</span
+    >
+  </p>
+  <p>
+    DNI: <span class="text-primary-textoTitle font-bold">{pacienteData.dni}</span>
+  </p>
+  <p>
+    Sexo: <span class="text-primary-textoTitle font-bold">{pacienteData.sexo}</span>
+  </p>
+  <p>
+    Celular: <span class="text-primary-textoTitle font-bold">{pacienteData.celular}</span>
+  </p>
+  <p>
+    Email: <span class="text-primary-textoTitle font-bold">{pacienteData.email}</span>
+  </p>
+  <p>
+    Obra Social: <span class="text-primary-textoTitle font-bold">{pacienteData.obraSocial}</span>
+  </p>
+  <p>
+    Estatura: <span class="text-primary-textoTitle font-bold">{pacienteData.estatura}</span>
+  </p>
+  <p>
+    Domicilio: <span class="text-primary-textoTitle font-bold">{pacienteData.domicilio}</span>
+  </p>
 </div>

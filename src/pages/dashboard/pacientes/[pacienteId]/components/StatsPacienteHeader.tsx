@@ -1,5 +1,5 @@
 import { pacientePerfilStore } from '@/context/store';
-import { fichaPaciente } from '@/types';
+
 import formatDate from '@/utils/formatDate';
 import { useStore } from '@nanostores/react';
 import {
@@ -15,14 +15,14 @@ import {
 import { useEffect, useState } from 'react';
 
 export default function StatsPacienteHeader() {
-  const [patientData, setPatientData] = useState<fichaPaciente>({});
-  const { data } = useStore(pacientePerfilStore);
-  console.log('useStore ->', data?.data?.pacienteData);
+  const [patientData, setPatientData] = useState({});
+  const { data, loading, error } = useStore(pacientePerfilStore);
+  console.log('useStore ->', data?.pacienteData);
   useEffect(() => {
-    if (data) {
-      setPatientData(data.data.pacienteData);
+    if (data && data.pacienteData) {
+      setPatientData(data.pacienteData);
     }
-  }, [data]);
+  }, [data?.pacienteData]);
 
   const ocupacion = 'empleado';
   const edad = 12;
@@ -37,7 +37,7 @@ export default function StatsPacienteHeader() {
           </h2>
           <span className="text-sm text-gray-500">
             <UserIcon className="inline-block w-4 h-4 mr-1" />
-            {patientData.sexo}, {edad} años
+            {patientData?.sexo}, {edad} años
           </span>
         </div>
         {/* <div className="flex gap-2">
@@ -67,8 +67,8 @@ export default function StatsPacienteHeader() {
         </div>
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-gray-500" />
-          <span>
-            {patientData?.domicilio}, {patientData?.ciudad}, {patientData?.provincia}
+          <span className="capitalize">
+            {patientData?.domicilio || 'S / D'}, {patientData?.ciudad}, {patientData?.provincia}
           </span>
         </div>
         <div className="flex items-center gap-2">

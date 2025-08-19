@@ -1,0 +1,85 @@
+---
+// src/components/organismo/NavAtencionMedicaV2.astro
+import { Image } from 'astro:assets';
+import avatarDefault from '/public/avatarDefault.png';
+import Button1 from '../atomos/Button1.astro';
+import Button2 from '../atomos/Button2.astro';
+
+const { pacienteData } = Astro.props;
+const { nombre, apellido, dni, id: pacienteId, fotoUrl } = pacienteData;
+---
+
+<header
+  class="bg-white shadow-sm rounded-b-lg sticky top-0 z-40 border-b border-x p-2 border-gray-200"
+>
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between gap-2 h-16">
+      <!-- Datos del Paciente -->
+      <div class="flex items-center gap-4">
+        <Image
+          src={fotoUrl || avatarDefault}
+          alt="Foto de perfil"
+          class="h-16 w-16 rounded-full object-cover"
+          width={40}
+          height={40}
+        />
+        <div>
+          <h1 class="text-2xl capitalize font-semibold text-gray-800">{nombre} {apellido}</h1>
+          <p class="text-lg text-gray-500">DNI: {dni}</p>
+        </div>
+      </div>
+      <div
+        class="flex border- px-3 w-fit flex-1 items-center text-sm h-full font- justify-evenly flex-wrap gap-4"
+      >
+        <div class="flex items-start capitalize text-sm flex-col">
+          <p>Sexo:</p>
+          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.sexo}</span>
+        </div>
+        <div class="flex items-start capitalize text-sm flex-col">
+          <p>Celular:</p>
+          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.celular}</span>
+        </div>
+        <div class="flex items-start capitalize text-sm flex-col">
+          <p>Email:</p>
+          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.email}</span>
+        </div>
+        <div class="flex items-start capitalize text-sm flex-col">
+          <p>Obra Social:</p>
+          <span class="font-normal text-primary-textoTitle text-base"
+            >{pacienteData.obraSocial}</span
+          >
+        </div>
+        <div class="flex items-start capitalize text-sm flex-col">
+          <p>Fecha de Nacimiento:</p>
+          <span class="font-normal text-primary-textoTitle text-base"
+            >{pacienteData.fNacimiento.toLocaleDateString()}</span
+          >
+        </div>
+        <div class="flex items-start capitalize text-sm flex-col">
+          <p>Domicilio:</p>
+          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.domicilio}</span
+          >
+        </div>
+      </div>
+      <!-- Botones de Acción -->
+      <div class="flex flex-col items-center gap-2">
+        <a href={`/dashboard/pacientes/${pacienteId}`} class="text-sm">
+          <Button2>Ficha del Paciente</Button2>
+        </a>
+        <Button1 id="finalizarConsultaV2">Finalizar Consulta</Button1>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Nota: La lógica para finalizar la consulta deberá ser manejada
+  // por el componente padre o la página que use este header,
+  // para coordinar con el estado de la consulta en React.
+  const botonFinalizar = document.getElementById('finalizarConsultaV2');
+  botonFinalizar?.addEventListener('click', () => {
+    // Disparamos un evento personalizado que la página de Astro puede escuchar
+    const event = new CustomEvent('finalizar-consulta-v2');
+    window.dispatchEvent(event);
+  });
+</script>

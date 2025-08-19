@@ -68,7 +68,7 @@ const fetchPacientePerfil = async pacienteId => {
     console.log('este es el fetch par el paciente perfil', data);
     pacientePerfilStore.set({
       loading: false,
-      data: data,
+      data: data.data,
       error: null,
     });
   } catch (error) {
@@ -81,12 +81,41 @@ const fetchPacientePerfil = async pacienteId => {
   }
 };
 
+const atencionStore = atom({
+  loading: false,
+  data: null,
+  error: null,
+});
+const fetchDataParaAtencion = async (pacienteId, atencionId) => {
+  try {
+    const response = await fetch(
+      `/api/atenciones/nueva?pacienteId=${pacienteId}&atencionId=${atencionId}`
+    );
+    const data = await response.json();
+    console.log('este es el fetch par el paciente perfil', data);
+    atencionStore.set({
+      loading: false,
+      data: data.data,
+      error: null,
+    });
+  } catch (error) {
+    console.log(error);
+    atencionStore.set({
+      loading: false,
+      data: null,
+      error: error,
+    });
+  }
+};
+
 export {
   atencion,
+  atencionStore,
   busqueda,
   columnSelectTable,
   dashboardStore,
   dataFormularioContexto,
+  fetchDataParaAtencion,
   fetchingDashboard,
   fetchPacientePerfil,
   filtroBusqueda,

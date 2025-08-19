@@ -1,65 +1,56 @@
 ---
-import Button1 from "../atomos/Button1.astro";
-import CardAntecedentesEnAtencion from "../moleculas/CardAntecedentesEnAtencion.astro";
-import ModalAntecedentes from "../moleculas/ModalAntecedentes.astro";
-import FormularioAntecedentes from "./FormularioAntecedentes.astro";
+import CardAntecedentesEnAtencion from '../moleculas/CardAntecedentesEnAtencion.astro';
+import ModalAntecedentes from '../moleculas/ModalAntecedentes.astro';
+import FormularioAntecedentes from './FormularioAntecedentes.astro';
 
 const { antecedentes } = Astro.props;
 const nowDate = new Date().toLocaleDateString();
-const personalConditions = antecedentes.filter((c) => c.tipo === "personal");
-const familyConditions = antecedentes.filter((c) => c.tipo === "familiar");
+const personalConditions = antecedentes?.filter(c => c.tipo === 'personal');
+const familyConditions = antecedentes?.filter(c => c.tipo === 'familiar');
 ---
 
-<div class="gap-y-1 flex gap-2  flex-1 items-start  justify-between flex-wrap w- px-3 border-r">
+<div class="gap-y-1 flex gap-2 flex-1 items-start justify-between flex-wrap w- px-3 border-r">
   <div>
-    <h3 class="text-xs mb-1 text-primary-textoTitle capitalize">
-      Antecedentes Personales
-    </h3>
-    <div class="space-y-1  ">
-        {
-            personalConditions
-              .sort((a, b) => {
-                // Define la prioridad de los estados
-                const priority = {
-                  critico: 1,
-                  activo: 2,
-                  controlado: 3,
-                  curado: 4,
-                };
-        
-                // Compara las prioridades de los estados
-                return (priority[a.estado] || 99) - (priority[b.estado] || 99);
-              })
-              .map((diag, index) => (
-                <CardAntecedentesEnAtencion data={diag} key={index} />
-              ))
-          }
+    <h3 class="text-xs mb-1 text-primary-textoTitle capitalize">Antecedentes Personales</h3>
+    <div class="space-y-1">
+      {
+        personalConditions
+          .sort((a, b) => {
+            // Define la prioridad de los estados
+            const priority = {
+              critico: 1,
+              activo: 2,
+              controlado: 3,
+              curado: 4,
+            };
+
+            // Compara las prioridades de los estados
+            return (priority[a.estado] || 99) - (priority[b.estado] || 99);
+          })
+          .map((diag, index) => <CardAntecedentesEnAtencion data={diag} key={index} />)
+      }
     </div>
   </div>
 
   <div class="">
-    <h3 class="text-xs text-primary-textoTitle capitalize mb-1">
-      Antecedentes Familiares
-    </h3>
-    <div class="space-y-1 ">
-        {
-            familyConditions
-              .sort((a, b) => {
-                // Define la prioridad de los estados
-                const priority = {
-                  critico: 1,
-                  activo: 2,
-                  controlado: 3,
-                  curado: 4,
-                };
-        
-                // Compara las prioridades de los estados
-                return (priority[a.estado] || 99) - (priority[b.estado] || 99);
-              })
-              .map((diag, index) => (
-                <CardAntecedentesEnAtencion data={diag} key={index} />
-              ))
-          }
+    <h3 class="text-xs text-primary-textoTitle capitalize mb-1">Antecedentes Familiares</h3>
+    <div class="space-y-1">
+      {
+        familyConditions
+          .sort((a, b) => {
+            // Define la prioridad de los estados
+            const priority = {
+              critico: 1,
+              activo: 2,
+              controlado: 3,
+              curado: 4,
+            };
+
+            // Compara las prioridades de los estados
+            return (priority[a.estado] || 99) - (priority[b.estado] || 99);
+          })
+          .map((diag, index) => <CardAntecedentesEnAtencion data={diag} key={index} />)
+      }
     </div>
   </div>
   <ModalAntecedentes>

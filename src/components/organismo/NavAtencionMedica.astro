@@ -16,8 +16,6 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
   class="h z-50 relative border py-4 px-4 bg-white rounded-lg text-sm w-full flex flex-col items-center justify-evenly text-primary-texto px- mb-2 gap-y-2"
 >
   <div class="flex w-full md:flex-row items-stretch md:items-center mb-2 flex-1">
-    <!-- boton de vovler history -->
-    <ButtonBackHistory />
     <div class="flex w-full h-full items-stretch md:gap-2 justify-start pr-4 gap-y-2 ml-2">
       <!-- datos personales -->
       <ContenedorDatosPersonalesAtencion pacienteData={pacienteData} />
@@ -38,11 +36,6 @@ const { pacienteData, isExistHC, dataIds, antecedentes, signosVitalesData } =
       <Button1 id="finalizarConsultaFixed">finalizar consulta</Button1>
     </div>
   </div>
-  <SignosVitalesForm
-    signosVitalesData={signosVitalesData}
-    dataIds={dataIds}
-    isExistHC={isExistHC ? isExistHC : ''}
-  />
 </div>
 
 <script>
