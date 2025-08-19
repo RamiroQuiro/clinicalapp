@@ -1,9 +1,7 @@
-import { generateId } from "lucia";
-import { eq } from "drizzle-orm";
-import type { APIRoute } from "astro";
-import { historiaClinica } from "../../../db/schema/historiaClinica";
-import db from "../../../db";
-import { medicamento } from "../../../db/schema/medicamento";
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import db from '../../../db';
+import { medicamento } from '../../../db/schema/medicamento';
 
 type MedicamentoType = {
   medicamento: string;
@@ -27,7 +25,7 @@ type RequestMedicamentosFront = {
 
 export const PUT: APIRoute = async ({ request }) => {
   const data: MedicamentoType = await request.json();
-  console.log("endpoint ->", data);
+  console.log('endpoint ->', data);
 
   try {
     // Verificar si existe la historia clínica
@@ -37,27 +35,26 @@ export const PUT: APIRoute = async ({ request }) => {
       .set(data)
       .where(eq(medicamento.id, data.id));
 
-if(!updateMedicamento){
-return new Response(JSON.stringify({
-  status:404,
-  mdg:'medicacin no entontrada'
-}))
-}
+    if (!updateMedicamento) {
       return new Response(
+        JSON.stringify({
+          status: 404,
+          mdg: 'medicacin no entontrada',
+        })
+      );
+    }
+    return new Response(
       JSON.stringify({
         status: 200,
-        msg: "Medicamentos guardados correctamente",
+        msg: 'Medicamentos guardados correctamente',
       })
     );
-
-
-
   } catch (error) {
-    console.error("Error al guardar los medicamentos:", error);
+    console.error('Error al guardar los medicamentos:', error);
     return new Response(
       JSON.stringify({
         status: 500,
-        msg: "Error al guardar los medicamentos",
+        msg: 'Error al guardar los medicamentos',
         error: error.message,
       }),
       { status: 500 }
@@ -66,25 +63,23 @@ return new Response(JSON.stringify({
 };
 
 export const DELETE: APIRoute = async ({ request }) => {
-const {id}:string=await request.json()
-
+  const { id }: string = await request.json();
 
   try {
-
-    const deleteMedicament= await db.delete(medicamento).where(eq(medicamento.id,id))
+    const deleteMedicament = await db.delete(medicamento).where(eq(medicamento.id, id));
 
     return new Response(
       JSON.stringify({
         status: 200,
-        msg: "Medicamentos eliminado correctamente",
+        msg: 'Medicamentos eliminado correctamente',
       })
     );
   } catch (error) {
-    console.error("Error al guardar los medicamentos:", error);
+    console.error('Error al guardar los medicamentos:', error);
     return new Response(
       JSON.stringify({
         status: 500,
-        msg: "Error al guardar los medicamentos",
+        msg: 'Error al guardar los medicamentos',
         error: error.message,
       }),
       { status: 500 }

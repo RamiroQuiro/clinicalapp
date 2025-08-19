@@ -2,18 +2,18 @@
 // src/components/organismo/NavAtencionMedicaV2.astro
 import { Image } from 'astro:assets';
 import avatarDefault from '/public/avatarDefault.png';
-import Button1 from '../atomos/Button1.astro';
+import ContenedorBotonesFinalizrConsulta from '@/pages/dashboard/consultas/aperturaPaciente/[pacienteId]/componenteAtencionV2/ContenedorBotonesFinalizrConsulta.tsx';
 import Button2 from '../atomos/Button2.astro';
-
+const { pacienteId } = Astro.params;
 const { pacienteData } = Astro.props;
-const { nombre, apellido, dni, id: pacienteId, fotoUrl } = pacienteData;
+const { nombre, apellido, dni, fotoUrl } = pacienteData;
 ---
 
 <header
   class="bg-white shadow-sm rounded-b-lg sticky top-0 z-40 border-b border-x p-2 border-gray-200"
 >
   <div class="px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between gap-2 h-16">
+    <div class="flex items-center justify-between gap-2 h-">
       <!-- Datos del Paciente -->
       <div class="flex items-center gap-4">
         <Image
@@ -66,7 +66,7 @@ const { nombre, apellido, dni, id: pacienteId, fotoUrl } = pacienteData;
         <a href={`/dashboard/pacientes/${pacienteId}`} class="text-sm">
           <Button2>Ficha del Paciente</Button2>
         </a>
-        <Button1 id="finalizarConsultaV2">Finalizar Consulta</Button1>
+        <ContenedorBotonesFinalizrConsulta client:load />
       </div>
     </div>
   </div>
@@ -77,8 +77,14 @@ const { nombre, apellido, dni, id: pacienteId, fotoUrl } = pacienteData;
   // por el componente padre o la página que use este header,
   // para coordinar con el estado de la consulta en React.
   const botonFinalizar = document.getElementById('finalizarConsultaV2');
+  const botonGuardar = document.getElementById('guardarBorradorV2');
+
+  botonGuardar?.addEventListener('click', () => {
+    const event = new CustomEvent('guardar-borrador-v2');
+    window.dispatchEvent(event);
+  });
+
   botonFinalizar?.addEventListener('click', () => {
-    // Disparamos un evento personalizado que la página de Astro puede escuchar
     const event = new CustomEvent('finalizar-consulta-v2');
     window.dispatchEvent(event);
   });

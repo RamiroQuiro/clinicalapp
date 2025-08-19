@@ -1,13 +1,13 @@
 ---
 import NavAtencionMedicaV2 from '@/components/organismo/NavAtencionMedicaV2.astro';
 import Contenedor from './componenteAtencionV2/Contenedor.tsx';
-const { pacienteData } = Astro.props;
+const { data } = Astro.props;
 ---
 
 <div class="p-4 gap-2 flex flex-col w-full" id="containerAtencion">
-  <NavAtencionMedicaV2 pacienteData={pacienteData} />
+  <NavAtencionMedicaV2 pacienteData={data?.pacienteData} />
 
   <div>
-    <Contenedor client:load dataPacienteDB={pacienteData} />
+    <Contenedor client:load data={data} />
   </div>
 </div>

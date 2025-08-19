@@ -12,7 +12,7 @@ const tabs = [
 ];
 
 // --- Componente Principal ---
-export default function Contenedor({ dataPacienteDB }: { dataPacienteDB: any }) {
+export default function Contenedor({ data }: { data: any }) {
   const [activeTab, setActiveTab] = useState('consultaActual');
 
   return (
@@ -39,7 +39,7 @@ export default function Contenedor({ dataPacienteDB }: { dataPacienteDB: any }) 
       </div>
 
       <div className="p-6">
-        <RenderizacionPantalla activeTab={activeTab} data={dataPacienteDB} />
+        <RenderizacionPantalla activeTab={activeTab} data={data} />
       </div>
     </div>
   );

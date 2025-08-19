@@ -85,6 +85,18 @@ const atencionStore = atom({
   loading: false,
   data: null,
   error: null,
+  formDataNuevaAtencion: {
+    motivoConsulta: '',
+    sintomas: '',
+    signosVitales: {
+      presionArterial: '',
+      frecuenciaCardiaca: '',
+      frecuenciaRespiratoria: '',
+      temperatura: '',
+    },
+    diagnosticos: [],
+    tratamientos: [],
+  },
 });
 const fetchDataParaAtencion = async (pacienteId, atencionId) => {
   try {

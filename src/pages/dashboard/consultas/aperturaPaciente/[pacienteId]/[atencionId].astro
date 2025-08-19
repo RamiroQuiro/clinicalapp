@@ -9,19 +9,13 @@ const { user, session } = Astro.locals;
 let errorData;
 // tengo q implemtar type para historiClinica
 
-const { pacienteData, signosVitalesData, antecedentesData, historialVisitaData } =
-  await getDatosNuevaAtencion(pacienteId, atencionId);
+const data = await getDatosNuevaAtencion(pacienteId, atencionId);
 
-if (!pacienteData) {
+if (!data) {
   errorData = {
     msg: 'Error al buscar el paceinte, intentelo de nuevo 🙈',
   };
 }
-const dataIds = {
-  userId: session?.userId,
-  pacienteId,
-  atencionId,
-};
 
 const diagnosticoData = [
   {
@@ -50,8 +44,8 @@ const medicamentosData = [
 ];
 ---
 
-<LayoutDash title={`Atención a ${pacienteData?.nombre} ${pacienteData?.apellido}`}>
-  <MainDashboard h1={`Atención a ${pacienteData?.nombre} ${pacienteData?.apellido}`}>
+<LayoutDash title={`Atención a ${data?.pacienteData?.nombre} ${data?.pacienteData?.apellido}`}>
+  <MainDashboard h1={`Atención a ${data?.pacienteData?.nombre} ${data?.pacienteData?.apellido}`}>
     <!-- {
       !isExistHC&&
       <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
@@ -61,12 +55,9 @@ const medicamentosData = [
     {
       !errorData ? (
         <IndexAtencionV2
-          antecedentes={antecedentesData}
-          signosVitalesData={signosVitalesData}
-          pacienteData={pacienteData}
+          data={data}
           isExistDiagnosticos={diagnosticoData}
           isExistMedicamentos={medicamentosData}
-          historialVisitaData={historialVisitaData}
         />
       ) : (
         <div class="w-screen h-screen flex items-center justify-center  text-primary-textoTitle text-xl font-bold -translate-y-10 ">

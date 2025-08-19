@@ -15,6 +15,7 @@ const Section = ({ title, children }) => (
 
 // --- Componente Principal de la Pantalla de Consulta ---
 export const ConsultaActualPantalla = ({ data }) => {
+  console.log('data ->', data);
   const [formData, setFormData] = useState({
     motivoConsulta: data.motivoConsultaData?.motivo || '',
     sintomas: '',
@@ -62,33 +63,8 @@ export const ConsultaActualPantalla = ({ data }) => {
     }
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    console.log('Enviando datos de la consulta:', formData);
-    // Aquí iría el fetch para guardar los datos
-    try {
-      /*
-        const response = await fetch('/api/atencion/guardar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...formData, dataIds: data.dataIds }) // Incluir IDs de paciente, atencion, etc.
-        });
-        const result = await response.json();
-        if(response.ok) {
-            showToast('Consulta guardada con éxito', { type: 'success' });
-        } else {
-            throw new Error(result.message || 'Error al guardar');
-        }
-        */
-      alert('Consulta guardada (simulación). Revisa la consola para ver los datos.');
-    } catch (error) {
-      console.error('Error al guardar la consulta:', error);
-      // showToast(error.message, { type: 'error' });
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="space-y-8">
       <Section title="Motivo de Consulta">
         <TextArea
           name="motivoConsulta"
@@ -241,10 +217,6 @@ export const ConsultaActualPantalla = ({ data }) => {
           ))}
         </ul>
       </Section>
-
-      <div className="flex justify-end pt-6 border-t">
-        <Button type="submit">Guardar Consulta</Button>
-      </div>
-    </form>
+    </div>
   );
 };

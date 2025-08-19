@@ -1,8 +1,8 @@
 export const Button = ({ children, onClick, type = 'button', variant = 'primary' }: any) => {
   const baseClasses =
-    'px-6 py-2 font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-100 focus:border-primary-100 transition';
+    'px-2 py-1 bg-primary-100 text-white rounded-lg text-sm hover:bg-primary/90 transition-colors';
   const variantClasses = {
-    primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
+    primary: 'bg-primary-100 text-white hover:bg-primary-600 focus:ring-primary-600',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
   };
   return (
