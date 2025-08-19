@@ -12,9 +12,10 @@ import {
 import { antecedentes } from '@/db/schema/atecedentes';
 import { desc, eq } from 'drizzle-orm';
 
-export async function getDatosNuevaAtencion(pacienteId: string, userId: string) {
-  console.log('pacienteId', pacienteId);
-  console.log('userId', userId);
+export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
+  const [atencionData] = await db.select().from(atenciones).where(eq(atenciones.id, atencionId));
+
+  console.log('atencionData ->', atencionData);
   // Traer datos básicos del paciente
   const pacienteData = (
     await db
@@ -38,7 +39,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, userId: string) 
       .leftJoin(fichaPaciente, eq(fichaPaciente.pacienteId, pacientes.id))
       .where(eq(pacientes.id, pacienteId))
   ).at(0);
-  console.log('en el services paciente data', pacienteData);
   if (!pacienteData) {
     return {
       error: true,
@@ -53,7 +53,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, userId: string) 
     .from(antecedentes)
     .where(eq(antecedentes.pacienteId, pacienteId));
 
-  console.log('antecedentes ->', antecedentesData);
   // Signos vitales (últimos 4)
   const fecthSignosVitalesData = await db
     .select()
@@ -61,7 +60,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, userId: string) 
     .where(eq(signosVitales.pacienteId, pacienteId))
     .orderBy(desc(signosVitales.created_at))
     .limit(4);
-  console.log('signos vitales ->', fecthSignosVitalesData);
   const signosVitalesData = [
     'temperatura',
     'pulso',
