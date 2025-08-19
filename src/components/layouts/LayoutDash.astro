@@ -3,7 +3,6 @@ import Loader from '../../utils/loader/Loader.astro';
 import NavDash from '../organismo/NavDash.astro';
 import Sidebar from '../organismo/Sidebar.astro';
 
-
 interface Props {
   title: string;
   dataCliente: string;
@@ -11,7 +10,6 @@ interface Props {
 }
 
 const { title, dataCliente, userData } = Astro.props;
-
 
 const url = Astro.url;
 ---
@@ -27,15 +25,14 @@ const url = Astro.url;
     <title>{title}</title>
   </head>
   <body
-    class="bg-primary-bg-componentes md:min-h-[125vh] text-primary-texto  relative overflow-x-hidden flex flex-col"
+    class="bg-gradient-to-b from-primary-400/5 via-primary-400/5 to-primary-100/10 bg-primary-bg-componentes md:min-h-[125vh] text-primary-texto relative overflow-x-hidden flex flex-col"
   >
     <!-- <LoaderGral/> -->
 
     <Sidebar />
     <NavDash dataCliente={dataCliente} userData={userData} />
     <Loader />
-    <div class="min-h-screen min-w-screen   flex items-start justify-end mt-14">
-
+    <div class="min-h-screen min-w-screen flex items-start justify-end mt-14">
       <slot />
     </div>
   </body>
@@ -44,8 +41,8 @@ const url = Astro.url;
   /* Registra tu font family personalizada y le indicamos al navegador dónde encontrarla. */
 
   @font-face {
-    font-family: "IndieFlower";
-    src: url("/font/IndieFlower-Regular.ttf") format("ttf");
+    font-family: 'IndieFlower';
+    src: url('/font/IndieFlower-Regular.ttf') format('ttf');
     font-weight: 400;
     font-style: normal;
   }
@@ -74,13 +71,13 @@ const url = Astro.url;
       Courier New,
       monospace;
   }
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
 
-  input[type="number"] {
+  input[type='number'] {
     -moz-appearance: textfield;
   }
 </style>

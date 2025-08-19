@@ -1,16 +1,22 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
+import { historiaClinica } from './historiaClinica';
 import { pacientes } from './pacientes';
+import { users } from './users';
 
 export const medicamento = sqliteTable('medicamentos', {
   id: text('id').primaryKey(),
   nombre: text('nombre').notNull(),
   descripcion: text('descripcion'),
-  historiaClinicaId: text('historiaClinicaId'),
-  atencionId: text('atencionId').references(() => atenciones.id),
-  pacienteId: text('pacienteId').references(() => pacientes.id),
-  userId: text('userId').notNull(),
+  historiaClinicaId: text('historiaClinicaId').references(() => historiaClinica.id, {
+    onDelete: 'cascade',
+  }),
+  atencionId: text('atencionId').references(() => atenciones.id, { onDelete: 'cascade' }),
+  pacienteId: text('pacienteId').references(() => pacientes.id, { onDelete: 'cascade' }),
+  userMedicoId: text('userMedicoId')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   dosis: text('dosis'),
   frecuencia: text('frecuencia'),
   duracion: text('duracion'),

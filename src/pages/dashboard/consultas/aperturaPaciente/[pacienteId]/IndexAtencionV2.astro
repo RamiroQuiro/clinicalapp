@@ -1,11 +1,21 @@
 ---
 import NavAtencionMedicaV2 from '@/components/organismo/NavAtencionMedicaV2.astro';
+import { getDatosNuevaAtencion } from '@/services/atenciones.services';
 import Contenedor from './componenteAtencionV2/Contenedor.tsx';
-const { data } = Astro.props;
+
+const { pacienteId, atencionId } = Astro.params;
+const { data, error, msg } = await getDatosNuevaAtencion(pacienteId, atencionId);
+// console.log('esta es la data en index atencion v2', data);
+if (error) {
+  console.log('error', error);
+  // errorData = {
+  //   msg: 'Error al buscar el paciente , intentelo de nuevo 🙈',
+  // };
+}
 ---
 
 <div class="p-4 gap-2 flex flex-col w-full" id="containerAtencion">
-  <NavAtencionMedicaV2 pacienteData={data?.pacienteData} />
+  <NavAtencionMedicaV2 pacienteData={data?.paciente} />
 
   <div>
     <Contenedor client:load data={data} />

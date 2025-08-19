@@ -1,18 +1,22 @@
 import Button from '@/components/atomos/Button';
-import { atencionStore } from '@/context/store';
+// --- CAMBIADO: Importar consultaStore ---
+import { consultaStore, resetConsulta } from '@/context/consultaAtencion.store';
 import { useStore } from '@nanostores/react';
 
 type Props = {};
 
 export default function ContenedorBotonesFinalizrConsulta({}: Props) {
-  const { data } = useStore(atencionStore);
+  // --- CAMBIADO: Usar consultaStore ---
+  const $consulta = useStore(consultaStore);
+
   const handleGuardarBorrador = async (modoFetch: string) => {
     try {
       const response = await fetch('/api/atencion/guardar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...data,
+          // --- CAMBIADO: Enviar los datos de $consulta ---
+          ...$consulta,
           status: modoFetch, // 'borrador' o 'finalizada'
         }),
       });
@@ -20,6 +24,8 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
       if (!response.ok) throw new Error(result.message || 'Error en el servidor');
 
       alert(`Consulta guardada como ${modoFetch} con éxito`);
+      // --- AÑADIDO: Resetear la store después de guardar ---
+      resetConsulta();
     } catch (error) {
       console.error('Error al guardar la consulta:', error);
       alert(`Error al guardar: ${error.message}`);

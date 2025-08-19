@@ -3,7 +3,9 @@
 import db from '@/db';
 import {
   atenciones,
-  fichaPaciente,
+  diagnostico,
+  historiaClinica,
+  medicamento,
   pacientes,
   signosVitales,
   tratamiento,
@@ -13,10 +15,65 @@ import { antecedentes } from '@/db/schema/atecedentes';
 import { desc, eq } from 'drizzle-orm';
 
 export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
+  // 1. Buscar la atención por ID
   const [atencionData] = await db.select().from(atenciones).where(eq(atenciones.id, atencionId));
 
-  console.log('atencionData ->', atencionData);
-  // Traer datos básicos del paciente
+  if (!atencionData) {
+    return {
+      error: true,
+      message: 'Atención no encontrada',
+      data: null,
+    };
+  }
+  const [signosVitalesAtencion] = await db
+    .select({
+      temperatura: signosVitales.temperatura,
+      pulso: signosVitales.pulso,
+      frecuenciaCardiaca: signosVitales.frecuenciaCardiaca,
+      frecuenciaRespiratoria: signosVitales.frecuenciaRespiratoria,
+      tensionArterial: signosVitales.tensionArterial,
+      saturacionOxigeno: signosVitales.saturacionOxigeno,
+      glucosa: signosVitales.glucosa,
+      peso: signosVitales.peso,
+      talla: signosVitales.talla,
+      imc: signosVitales.imc,
+    })
+    .from(signosVitales)
+    .where(eq(signosVitales.atencionId, atencionId))
+    .orderBy(desc(signosVitales.created_at));
+
+  const diagnosticosAtencion = await db
+    .select()
+    .from(diagnostico)
+    .where(eq(diagnostico.atencionId, atencionId));
+  const [tratamientoAtencion] = await db
+    .select({
+      fechaInicio: tratamiento.fechaInicio,
+      fechaFin: tratamiento.fechaFin,
+      tratamiento: tratamiento.tratamiento,
+      descripcion: tratamiento.descripcion,
+    })
+    .from(tratamiento)
+    .where(eq(tratamiento.atencionesId, atencionId));
+  console.log('este es el tratamiento de la tencion', tratamientoAtencion);
+
+  const medicamentosAtencion = await db
+    .select()
+    .from(medicamento)
+    .where(eq(medicamento.atencionId, atencionId));
+  // 2. Si está cerrada → devolver info mínima y aviso
+
+  if (atencionData.estado === 'cerrada') {
+    return {
+      error: false,
+      message: 'La atención ya está cerrada',
+      data: {
+        atencion: atencionData,
+      },
+    };
+  }
+
+  // 3. Si está en curso → traer datos completos
   const pacienteData = (
     await db
       .select({
@@ -24,21 +81,23 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
         apellido: pacientes.apellido,
         dni: pacientes.dni,
         sexo: pacientes.sexo,
-        celular: fichaPaciente.celular,
-        email: fichaPaciente.email,
-        provincia: fichaPaciente.provincia,
+        celular: historiaClinica.celular,
+        email: historiaClinica.email,
+        provincia: historiaClinica.provincia,
         fNacimiento: pacientes.fNacimiento,
-        nObraSocial: fichaPaciente.nObraSocial,
-        obraSocial: fichaPaciente.obraSocial,
-        ciudad: fichaPaciente.ciudad,
-        grupoSanguineo: fichaPaciente.grupoSanguineo,
-        estatura: fichaPaciente.estatura,
+        nObraSocial: historiaClinica.nObraSocial,
+        obraSocial: historiaClinica.obraSocial,
+        ciudad: historiaClinica.ciudad,
+        grupoSanguineo: historiaClinica.grupoSanguineo,
+        estatura: historiaClinica.estatura,
+        historiaClinicaId: historiaClinica.id,
         domicilio: pacientes.domicilio,
       })
       .from(pacientes)
-      .leftJoin(fichaPaciente, eq(fichaPaciente.pacienteId, pacientes.id))
+      .leftJoin(historiaClinica, eq(historiaClinica.pacienteId, pacientes.id))
       .where(eq(pacientes.id, pacienteId))
   ).at(0);
+
   if (!pacienteData) {
     return {
       error: true,
@@ -53,13 +112,14 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .from(antecedentes)
     .where(eq(antecedentes.pacienteId, pacienteId));
 
-  // Signos vitales (últimos 4)
+  // Signos vitales (últimos 4 registros)
   const fecthSignosVitalesData = await db
     .select()
     .from(signosVitales)
     .where(eq(signosVitales.pacienteId, pacienteId))
     .orderBy(desc(signosVitales.created_at))
     .limit(4);
+
   const signosVitalesData = [
     'temperatura',
     'pulso',
@@ -72,9 +132,10 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     'talla',
     'imc',
   ].map(tipo => {
-    const historial = fecthSignosVitalesData.map(sv => {
-      return { valor: parseFloat(sv[tipo]), fecha: sv.created_at };
-    });
+    const historial = fecthSignosVitalesData.map(sv => ({
+      valor: parseFloat(sv[tipo]),
+      fecha: sv.created_at,
+    }));
     return { tipo, historial };
   });
 
@@ -103,5 +164,25 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .orderBy(desc(atenciones.created_at))
     .limit(4);
 
-  return { pacienteData, signosVitalesData, antecedentesData, historialVisitaData };
+  return {
+    error: false,
+    message: 'Atención en curso',
+    data: {
+      atencion: {
+        ...atencionData,
+        diagnosticos: diagnosticosAtencion,
+        tratamiento: tratamientoAtencion?.tratamiento || {
+          fechaInicio: '',
+          fechaFin: '',
+          tratamiento: '',
+        },
+        medicamentos: medicamentosAtencion,
+        signosVitales: signosVitalesAtencion,
+      },
+      paciente: pacienteData,
+      antecedentes: antecedentesData,
+      signosVitalesHistorial: signosVitalesData,
+      historialVisitas: historialVisitaData,
+    },
+  };
 }
