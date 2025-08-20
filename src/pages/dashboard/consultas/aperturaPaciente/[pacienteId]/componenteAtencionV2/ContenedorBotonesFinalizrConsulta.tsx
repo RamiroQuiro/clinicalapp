@@ -2,6 +2,7 @@ import Button from '@/components/atomos/Button';
 // --- CAMBIADO: Importar consultaStore ---
 import { consultaStore, resetConsulta } from '@/context/consultaAtencion.store';
 import { useStore } from '@nanostores/react';
+import { Lock, Save } from 'lucide-react';
 
 type Props = {};
 
@@ -35,10 +36,14 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
   return (
     <div className="flex flex-col items-center gap-2">
       <Button id="guardarBorradorV2" onClick={() => handleGuardarBorrador('borrador')}>
-        Guardar Borrador
+        <p className=" inline-flex items-center gap-2">
+          <Save className="mr- w-4 h-4" /> Guardar Borrador
+        </p>
       </Button>
       <Button id="finalizarConsultaV2" onClick={() => handleGuardarBorrador('finalizada')}>
-        Finalizar Consulta
+        <p className=" inline-flex items-center gap-2">
+          <Lock className="mr- w-4 h-4" /> Finalizar Consulta
+        </p>
       </Button>
     </div>
   );

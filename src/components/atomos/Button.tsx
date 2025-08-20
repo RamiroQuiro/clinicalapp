@@ -1,4 +1,10 @@
-export const Button = ({ children, onClick, type = 'button', variant = 'primary' }: any) => {
+export const Button = ({
+  children,
+  onClick,
+  type = 'button',
+  variant = 'primary',
+  className,
+}: any) => {
   const baseClasses =
     'px-3 py-2 bg-primary-100 text-white rounded text-sm hover:bg-primary/90 transition-colors';
   const variantClasses = {
@@ -6,7 +12,11 @@ export const Button = ({ children, onClick, type = 'button', variant = 'primary'
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
   };
   return (
-    <button type={type} onClick={onClick} className={`${baseClasses} ${variantClasses[variant]}`}>
+    <button
+      type={type}
+      onClick={onClick}
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+    >
       {children}
     </button>
   );

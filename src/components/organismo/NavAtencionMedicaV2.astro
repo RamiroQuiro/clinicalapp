@@ -4,15 +4,18 @@ import { Image } from 'astro:assets';
 import avatarDefault from '/public/avatarDefault.png';
 import ContenedorBotonesFinalizrConsulta from '@/pages/dashboard/consultas/aperturaPaciente/[pacienteId]/componenteAtencionV2/ContenedorBotonesFinalizrConsulta.tsx';
 import Button2 from '../atomos/Button2.astro';
+import DivBox1 from '../atomos/DivBox1.astro';
+import Button1 from '../atomos/Button1.astro';
+import { Table, Table2 } from 'lucide-react';
 const { pacienteId } = Astro.params;
 const { pacienteData } = Astro.props;
 const { nombre, apellido, dni, fotoUrl } = pacienteData;
 ---
 
-<header
-  class="bg-white/70 backdrop-blur-sm shadow-sm rounded-b-lg sticky top-0 z-40 border-b border-x p-2 border-gray-200"
+<DivBox1
+  styleDiv="bg-white/70 backdrop-blur-sm shadow-sm rounded-b-lg sticky top-0 z-40 border-b border-x p-2 border-gray-200"
 >
-  <div class="px-4 sm:px-6 lg:px-8">
+  <div class="px- sm:px- lg:px- w-full">
     <div class="flex items-center justify-between gap-2 h-">
       <!-- Datos del Paciente -->
       <div class="flex items-center gap-4">
@@ -64,13 +67,17 @@ const { nombre, apellido, dni, fotoUrl } = pacienteData;
       <!-- Botones de Acción -->
       <div class="flex flex-col items-center gap-2">
         <a href={`/dashboard/pacientes/${pacienteId}`} class="text-sm">
-          <Button2>Ficha del Paciente</Button2>
+          <Button1
+            ><p class="inline-flex items-center gap-2">
+              <Table2 className=" w-4 h-4" /> Ficha del Paciente
+            </p></Button1
+          >
         </a>
         <ContenedorBotonesFinalizrConsulta client:load />
       </div>
     </div>
   </div>
-</header>
+</DivBox1>
 
 <script>
   // Nota: La lógica para finalizar la consulta deberá ser manejada

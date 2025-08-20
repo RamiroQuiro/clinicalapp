@@ -56,6 +56,7 @@ export type optionsSelectInputType = {
 };
 
 export interface Antecedente {
+  id: string;
   antecedente: string;
   fechaDiagnostico: string;
   estado: string;

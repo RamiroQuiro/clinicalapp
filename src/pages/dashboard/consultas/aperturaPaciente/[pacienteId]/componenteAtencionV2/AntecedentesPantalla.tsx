@@ -48,22 +48,26 @@ export const AntecedentesPantalla: React.FC<AntecedentesPantallaProps> = ({ data
   };
 
   return (
-    <Section title="Antecedentes del Paciente">
+    <Section title="Antecedentes del Paciente" className="animate-pulse">
       <div className="absolute right-4 top-2">
         <Button
           onClick={handleOpenNewAntecedenteModal}
-          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 "
+          className=" bg-blue-500 text-white rounded-md hover:bg-blue-600 mx-auto flex items-center justify-center"
         >
-          Agregar Nuevo Antecedente
+          <p>agregar</p>
         </Button>
       </div>
       {isModalOpen && (
         <ModalReact
-          title={editingAntecedente ? "Editar Antecedente" : "Agregar Antecedente"}
+          title={editingAntecedente ? 'Editar Antecedente' : 'Agregar Antecedente'}
           id="modal-antecedente"
           onClose={() => setIsModalOpen(false)}
         >
-          <FormularioAntecedentes pacienteId={pacienteId} onSuccess={handleFormSuccess} initialData={editingAntecedente} />
+          <FormularioAntecedentes
+            pacienteId={pacienteId}
+            onSuccess={handleFormSuccess}
+            initialData={editingAntecedente}
+          />
         </ModalReact>
       )}
       <div className="space- flex flex-col gap-y-6 w-full">

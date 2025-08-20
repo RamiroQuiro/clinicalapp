@@ -5,7 +5,7 @@ const { onClick, id, style, type } = Astro.props;
 <button
   id={id}
   type={type}
-  class={`${style} ${id} px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs  border bg-primary-100 hover:bg-primary-100/80 text-white`}
+  class={`${style} ${id}  px-3 py-2 bg-primary-100 hover:text-white hover:bg-primary-600 focus:ring-primary-600 text-white rounded text-sm hover:bg-primary/90 transition-colors`}
 >
   <slot />
 </button>

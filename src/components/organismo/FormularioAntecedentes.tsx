@@ -8,6 +8,12 @@ interface FormularioAntecedentesProps {
   initialData?: Antecedente | null; // Optional: data to pre-populate for editing
 }
 
+// Helper function to format dates for the input[type="date"]
+const formatDateForInput = (dateString: string | Date): string => {
+  if (!dateString) return '';
+  return dateString.toISOString().split('T')[0];
+};
+
 const FormularioAntecedentes: React.FC<FormularioAntecedentesProps> = ({
   pacienteId,
   onSuccess,
@@ -22,7 +28,7 @@ const FormularioAntecedentes: React.FC<FormularioAntecedentesProps> = ({
   useEffect(() => {
     if (initialData) {
       setAntecedente(initialData.antecedente || '');
-      setFechaDiagnostico(initialData.fechaDiagnostico); // Assuming date is string format
+      setFechaDiagnostico(formatDateForInput(initialData.fechaDiagnostico)); // Use the formatter
       setObservaciones(initialData.observaciones || '');
       setTipo(initialData.tipo || 'personal');
       setEstado(initialData.estado || 'activo');
