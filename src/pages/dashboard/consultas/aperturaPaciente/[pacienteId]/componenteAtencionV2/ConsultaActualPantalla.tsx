@@ -69,6 +69,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     nombre: '',
     dosis: '',
     frecuencia: '',
+    id: '',
   });
 
   // Hidratamos la store con datos de la atención si está en curso
@@ -120,9 +121,18 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     if (!currentMedicamento.nombre) return;
     const current = consultaStore.get().medicamentos;
     setConsultaField('medicamentos', [...current, currentMedicamento]);
-    setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '' });
+    setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '', id: '' });
   };
-  console.log('este es el tratamiento de la tencion', $consulta.tratamiento);
+
+  const deletMedicamento = (medId: string) => {
+    const current = consultaStore.get().medicamentos;
+    setConsultaField(
+      'medicamentos',
+      current.filter(med => med.id !== medId)
+    );
+    setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '', id: '' });
+  };
+  console.log('este es el tratamiento de la atencion en el fronentd', data.atencion.medicamentos);
   // Bloqueo de edición si la atención está cerrada
   const isReadOnly = data?.atencion?.estado == 'cerrada';
 
@@ -205,12 +215,14 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           {$consulta.diagnosticos.map((diag, idx) => (
             <li
               key={idx}
-              className="px-3 py-1 bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
+              className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
             >
-              <p className="flex items-center gap-2 ">
-                ✅ {diag.diagnostico} {diag.observaciones && `- ${diag.observaciones}`}
-              </p>
-              <p className="text-xs text-gray-500">{diag.codigoCIE}</p>
+              <div className="flex items-center justify-start gap-4">
+                <p className="flex items-center gap-2 ">
+                  🤕 {diag.diagnostico} {diag.observaciones && `- ${diag.observaciones}`}
+                </p>
+                <p className="">{diag.codigoCIE}</p>
+              </div>
               <button
                 title="Eliminar Diagnóstico"
                 className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
@@ -286,9 +298,25 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         )}
 
         <ul className="mt-2 space-y-3">
-          {$consulta.medicamentos.map((tr, idx) => (
-            <li key={idx} className="p-3 bg-gray-100 rounded-md">
-              {`${tr.nombre} (${tr.dosis}) - ${tr.frecuencia}`}
+          {$consulta.medicamentos.map((med, idx) => (
+            <li
+              key={idx}
+              className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
+            >
+              <div className="flex items-center justify-start gap-4">
+                <p className="flex items-center gap-2 ">
+                  💊 {med.nombre} {med.dosis && `- ${med.dosis}`}
+                </p>
+                <p className="text-">{med.frecuencia}</p>
+              </div>
+
+              <button
+                title="Eliminar Medicamento"
+                className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
+                onClick={() => deletMedicamento(med.id)}
+              >
+                <Trash />
+              </button>
             </li>
           ))}
         </ul>

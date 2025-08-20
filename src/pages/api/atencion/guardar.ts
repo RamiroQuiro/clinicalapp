@@ -104,10 +104,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
       }
 
+      await tx.delete(diagnostico).where(eq(diagnostico.atencionId, currentAtencionId));
       // 3. Guardar Diagnósticos (Delete and Re-insert)
       if (diagnosticos && diagnosticos.length > 0) {
         // Primero, eliminamos todos los diagnósticos existentes para esta atención
-        await tx.delete(diagnostico).where(eq(diagnostico.atencionId, currentAtencionId));
 
         // Luego, insertamos los nuevos diagnósticos que vienen del frontend
         await tx.insert(diagnostico).values(
@@ -151,9 +151,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // 5. Guardar Medicamentos (asumiendo que se insertan nuevos cada vez)
       // Tu interfaz Consulta tiene 'medicamentos: string[]', pero tu componente
       // ConsultaActualPantalla.tsx no tiene un input para 'medicamentos' directamente.
+      console.log('Datos de la consulta: medicamentos', medicamentos);
       // Si 'medicamentos' se refiere a los tratamientos, entonces esta sección podría no ser necesaria
       // o necesitaría ser ajustada. Por ahora, la dejo como un placeholder.
-      console.log('Datos de la consulta: medicamentos', medicamentos);
+      // Eliminamos los medicamentos existentes para esta atención
+      await tx.delete(medicamento).where(eq(medicamento.atencionId, currentAtencionId));
       if (medicamentos && medicamentos.length > 0) {
         await tx.insert(medicamento).values(
           medicamentos.map(m => ({
@@ -162,12 +164,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
             userMedicoId: user.id,
             atencionId: currentAtencionId,
             pacienteId,
-            nombre: m,
+            nombre: m.nombre,
             dosis: m.dosis,
             frecuencia: m.frecuencia,
-            duracion: m.duracion,
-            precio: m.precio,
-            stock: m.stock,
           }))
         );
       }

@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
 import { pacientes } from './pacientes';
+import { users } from './users';
 
 export const signosVitales = sqliteTable(
   'signosVitales',
@@ -14,7 +15,9 @@ export const signosVitales = sqliteTable(
     pacienteId: text('pacienteId')
       .notNull()
       .references(() => pacientes.id, { onDelete: 'cascade' }),
-    userId: text('userId').notNull(),
+    userId: text('userId')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     updated_at: integer('updated_at', { mode: 'timestamp' }),
     created_at: integer('created_at', { mode: 'timestamp' })
       .notNull()
@@ -37,6 +40,6 @@ export const signosVitales = sqliteTable(
   },
   t => [
     // Único para DNI y empresa
-    unique().on(t.atencionId, t.userId),
+    unique().on(t.atencionId, t.pacienteId),
   ]
 );

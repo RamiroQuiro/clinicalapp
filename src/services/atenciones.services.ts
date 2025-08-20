@@ -64,10 +64,17 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(tratamiento)
     .where(eq(tratamiento.atencionesId, atencionId));
-  console.log('este es el tratamiento de la tencion', tratamientoAtencion);
+  console.log('este es el tratamiento de la atencion', tratamientoAtencion);
 
   const medicamentosAtencion = await db
-    .select()
+    .select({
+      id: medicamento.id,
+      nombre: medicamento.nombre,
+      dosis: medicamento.dosis,
+      frecuencia: medicamento.frecuencia,
+      createdAt: medicamento.created_at,
+      updatedAt: medicamento.updated_at,
+    })
     .from(medicamento)
     .where(eq(medicamento.atencionId, atencionId));
   // 2. Si está cerrada → devolver info mínima y aviso
@@ -180,7 +187,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       atencion: {
         ...atencionData,
         diagnosticos: diagnosticosAtencion,
-        tratamiento: tratamientoAtencion?.tratamiento || {
+        tratamiento: tratamientoAtencion || {
           fechaInicio: '',
           fechaFin: '',
           tratamiento: '',

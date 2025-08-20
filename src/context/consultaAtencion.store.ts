@@ -23,7 +23,7 @@ export interface Consulta {
     fechaFin: string;
     tratamiento: string;
   };
-  medicamentos: string[];
+  medicamentos: { nombre: string; dosis: string; frecuencia: string; id: string }[];
 }
 
 // Estado inicial
@@ -81,7 +81,7 @@ export function addMedicamento(nombre: string) {
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
-    medicamentos: [...current.medicamentos, nombre],
+    medicamentos: [...current.medicamentos, { nombre, dosis: '', frecuencia: '', id: '' }],
   });
 }
 
