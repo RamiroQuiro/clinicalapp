@@ -1,22 +1,90 @@
-import React from 'react';
+import Button from '@/components/atomos/Button';
+import CardAntecedente from '@/components/moleculas/CardAntecentes';
+import ModalReact from '@/components/moleculas/ModalReact';
+import Section from '@/components/moleculas/Section';
+import FormularioAntecedentes from '@/components/organismo/FormularioAntecedentes';
+import React, { useEffect, useState } from 'react';
+import type { Antecedente } from '../../types'; // Adjust path as needed
 
-const Section = ({ title, children }) => (
-  <div className="mb-8">
-    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">{title}</h3>
-    {children}
-  </div>
-);
+interface AntecedentesPantallaProps {
+  data: any; // You might want to define a more specific type for 'data'
+  pacienteId: string;
+}
 
-export const AntecedentesPantalla = ({ data }) => (
-  <Section title="Antecedentes del Paciente">
-    {data && data.length > 0 ? (
-      <ul className="list-disc list-inside space-y-2">
-        {data.map(ante => (
-          <li key={ante.id} className="text-gray-800">
-            <span className="font-semibold">{ante.tipo}:</span> {ante.descripcion}
-          </li>
-        ))}
-      </ul>
-    ) : <p>No hay antecedentes registrados.</p>}
-  </Section>
-);
+export const AntecedentesPantalla: React.FC<AntecedentesPantallaProps> = ({ data, pacienteId }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAntecedente, setEditingAntecedente] = useState<Antecedente | null>(null);
+  const [antedecentes, setAntedecentes] = useState({
+    personales: [],
+    familiares: [],
+  });
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+    const arrayFamiliar = data.filter((item: any) => item.tipo === 'familiar');
+    const arrayPersonal = data.filter((item: any) => item.tipo === 'personal');
+    setAntedecentes({
+      personales: arrayPersonal,
+      familiares: arrayFamiliar,
+    });
+  }, [data]);
+
+  const handleFormSuccess = () => {
+    setIsModalOpen(false); // Close the modal on success
+    setEditingAntecedente(null); // Clear editing state
+    window.location.reload(); // Reload the page to show updated data
+  };
+
+  const handleOpenNewAntecedenteModal = () => {
+    setEditingAntecedente(null); // Ensure we are adding a new one
+    setIsModalOpen(true);
+  };
+
+  const handleEditAntecedente = (antecedente: Antecedente) => {
+    setEditingAntecedente(antecedente);
+    setIsModalOpen(true);
+  };
+
+  return (
+    <Section title="Antecedentes del Paciente">
+      <div className="absolute right-4 top-2">
+        <Button
+          onClick={handleOpenNewAntecedenteModal}
+          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 "
+        >
+          Agregar Nuevo Antecedente
+        </Button>
+      </div>
+      {isModalOpen && (
+        <ModalReact
+          title={editingAntecedente ? "Editar Antecedente" : "Agregar Antecedente"}
+          id="modal-antecedente"
+          onClose={() => setIsModalOpen(false)}
+        >
+          <FormularioAntecedentes pacienteId={pacienteId} onSuccess={handleFormSuccess} initialData={editingAntecedente} />
+        </ModalReact>
+      )}
+      <div className="space- flex flex-col gap-y-6 w-full">
+        <div>
+          <h3 className="text-sm   mb-1.5">Antecedentes Personales</h3>
+          <div className="space-y-3">
+            {antedecentes?.personales?.map((diag: any, index: number) => (
+              <CardAntecedente key={index} data={diag} onEdit={handleEditAntecedente} />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm  mb-1.5">Antecedentes Familiares</h3>
+          <div className="space-y-3">
+            {antedecentes?.familiares?.map((diag: any, index: number) => (
+              <CardAntecedente key={index} data={diag} onEdit={handleEditAntecedente} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+};

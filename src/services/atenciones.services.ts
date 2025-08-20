@@ -93,6 +93,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
   const pacienteData = (
     await db
       .select({
+        id: pacientes.id,
         nombre: pacientes.nombre,
         apellido: pacientes.apellido,
         dni: pacientes.dni,
@@ -124,7 +125,16 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
 
   // Antecedentes
   const antecedentesData = await db
-    .select()
+    .select({
+      id: antecedentes.id,
+      antecedente: antecedentes.antecedente,
+      pacienteId: antecedentes.pacienteId,
+      observaciones: antecedentes.observaciones,
+      estado: antecedentes.estado,
+      tipo: antecedentes.tipo,
+      fechaDiagnostico: antecedentes.fechaDiagnostico,
+      userId: antecedentes.userId,
+    })
     .from(antecedentes)
     .where(eq(antecedentes.pacienteId, pacienteId));
 

@@ -3,22 +3,10 @@ import Input from '@/components/atomos/Input';
 import { TextArea } from '@/components/atomos/TextArea';
 import { useEffect, useState } from 'react';
 // --- Importaciones de Nanostores ---
-import DivReact from '@/components/atomos/DivReact';
+import Section from '@/components/moleculas/Section';
 import { addTratamiento, consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { useStore } from '@nanostores/react';
 import { Trash } from 'lucide-react';
-
-// --- Componentes de UI para el Formulario ---
-const Section = ({ title, children }) => (
-  <DivReact className=" p">
-    <h3 className="text-base font-semibold text-primary-textoTitle border-b border-gray-200 pb-3 mb-2 ">
-      {title}
-    </h3>
-    {children}
-  </DivReact>
-);
-
-// --- Componente Principal de la Pantalla de Consulta ---
 
 interface ConsultaActualPantallaProps {
   data: any; // Podés tipar más estrictamente según tu backend
@@ -50,7 +38,7 @@ const initialData = {
   },
   observaciones: '',
   diagnosticos: [],
-  medicamentos: [],
+  medicamentos: [{ nombre: '', dosis: '', frecuencia: '', id: '' }],
 
   notas: '',
 };
@@ -132,12 +120,12 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     );
     setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '', id: '' });
   };
-  console.log('este es el tratamiento de la atencion en el fronentd', data.atencion.medicamentos);
+
   // Bloqueo de edición si la atención está cerrada
   const isReadOnly = data?.atencion?.estado == 'cerrada';
 
   return (
-    <div className="space-y-2">
+    <div className="w-full flex flex-col gap-2 animate-aparecer">
       <Section title="Motivo de Consulta">
         <TextArea
           name="motivoConsulta"
@@ -292,7 +280,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               />
             </div>
             <Button onClick={addMedicamento} variant="secondary">
-              Agregar Tratamiento
+              Agregar Medicamento
             </Button>
           </div>
         )}

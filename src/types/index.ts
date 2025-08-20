@@ -56,10 +56,10 @@ export type optionsSelectInputType = {
 };
 
 export interface Antecedente {
-  atecedente: string;
+  antecedente: string;
   fechaDiagnostico: string;
   estado: string;
-  observacion?: string;
+  observaciones?: string;
   descripcion?: string;
   tipo: 'personal' | 'familiar';
   condicion?: boolean;

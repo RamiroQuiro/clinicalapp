@@ -1,5 +1,5 @@
 export { archivosAdjuntos } from './archivosAdjuntos';
-export { antecedente } from './atecedentes';
+export { antecedentes } from './atecedentes';
 export { atencionAntecedentes } from './atencionAntecedentes';
 export { atencionDiagnosticos } from './atencionDiagnosticos';
 export { atenciones } from './atenciones';
