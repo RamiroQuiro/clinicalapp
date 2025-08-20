@@ -4,8 +4,9 @@ import { TextArea } from '@/components/atomos/TextArea';
 import { useEffect, useState } from 'react';
 // --- Importaciones de Nanostores ---
 import DivReact from '@/components/atomos/DivReact';
-import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
+import { addTratamiento, consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { useStore } from '@nanostores/react';
+import { Trash } from 'lucide-react';
 
 // --- Componentes de UI para el Formulario ---
 const Section = ({ title, children }) => (
@@ -55,9 +56,15 @@ const initialData = {
 };
 export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) => {
   const $consulta = useStore(consultaStore);
+
   const [formDataActual, setFormDataActual] = useState(initialData);
   // Inputs temporales para agregar diagnosticos y tratamientos
-  const [currentDiagnostico, setCurrentDiagnostico] = useState({ nombre: '', observacion: '' });
+  const [currentDiagnostico, setCurrentDiagnostico] = useState({
+    diagnostico: '',
+    observaciones: '',
+    codigoCIE: '',
+    id: '',
+  });
   const [currentMedicamento, setCurrentMedicamento] = useState({
     nombre: '',
     dosis: '',
@@ -82,10 +89,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   ) => {
     const { name, value } = e.target;
     const currentTratamiento = consultaStore.get().tratamiento;
-    setConsultaField('tratamiento', {
-      ...currentTratamiento,
-      [name]: value,
-    });
+    addTratamiento(value, currentTratamiento.fechaInicio, currentTratamiento.fechaFin);
   };
 
   const handleSignosVitalesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,19 +102,27 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   };
 
   const addDiagnostico = () => {
-    if (!currentDiagnostico.nombre) return;
+    if (!currentDiagnostico.diagnostico) return;
     const current = consultaStore.get().diagnosticos;
-    setConsultaField('diagnosticos', [...current, currentDiagnostico]);
-    setCurrentDiagnostico({ nombre: '', observacion: '' });
+    setConsultaField('diagnosticos', [...current, { ...currentDiagnostico }]);
+    setCurrentDiagnostico({ diagnostico: '', observaciones: '', codigoCIE: '' });
+  };
+  const deletDiagnostico = (diagId: string) => {
+    const current = consultaStore.get().diagnosticos;
+    setConsultaField(
+      'diagnosticos',
+      current.filter(diag => diag.id !== diagId)
+    );
+    setCurrentDiagnostico({ diagnostico: '', observaciones: '', codigoCIE: '', id: '' });
   };
 
   const addMedicamento = () => {
     if (!currentMedicamento.nombre) return;
     const current = consultaStore.get().medicamentos;
-    setConsultaField('tratamiento', [...current, currentMedicamento]);
+    setConsultaField('medicamentos', [...current, currentMedicamento]);
     setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '' });
   };
-
+  console.log('este es el tratamiento de la tencion', $consulta.tratamiento);
   // Bloqueo de edición si la atención está cerrada
   const isReadOnly = data?.atencion?.estado == 'cerrada';
 
@@ -157,22 +169,31 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           <div className="space-y-4">
             <Input
               label="Nombre del Diagnóstico"
-              name="nombre"
-              value={currentDiagnostico.nombre}
+              name="diagnostico"
+              value={currentDiagnostico.diagnostico}
               onChange={e =>
-                setCurrentDiagnostico({ ...currentDiagnostico, nombre: e.target.value })
+                setCurrentDiagnostico({ ...currentDiagnostico, diagnostico: e.target.value })
               }
               placeholder="Ej: Faringitis aguda"
             />
             <TextArea
               label="Observaciones"
-              name="observacion"
-              value={currentDiagnostico.observacion}
+              name="observaciones"
+              value={currentDiagnostico.observaciones}
               onChange={e =>
-                setCurrentDiagnostico({ ...currentDiagnostico, observacion: e.target.value })
+                setCurrentDiagnostico({ ...currentDiagnostico, observaciones: e.target.value })
               }
               placeholder="Detalles adicionales del diagnóstico..."
               rows={2}
+            />
+            <Input
+              label="Código CIE"
+              name="codigoCIE"
+              value={currentDiagnostico.codigoCIE}
+              onChange={e =>
+                setCurrentDiagnostico({ ...currentDiagnostico, codigoCIE: e.target.value })
+              }
+              placeholder="Código CIE"
             />
             <Button onClick={addDiagnostico} variant="secondary">
               Agregar Diagnóstico
@@ -180,10 +201,23 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           </div>
         )}
 
-        <ul className=" mb-2 space-y-2">
+        <ul className=" mt-2 space-y-2 flex flex-col">
           {$consulta.diagnosticos.map((diag, idx) => (
-            <li key={idx} className="p-3 bg-gray-100 rounded-md">
-              {diag.nombre} {diag.observacion && `- ${diag.observacion}`}
+            <li
+              key={idx}
+              className="px-3 py-1 bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
+            >
+              <p className="flex items-center gap-2 ">
+                ✅ {diag.diagnostico} {diag.observaciones && `- ${diag.observaciones}`}
+              </p>
+              <p className="text-xs text-gray-500">{diag.codigoCIE}</p>
+              <button
+                title="Eliminar Diagnóstico"
+                className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
+                onClick={() => deletDiagnostico(diag.id)}
+              >
+                <Trash />
+              </button>
             </li>
           ))}
         </ul>
@@ -218,7 +252,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       </Section>
       <Section title="Medicamento">
         {!isReadOnly && (
-          <div className="mb-2 space-y-2">
+          <div className="mt-2 space-y-2">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 label="Medicamento"
@@ -251,7 +285,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           </div>
         )}
 
-        <ul className="mt space-y-3">
+        <ul className="mt-2 space-y-3">
           {$consulta.medicamentos.map((tr, idx) => (
             <li key={idx} className="p-3 bg-gray-100 rounded-md">
               {`${tr.nombre} (${tr.dosis}) - ${tr.frecuencia}`}

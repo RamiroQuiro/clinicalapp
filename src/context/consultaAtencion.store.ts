@@ -17,7 +17,7 @@ export interface Consulta {
   };
   notas: string;
   observaciones: string;
-  diagnosticos: { nombre: string; observacion: string }[];
+  diagnosticos: { diagnostico: string; observaciones: string; codigoCIE: string; id: string }[];
   tratamiento: {
     fechaInicio: string;
     fechaFin: string;
@@ -63,6 +63,19 @@ export function setConsultaField<K extends keyof Consulta>(field: K, value: Cons
   });
 }
 
+// Agregar medicamento
+export function addTratamiento(tratamiento: string, fechaInicio: string, fechaFin: string) {
+  const current = consultaStore.get();
+  consultaStore.set({
+    ...current,
+    tratamiento: {
+      ...current.tratamiento,
+      tratamiento,
+      fechaInicio,
+      fechaFin,
+    },
+  });
+}
 // Agregar medicamento
 export function addMedicamento(nombre: string) {
   const current = consultaStore.get();

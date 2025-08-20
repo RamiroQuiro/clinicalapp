@@ -99,60 +99,53 @@ export const POST: APIRoute = async ({ request, locals }) => {
           id: nanoid(),
           atencionId: currentAtencionId,
           pacienteId,
-          userId: user.id,
+          userMedicoId: user.id,
           ...svData,
         });
       }
 
-      console.log('empezando a ingresar los diagnósticos 🖋️', diagnosticos);
-      // 3. Guardar/Actualizar Diagnósticos
+      // 3. Guardar Diagnósticos (Delete and Re-insert)
       if (diagnosticos && diagnosticos.length > 0) {
-        // Actualizamos los diagnósticos existentes o insertamos los nuevos
-        for (const d of diagnosticos) {
-          const existingDiagnostico = await tx
-            .select()
-            .from(diagnostico)
-            .where(eq(diagnostico.atencionId, currentAtencionId))
-            .limit(1);
+        // Primero, eliminamos todos los diagnósticos existentes para esta atención
+        await tx.delete(diagnostico).where(eq(diagnostico.atencionId, currentAtencionId));
 
-          if (existingDiagnostico.length > 0) {
-            // Actualizamos el registro existente
-            await tx
-              .update(diagnostico)
-              .set({ observaciones: d.observaciones, updated_at: new Date(getFechaUnix() * 1000) })
-              .where(eq(diagnostico.atencionId, currentAtencionId));
-          } else {
-            // Insertamos uno nuevo
-            await tx.insert(diagnostico).values({
-              id: nanoid(),
-              atencionId: currentAtencionId,
-              pacienteId,
-              userMedicoId: user.id,
-              historiaClinicaId,
-              diagnostico: d.nombre,
-              observaciones: d.observacion,
-            });
-          }
-        }
+        // Luego, insertamos los nuevos diagnósticos que vienen del frontend
+        await tx.insert(diagnostico).values(
+          diagnosticos.map(d => ({
+            id: nanoid(),
+            atencionId: currentAtencionId,
+            pacienteId,
+            userMedicoId: user.id,
+            historiaClinicaId,
+            diagnostico: d.diagnostico, // Asegúrate que el frontend envíe 'diagnostico'
+            observaciones: d.observaciones,
+            codigoCIE: d.codigoCIE, // Y 'codigoCIE'
+          }))
+        );
       }
       console.log('Datos de la consulta: trtamiento data', tratamientoData);
       // 4. Guardar/Actualizar Tratamientos
-      if (tratamientoData && tratamientoData.length > 0) {
+      if (tratamientoData.tratamiento) {
         // Eliminamos los tratamientos existentes para esta atención
         await tx.delete(tratamiento).where(eq(tratamiento.atencionesId, currentAtencionId));
 
         // Insertamos los nuevos tratamientos
-        await tx.insert(tratamiento).values(
-          tratamientoData.map(t => ({
-            id: nanoid(),
-            atencionId: currentAtencionId,
-            pacienteId,
-            userId: user.id,
-            tratamiento: t.tratamiento,
-            fechaInicio: t.fechaInicio ? t.fechaInicio : null,
-            fechaFin: t.fechaFin ? t.fechaFin : null,
-          }))
-        );
+        await tx.insert(tratamiento).values({
+          id: nanoid(),
+          atencionesId: currentAtencionId,
+          pacienteId,
+          userMedicoId: user.id,
+          tratamiento: tratamientoData.tratamiento,
+        });
+      } else {
+        // Insertamos los nuevos tratamientos
+        await tx.insert(tratamiento).values({
+          id: nanoid(),
+          atencionesId: currentAtencionId,
+          pacienteId,
+          userMedicoId: user.id,
+          tratamiento: tratamientoData.tratamiento,
+        });
       }
 
       // 5. Guardar Medicamentos (asumiendo que se insertan nuevos cada vez)
@@ -160,6 +153,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // ConsultaActualPantalla.tsx no tiene un input para 'medicamentos' directamente.
       // Si 'medicamentos' se refiere a los tratamientos, entonces esta sección podría no ser necesaria
       // o necesitaría ser ajustada. Por ahora, la dejo como un placeholder.
+      console.log('Datos de la consulta: medicamentos', medicamentos);
       if (medicamentos && medicamentos.length > 0) {
         await tx.insert(medicamento).values(
           medicamentos.map(m => ({

@@ -43,11 +43,20 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .orderBy(desc(signosVitales.created_at));
 
   const diagnosticosAtencion = await db
-    .select()
+    .select({
+      id: diagnostico.id,
+      diagnostico: diagnostico.diagnostico,
+      observaciones: diagnostico.observaciones,
+      codigoCIE: diagnostico.codigoCIE,
+      createdAt: diagnostico.created_at,
+      updatedAt: diagnostico.updated_at,
+    })
     .from(diagnostico)
     .where(eq(diagnostico.atencionId, atencionId));
+
   const [tratamientoAtencion] = await db
     .select({
+      id: tratamiento.id,
       fechaInicio: tratamiento.fechaInicio,
       fechaFin: tratamiento.fechaFin,
       tratamiento: tratamiento.tratamiento,
