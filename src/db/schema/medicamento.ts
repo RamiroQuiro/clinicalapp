@@ -7,8 +7,17 @@ import { users } from './users';
 
 export const medicamento = sqliteTable('medicamentos', {
   id: text('id').primaryKey(),
-  nombre: text('nombre').notNull(),
-  descripcion: text('descripcion'),
+
+  // PRINCIPIO ACTIVO - obligatorio
+  nombreGenerico: text('nombreGenerico').notNull(),
+
+  // OPCIONALES
+  nombreComercial: text('nombreComercial'), // Ej: Amoxidal
+  laboratorio: text('laboratorio'), // Ej: Roemmers
+  descripcion: text('descripcion'), // Observaciones libres
+  tipoMedicamento: text('tipoMedicamento'), // Ej: Antibiótico, Analgésico
+
+  // RELACIONES
   historiaClinicaId: text('historiaClinicaId').references(() => historiaClinica.id, {
     onDelete: 'cascade',
   }),
@@ -17,11 +26,17 @@ export const medicamento = sqliteTable('medicamentos', {
   userMedicoId: text('userMedicoId')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+
+  // POSOLOGÍA
   dosis: text('dosis'),
   frecuencia: text('frecuencia'),
   duracion: text('duracion'),
+
+  // STOCK Y COSTO
   precio: text('precio'),
   stock: text('stock'),
+
+  // CONTROL DE FECHAS
   updated_at: integer('updated_at', { mode: 'timestamp' }),
   created_at: integer('created_at', { mode: 'timestamp' })
     .notNull()

@@ -23,6 +23,7 @@ const atencion = atom({
   tratamiento: '',
   signosVitales: {},
   motivoInicial: 'sin motivo',
+  motivoGeneral: '', // Nuevo campo para el motivo general
   motivoConsulta: '',
   diagnosticos: [],
   medicamentos: [],

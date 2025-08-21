@@ -17,6 +17,7 @@ import {
   Wind,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
 
 // --- Configuración de Signos Vitales ---
 const vitalSignsConfig = [
@@ -162,6 +163,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   return (
     <div className="w-full flex flex-col gap-2 animate-aparecer">
       <Section title="Motivo de Consulta">
+        {/* Contenedor de motivo inicial */}
+        <ContenedorMotivoInicialV2 especialidad={'cardiologo'} />
         <TextArea
           name="motivoConsulta"
           value={$consulta.motivoConsulta}

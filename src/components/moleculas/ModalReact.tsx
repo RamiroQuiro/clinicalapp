@@ -17,7 +17,7 @@ export default function ModalReact({ onClose, children, className, title, id }: 
       onClick={() => onClose(false)}
     >
       <div
-        className={`bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h- md:min-h-[50vh] overflow-y-auto md:min-w-[40vw] ${className}`}
+        className={`bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit overflow-y-auto w-fit ${className}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Header Fijo */}

@@ -19,19 +19,19 @@ export const HistorialVisitasPantalla = ({ data }) => {
   }, [data?.pacienteId]);
 
   const handleCardClick = async (visitId: string) => {
-    setLoading(true); // Opcional: mostrar un loader mientras se cargan los detalles
-    try {
-      const response = await fetch(`/api/pacientes/${data.pacienteId}/atenciones/${visitId}`);
-      if (!response.ok) throw new Error('Error al cargar los detalles de la atención');
-      const fullData = await response.json();
-      setSelectedAtencionData(fullData);
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error('Error fetching detalles de atención:', error);
-      alert('No se pudieron cargar los detalles de la atención.');
-    } finally {
-      setLoading(false);
-    }
+    // setLoading(true); // Opcional: mostrar un loader mientras se cargan los detalles
+    // try {
+    //   const response = await fetch(`/api/pacientes/${data.pacienteId}/atenciones/${visitId}`);
+    //   if (!response.ok) throw new Error('Error al cargar los detalles de la atención');
+    //   const fullData = await response.json();
+    //   setSelectedAtencionData(fullData);
+    //   setIsModalOpen(true);
+    // } catch (error) {
+    //   console.error('Error fetching detalles de atención:', error);
+    //   alert('No se pudieron cargar los detalles de la atención.');
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   return (
@@ -42,7 +42,7 @@ export const HistorialVisitasPantalla = ({ data }) => {
             <InfoCard
               key={item.id}
               icon={<ClipboardList size={20} className="text-gray-500" />}
-              title={`Visita con ${item.medico}`}
+              title={`Visita con ${item.nombreDoctor} ${item.apellidoDoctor}`}
               subtitle={`Motivo: ${item.motivoConsulta}`}
               date={new Date(item.fecha).toLocaleDateString()}
               bodyText={`Diagnóstico principal: ${item.diagnosticoPrincipal}`}

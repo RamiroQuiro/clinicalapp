@@ -1,7 +1,22 @@
-import React from 'react';
 import { Pencil } from 'lucide-react';
+import React from 'react';
 
 // --- Props Interface ---
+interface Atencion {
+  id: string;
+  userId: string;
+  pacienteId: string;
+  motivoConsulta: string;
+  motivoInicial?: string | null;
+  fecha: Date;
+  estado: string;
+  created_at: Date;
+  inicioAtencion?: Date | null;
+  finAtencion?: Date | null;
+  duracionAtencion?: number | null;
+  nombreDoctor: string;
+  apellidoDoctor: string;
+}
 interface InfoCardProps {
   title: string;
   subtitle?: string;
@@ -13,7 +28,7 @@ interface InfoCardProps {
   bodyText?: string;
   onEdit?: () => void;
   icon?: React.ReactNode;
-  onClick?: () => void; // New optional onClick prop
+  onClick?: (atencion: Atencion) => void; // New optional onClick prop
 }
 
 // --- Generic Card Component ---
@@ -42,13 +57,15 @@ export const InfoCard: React.FC<InfoCardProps> = ({
       <div className="flex-1">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-bold text-primary-textoTitle text-base">{title}</h3>
+            <h3 className="font-bold capitalize text-primary-textoTitle text-base">{title}</h3>
             {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
           </div>
           <div className="text-right flex-shrink-0 ml-4">
             <p className="text-sm font-semibold text-gray-700">{date}</p>
             {status && (
-              <span className={`mt-1 inline-block px-2 py-1 text-xs font-semibold rounded-full ${status.colorClass}`}>
+              <span
+                className={`mt-1 inline-block px-2 py-1 text-xs font-semibold rounded-full ${status.colorClass}`}
+              >
                 {status.text}
               </span>
             )}

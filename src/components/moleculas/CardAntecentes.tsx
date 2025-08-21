@@ -5,12 +5,17 @@ import Button3 from '../atomos/Button3';
 
 type Props = {
   data: Antecedente;
-  onEdit: (antecedente: Antecedente) => void; // Callback to handle edit action
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
 };
 
-export default function CardAntecentes({ data, onEdit }: Props) {
+export default function CardAntecentes({ data, isOpen, setIsOpen }: Props) {
+  const handleEdit = () => {
+    setIsOpen();
+  };
+
   return (
-    <div className="flex items-start gap-4 p-4 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="flex items-start gap-4 p-2 border border-gray-200/50 rounded-md bg-primary-bg-componentes">
       <div
         className={`w-8 h-8 rounded-full ${data.estado !== 'controlado' ? 'bg-red-100' : 'bg-primary-150'} flex items-center justify-center`}
       >
@@ -22,16 +27,14 @@ export default function CardAntecentes({ data, onEdit }: Props) {
       </div>
 
       <div className="flex-1">
-        <h3 className="font-medium text-primary-textoTitle text-sm uppercase">
-          {data?.antecedente}
-        </h3>
+        <h3 className="font-medium text-sm uppercase">{data?.antecedente}</h3>
         <p className="text-xs text-muted-foreground">
           Diagnosticado: {formatDate(data?.fechaDiagnostico)}
         </p>
       </div>
       <Button3
         className={`px-2 py-1 text-xs font-medium bg-accent items-center justify-center`}
-        onClick={() => onEdit(data)}
+        onClick={handleEdit}
       >
         <Pencil size={16} className="mx-auto" /> <p className="text-[10px] mx-auto">Editar</p>
       </Button3>

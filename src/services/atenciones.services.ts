@@ -68,7 +68,8 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
   const medicamentosAtencion = await db
     .select({
       id: medicamento.id,
-      nombre: medicamento.nombre,
+      nombreGenerico: medicamento.nombreGenerico,
+      nombreComercial: medicamento.nombreComercial,
       dosis: medicamento.dosis,
       frecuencia: medicamento.frecuencia,
       createdAt: medicamento.created_at,
@@ -173,7 +174,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       motivoConsulta: atenciones.motivoConsulta,
       motivoInicial: atenciones.motivoInicial,
       fecha: atenciones.fecha,
-      tratamientoId: atenciones.tratamientoId,
       estado: atenciones.estado,
       created_at: atenciones.created_at,
       inicioAtencion: atenciones.inicioAtencion,
