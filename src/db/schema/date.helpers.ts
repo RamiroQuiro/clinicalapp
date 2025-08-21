@@ -1,11 +1,14 @@
-import { sql } from "drizzle-orm";
-import { integer, text } from "drizzle-orm/sqlite-core";
+import { sql } from 'drizzle-orm';
+import { integer } from 'drizzle-orm/sqlite-core';
 
 // columns.helpers.ts
 const timestamps = {
-    updated_at: text('updated_at'),
-    created_at: text('created_at').notNull().default(sql`(current_timestamp)`),
-    deleted_at: text('deleted_at'),
-  }
-  
-  export default timestamps
+  // CONTROL DE FECHAS
+  updated_at: integer('updated_at', { mode: 'timestamp' }),
+  created_at: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`strftime('%s', 'now')`),
+  deleted_at: integer('deleted_at', { mode: 'timestamp' }),
+};
+
+export default timestamps;

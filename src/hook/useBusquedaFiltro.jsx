@@ -1,33 +1,25 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 
 const useBusquedaFiltros = (arr, opcionesFiltrado) => {
   const [search, setSearch] = useState('');
-  const [encontrado, setEncontrado] = useState(arr);
 
   const busquedaFiltros = useCallback(
-    (arr, search) => {
-      if (!search) return arr; // Si no hay búsqueda, devolvemos el array original
-      if (search == '00') return arr;
-      return arr?.filter(item => {
-        if (opcionesFiltrado.length == 0) {
-          if (item.toUpperCase().includes(search.toUpperCase())) {
-            return item;
-          }
+    (items, term) => {
+      if (!term) return items;
+      if (term === '00') return items;
+
+      return items?.filter(item => {
+        if (opcionesFiltrado.length === 0) {
+          return item.toUpperCase().includes(term.toUpperCase());
         }
         return opcionesFiltrado.some(campo => {
-          const valorCampo = item[campo]; // Accedemos al valor del campo
-
+          const valorCampo = item[campo];
           if (typeof valorCampo === 'string') {
-            // Si es un string, comparamos en mayúsculas
-            return valorCampo.toUpperCase().includes(search.toUpperCase());
+            return valorCampo.toUpperCase().includes(term.toUpperCase());
           }
-
           if (typeof valorCampo === 'number') {
-            // Si es un número, comparamos como string
-            return String(valorCampo).includes(search);
+            return String(valorCampo).includes(term);
           }
-
-          // Si es otro tipo de dato o null/undefined, lo ignoramos
           return false;
         });
       });
@@ -35,16 +27,19 @@ const useBusquedaFiltros = (arr, opcionesFiltrado) => {
     [opcionesFiltrado]
   );
 
+  const encontrado = useMemo(() => busquedaFiltros(arr, search), [arr, search, busquedaFiltros]);
+
   const handleSearch = useCallback(
     e => {
-      const value = e.target.value;
-      setSearch(value);
-      setEncontrado(busquedaFiltros(arr, value));
+      setSearch(e.target.value);
     },
-    [arr, busquedaFiltros]
+    []
   );
 
-  return { search, encontrado, handleSearch, setSearch };
+  // Nuevo valor de retorno: indica si la búsqueda está activa y no se encontraron resultados.
+  const noResultados = search.length > 0 && encontrado.length === 0;
+
+  return { search, encontrado, handleSearch, setSearch, noResultados };
 };
 
 export default useBusquedaFiltros;

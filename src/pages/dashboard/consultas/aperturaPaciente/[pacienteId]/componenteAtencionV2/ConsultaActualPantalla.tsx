@@ -164,7 +164,14 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     <div className="w-full flex flex-col gap-2 animate-aparecer">
       <Section title="Motivo de Consulta">
         {/* Contenedor de motivo inicial */}
-        <ContenedorMotivoInicialV2 especialidad={'cardiologo'} />
+        <ContenedorMotivoInicialV2 />
+        {$consulta.motivoInicial && (
+          <div className="mt-2 text-sm text-gray-600">
+            <span className="font-semibold">Motivo Inicial Seleccionado:</span> {
+              $consulta.motivoInicial
+            }
+          </div>
+        )}
         <TextArea
           name="motivoConsulta"
           value={$consulta.motivoConsulta}

@@ -57,6 +57,34 @@
       "when": 1755270737520,
       "tag": "0007_empty_baron_zemo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1755816469966,
+      "tag": "0008_omniscient_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1755817566018,
+      "tag": "0009_organic_yellow_claw",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1755817669047,
+      "tag": "0010_tranquil_reavers",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1755818879613,
+      "tag": "0011_stormy_mac_gargan",
+      "breakpoints": true
     }
   ]
 }
