@@ -1,78 +1,57 @@
-import { useState, useEffect } from "react";
-import { useStore } from "@nanostores/react";
-import { atencion } from "../../context/store";
-import formatDate from "../../utils/formatDate";
-
-const ContenedorSignosVitales = ({ svg, medida, label, name,historialSignos }) => {
-  const $signosVitales = useStore(atencion);
-  const [signoVital, setSignoVital] = useState("");
-  const [cargando, setCargando] = useState(true);
-  const [historial, setHistorial] = useState(historialSignos||[])
-const [isDisable, setIsDisable] = useState(false)
-  useEffect(() => {
-    // Solo actualiza cuando hay datos y marca el estado como cargado.
-    if ($signosVitales?.signosVitales) {
-      setSignoVital($signosVitales.signosVitales[name] || "");
-      setCargando(false);
-    }
-  }, [$signosVitales, name]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setSignoVital(value);
-    atencion.set({
-      ...$signosVitales,
-      signosVitales: { ...$signosVitales.signosVitales, [name]: value },
-    });
-  };
-
-return (
-  <div className="flex group items-center justify-start py-2 px-1 relative border-gray-200/70 rounded-lg">
-    <div className="flex items-center justify-start relative gap-1">
-      {/* Tooltip dinámico */}
-      <div className="hidden absolute bg-primary-textoTitle/80 border-primary-400  backdrop-blur-sm text-primary-bg-claro animate-aparecer rounded-lg border p-2 top0 group-hover:flex z-50 right-full w-32 items-start">
-        <div className="flex flex-col text-xs">
-          <p className="font-bold">Historial:</p>
-          {historial?.length > 0 ? (
-            historial.map((currentValor, index) => {
-              let formatDate=new Date(currentValor.fecha).toLocaleDateString()
-              return(
-              <span key={index} className="text-gray-100">
-                -{currentValor.valor} | -{formatDate}
-              </span>
-            )})
-          ) : (
-            <span className="text-gray-400">Sin datos</span>
-          )}
-        </div>
+const ContenedorSignosVitales = ({
+  icon,
+  label,
+  unit,
+  name,
+  value,
+  onChange,
+  readOnly,
+  history = [],
+}) => {
+  return (
+    <div className="group relative flex flex-col flex-1 min-w-[140px] p-3 bg-gray-50 rounded-lg border border-gray-200 items-center justify-center shadow-sm">
+      {/* Tooltip con Historial */}
+      <div className="hidden absolute bottom-full mb-2 w-48 bg-gray-800 text-white text-xs rounded-lg p-3 z-10 group-hover:block animate-aparecer">
+        <p className="font-bold border-b border-gray-600 pb-1 mb-1">Historial de {label}</p>
+        {history && history.length > 0 ? (
+          <ul className="space-y-1">
+            {history.slice(0, 5).map((entry, index) => (
+              <li key={index} className="flex justify-between">
+                <span>
+                  {entry.valor} {unit}
+                </span>
+                <span className="text-gray-400">{new Date(entry.fecha).toLocaleDateString()}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400">No hay historial.</p>
+        )}
+        <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
       </div>
 
-      {/* SVG/Icono */}
-      <div
-        className="w-8 h-8 relative peer"
-        dangerouslySetInnerHTML={{ __html: svg }}
-      ></div>
-      <span className="text-xs font-bold break-words px-1">{label}</span>
-    </div>
-
-    <div className="flex items-center gap-x-2">
-      <div className="w-12">
+      {/* Contenido del Signo Vital */}
+      <div className="flex items-center gap-2 mb-1">
+        <div className="text-primary-textoTitle">{icon}</div>
+        <label htmlFor={name} className="text-sm font-semibold text-gray-700">
+          {label}
+        </label>
+      </div>
+      <div className="flex items-baseline">
         <input
-          disabled={isDisable}
-          value={signoVital}
-          onChange={handleChange}
-          className="border border-gray-200/70 bg-primary-bg-componentes w-full px-2 py-1 text-sm rounded-lg outline-none ring-0"
-          type="number"
+          id={name}
           name={name}
+          type="number"
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          className="w-20 text-center text-xl font-bold bg-transparent focus:outline-none appearance-none"
+          placeholder="--"
         />
+        <span className="text-xs text-gray-500 ml-1">{unit}</span>
       </div>
-      <span className="text-xs tracking-tighter font-light break-words px-1">
-        {medida}
-      </span>
     </div>
-  </div>
-);
-
+  );
 };
 
 export default ContenedorSignosVitales;

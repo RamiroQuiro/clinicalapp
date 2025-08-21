@@ -1,52 +1,89 @@
 import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
 import { TextArea } from '@/components/atomos/TextArea';
-import { useEffect, useState } from 'react';
-// --- Importaciones de Nanostores ---
+import ContenedorSignosVitales from '@/components/moleculas/ContenedorSignosVitales';
 import Section from '@/components/moleculas/Section';
-import { addTratamiento, consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
+import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { useStore } from '@nanostores/react';
-import { Trash } from 'lucide-react';
+import {
+  Calculator,
+  Droplet,
+  HeartPulse,
+  Percent,
+  Ruler,
+  Thermometer,
+  Trash,
+  Weight,
+  Wind,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+// --- Configuración de Signos Vitales ---
+const vitalSignsConfig = [
+  {
+    name: 'tensionArterial',
+    label: 'Tensión Arterial',
+    unit: 'mmHg',
+    icon: <HeartPulse size={18} />,
+  },
+  {
+    name: 'frecuenciaCardiaca',
+    label: 'Frec. Cardíaca',
+    unit: 'lpm',
+    icon: <HeartPulse size={18} />,
+  },
+  {
+    name: 'frecuenciaRespiratoria',
+    label: 'Frec. Resp.',
+    unit: 'rpm',
+    icon: <Wind size={18} />,
+  },
+  {
+    name: 'temperatura',
+    label: 'Temperatura',
+    unit: '°C',
+    icon: <Thermometer size={18} />,
+  },
+  {
+    name: 'saturacionOxigeno',
+    label: 'Sat. O₂',
+    unit: '%',
+    icon: <Percent size={18} />,
+  },
+  {
+    name: 'peso',
+    label: 'Peso',
+    unit: 'kg',
+    icon: <Weight size={18} />,
+  },
+  {
+    name: 'talla',
+    label: 'Talla',
+    unit: 'cm',
+    icon: <Ruler size={18} />,
+  },
+  {
+    name: 'imc',
+    label: 'IMC',
+    unit: 'kg/m²',
+    icon: <Calculator size={18} />,
+  },
+  {
+    name: 'glucosa',
+    label: 'Glucosa',
+    unit: 'mg/dL',
+    icon: <Droplet size={18} />,
+  },
+];
 
 interface ConsultaActualPantallaProps {
   data: any; // Podés tipar más estrictamente según tu backend
 }
 
-const initialData = {
-  atencionId: '',
-  historiaClinicaId: '',
-  pacienteId: '',
-  motivoConsulta: '',
-  sintomas: '',
-  tratamiento: {
-    fechaInicio: '',
-    fechaFin: '',
-    tratamiento: '',
-  },
-  signosVitales: {
-    tensionArterial: 0,
-    frecuenciaCardiaca: 0,
-    frecuenciaRespiratoria: 0,
-    temperatura: 0,
-    glucosa: 0,
-    pulso: 0,
-    oxigeno: 0,
-    saturacionOxigeno: 0,
-    peso: 0,
-    talla: 0,
-    imc: 0,
-  },
-  observaciones: '',
-  diagnosticos: [],
-  medicamentos: [{ nombre: '', dosis: '', frecuencia: '', id: '' }],
-
-  notas: '',
-};
 export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) => {
   const $consulta = useStore(consultaStore);
 
-  const [formDataActual, setFormDataActual] = useState(initialData);
-  // Inputs temporales para agregar diagnosticos y tratamientos
+  const [signosVitalesHistorial, setSignosVitalesHistorial] = useState([]);
   const [currentDiagnostico, setCurrentDiagnostico] = useState({
     diagnostico: '',
     observaciones: '',
@@ -60,25 +97,19 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     id: '',
   });
 
-  // Hidratamos la store con datos de la atención si está en curso
   useEffect(() => {
     if (!data || !data.atencion) return;
-    setFormDataActual({ ...data.atencion });
+    // Hidratamos la store con datos de la atención si está en curso
     consultaStore.set({ ...data.atencion });
+    // Guardamos el historial de signos vitales en un estado local
+    if (data.signosVitalesHistorial) {
+      setSignosVitalesHistorial(data.signosVitalesHistorial);
+    }
   }, [data]);
-  // console.log('estado del store en  consulta actual pantalla', $consulta);
-  // Manejo de cambios generales
+
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setConsultaField(name, value);
-  };
-
-  const handleFormChangeTratamiento = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    const currentTratamiento = consultaStore.get().tratamiento;
-    addTratamiento(value, currentTratamiento.fechaInicio, currentTratamiento.fechaFin);
   };
 
   const handleSignosVitalesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,22 +124,22 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   const addDiagnostico = () => {
     if (!currentDiagnostico.diagnostico) return;
     const current = consultaStore.get().diagnosticos;
-    setConsultaField('diagnosticos', [...current, { ...currentDiagnostico }]);
-    setCurrentDiagnostico({ diagnostico: '', observaciones: '', codigoCIE: '' });
+    setConsultaField('diagnosticos', [...current, { ...currentDiagnostico, id: `temp_${Date.now()}` }]);
+    setCurrentDiagnostico({ diagnostico: '', observaciones: '', codigoCIE: '', id: '' });
   };
+
   const deletDiagnostico = (diagId: string) => {
     const current = consultaStore.get().diagnosticos;
     setConsultaField(
       'diagnosticos',
       current.filter(diag => diag.id !== diagId)
     );
-    setCurrentDiagnostico({ diagnostico: '', observaciones: '', codigoCIE: '', id: '' });
   };
 
   const addMedicamento = () => {
     if (!currentMedicamento.nombre) return;
     const current = consultaStore.get().medicamentos;
-    setConsultaField('medicamentos', [...current, currentMedicamento]);
+    setConsultaField('medicamentos', [...current, { ...currentMedicamento, id: `temp_${Date.now()}` }]);
     setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '', id: '' });
   };
 
@@ -118,10 +149,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       'medicamentos',
       current.filter(med => med.id !== medId)
     );
-    setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '', id: '' });
   };
 
-  // Bloqueo de edición si la atención está cerrada
   const isReadOnly = data?.atencion?.estado == 'cerrada';
 
   return (
@@ -137,18 +166,24 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       </Section>
 
       <Section title="Signos Vitales">
-        <div className="flex flex-wrap gap-4 items-center w-full justify-around">
-          {Object.entries($consulta.signosVitales).map(([key, val]) => (
-            <Input
-              key={key}
-              label={key}
-              name={key}
-              value={val}
-              onChange={handleSignosVitalesChange}
-              placeholder={`Ingrese ${key}`}
-              readOnly={isReadOnly}
-            />
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {vitalSignsConfig.map(vital => {
+            // Buscamos el historial para este signo vital específico
+            const historyData = signosVitalesHistorial.find(h => h.tipo === vital.name)?.historial || [];
+            return (
+              <ContenedorSignosVitales
+                key={vital.name}
+                name={vital.name}
+                label={vital.label}
+                unit={vital.unit}
+                icon={vital.icon}
+                value={$consulta.signosVitales[vital.name]}
+                onChange={handleSignosVitalesChange}
+                readOnly={isReadOnly}
+                history={historyData}
+              />
+            );
+          })}
         </div>
       </Section>
 
@@ -200,9 +235,9 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         )}
 
         <ul className=" mt-2 space-y-2 flex flex-col">
-          {$consulta.diagnosticos.map((diag, idx) => (
+          {$consulta.diagnosticos.map((diag) => (
             <li
-              key={idx}
+              key={diag.id}
               className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
             >
               <div className="flex items-center justify-start gap-4">
@@ -222,34 +257,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           ))}
         </ul>
       </Section>
-      <Section title="Plan de Tratamiento">
-        <TextArea
-          name="tratamiento"
-          className="flex-1 w-full"
-          value={$consulta.tratamiento.tratamiento}
-          onChange={handleFormChangeTratamiento}
-          placeholder="Describe el tratamiento propuesto para el paciente..."
-          readOnly={isReadOnly}
-        />
-        <div className="flex items-center mt-2    justify-evenly w-full space-y-2">
-          <Input
-            label="Inicio de tratamiento"
-            type={'date'}
-            value={$consulta.tratamiento.fechaInicio}
-            name={'fechaInicio'}
-            onChange={handleFormChangeTratamiento}
-            readOnly={isReadOnly}
-          />
-          <Input
-            label={'Fin de tratamiento'}
-            type={'date'}
-            value={$consulta.tratamiento.fechaFin}
-            name={'fechaFin'}
-            onChange={handleFormChangeTratamiento}
-            readOnly={isReadOnly}
-          />
-        </div>
-      </Section>
+      
       <Section title="Medicamento">
         {!isReadOnly && (
           <div className="mt-2 space-y-2">
@@ -286,9 +294,9 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         )}
 
         <ul className="mt-2 space-y-3">
-          {$consulta.medicamentos.map((med, idx) => (
+          {$consulta.medicamentos.map((med) => (
             <li
-              key={idx}
+              key={med.id}
               className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
             >
               <div className="flex items-center justify-start gap-4">
