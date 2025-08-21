@@ -13,6 +13,7 @@ interface InfoCardProps {
   bodyText?: string;
   onEdit?: () => void;
   icon?: React.ReactNode;
+  onClick?: () => void; // New optional onClick prop
 }
 
 // --- Generic Card Component ---
@@ -24,9 +25,12 @@ export const InfoCard: React.FC<InfoCardProps> = ({
   bodyText,
   onEdit,
   icon,
+  onClick,
 }) => {
+  const cardClasses = `flex items-start gap-4 p-4 bg-white rounded-lg border shadow-sm ${onClick ? 'cursor-pointer hover:shadow-md' : ''} transition-shadow duration-200`;
+
   return (
-    <div className="flex items-start gap-4 p-4 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className={cardClasses} onClick={onClick}>
       {/* Icon Column (Optional) */}
       {icon && (
         <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">

@@ -64,7 +64,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(tratamiento)
     .where(eq(tratamiento.atencionesId, atencionId));
-  console.log('este es el tratamiento de la atencion', tratamientoAtencion);
 
   const medicamentosAtencion = await db
     .select({
@@ -184,12 +183,11 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       apellidoDoctor: users.apellido,
     })
     .from(atenciones)
-    .innerJoin(users, eq(users.id, atenciones.userIdMedico))
-    .innerJoin(tratamiento, eq(tratamiento.id, atenciones.tratamientoId))
+    .leftJoin(users, eq(users.id, atenciones.userIdMedico))
     .where(eq(atenciones.pacienteId, pacienteId))
     .orderBy(desc(atenciones.created_at))
     .limit(4);
-
+  console.log('historialVisitaData', historialVisitaData);
   return {
     error: false,
     message: 'Atención en curso',

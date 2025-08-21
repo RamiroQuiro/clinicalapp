@@ -19,7 +19,7 @@ export const RenderizacionPantalla = ({ activeTab, data }: { activeTab: string; 
     case 'medicamentos':
       return <MedicamentosPantalla data={data} />;
     case 'historial':
-      return <HistorialVisitasPantalla data={data} />;
+      return <HistorialVisitasPantalla data={data.historialVisitas} />;
     default:
       return <ConsultaActualPantalla data={data} />;
   }
