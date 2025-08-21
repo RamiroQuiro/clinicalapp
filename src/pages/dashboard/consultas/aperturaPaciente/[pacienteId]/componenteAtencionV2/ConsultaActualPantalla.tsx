@@ -124,7 +124,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   const addDiagnostico = () => {
     if (!currentDiagnostico.diagnostico) return;
     const current = consultaStore.get().diagnosticos;
-    setConsultaField('diagnosticos', [...current, { ...currentDiagnostico, id: `temp_${Date.now()}` }]);
+    setConsultaField('diagnosticos', [
+      ...current,
+      { ...currentDiagnostico, id: `temp_${Date.now()}` },
+    ]);
     setCurrentDiagnostico({ diagnostico: '', observaciones: '', codigoCIE: '', id: '' });
   };
 
@@ -139,7 +142,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   const addMedicamento = () => {
     if (!currentMedicamento.nombre) return;
     const current = consultaStore.get().medicamentos;
-    setConsultaField('medicamentos', [...current, { ...currentMedicamento, id: `temp_${Date.now()}` }]);
+    setConsultaField('medicamentos', [
+      ...current,
+      { ...currentMedicamento, id: `temp_${Date.now()}` },
+    ]);
     setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '', id: '' });
   };
 
@@ -169,7 +175,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {vitalSignsConfig.map(vital => {
             // Buscamos el historial para este signo vital específico
-            const historyData = signosVitalesHistorial.find(h => h.tipo === vital.name)?.historial || [];
+            const historyData =
+              signosVitalesHistorial.find(h => h.tipo === vital.name)?.historial || [];
             return (
               <ContenedorSignosVitales
                 key={vital.name}
@@ -177,7 +184,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
                 label={vital.label}
                 unit={vital.unit}
                 icon={vital.icon}
-                value={$consulta.signosVitales[vital.name]}
+                value={$consulta?.signosVitales[vital?.name]}
                 onChange={handleSignosVitalesChange}
                 readOnly={isReadOnly}
                 history={historyData}
@@ -235,7 +242,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         )}
 
         <ul className=" mt-2 space-y-2 flex flex-col">
-          {$consulta.diagnosticos.map((diag) => (
+          {$consulta.diagnosticos.map(diag => (
             <li
               key={diag.id}
               className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
@@ -257,7 +264,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           ))}
         </ul>
       </Section>
-      
+
       <Section title="Medicamento">
         {!isReadOnly && (
           <div className="mt-2 space-y-2">
@@ -294,7 +301,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         )}
 
         <ul className="mt-2 space-y-3">
-          {$consulta.medicamentos.map((med) => (
+          {$consulta.medicamentos.map(med => (
             <li
               key={med.id}
               className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"

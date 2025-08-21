@@ -13,9 +13,9 @@ export const RenderizacionPantalla = ({ activeTab, data }: { activeTab: string; 
     case 'antecedentes':
       return <AntecedentesPantalla data={data.antecedentes} pacienteId={data.paciente.id} />;
     case 'signos':
-      return <SignosVitalesPantalla data={data.signosVitalesData} />;
+      return <SignosVitalesPantalla signosVitalesHistorial={data.signosVitalesHistorial} />;
     case 'diagnostico':
-      return <DiagnosticosPantalla data={data.isExistDiagnosticos} />;
+      return <DiagnosticosPantalla data={data} />;
     case 'medicamentos':
       return <MedicamentosPantalla data={data.isExistMedicamentos} />;
     case 'historial':

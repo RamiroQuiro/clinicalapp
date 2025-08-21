@@ -99,7 +99,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           id: nanoid(),
           atencionId: currentAtencionId,
           pacienteId,
-          userMedicoId: user.id,
+          userId: user.id,
           ...svData,
         });
       }
