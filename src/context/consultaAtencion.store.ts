@@ -5,7 +5,7 @@ import { atom } from 'nanostores';
 export interface Consulta {
   id: string;
   pacienteId: string;
-  motivoInicial: string; // Campo añadido
+  motivoInicial: string;
   motivoConsulta: string;
   sintomas: string;
   historiaClinicaId: string;
@@ -30,7 +30,7 @@ export interface Consulta {
 // Estado inicial
 const initialConsulta: Consulta = {
   id: '',
-  motivoInicial: '', // Campo añadido
+  motivoInicial: '',
   motivoConsulta: '',
   sintomas: '',
   historiaClinicaId: '',

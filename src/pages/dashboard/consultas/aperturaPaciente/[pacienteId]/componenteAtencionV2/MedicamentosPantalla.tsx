@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Section from '@/components/moleculas/Section';
 import { CardMedicamentoV2 } from '@/components/moleculas/CardMedicamentoV2';
+import Section from '@/components/moleculas/Section';
+import { useEffect, useState } from 'react';
 
 // --- Datos de Ejemplo Hardcodeados ---
 const mockMedicamentos = [
@@ -31,7 +31,7 @@ const mockMedicamentos = [
     medico: 'Dr. Ian Malcolm',
     estado: 'Activo',
   },
-    {
+  {
     id: 'med4',
     fechaPrescripcion: '2023-11-20T11:00:00Z',
     nombre: 'Paracetamol',
@@ -43,7 +43,7 @@ const mockMedicamentos = [
 ];
 
 // --- Componente Principal de la Pantalla ---
-export const MedicamentosPantalla = ({ data }) => {
+export const MedicamentosPantalla = ({ data, pacienteId }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +51,12 @@ export const MedicamentosPantalla = ({ data }) => {
     const fetchHistorial = async () => {
       setLoading(true);
       // Simulación de fetch
-      const sortedData = mockMedicamentos.sort((a, b) => new Date(b.fechaPrescripcion) - new Date(a.fechaPrescripcion));
+      const response = await fetch(`/api/pacientes/${pacienteId}?query=medicamentos`);
+      const dataResponse = await response.json();
+      console.log('respuesta de los medicamentos', dataResponse);
+      const sortedData = dataResponse.data.sort(
+        (a, b) => new Date(b.fechaPrescripcion) - new Date(a.fechaPrescripcion)
+      );
       setHistorial(sortedData);
       setLoading(false);
     };
@@ -67,13 +72,11 @@ export const MedicamentosPantalla = ({ data }) => {
     );
   };
 
-  if (loading) {
-    return <p className="text-center text-gray-500">Cargando historial de medicamentos...</p>;
-  }
-
   return (
     <Section title="Historial de Medicamentos Recetados">
-      {historial.length > 0 ? (
+      {loading ? (
+        <p className="text-center text-gray-500">Cargando historial de medicamentos...</p>
+      ) : historial.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {historial.map(item => (
             <CardMedicamentoV2

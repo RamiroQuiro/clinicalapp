@@ -26,7 +26,7 @@ export const medicamento = sqliteTable('medicamentos', {
   userMedicoId: text('userMedicoId')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-
+  updateUserId: text('updateUserId').references(() => users.id, { onDelete: 'cascade' }),
   // POSOLOGÍA
   dosis: text('dosis'),
   frecuencia: text('frecuencia'),

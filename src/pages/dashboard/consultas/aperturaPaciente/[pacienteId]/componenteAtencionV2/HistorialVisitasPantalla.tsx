@@ -6,17 +6,27 @@ import { ClipboardList } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 // --- Componente Principal de la Pantalla ---
-export const HistorialVisitasPantalla = ({ data }) => {
+export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
   const [historial, setHistorial] = useState(data || []);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAtencionData, setSelectedAtencionData] = useState<any>(null);
 
   useEffect(() => {
-    if (data?.pacienteId) {
-      setHistorial(data);
+    if (pacienteId) {
+      const fetchHistorial = async () => {
+        setLoading(true);
+        const response = await fetch(`/api/pacientes/${pacienteId}/atencionesHistory`);
+        if (!response.ok) throw new Error('Error al cargar los detalles de la atención');
+
+        const fullData = await response.json();
+        console.log('fullData', fullData);
+        setHistorial(fullData.data);
+        setLoading(false);
+      };
+      fetchHistorial();
     }
-  }, [data?.pacienteId]);
+  }, [pacienteId]);
 
   const handleCardClick = async (visitId: string) => {
     setLoading(true); // Opcional: mostrar un loader mientras se cargan los detalles
@@ -36,7 +46,9 @@ export const HistorialVisitasPantalla = ({ data }) => {
 
   return (
     <Section title="Historial de Visitas Anteriores">
-      {historial.length > 0 ? (
+      {loading ? (
+        <p className="text-center text-gray-500">Cargando historial de atenciones previas...</p>
+      ) : historial.length > 0 ? (
         <div className="space-y-4">
           {historial.map(item => (
             <InfoCard

@@ -9,7 +9,6 @@ import {
   pacientes,
   signosVitales,
   tratamiento,
-  users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
 import { desc, eq } from 'drizzle-orm';
@@ -165,29 +164,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     return { tipo, historial };
   });
 
-  // Historial de visitas (últimas 4 atenciones)
-  const historialVisitaData = await db
-    .select({
-      id: atenciones.id,
-      userId: atenciones.userIdMedico,
-      pacienteId: atenciones.pacienteId,
-      motivoConsulta: atenciones.motivoConsulta,
-      motivoInicial: atenciones.motivoInicial,
-      fecha: atenciones.fecha,
-      estado: atenciones.estado,
-      created_at: atenciones.created_at,
-      inicioAtencion: atenciones.inicioAtencion,
-      finAtencion: atenciones.finAtencion,
-      duracionAtencion: atenciones.duracionAtencion,
-      nombreDoctor: users.nombre,
-      apellidoDoctor: users.apellido,
-    })
-    .from(atenciones)
-    .leftJoin(users, eq(users.id, atenciones.userIdMedico))
-    .where(eq(atenciones.pacienteId, pacienteId))
-    .orderBy(desc(atenciones.created_at))
-    .limit(4);
-  console.log('historialVisitaData', historialVisitaData);
   return {
     error: false,
     message: 'Atención en curso',
@@ -216,7 +192,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       paciente: pacienteData,
       antecedentes: antecedentesData,
       signosVitalesHistorial: signosVitalesData,
-      historialVisitas: historialVisitaData,
     },
   };
 }
