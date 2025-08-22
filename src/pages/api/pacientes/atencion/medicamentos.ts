@@ -8,7 +8,8 @@ import { medicamento } from '../../../../db/schema/medicamento';
 
 type MedicamentoType = {
   id?: string;
-  nombre: string;
+  nombreGenerico: string;
+  nombreComercial: string;
   dosis?: string;
   frecuencia?: string;
   duracion?: string;
@@ -56,7 +57,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const idMedicamento = generateId(12);
     const insetMedicamento = await db.insert(medicamento).values({
       id: idMedicamento,
-      nombre: data.medicamentos.nombre,
+      nombreGenerico: data.medicamentos.nombreGenerico,
+      nombreComercial: data.medicamentos.nombreComercial,
       dosis: data.medicamentos.dosis,
       frecuencia: data.medicamentos.frecuencia,
       duracion: data.medicamentos.duracion,

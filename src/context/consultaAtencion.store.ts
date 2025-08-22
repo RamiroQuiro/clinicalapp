@@ -24,7 +24,13 @@ export interface Consulta {
     fechaFin: string;
     tratamiento: string;
   };
-  medicamentos: { nombre: string; dosis: string; frecuencia: string; id: string }[];
+  medicamentos: {
+    nombreGenerico: string;
+    nombreComercial: string;
+    dosis: string;
+    frecuencia: string;
+    id: string;
+  }[];
 }
 
 // Estado inicial
@@ -41,7 +47,6 @@ const initialConsulta: Consulta = {
     temperatura: 0,
   },
   observaciones: '',
-  medicamentos: [],
   notas: '',
   pacienteId: '',
   tratamiento: {
@@ -49,6 +54,15 @@ const initialConsulta: Consulta = {
     fechaFin: '',
     tratamiento: '',
   },
+  medicamentos: [
+    {
+      nombreGenerico: '',
+      nombreComercial: '',
+      dosis: '',
+      frecuencia: '',
+      id: '',
+    },
+  ],
   diagnosticos: [],
 };
 
@@ -83,7 +97,10 @@ export function addMedicamento(nombre: string) {
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
-    medicamentos: [...current.medicamentos, { nombre, dosis: '', frecuencia: '', id: '' }],
+    medicamentos: [
+      ...current.medicamentos,
+      { nombreComercial: '', nombreGenerico: '', dosis: '', frecuencia: '', id: '' },
+    ],
   });
 }
 

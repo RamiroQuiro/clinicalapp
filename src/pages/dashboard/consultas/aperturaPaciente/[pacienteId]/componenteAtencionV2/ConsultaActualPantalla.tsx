@@ -92,9 +92,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     id: '',
   });
   const [currentMedicamento, setCurrentMedicamento] = useState({
-    nombre: '',
     dosis: '',
     frecuencia: '',
+    nombreGenerico: '',
+    nombreComercial: '',
     id: '',
   });
 
@@ -141,13 +142,19 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   };
 
   const addMedicamento = () => {
-    if (!currentMedicamento.nombre) return;
+    if (!currentMedicamento.nombreGenerico && !currentMedicamento.nombreComercial) return;
     const current = consultaStore.get().medicamentos;
     setConsultaField('medicamentos', [
       ...current,
       { ...currentMedicamento, id: `temp_${Date.now()}` },
     ]);
-    setCurrentMedicamento({ nombre: '', dosis: '', frecuencia: '', id: '' });
+    setCurrentMedicamento({
+      dosis: '',
+      frecuencia: '',
+      nombreComercial: '',
+      nombreGenerico: '',
+      id: '',
+    });
   };
 
   const deletMedicamento = (medId: string) => {
@@ -167,9 +174,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         <ContenedorMotivoInicialV2 />
         {$consulta.motivoInicial && (
           <div className="mt-2 text-sm text-gray-600">
-            <span className="font-semibold">Motivo Inicial Seleccionado:</span> {
-              $consulta.motivoInicial
-            }
+            <span className="font-semibold">Motivo Inicial Seleccionado:</span>{' '}
+            {$consulta.motivoInicial}
           </div>
         )}
         <TextArea
@@ -278,17 +284,28 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       <Section title="Medicamento">
         {!isReadOnly && (
           <div className="mt-2 space-y-2">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex justify-evenly  items-center gap-2">
               <Input
-                label="Medicamento"
-                name="nombre"
-                value={currentMedicamento.nombre}
+                label="Nombre Generico"
+                className="w-full"
+                name="nombreGenerico"
+                value={currentMedicamento.nombreGenerico}
                 onChange={e =>
-                  setCurrentMedicamento({ ...currentMedicamento, nombre: e.target.value })
+                  setCurrentMedicamento({ ...currentMedicamento, nombreGenerico: e.target.value })
+                }
+              />
+              <Input
+                label="Nombre Comercial"
+                className="w-full"
+                name="nombreComercial"
+                value={currentMedicamento.nombreComercial}
+                onChange={e =>
+                  setCurrentMedicamento({ ...currentMedicamento, nombreComercial: e.target.value })
                 }
               />
               <Input
                 label="Dosis"
+                className="w-full"
                 name="dosis"
                 value={currentMedicamento.dosis}
                 onChange={e =>
@@ -297,6 +314,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               />
               <Input
                 label="Frecuencia"
+                className="w-full"
                 name="frecuencia"
                 value={currentMedicamento.frecuencia}
                 onChange={e =>
@@ -311,14 +329,14 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         )}
 
         <ul className="mt-2 space-y-3">
-          {$consulta.medicamentos.map(med => (
+          {$consulta.medicamentos?.map(med => (
             <li
               key={med.id}
               className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
             >
               <div className="flex items-center justify-start gap-4">
                 <p className="flex items-center gap-2 ">
-                  💊 {med.nombre} {med.dosis && `- ${med.dosis}`}
+                  💊 {med.nombreComercial} - {med.nombreGenerico} {med.dosis && `- ${med.dosis}`}
                 </p>
                 <p className="text-">{med.frecuencia}</p>
               </div>

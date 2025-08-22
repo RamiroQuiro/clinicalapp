@@ -13,7 +13,16 @@ const getStatusInfo = estado => {
 };
 
 export const CardMedicamentoV2 = ({ medicamento, onStatusChange }) => {
-  const { nombre, dosis, frecuencia, medico, fechaPrescripcion, estado, id } = medicamento;
+  const {
+    nombreGenerico,
+    nombreComercial,
+    dosis,
+    frecuencia,
+    medico,
+    fechaPrescripcion,
+    estado,
+    id,
+  } = medicamento;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const statusInfo = getStatusInfo(estado);
@@ -50,7 +59,10 @@ export const CardMedicamentoV2 = ({ medicamento, onStatusChange }) => {
         <div className="flex items-center justify-between gap-3 mb-2">
           <div className="text-primary-textoTitle w-full bg-primary- p-2  flex items-center gap-2">
             <Pill size={20} />
-            <h3 className="text-lg font-bold text-gray-800">{nombre}</h3>
+            <div>
+              <h3 className="text-lg font-bold text-primary-textoTitle">{nombreGenerico}</h3>
+              <h3 className="text-sm text-gray-600">{nombreComercial}</h3>
+            </div>
           </div>
           <div className="cursor-pointer text-end">
             <MenuSquare onClick={() => setIsMenuOpen(!isMenuOpen)} />
@@ -63,6 +75,7 @@ export const CardMedicamentoV2 = ({ medicamento, onStatusChange }) => {
               >
                 activo
               </li>
+
               <li
                 onClick={e => handleMedicamentoChangeStatus(e, 'finalizado')}
                 className="cursor-pointer w-full border-b pl-2 font-light hover:bg-primary-150 rounded-md duration-200 hover:-translate-y-0.5"
@@ -78,19 +91,20 @@ export const CardMedicamentoV2 = ({ medicamento, onStatusChange }) => {
             </ul>
           )}
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-primary-textoTitle">
           <span className="font-semibold">Dosis:</span> {dosis}
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-primary-textoTitle">
           <span className="font-semibold">Frecuencia:</span> {frecuencia}
         </p>
-        <p className="text-sm text-gray-500 mt-1">Recetado por: {medico}</p>
+
+        <p className="text-sm text-primary-textoTitle mt-1">Recetado por: {medico}</p>
       </div>
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
         <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.colorClass}`}>
           {statusInfo.text}
         </span>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-primary-texto">
           {new Date(fechaPrescripcion).toLocaleDateString()}
         </span>
       </div>

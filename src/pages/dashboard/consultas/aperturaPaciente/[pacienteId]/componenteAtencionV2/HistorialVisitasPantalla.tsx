@@ -1,9 +1,8 @@
-import { InfoCard } from '@/components/moleculas/InfoCard';
 import ModalReact from '@/components/moleculas/ModalReact'; // Importar el Modal
 import Section from '@/components/moleculas/Section';
 import AtencionExistente from '@/components/organismo/AtencionExistente'; // Importar el componente de detalle
-import { ClipboardList } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { CardVisitaV2 } from '@/components/moleculas/CardVisitaV2';
 
 // --- Componente Principal de la Pantalla ---
 export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
@@ -47,20 +46,28 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
   return (
     <Section title="Historial de Visitas Anteriores">
       {loading ? (
-        <p className="text-center text-gray-500">Cargando historial de atenciones previas...</p>
+        <p className="text-center text-primary-texto py-3 font-semibold animate-pulse">
+          Cargando historial de atenciones previas...
+        </p>
       ) : historial.length > 0 ? (
-        <div className="space-y-4">
-          {historial.map(item => (
-            <InfoCard
-              key={item.id}
-              icon={<ClipboardList size={20} className="text-gray-500" />}
-              title={`Visita con ${item.nombreDoctor} ${item.apellidoDoctor}`}
-              subtitle={`Motivo: ${item.motivoConsulta}`}
-              date={new Date(item.fecha).toLocaleDateString()}
-              bodyText={`Diagnóstico principal: ${item.diagnosticoPrincipal}`}
-              onClick={() => handleCardClick(item.id)} // Hacer la tarjeta clicable
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {historial.map(item => {
+            const atencionParaCard = {
+              id: item.id,
+              fecha: item.fecha,
+              motivoConsulta: item.motivoConsulta,
+              medico: {
+                nombreCompleto: `${item.nombreDoctor} ${item.apellidoDoctor}`,
+              },
+            };
+            return (
+              <CardVisitaV2
+                key={item.id}
+                atencion={atencionParaCard}
+                onClick={() => handleCardClick(item.id)}
+              />
+            );
+          })}
         </div>
       ) : (
         <p className="text-center text-gray-500">No se encontraron visitas anteriores.</p>

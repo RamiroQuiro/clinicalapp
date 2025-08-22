@@ -161,12 +161,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
           medicamentos.map(m => ({
             id: nanoid(),
             historiaClinicaId: historiaClinicaId,
-            userMedicoId: user.id,
-            atencionId: currentAtencionId,
-            pacienteId,
-            nombre: m.nombre,
+            nombreGenerico: m.nombreGenerico,
+            nombreComercial: m.nombreComercial,
             dosis: m.dosis,
             frecuencia: m.frecuencia,
+            atencionId: currentAtencionId,
+            pacienteId,
+            userMedicoId: user.id,
           }))
         );
       }

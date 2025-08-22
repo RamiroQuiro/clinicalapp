@@ -22,7 +22,8 @@ export const GET: APIRoute = async ({ params, locals, request }) => {
       const medicamentosPacienteDB = await db
         .select({
           id: medicamento.id,
-          nombre: medicamento.nombreGenerico,
+          nombreGenerico: medicamento.nombreGenerico,
+          nombreComercial: medicamento.nombreComercial,
           dosis: medicamento.dosis,
           frecuencia: medicamento.frecuencia,
           fechaPrescripcion: medicamento.created_at,
