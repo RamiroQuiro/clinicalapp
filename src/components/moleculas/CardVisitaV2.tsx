@@ -12,7 +12,7 @@ interface Atencion {
 
 interface CardVisitaProps {
   atencion: Atencion;
-  onClick: (id: string) => void;
+  onClick: (e: React.MouseEvent<HTMLDivElement>, id: string) => void;
 }
 
 export const CardVisitaV2 = ({ atencion, onClick }: CardVisitaProps) => {
@@ -20,7 +20,7 @@ export const CardVisitaV2 = ({ atencion, onClick }: CardVisitaProps) => {
 
   return (
     <div
-      onClick={() => onClick(id)}
+      onClick={e => onClick(e, id)}
       className="flex flex-col flex-1 min-w-[200px] p-4 bg-primary-bg-componentes rounded-lg border border-gray-200 shadow-sm justify-between gap-2 relative text-primary-texto cursor-pointer hover:bg-primary-100/20 duration-200"
     >
       <div>

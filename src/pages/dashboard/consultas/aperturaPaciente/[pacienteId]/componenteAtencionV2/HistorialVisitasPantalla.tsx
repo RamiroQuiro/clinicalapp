@@ -1,8 +1,10 @@
+import { CardVisitaV2 } from '@/components/moleculas/CardVisitaV2';
 import ModalReact from '@/components/moleculas/ModalReact'; // Importar el Modal
 import Section from '@/components/moleculas/Section';
-import AtencionExistente from '@/components/organismo/AtencionExistente'; // Importar el componente de detalle
+import { AtencionExistenteV3 } from '@/components/organismo/AtencionExistenteV3';
+import formatDate from '@/utils/formatDate';
+
 import { useEffect, useState } from 'react';
-import { CardVisitaV2 } from '@/components/moleculas/CardVisitaV2';
 
 // --- Componente Principal de la Pantalla ---
 export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
@@ -19,7 +21,6 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
         if (!response.ok) throw new Error('Error al cargar los detalles de la atención');
 
         const fullData = await response.json();
-        console.log('fullData', fullData);
         setHistorial(fullData.data);
         setLoading(false);
       };
@@ -27,17 +28,18 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
     }
   }, [pacienteId]);
 
-  const handleCardClick = async (visitId: string) => {
+  const handleCardClick = async (e: React.MouseEvent<HTMLButtonElement>, atencionId: string) => {
+    setIsModalOpen(true);
+    e.stopPropagation();
     setLoading(true); // Opcional: mostrar un loader mientras se cargan los detalles
     try {
-      const response = await fetch(`/api/pacientes/${data.pacienteId}/atenciones/${visitId}`);
+      const response = await fetch(`/api/pacientes/${pacienteId}/atenciones/${atencionId}`);
       if (!response.ok) throw new Error('Error al cargar los detalles de la atención');
       const fullData = await response.json();
-      setSelectedAtencionData(fullData);
-      setIsModalOpen(true);
+      setSelectedAtencionData(fullData.data);
     } catch (error) {
       console.error('Error fetching detalles de atención:', error);
-      alert('No se pudieron cargar los detalles de la atención.');
+      // alert('No se pudieron cargar los detalles de la atención.');
     } finally {
       setLoading(false);
     }
@@ -64,7 +66,7 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
               <CardVisitaV2
                 key={item.id}
                 atencion={atencionParaCard}
-                onClick={() => handleCardClick(item.id)}
+                onClick={e => handleCardClick(e, item.id)}
               />
             );
           })}
@@ -73,17 +75,24 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
         <p className="text-center text-gray-500">No se encontraron visitas anteriores.</p>
       )}
 
-      {isModalOpen && selectedAtencionData && (
+      {isModalOpen && (
         <ModalReact
-          title={`Detalles de la Visita del ${new Date(selectedAtencionData.atencionData.created_at).toLocaleDateString()}`}
+          title={`Detalles de la atencion del día  ${formatDate(selectedAtencionData?.atencionData?.created_at)}`}
           id="modal-atencion-existente"
           onClose={() => setIsModalOpen(false)}
-          className="md:min-w-[90vw] md:min-h-[90vh] w-full h-full" // Ajuste para pantalla completa
         >
-          <AtencionExistente
-            atencionData={selectedAtencionData}
-            onClose={() => setIsModalOpen(false)}
-          />
+          {loading ? (
+            <p className="text-center text-primary-texto py-3 font-semibold animate-pulse">
+              Cargando datos de la atención...
+            </p>
+          ) : selectedAtencionData ? (
+            <AtencionExistenteV3
+              data={selectedAtencionData}
+              onClose={() => setIsModalOpen(false)}
+            />
+          ) : (
+            <p>No se encontraron datos de la atención.</p>
+          )}
         </ModalReact>
       )}
     </Section>

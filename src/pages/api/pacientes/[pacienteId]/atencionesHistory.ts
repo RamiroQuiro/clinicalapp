@@ -52,7 +52,6 @@ export const GET: APIRoute = async ({ params, locals, request }) => {
       createdAt: new Date(),
     });
 
-    console.log('historialVisitaData', historialVisitaData);
     return createResponse(200, 'Historial de visitas encontrados', historialVisitaData);
   } catch (error) {
     console.log(error);

@@ -6,7 +6,6 @@ import { MedicamentosPantalla } from './MedicamentosPantalla';
 import { SignosVitalesPantalla } from './SignosVitalesPantalla';
 
 export const RenderizacionPantalla = ({ activeTab, data }: { activeTab: string; data: any }) => {
-  console.log('renderizacion de la pagina', data);
   switch (activeTab) {
     case 'consultaActual':
       return <ConsultaActualPantalla data={data} />;

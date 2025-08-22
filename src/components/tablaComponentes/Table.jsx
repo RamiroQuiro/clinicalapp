@@ -1,10 +1,9 @@
-import React from "react";
-import THead from "./THead";
-import TBody from "./TBody";
-import { reportPDF } from "../../context/store";
+import { reportPDF } from '../../context/store';
+import TBody from './TBody';
+import THead from './THead';
 
 export default function Table({ columnas, arrayBody, styleTable, renderBotonActions }) {
-  const onClick = (e) => {
+  const onClick = e => {
     // Acción en caso de clic (vacío por ahora)
   };
 
@@ -12,7 +11,7 @@ export default function Table({ columnas, arrayBody, styleTable, renderBotonActi
     columnas,
     arrayBody,
   });
-
+  console.log('consola de la tabla arraybody->', arrayBody);
   return (
     <table
       className={`${styleTable} table-auto items-start bg-transparent w-full border-collapse  rounded-md border overflow-hidden`}

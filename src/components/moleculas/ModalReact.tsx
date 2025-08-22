@@ -17,7 +17,7 @@ export default function ModalReact({ onClose, children, className, title, id }: 
       onClick={() => onClose(false)}
     >
       <div
-        className={`bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit overflow-y-auto w-fit ${className}`}
+        className={`bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit max-h overflow-y-auto w-fit ${className}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Header Fijo */}
@@ -31,7 +31,7 @@ export default function ModalReact({ onClose, children, className, title, id }: 
             <CircleX size={24} />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-grow">{children}</div>
+        <div className="p-6 overflow-y-auto flex-grow max-h-[87vh]">{children}</div>
       </div>
     </div>
   );
