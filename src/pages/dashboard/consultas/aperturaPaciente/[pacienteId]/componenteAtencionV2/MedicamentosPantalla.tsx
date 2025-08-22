@@ -59,6 +59,14 @@ export const MedicamentosPantalla = ({ data }) => {
     fetchHistorial();
   }, [data]);
 
+  const handleStatusUpdate = (medicamentoId, nuevoEstado) => {
+    setHistorial(currentHistorial =>
+      currentHistorial.map(med =>
+        med.id === medicamentoId ? { ...med, estado: nuevoEstado } : med
+      )
+    );
+  };
+
   if (loading) {
     return <p className="text-center text-gray-500">Cargando historial de medicamentos...</p>;
   }
@@ -71,6 +79,7 @@ export const MedicamentosPantalla = ({ data }) => {
             <CardMedicamentoV2
               key={item.id}
               medicamento={item}
+              onStatusChange={handleStatusUpdate}
             />
           ))}
         </div>

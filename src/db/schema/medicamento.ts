@@ -31,7 +31,7 @@ export const medicamento = sqliteTable('medicamentos', {
   dosis: text('dosis'),
   frecuencia: text('frecuencia'),
   duracion: text('duracion'),
-
+  estado: text('estado', { enum: ['activo', 'pendiente', 'finalizado'] }).default('activo'),
   // STOCK Y COSTO
   precio: text('precio'),
   stock: text('stock'),
