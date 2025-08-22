@@ -4,90 +4,112 @@ import ModalReact from '@/components/moleculas/ModalReact';
 import { setConsultaField } from '@/context/consultaAtencion.store';
 import useBusquedaFiltros from '@/hook/useBusquedaFiltro';
 import { PlusCircle } from 'lucide-react';
-import React, { useState } from 'react';
-
-// Mock de datos inicial, esto debería venir de una API
-const mockMotivosIniciales = [
-  { id: 1, nombre: 'Dolor de pecho' },
-  { id: 2, nombre: 'Control anual' },
-  { id: 3, nombre: 'Chequeo prequirúrgico' },
-  { id: 4, nombre: 'Mareos y vértigo' },
-  { id: 5, nombre: 'Palpitaciones' },
-];
+import React, { useEffect, useState } from 'react';
 
 const ContenedorMotivoInicialV2 = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [motivos, setMotivos] = useState(mockMotivosIniciales);
+  const [motivos, setMotivos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [nuevoMotivoNombre, setNuevoMotivoNombre] = useState('');
 
-  // Usamos el hook de búsqueda
+  useEffect(() => {
+    const fetchMotivos = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/motivos');
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar los motivos');
+        }
+        const data = await response.json();
+        setMotivos(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMotivos();
+  }, []);
+
   const { search, handleSearch, encontrado, noResultados, setSearch } = useBusquedaFiltros(
     motivos,
     ['nombre']
   );
 
-  // Función para seleccionar un motivo de la lista
   const handleSelectMotivo = (motivo: any) => {
     setConsultaField('motivoInicial', motivo.nombre);
-    setSearch(''); // Limpiamos la búsqueda
+    setSearch('');
   };
 
-  // Función para manejar la creación de un nuevo motivo
   const handleCreateMotivo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nuevoMotivoNombre.trim()) return; // Evitar motivos vacíos
+    if (!nuevoMotivoNombre.trim()) return;
 
-    console.log('Enviando nuevo motivo a la API:', nuevoMotivoNombre);
+    // --- Llamada REAL a la API POST ---
+    try {
+      const response = await fetch('/api/motivos/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nuevoMotivoNombre.trim() }),
+      });
 
-    // --- AQUÍ IRÍA LA LLAMADA A LA API POST ---
-    // Por ahora, simulamos una respuesta exitosa
-    const nuevoMotivo = {
-      id: Date.now(), // Usamos timestamp como ID temporal
-      nombre: nuevoMotivoNombre,
-    };
-    // --- FIN SIMULACIÓN ---
+      if (!response.ok) {
+        throw new Error('Error al crear el motivo');
+      }
 
-    // Actualizamos el estado local
-    setMotivos([...motivos, nuevoMotivo]);
-    setConsultaField('motivoInicial', nuevoMotivo.nombre);
+      const nuevoMotivo = await response.json();
 
-    // Limpiamos y cerramos el modal
-    setNuevoMotivoNombre('');
-    setIsModalOpen(false);
-    setSearch('');
+      setMotivos([...motivos, nuevoMotivo]);
+      setConsultaField('motivoInicial', nuevoMotivo.nombre);
+
+      setNuevoMotivoNombre('');
+      setIsModalOpen(false);
+      setSearch('');
+    } catch (error) {
+      console.error('Fallo al crear motivo:', error);
+      // Aquí podrías mostrar una notificación de error al usuario
+    }
   };
 
   return (
     <div className="w-full flex flex-col gap-2 relative">
-      <div className="flex items-end gap-2">
+      <div className="flex items-center justify-start gap-2">
+        <label
+          className="text-sm font-semibold text-primary-textoTitle"
+          htmlFor="motivoInicialSearch"
+        >
+          Motivo Inicial
+        </label>
         <Input
-          label="Buscar Motivo Inicial"
           type="text"
           name="motivoInicialSearch"
           value={search}
           onChange={handleSearch}
-          placeholder="Buscar o crear motivo..."
+          placeholder={isLoading ? 'Cargando motivos...' : 'Buscar o crear motivo...'}
+          disabled={isLoading || error}
           className="flex-grow"
         />
-        {noResultados && (
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setNuevoMotivoNombre(search); // Pre-populamos el input del modal
-              setIsModalOpen(true);
-            }}
-            className="animate-aparecer"
-          >
-            <PlusCircle size={20} className="mr-2" />
-            Agregar Motivo
-          </Button>
-        )}
-      </div>
 
-      {/* Lista de resultados de la búsqueda */}
+        <Button
+          onClick={() => {
+            setNuevoMotivoNombre(search);
+            setIsModalOpen(true);
+          }}
+          className="animate-aparecer"
+        >
+          <p className="flex items-center gap-2">
+            <PlusCircle size={16} className="mr-2" />
+            Agregar Motivo
+          </p>
+        </Button>
+      </div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+
       {search.length > 0 && !noResultados && (
         <ul className="absolute top-full left-0 right-0 bg-white border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
-          {encontrado.map(motivo => (
+          {encontrado.map((motivo: any) => (
             <li
               key={motivo.id}
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -99,7 +121,6 @@ const ContenedorMotivoInicialV2 = () => {
         </ul>
       )}
 
-      {/* Modal para agregar nuevo motivo */}
       {isModalOpen && (
         <ModalReact onClose={() => setIsModalOpen(false)} title="Agregar Nuevo Motivo">
           <form onSubmit={handleCreateMotivo} className="flex flex-col gap-4">

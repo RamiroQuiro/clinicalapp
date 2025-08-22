@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Section from '@/components/moleculas/Section';
-import { InfoCard } from '@/components/moleculas/InfoCard';
-import { Pill } from 'lucide-react';
+import { CardMedicamentoV2 } from '@/components/moleculas/CardMedicamentoV2';
 
 // --- Datos de Ejemplo Hardcodeados ---
 const mockMedicamentos = [
@@ -10,7 +9,7 @@ const mockMedicamentos = [
     fechaPrescripcion: '2024-05-15T10:00:00Z',
     nombre: 'Amoxicilina',
     dosis: '500mg',
-    frecuencia: 'Cada 8 horas por 7 días',
+    frecuencia: 'Cada 8 horas',
     medico: 'Dr. Alan Grant',
     estado: 'Finalizado',
   },
@@ -32,6 +31,15 @@ const mockMedicamentos = [
     medico: 'Dr. Ian Malcolm',
     estado: 'Activo',
   },
+    {
+    id: 'med4',
+    fechaPrescripcion: '2023-11-20T11:00:00Z',
+    nombre: 'Paracetamol',
+    dosis: '1g',
+    frecuencia: 'Cada 6 horas',
+    medico: 'Dr. John Hammond',
+    estado: 'Finalizado',
+  },
 ];
 
 // --- Componente Principal de la Pantalla ---
@@ -39,24 +47,10 @@ export const MedicamentosPantalla = ({ data }) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const getStatusInfo = (estado) => {
-    switch (estado?.toLowerCase()) {
-      case 'activo':
-        return { text: 'Activo', colorClass: 'bg-green-100 text-green-800' };
-      case 'finalizado':
-        return { text: 'Finalizado', colorClass: 'bg-gray-100 text-gray-800' };
-      default:
-        return { text: estado, colorClass: 'bg-blue-100 text-blue-800' };
-    }
-  };
-
   useEffect(() => {
     const fetchHistorial = async () => {
       setLoading(true);
-      // const response = await fetch(`/api/pacientes/${data.pacienteId}/medicamentos`);
-      // const realData = await response.json();
-      // setHistorial(realData);
-      
+      // Simulación de fetch
       const sortedData = mockMedicamentos.sort((a, b) => new Date(b.fechaPrescripcion) - new Date(a.fechaPrescripcion));
       setHistorial(sortedData);
       setLoading(false);
@@ -72,16 +66,11 @@ export const MedicamentosPantalla = ({ data }) => {
   return (
     <Section title="Historial de Medicamentos Recetados">
       {historial.length > 0 ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {historial.map(item => (
-            <InfoCard
+            <CardMedicamentoV2
               key={item.id}
-              icon={<Pill size={20} className="text-gray-500" />}
-              title={item.nombre}
-              subtitle={`Recetado por: ${item.medico}`}
-              date={new Date(item.fechaPrescripcion).toLocaleDateString()}
-              status={getStatusInfo(item.estado)}
-              bodyText={`Dosis: ${item.dosis} - Frecuencia: ${item.frecuencia}`}
+              medicamento={item}
             />
           ))}
         </div>
