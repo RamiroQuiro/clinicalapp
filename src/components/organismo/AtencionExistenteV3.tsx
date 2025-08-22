@@ -97,8 +97,8 @@ type Atencion = {
 
 type ComponentProps = {
   data: {
-    atencion: Atencion;
-    paciente: Paciente;
+    atencionData: Atencion;
+    pacienteData: Paciente;
   } | null;
   onClose: () => void;
 };
@@ -114,7 +114,8 @@ export const AtencionExistenteV3 = ({ data, onClose }: ComponentProps) => {
     );
   }
 
-  const { atencion, paciente } = data;
+  console.log('esta es la data para la atencion existente', data);
+  const { atencionData: atencion, pacienteData: paciente } = data;
   const edad = paciente?.fNacimiento ? calcularEdad(paciente.fNacimiento) : 'N/A';
 
   return (
@@ -139,27 +140,27 @@ export const AtencionExistenteV3 = ({ data, onClose }: ComponentProps) => {
           </Section>
           {/* detalles de los sintomas de la consulta */}
           <Section title="Detalles de los Sintomas">
-            <p className="text-sm text-muted-foreground mb-4">
+            <div className="text-sm text-muted-foreground flex items-center gap-2 mb-4">
               <span className="font-semibold text-foreground">Atendido por:</span>{' '}
-              {`${atencion?.atencionData?.medico?.nombre} ${atencion?.atencionData?.medico?.apellido}`}
-            </p>
+              <p className="capitalize ">{`${atencion?.nombreDoctor} ${atencion?.apellidoDoctor}`}</p>
+            </div>
             <div className="space-y-4 text-sm">
               <div>
                 <h4 className="font-semibold text-foreground mb-1">Motivo de Consulta</h4>
                 <p className="text-muted-foreground pl-4 border-l-2 border-primary">
-                  {atencion?.atencionData?.motivoConsulta}
+                  {atencion?.motivoConsulta}
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-foreground mb-1">Síntomas (Anamnesis)</h4>
                 <p className="text-muted-foreground pl-4">
-                  {atencion?.atencionData?.sintomas || 'No se registraron síntomas.'}
+                  {atencion?.sintomas || 'No se registraron síntomas.'}
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-foreground mb-1">Observaciones</h4>
                 <p className="text-muted-foreground pl-4">
-                  {atencion?.atencionData?.observaciones || 'Sin observaciones.'}
+                  {atencion?.observaciones || 'Sin observaciones.'}
                 </p>
               </div>
             </div>

@@ -6,6 +6,7 @@ import {
   medicamento,
   pacientes,
   signosVitales,
+  users,
 } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
@@ -20,7 +21,23 @@ export const GET: APIRoute = async ({ params }) => {
 
   try {
     // 1. Buscar la atención por ID
-    const [atencionData] = await db.select().from(atenciones).where(eq(atenciones.id, atencionId));
+    const [atencionData] = await db
+      .select({
+        id: atenciones.id,
+        motivoConsulta: atenciones.motivoConsulta,
+        sintomas: atenciones.sintomas,
+        observaciones: atenciones.observaciones,
+        estado: atenciones.estado,
+        created_at: atenciones.created_at,
+        inicioAtencion: atenciones.inicioAtencion,
+        finAtencion: atenciones.finAtencion,
+        duracionAtencion: atenciones.duracionAtencion,
+        nombreDoctor: users.nombre,
+        apellidoDoctor: users.apellido,
+      })
+      .from(atenciones)
+      .innerJoin(users, eq(users.id, atenciones.userIdMedico))
+      .where(eq(atenciones.id, atencionId));
 
     if (!atencionData) {
       return createResponse(404, 'Atención no encontrada');
