@@ -16,7 +16,7 @@ import { desc, eq } from 'drizzle-orm';
 export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
   // 1. Buscar la atención por ID
   const [atencionData] = await db.select().from(atenciones).where(eq(atenciones.id, atencionId));
-
+  console.log('esta es la atencionData ->', atencionData);
   if (!atencionData) {
     return {
       error: true,

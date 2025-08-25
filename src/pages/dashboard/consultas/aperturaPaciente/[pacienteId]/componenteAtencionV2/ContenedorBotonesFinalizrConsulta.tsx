@@ -1,6 +1,7 @@
 import Button from '@/components/atomos/Button';
 // --- CAMBIADO: Importar consultaStore ---
-import { consultaStore, resetConsulta } from '@/context/consultaAtencion.store';
+import { consultaStore } from '@/context/consultaAtencion.store';
+import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Lock, Save } from 'lucide-react';
 
@@ -9,7 +10,7 @@ type Props = {};
 export default function ContenedorBotonesFinalizrConsulta({}: Props) {
   // --- CAMBIADO: Usar consultaStore ---
   const $consulta = useStore(consultaStore);
-
+  console.log('esta es la consulta en el contendor de botones pantalla ->', $consulta);
   const handleGuardarBorrador = async (modoFetch: string) => {
     try {
       const response = await fetch('/api/atencion/guardar', {
@@ -24,12 +25,11 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Error en el servidor');
 
-      alert(`Consulta guardada como ${modoFetch} con éxito`);
+      showToast('Consulta guardada con éxito', { backgorund: 'bg-green-500' });
       // --- AÑADIDO: Resetear la store después de guardar ---
-      resetConsulta();
     } catch (error) {
       console.error('Error al guardar la consulta:', error);
-      alert(`Error al guardar: ${error.message}`);
+      showToast(`Error al guardar: ${error.message}`, { backgorund: 'bg-primary-400' });
     }
   };
 

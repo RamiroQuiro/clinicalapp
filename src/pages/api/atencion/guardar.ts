@@ -21,6 +21,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const consultaData: Consulta & { status: string; atencionId?: string } = await request.json();
 
     const {
+      motivoInicial,
       pacienteId,
       historiaClinicaId,
       motivoConsulta,
@@ -48,7 +49,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let currentAtencionId = consultaData.id || nanoid(); // Genera un ID si no existe
 
     await db.transaction(async tx => {
-      const fechaHoy = new Date(getFechaUnix() * 1000);
+      const fechaHoy = new Date(getFechaUnix());
       // 1. Guardar/Actualizar Atención principal
       // Aquí deberías decidir si es una inserción o una actualización.
       // Por simplicidad, asumiremos inserción por ahora, o que el id se maneja en el frontend.
@@ -62,6 +63,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
             motivoConsulta,
             sintomas,
             observaciones,
+            motivoInicial,
+
+            updated_at: new Date(),
             estado: status,
           })
           .where(eq(atenciones.id, consultaData.id));
@@ -70,6 +74,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         await tx.insert(atenciones).values({
           id: currentAtencionId,
           pacienteId,
+          motivoInicial,
           motivoConsulta,
           sintomas,
           observaciones,

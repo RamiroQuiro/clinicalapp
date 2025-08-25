@@ -113,7 +113,7 @@ export function removeMedicamento(index: number) {
   });
 }
 
-// Resetear consulta (cuando finalizas/guardas)
-export function resetConsulta() {
-  consultaStore.set(initialConsulta);
-}
+// // Resetear consulta (cuando finalizas/guardas)
+// export function resetConsulta() {
+//   consultaStore.set(initialConsulta);
+// }

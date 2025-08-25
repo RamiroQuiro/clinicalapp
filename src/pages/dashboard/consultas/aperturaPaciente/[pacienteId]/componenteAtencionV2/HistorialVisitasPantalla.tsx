@@ -26,7 +26,7 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
       };
       fetchHistorial();
     }
-  }, [pacienteId]);
+  }, [data]);
 
   const handleCardClick = async (e: React.MouseEvent<HTMLButtonElement>, atencionId: string) => {
     setIsModalOpen(true);
@@ -55,6 +55,8 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {historial.map(item => {
             const atencionParaCard = {
+              estado: item.estado,
+              motivoInicial: item.motivoInicial,
               id: item.id,
               fecha: item.fecha,
               motivoConsulta: item.motivoConsulta,

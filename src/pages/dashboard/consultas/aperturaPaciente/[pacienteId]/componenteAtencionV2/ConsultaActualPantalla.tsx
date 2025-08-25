@@ -9,6 +9,7 @@ import {
   Calculator,
   Droplet,
   HeartPulse,
+  Lock,
   Percent,
   Ruler,
   Thermometer,
@@ -99,6 +100,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     id: '',
   });
 
+  // --- NUEVO: Lógica de bloqueo de la consulta ---
+  const [isLocked, setIsLocked] = useState(false);
+  const [unlockInput, setUnlockInput] = useState('');
+
   useEffect(() => {
     if (!data || !data.atencion) return;
     // Hidratamos la store con datos de la atención si está en curso
@@ -107,7 +112,20 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     if (data.signosVitalesHistorial) {
       setSignosVitalesHistorial(data.signosVitalesHistorial);
     }
+    // Establecer el estado de bloqueo inicial
+    if (data.atencion.estado === 'finalizada') {
+      setIsLocked(true);
+    } else {
+      setIsLocked(false);
+    }
   }, [data]);
+
+  const handleUnlock = () => {
+    if (unlockInput === 'modificar') {
+      setIsLocked(false);
+      // Aquí se podría emitir un evento o log para auditoría si fuera necesario
+    }
+  };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -165,63 +183,88 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     );
   };
 
-  const isReadOnly = data?.atencion?.estado == 'cerrada';
-
   return (
     <div className="w-full flex flex-col gap-2 animate-aparecer">
-      <Section title="Motivo de Consulta">
-        {/* Contenedor de motivo inicial */}
-        <ContenedorMotivoInicialV2 />
-        {$consulta.motivoInicial && (
-          <div className="mt-2 text-sm text-gray-600">
-            <span className="font-semibold">Motivo Inicial Seleccionado:</span>{' '}
-            {$consulta.motivoInicial}
+      {isLocked && (
+        <div
+          className="p-4 mb-4 text-sm text-orange-800 rounded-lg bg-orange-50 border border-orange-300 flex flex-col gap-3"
+          role="alert"
+        >
+          <div className="flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            <h3 className="text-lg font-semibold">Consulta Finalizada</h3>
           </div>
-        )}
-        <TextArea
-          name="motivoConsulta"
-          value={$consulta.motivoConsulta}
-          onChange={handleFormChange}
-          placeholder="Describe el motivo principal de la visita..."
-          readOnly={isReadOnly}
-        />
-      </Section>
-
-      <Section title="Signos Vitales">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {vitalSignsConfig.map(vital => {
-            // Buscamos el historial para este signo vital específico
-            const historyData =
-              signosVitalesHistorial.find(h => h.tipo === vital.name)?.historial || [];
-            return (
-              <ContenedorSignosVitales
-                key={vital.name}
-                name={vital.name}
-                label={vital.label}
-                unit={vital.unit}
-                icon={vital.icon}
-                value={$consulta?.signosVitales[vital?.name]}
-                onChange={handleSignosVitalesChange}
-                readOnly={isReadOnly}
-                history={historyData}
-              />
-            );
-          })}
+          <p>
+            Esta consulta ya ha sido marcada como finalizada. Para realizar cambios, debe
+            desbloquearla explícitamente.
+            <br />
+            <strong>Importante:</strong> Cualquier modificación quedará registrada con su usuario y
+            la fecha actual para fines de auditoría.
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <Input
+              value={unlockInput}
+              onChange={e => setUnlockInput(e.target.value)}
+              placeholder="Escriba 'modificar' para habilitar"
+              className="max-w-xs"
+            />
+            <Button onClick={handleUnlock} disabled={unlockInput !== 'modificar'}>
+              Desbloquear Formulario
+            </Button>
+          </div>
         </div>
-      </Section>
+      )}
 
-      <Section title="Síntomas (Anamnesis)">
-        <TextArea
-          name="sintomas"
-          value={$consulta.sintomas}
-          onChange={handleFormChange}
-          placeholder="Describe los síntomas que reporta el paciente..."
-          readOnly={isReadOnly}
-        />
-      </Section>
+      <fieldset disabled={isLocked} className="flex flex-col gap-2 disabled:opacity-60">
+        <Section title="Motivo de Consulta">
+          {/* Contenedor de motivo inicial */}
+          <ContenedorMotivoInicialV2 />
+          {$consulta.motivoInicial && (
+            <div className="mt-2 text-sm text-gray-600">
+              <span className="font-semibold">Motivo Inicial Seleccionado:</span>{' '}
+              {$consulta.motivoInicial}
+            </div>
+          )}
+          <TextArea
+            name="motivoConsulta"
+            value={$consulta.motivoConsulta}
+            onChange={handleFormChange}
+            placeholder="Describe el motivo principal de la visita..."
+          />
+        </Section>
 
-      <Section title="Diagnóstico">
-        {!isReadOnly && (
+        <Section title="Signos Vitales">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {vitalSignsConfig.map(vital => {
+              // Buscamos el historial para este signo vital específico
+              const historyData =
+                signosVitalesHistorial.find(h => h.tipo === vital.name)?.historial || [];
+              return (
+                <ContenedorSignosVitales
+                  key={vital.name}
+                  name={vital.name}
+                  label={vital.label}
+                  unit={vital.unit}
+                  icon={vital.icon}
+                  value={$consulta?.signosVitales[vital?.name]}
+                  onChange={handleSignosVitalesChange}
+                  history={historyData}
+                />
+              );
+            })}
+          </div>
+        </Section>
+
+        <Section title="Síntomas (Anamnesis)">
+          <TextArea
+            name="sintomas"
+            value={$consulta.sintomas}
+            onChange={handleFormChange}
+            placeholder="Describe los síntomas que reporta el paciente..."
+          />
+        </Section>
+
+        <Section title="Diagnóstico">
           <div className="space-y-4">
             <Input
               label="Nombre del Diagnóstico"
@@ -255,34 +298,32 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               Agregar Diagnóstico
             </Button>
           </div>
-        )}
 
-        <ul className=" mt-2 space-y-2 flex flex-col">
-          {$consulta.diagnosticos.map(diag => (
-            <li
-              key={diag.id}
-              className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
-            >
-              <div className="flex items-center justify-start gap-4">
-                <p className="flex items-center gap-2 ">
-                  🤕 {diag.diagnostico} {diag.observaciones && `- ${diag.observaciones}`}
-                </p>
-                <p className="">{diag.codigoCIE}</p>
-              </div>
-              <button
-                title="Eliminar Diagnóstico"
-                className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
-                onClick={() => deletDiagnostico(diag.id)}
+          <ul className=" mt-2 space-y-2 flex flex-col">
+            {$consulta.diagnosticos.map(diag => (
+              <li
+                key={diag.id}
+                className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
               >
-                <Trash />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </Section>
+                <div className="flex items-center justify-start gap-4">
+                  <p className="flex items-center gap-2 ">
+                    🤕 {diag.diagnostico} {diag.observaciones && `- ${diag.observaciones}`}
+                  </p>
+                  <p className="">{diag.codigoCIE}</p>
+                </div>
+                <button
+                  title="Eliminar Diagnóstico"
+                  className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
+                  onClick={() => deletDiagnostico(diag.id)}
+                >
+                  <Trash />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Section>
 
-      <Section title="Medicamento">
-        {!isReadOnly && (
+        <Section title="Medicamento">
           <div className="mt-2 space-y-2">
             <div className="flex justify-evenly  items-center gap-2">
               <Input
@@ -326,32 +367,32 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               Agregar Medicamento
             </Button>
           </div>
-        )}
 
-        <ul className="mt-2 space-y-3">
-          {$consulta.medicamentos?.map(med => (
-            <li
-              key={med.id}
-              className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
-            >
-              <div className="flex items-center justify-start gap-4">
-                <p className="flex items-center gap-2 ">
-                  💊 {med.nombreComercial} - {med.nombreGenerico} {med.dosis && `- ${med.dosis}`}
-                </p>
-                <p className="text-">{med.frecuencia}</p>
-              </div>
-
-              <button
-                title="Eliminar Medicamento"
-                className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
-                onClick={() => deletMedicamento(med.id)}
+          <ul className="mt-2 space-y-3">
+            {$consulta.medicamentos?.map(med => (
+              <li
+                key={med.id}
+                className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
               >
-                <Trash />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </Section>
+                <div className="flex items-center justify-start gap-4">
+                  <p className="flex items-center gap-2 ">
+                    💊 {med.nombreComercial} - {med.nombreGenerico} {med.dosis && `- ${med.dosis}`}
+                  </p>
+                  <p className="text-">{med.frecuencia}</p>
+                </div>
+
+                <button
+                  title="Eliminar Medicamento"
+                  className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
+                  onClick={() => deletMedicamento(med.id)}
+                >
+                  <Trash />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      </fieldset>
     </div>
   );
 };

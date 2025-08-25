@@ -16,7 +16,7 @@ interface CardVisitaProps {
 }
 
 export const CardVisitaV2 = ({ atencion, onClick }: CardVisitaProps) => {
-  const { id, fecha, medico, motivoConsulta } = atencion;
+  const { id, fecha, medico, motivoConsulta, motivoInicial, estado } = atencion;
 
   return (
     <div
@@ -41,9 +41,14 @@ export const CardVisitaV2 = ({ atencion, onClick }: CardVisitaProps) => {
           <div className="flex items-center gap-2 text-sm">
             <BriefcaseMedical size={16} className="400" />
             <p className="text-primary-textoTitle font-semibold">Motivo:</p>
-            <p className="text-primary-texto  ">{motivoConsulta}</p>
+            <p className="text-primary-texto  ">{motivoInicial}</p>
           </div>
         </div>
+      </div>
+      <div
+        className={`absolute bottom-3 right-3 w-fit px-2 py-1 rounded-full text-xs font-semibold ${estado == 'finalizada' ? 'bg-primary-500/30 text-primary-500' : 'bg-primary-100/20 text-primary-100'}`}
+      >
+        {estado == 'finalizada' ? 'finalizada' : 'en curso'}
       </div>
     </div>
   );
