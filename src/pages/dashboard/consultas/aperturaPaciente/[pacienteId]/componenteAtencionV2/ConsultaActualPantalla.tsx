@@ -108,6 +108,13 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     if (!data || !data.atencion) return;
     // Hidratamos la store con datos de la atención si está en curso
     consultaStore.set({ ...data.atencion });
+
+    // NUEVO: Establecer inicioConsulta si no está ya definido
+    // Esto asegura que se registre el momento en que se abre la consulta
+    if (!data.atencion.inicioConsulta) {
+      setConsultaField('inicioConsulta', new Date().toISOString());
+    }
+
     // Guardamos el historial de signos vitales en un estado local
     if (data.signosVitalesHistorial) {
       setSignosVitalesHistorial(data.signosVitalesHistorial);

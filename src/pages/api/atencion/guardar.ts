@@ -34,6 +34,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       notas,
       tratamiento: tratamientoData,
       status,
+      inicioConsulta, // ADDED
+      finConsulta, // ADDED
+      duracionConsulta, // ADDED
     } = consultaData;
 
     // Validaciones básicas
@@ -64,9 +67,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
             sintomas,
             observaciones,
             motivoInicial,
-
+            inicioAtencion: inicioConsulta, // ADDED
+            finAtencion: finConsulta, // ADDED
+            duracionAtencion: duracionConsulta, // ADDED
             updated_at: new Date(),
             estado: status,
+            ultimaModificacionPorId: user.id, // ADDED
           })
           .where(eq(atenciones.id, consultaData.id));
       } else {
@@ -81,6 +87,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
           historiaClinicaId,
           estado: status,
           userIdMedico: user.id,
+          inicioConsulta, // ADDED
+          finConsulta, // ADDED
+          duracionConsulta, // ADDED
         });
       }
 

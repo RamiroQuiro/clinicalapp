@@ -1,6 +1,8 @@
 import calcularEdad from '@/utils/calcularEdad';
 import {
   Calendar,
+  Calendar1,
+  Clock,
   HeartPulse,
   Mail,
   Phone,
@@ -104,6 +106,7 @@ type ComponentProps = {
 };
 
 export const AtencionExistenteV3 = ({ data, onClose }: ComponentProps) => {
+  console.log('esta es la data para la atencion existente', data);
   if (!data) {
     return (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
@@ -121,6 +124,23 @@ export const AtencionExistenteV3 = ({ data, onClose }: ComponentProps) => {
   return (
     <div className="overflow-y-auto">
       {/* Encabezado */}
+      <div className="flex items-center justify-between w-full  pb-2">
+        <InfoItem
+          icon={<Calendar1 size={16} />}
+          label="Incio de Consulta"
+          value={atencion?.atencionData?.inicioConsulta}
+        />
+        <InfoItem
+          icon={<Calendar1 size={16} />}
+          label="Fin de Consulta"
+          value={atencion?.atencionData?.finConsulta}
+        />
+        <InfoItem
+          icon={<Clock size={16} />}
+          label="Duración de la Atencion"
+          value={atencion?.atencionData?.duracionAtencion}
+        />
+      </div>
       <div className="flex items-center justify-between pb-2 border-b">
         <div className="overflow-y-auto p2 space-y-4">
           {/* Datos del Paciente */}

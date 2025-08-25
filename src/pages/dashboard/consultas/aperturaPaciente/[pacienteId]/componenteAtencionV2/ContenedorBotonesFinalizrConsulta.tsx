@@ -1,7 +1,8 @@
 import Button from '@/components/atomos/Button';
 // --- CAMBIADO: Importar consultaStore ---
-import { consultaStore } from '@/context/consultaAtencion.store';
+import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store'; // MODIFICADO
 import { showToast } from '@/utils/toast/toastShow';
+import { getDurationInMinutes } from '@/utils/timesUtils'; // AÑADIDO
 import { useStore } from '@nanostores/react';
 import { Lock, Save } from 'lucide-react';
 
@@ -13,6 +14,21 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
   console.log('esta es la consulta en el contendor de botones pantalla ->', $consulta);
   const handleGuardarBorrador = async (modoFetch: string) => {
     try {
+      // NUEVA LÓGICA PARA CONSULTA FINALIZADA
+      if (modoFetch === 'finalizada') {
+        const now = new Date().toISOString();
+        setConsultaField('finConsulta', now);
+
+        if ($consulta.inicioConsulta) {
+          const duration = getDurationInMinutes($consulta.inicioConsulta, now);
+          setConsultaField('duracionConsulta', duration);
+        } else {
+          // Manejar el caso en que inicioConsulta pueda faltar (ej. datos antiguos, error)
+          console.warn('inicioConsulta no está definido. No se pudo calcular la duración.');
+          setConsultaField('duracionConsulta', 0); // O null, dependiendo del comportamiento deseado
+        }
+      }
+
       const response = await fetch('/api/atencion/guardar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,3 +64,4 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
     </div>
   );
 }
+

@@ -35,12 +35,8 @@ const medicamentosData = [
 ];
 ---
 
-<LayoutDash
-  title={`Atención a ${diagnosticoData?.pacienteData?.nombre} ${diagnosticoData?.pacienteData?.apellido}`}
->
-  <MainDashboard
-    h1={`Atención a ${diagnosticoData?.pacienteData?.nombre} ${diagnosticoData?.pacienteData?.apellido}`}
-  >
+<LayoutDash title={`Atención a `}>
+  <MainDashboard h1={`Atención a`}>
     <!-- {
       !isExistHC&&
       <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">

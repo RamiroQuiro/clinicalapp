@@ -128,3 +128,28 @@ export function getUltimosNDias(n: number): { desde: number; hasta: number } {
     hasta: ahora.epochSeconds,
   };
 }
+
+/**
+ * Calcula la duración en minutos entre dos fechas en formato ISO string.
+ * @param startIsoString Fecha de inicio en formato ISO string.
+ * @param endIsoString Fecha de fin en formato ISO string.
+ * @returns Duración en minutos, o null si alguna fecha no es válida.
+ */
+export function getDurationInMinutes(startIsoString: string, endIsoString: string): number | null {
+  try {
+    const startDate = new Date(startIsoString);
+    const endDate = new Date(endIsoString);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return null; // Invalid date
+    }
+
+    const diffMilliseconds = endDate.getTime() - startDate.getTime();
+    const diffMinutes = diffMilliseconds / (1000 * 60);
+    return diffMinutes;
+  } catch (error) {
+    console.error("Error calculating duration:", error);
+    return null;
+  }
+}
+

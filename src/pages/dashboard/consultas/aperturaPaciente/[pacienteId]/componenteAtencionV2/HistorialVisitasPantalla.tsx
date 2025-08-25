@@ -12,17 +12,28 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAtencionData, setSelectedAtencionData] = useState<any>(null);
+  const [error, setError] = useState(null); // NUEVO: Estado para manejar errores
 
   useEffect(() => {
     if (pacienteId) {
       const fetchHistorial = async () => {
         setLoading(true);
-        const response = await fetch(`/api/pacientes/${pacienteId}/atencionesHistory`);
-        if (!response.ok) throw new Error('Error al cargar los detalles de la atención');
-
-        const fullData = await response.json();
-        setHistorial(fullData.data);
-        setLoading(false);
+        setError(null); // Limpiar errores previos
+        try {
+          const response = await fetch(`/api/pacientes/${pacienteId}/atencionesHistory`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al cargar el historial de atenciones');
+          }
+          const fullData = await response.json();
+          setHistorial(fullData.data);
+        } catch (err) {
+          console.error('Error al cargar el historial de atenciones:', err);
+          setError(err.message || 'No se pudo cargar el historial de atenciones.');
+          setHistorial([]); // Limpiar historial en caso de error
+        } finally {
+          setLoading(false);
+        }
       };
       fetchHistorial();
     }
@@ -31,15 +42,28 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
   const handleCardClick = async (e: React.MouseEvent<HTMLButtonElement>, atencionId: string) => {
     setIsModalOpen(true);
     e.stopPropagation();
-    setLoading(true); // Opcional: mostrar un loader mientras se cargan los detalles
+    setSelectedAtencionData(null); // Limpiar datos previos
+    setLoading(true);
+    setError(null); // Limpiar errores previos
     try {
       const response = await fetch(`/api/pacientes/${pacienteId}/atenciones/${atencionId}`);
-      if (!response.ok) throw new Error('Error al cargar los detalles de la atención');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al cargar los detalles de la atención');
+      }
       const fullData = await response.json();
-      setSelectedAtencionData(fullData.data);
-    } catch (error) {
-      console.error('Error fetching detalles de atención:', error);
-      // alert('No se pudieron cargar los detalles de la atención.');
+      // Asegurarse de que fullData.data exista y no esté vacío antes de establecerlo
+      if (fullData.data && Object.keys(fullData.data).length > 0) {
+        setSelectedAtencionData(fullData.data);
+      } else {
+        // Si los datos son vacíos o nulos desde la API, establecer explícitamente a nulo
+        setSelectedAtencionData(null);
+        setError('No se encontraron datos detallados para esta atención.');
+      }
+    } catch (err) {
+      console.error('Error fetching detalles de atención:', err);
+      setError(err.message || 'No se pudieron cargar los detalles de la atención.');
+      setSelectedAtencionData(null); // Asegurar que los datos se limpien en caso de error
     } finally {
       setLoading(false);
     }
@@ -51,6 +75,8 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
         <p className="text-center text-primary-texto py-3 font-semibold animate-pulse">
           Cargando historial de atenciones previas...
         </p>
+      ) : error ? (
+        <p className="text-center text-red-500 py-3">Error: {error}</p>
       ) : historial.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {historial.map(item => {
@@ -87,6 +113,8 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
             <p className="text-center text-primary-texto py-3 font-semibold animate-pulse">
               Cargando datos de la atención...
             </p>
+          ) : error ? (
+            <p className="text-center text-red-500 py-3">Error: {error}</p>
           ) : selectedAtencionData ? (
             <AtencionExistenteV3
               data={selectedAtencionData}

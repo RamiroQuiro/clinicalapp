@@ -1,5 +1,3 @@
-// src/services/atenciones.service.ts
-
 import db from '@/db';
 import {
   atenciones,
@@ -15,8 +13,8 @@ import { desc, eq } from 'drizzle-orm';
 
 export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
   // 1. Buscar la atención por ID
-  const [atencionData] = await db.select().from(atenciones).where(eq(atenciones.id, atencionId));
-  console.log('esta es la atencionData ->', atencionData);
+  const [atencionData] = await db.select().from(atenciones).where(eq(atenciones.id, atencionId)); // MODIFIED
+
   if (!atencionData) {
     return {
       error: true,
@@ -78,7 +76,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .where(eq(medicamento.atencionId, atencionId));
   // 2. Si está cerrada → devolver info mínima y aviso
 
-  if (atencionData.estado === 'cerrada') {
+  if (atencionData.estado === 'finalizada') {
     return {
       error: false,
       message: 'La atención ya está cerrada',

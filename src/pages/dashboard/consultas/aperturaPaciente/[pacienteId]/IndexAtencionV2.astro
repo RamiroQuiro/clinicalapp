@@ -4,10 +4,14 @@ import { getDatosNuevaAtencion } from '@/services/atenciones.services';
 import Contenedor from './componenteAtencionV2/Contenedor.tsx';
 
 const { pacienteId, atencionId } = Astro.params;
-const { data, error, msg } = await getDatosNuevaAtencion(pacienteId, atencionId);
+console.log('params', pacienteId, atencionId);
+const { data, error, message } = await getDatosNuevaAtencion(
+  pacienteId as string,
+  atencionId as string
+);
 // console.log('esta es la data en index atencion v2', data);
 if (error) {
-  console.log('error', error);
+  console.log('error', error, message);
   // errorData = {
   //   msg: 'Error al buscar el paciente , intentelo de nuevo 🙈',
   // };
@@ -15,9 +19,16 @@ if (error) {
 ---
 
 <div class="p-4 gap-2 flex flex-col w-full" id="containerAtencion">
-  <NavAtencionMedicaV2 pacienteData={data?.paciente} />
+{
+
+// aqwui va un pagina para mostrar un error
+
+error && <div>{message}</div>}
+{!error && (
+<NavAtencionMedicaV2 pacienteData={data?.paciente} />
 
   <div class="w-full flex flex-col">
     <Contenedor client:load data={data} />
-  </div>
+  </div>)
+}
 </div>

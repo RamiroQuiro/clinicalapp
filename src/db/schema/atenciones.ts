@@ -13,6 +13,7 @@ export const atenciones = sqliteTable('atenciones', {
   userIdMedico: text('userIdMedico')
     .notNull()
     .references(() => users.id),
+  ultimaModificacionPorId: text('ultimaModificacionPorId').references(() => users.id),
   fecha: integer('fecha', { mode: 'timestamp' })
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),

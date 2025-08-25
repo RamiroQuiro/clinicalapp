@@ -1,5 +1,6 @@
 import calcularEdad from '@/utils/calcularEdad';
-import formatDate from '@/utils/formatDate';
+import formatDate from '@/utils/formatDate'; // Ensure this is imported
+import { getDurationInMinutes } from '@/utils/timesUtils'; // ADDED
 import {
   Calendar,
   ClipboardList,
@@ -38,6 +39,12 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
   const { atencion, paciente } = data;
   const edad = paciente?.fNacimiento ? calcularEdad(paciente?.fNacimiento) : 'N/A';
 
+  // Calculate duration for display
+  const displayDuration =
+    atencion?.inicioConsulta && atencion?.finConsulta
+      ? `${Math.round(getDurationInMinutes(atencion.inicioConsulta, atencion.finConsulta))} minutos`
+      : 'N/A';
+
   return (
     <div className="p-4  font-sans flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
       {/* Encabezado */}
@@ -72,6 +79,25 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
           <span className="font-semibold text-gray-100">Médico:</span>{' '}
           {`${atencion?.atencionData?.medico?.nombre} ${atencion?.atencionData?.medico?.apellido}`}
         </p>
+        {/* NEW: Consultation Times */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+          <InfoItem
+            icon={<Calendar size={16} />}
+            label="Inicio"
+            value={atencion?.inicioConsulta ? formatDate(atencion.inicioConsulta, 'datetime') : 'N/A'}
+          />
+          <InfoItem
+            icon={<Calendar size={16} />}
+            label="Fin"
+            value={atencion?.finConsulta ? formatDate(atencion.finConsulta, 'datetime') : 'N/A'}
+          />
+          <InfoItem
+            icon={<Calendar size={16} />}
+            label="Duración"
+            value={displayDuration}
+          />
+        </div>
+        {/* End NEW: Consultation Times */}
         <div className="space-y-2">
           <div>
             <h4 className="font-semibold text-gray-100">Motivo de Consulta:</h4>
