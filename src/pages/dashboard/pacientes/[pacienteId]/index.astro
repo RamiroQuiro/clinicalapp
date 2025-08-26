@@ -29,7 +29,9 @@ const { session, user } = Astro.locals;
             class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100 cursor-pointer w-full text-sm font-semibold text-center flex items-center justify-between"
             ><p>Pogresos</p><Button1>ver más</Button1></summary
           >
-          <ContenedorCharts />
+          <div class="w-full overflow-hidden">
+            <ContenedorCharts />
+          </div>
         </details>
       </DivBox1>
       <div class="flex w-full items-start justify-normal gap-4">
