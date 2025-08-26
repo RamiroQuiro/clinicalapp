@@ -51,5 +51,6 @@ const { session, user } = Astro.locals;
 <script>
   import { fetchPacientePerfil } from '@/context/store';
   const idPaciente = document.getElementById('mainDashboard')?.dataset.pasisisi;
+
   fetchPacientePerfil(idPaciente);
 </script>

@@ -1,53 +1,43 @@
 ---
-import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
-import Button1 from "../atomos/Button1.astro";
-import type { Antecedente } from "../../types";
-import CardAntecedentes from "../../components/moleculas/CardAntecedentes.astro";
-import FormularioAntecedentes from "./FormularioAntecedentes.astro";
-import ModalAntecedentes from "../moleculas/ModalAntecedentes.astro";
+import CardAntecedentes from '../../components/moleculas/CardAntecedentes.astro';
+import type { Antecedente } from '../../types';
+import Button1 from '../atomos/Button1.astro';
+import ContenedorTitleBotonera from '../atomos/ContenedorTitleBotonera.astro';
+import ModalAntecedentes from '../moleculas/ModalAntecedentes.astro';
+import FormularioAntecedentes from './FormularioAntecedentes.astro';
 interface MedicalHistoryProps {
   antecedentes: Antecedente[];
 }
 
 const { antecedentes } = Astro.props as MedicalHistoryProps;
 
-const personalConditions = antecedentes.filter((c) => c.tipo === "personal");
-const familyConditions = antecedentes.filter((c) => c.tipo === "familiar");
+const personalConditions = antecedentes?.filter(c => c.tipo === 'personal');
+const familyConditions = antecedentes?.filter(c => c.tipo === 'familiar');
 ---
 
-<div
-  class="flex flex-col items-center w-full justify-normal text-primary-texto"
->
+<div class="flex flex-col items-center w-full justify-normal text-primary-texto">
   <ContenedorTitleBotonera>
     <h2 class="text font-semibold">Antecedentes Médico</h2>
     <div class="flex gap-2">
       <Button1>ver más</Button1>
       <ModalAntecedentes>
-        <FormularioAntecedentes  />
+        <FormularioAntecedentes />
       </ModalAntecedentes>
     </div>
   </ContenedorTitleBotonera>
 
   <div class="space- flex flex-col gap-y-6 w-full">
     <div>
-      <h3 class="text-sm   mb-1.5">Antecedentes Personales</h3>
+      <h3 class="text-sm mb-1.5">Antecedentes Personales</h3>
       <div class="space-y-3">
-        {
-          personalConditions.map((diag, index) => (
-            <CardAntecedentes data={diag} />
-          ))
-        }
+        {personalConditions?.map((diag, index) => <CardAntecedentes data={diag} />)}
       </div>
     </div>
 
     <div>
-      <h3 class="text-sm  mb-1.5">Antecedentes Familiares</h3>
+      <h3 class="text-sm mb-1.5">Antecedentes Familiares</h3>
       <div class="space-y-3">
-        {
-          familyConditions.map((diag, index) => (
-            <CardAntecedentes data={diag} />
-          ))
-        }
+        {familyConditions?.map((diag, index) => <CardAntecedentes data={diag} />)}
       </div>
     </div>
   </div>

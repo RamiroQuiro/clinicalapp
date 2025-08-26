@@ -6,7 +6,8 @@ export const GET: APIRoute = async ({ params, locals }) => {
   const { pacienteId } = params;
   const { session, user } = locals;
   // fatna validar la autehcitacion
-
+  console.log('paciente id', pacienteId);
+  console.log('user id', user.id);
   try {
     const data = await getPacienteData(pacienteId as string, user.id as string);
     console.log('data del paciente en el enpoint->', data);

@@ -1,14 +1,10 @@
 ---
+import { Pen } from 'lucide-react';
 import Button1 from '../atomos/Button1.astro';
 ---
 
 <div class="w-full flex flex-col gap-2 text-sm">
-  <button
-    id="modal-perfil"
-    class="px-4 py-2 bg-primary-100 text-white rounded-lg hover:bg-primary/90 transition-colors"
-  >
-    Editar Perfil
-  </button>
+  <Button1 id="modal-perfil"> <Pen /> Editar Perfil </Button1>
   <dialog
     id={`dialog-modal-perfil`}
     class="modal print:hidden duration-300 open:fixed open:flex flex-col w-full md:open:min-w-[30vw] md:open:max-w-[40vw] open:min-h-[50vh] rounded-lg border-l-2 border-primary-100 backdrop:bg-primary-texto/80 open:backdrop:backdrop-blur-sm"

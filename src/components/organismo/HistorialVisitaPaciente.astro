@@ -1,39 +1,39 @@
 ---
-import formatDate from "../../utils/formatDate";
-import Button1 from "../atomos/Button1.astro";
-import ContenedorTitleBotonera from "../atomos/ContenedorTitleBotonera.astro";
-import DivBox1 from "../atomos/DivBox1.astro";
+import formatDate from '../../utils/formatDate';
+import Button1 from '../atomos/Button1.astro';
+import ContenedorTitleBotonera from '../atomos/ContenedorTitleBotonera.astro';
+import DivBox1 from '../atomos/DivBox1.astro';
 
 interface Visitas {
   fecha: string;
   motivo: string;
   doctor?: string;
   department?: string;
-  tratamiento?:string;
-  diagnosticos?:string
+  tratamiento?: string;
+  diagnosticos?: string;
 }
 
 interface RecentVisitsProps {
   visitas: Visitas[];
 }
 
-const { visitas,colorMap } = Astro.props as RecentVisitsProps;
+const { visitas, colorMap } = Astro.props as RecentVisitsProps;
 const cabeceraColumn = [
   {
     id: 1,
-    label: "fecha",
+    label: 'fecha',
   },
   {
     id: 2,
-    label: "motivo",
+    label: 'motivo',
   },
   {
     id: 3,
-    label: "diagnostico",
+    label: 'diagnostico',
   },
   {
     id: 4,
-    label: "tratamiento",
+    label: 'tratamiento',
   },
 ];
 ---
@@ -46,30 +46,28 @@ const cabeceraColumn = [
     </div>
   </ContenedorTitleBotonera>
 
-  <div
-    class="overflow-x-auto w-full bg-primary-bg-componentes rounded-lg border"
-  >
+  <div class="overflow-x-auto w-full bg-primary-bg-componentes rounded-lg border">
     <table class="w-full">
       <thead class="w-full">
         <tr class="text-left border-b">
           {
-            cabeceraColumn?.map((colum) => (
-              <th class="py-3 pl-2 text-sm font-medium capitalize">
-                {colum.label}
-              </th>
+            cabeceraColumn?.map(colum => (
+              <th class="py-3 pl-2 text-sm font-medium capitalize">{colum.label}</th>
             ))
           }
         </tr>
       </thead>
       <tbody>
         {
-          visitas.map((visit, index) => (
+          visitas?.map((visit, index) => (
             <tr
-            onclick={`document.location.href='/dashboard/consultas/${visit.id}'`}
-            style={{
-              backgroundColor: colorMap[visit.id]}}
-            class="border-b cursor-pointer  last:border-0 odd:bg-primary-bg-componentes/50">
-              <td class=" text-xs  px-2 py-2.5">{formatDate(visit.fecha,1)}</td>
+              onclick={`document.location.href='/dashboard/consultas/${visit.id}'`}
+              style={{
+                backgroundColor: colorMap[visit.id],
+              }}
+              class="border-b cursor-pointer  last:border-0 odd:bg-primary-bg-componentes/50"
+            >
+              <td class=" text-xs  px-2 py-2.5">{formatDate(visit.fecha, 1)}</td>
               <td class=" text-xs break-all  px-2 py-2.5">{visit.motivo}</td>
               <td class=" text-xs  px-2 py-2.5">{visit.diagnosticos}</td>
               <td class=" text-xs  px-2 py-2.5 break-after-all">

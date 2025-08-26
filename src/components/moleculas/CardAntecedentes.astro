@@ -1,36 +1,78 @@
 ---
-import { AlertCircle, Heart } from "lucide-react";
-import type { Antecedente } from "../../types";
-import formatDate from '../../utils/formatDate'
-const { data } = Astro.props as Antecedente;
+// CardAntecedentes.astro - Refactorizado
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
+import type { Antecedente } from '../../types';
 
+interface Props {
+  data: Antecedente;
+}
+const { data } = Astro.props;
 
+// Lógica para detectar subtipos y asignarles un estilo
+const getSubtipoInfo = (descripcion: string) => {
+  const desc = descripcion.toLowerCase();
+  if (desc.includes('quirúrgico') || desc.includes('cirugía') || desc.includes('operación')) {
+    return { texto: 'Quirúrgico', estilo: 'bg-red-100 text-red-800' };
+  }
+  if (desc.includes('alergia') || desc.includes('alérgico')) {
+    return { texto: 'Alergia', estilo: 'bg-yellow-100 text-yellow-800' };
+  }
+  if (
+    desc.includes('hta') ||
+    desc.includes('hipertensión') ||
+    desc.includes('diabetes') ||
+    desc.includes('dbt')
+  ) {
+    return { texto: 'Patológico', estilo: 'bg-blue-100 text-blue-800' };
+  }
+  if (desc.includes('fractura') || desc.includes('esguince') || desc.includes('trauma')) {
+    return { texto: 'Traumatismo', estilo: 'bg-purple-100 text-purple-800' };
+  }
+  return null; // No se detectó un subtipo específico
+};
+
+const subtipoInfo = getSubtipoInfo(data.descripcion);
 ---
 
 <div
-  class="flex items-start gap-4 p-2 border border-gray-200/50 rounded-md bg-primary-bg-componentes"
+  class="flex flex-col p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
 >
-  <div
-    class={`w-8 h-8 rounded-full ${data.estado !== "controlado" ? "bg-red-100" : "bg-primary-150"} flex items-center justify-center`}
-  >
-    {
-      data.estado !== "controlado" ? (
-        <AlertCircle size={16} className="text-red-800" />
-      ) : (
-        <Heart size={16} className="text-primary-texto" />
-      )
-    }
+  <div class="flex items-start justify-between gap-4">
+    <!-- Contenido principal -->
+    <div class="flex-grow">
+      {
+        subtipoInfo && (
+          <span
+            class:list={[
+              'text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2 inline-block',
+              subtipoInfo.estilo,
+            ]}
+          >
+            {subtipoInfo.texto}
+          </span>
+        )
+      }
+      <p class="text-gray-800">{data.descripcion}</p>
+    </div>
+
+    <!-- Acciones -->
+    <div class="flex-shrink-0 flex items-center gap-2">
+      <button class="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Editar">
+        <Pencil size={20} />
+      </button>
+      <button class="p-1 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
+        <Trash2 size={20} />
+      </button>
+    </div>
   </div>
 
-  <div class="flex-1">
-    <h3 class="font-medium text-sm uppercase">
-      {data.antecedente}
-    </h3>
-    <p class="text-xs text-muted-foreground">
-      Diagnosticado: {formatDate(data.fechaDiagnostico)}
-    </p>
-  </div>
-  <span class="px-2 py-1 text-xs font-medium rounded-full bg-accent">
-    {data.tipo === "familiar" ? "familiar" : data.estado}
-  </span>
+  <!-- Footer de la tarjeta con la fecha -->
+  {
+    data.fechaDiagnostico && (
+      <div class="flex items-center gap-2 text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
+        <Calendar size={20} />
+        <span>Registrado el: {new Date(data.fechaDiagnostico).toLocaleDateString('es-AR')}</span>
+      </div>
+    )
+  }
 </div>
