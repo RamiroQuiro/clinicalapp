@@ -67,8 +67,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             sintomas,
             observaciones,
             motivoInicial,
-            inicioAtencion: inicioConsulta, // ADDED
-            finAtencion: finConsulta, // ADDED
+            inicioAtencion: new Date(inicioConsulta), // ADDED
+            finAtencion: new Date(finConsulta), // ADDED
             duracionAtencion: duracionConsulta, // ADDED
             updated_at: new Date(),
             estado: status,
@@ -87,9 +87,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
           historiaClinicaId,
           estado: status,
           userIdMedico: user.id,
-          inicioConsulta, // ADDED
-          finConsulta, // ADDED
-          duracionConsulta, // ADDED
+          inicioAtencion: inicioConsulta ? new Date(inicioConsulta) : null, // ADDED
+          finAtencion: finConsulta ? new Date(finConsulta) : null, // ADDED
+          duracionAtencion: duracionConsulta, // ADDED
         });
       }
 

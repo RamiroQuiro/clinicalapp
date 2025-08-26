@@ -1,8 +1,8 @@
 import Button from '@/components/atomos/Button';
 // --- CAMBIADO: Importar consultaStore ---
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store'; // MODIFICADO
-import { showToast } from '@/utils/toast/toastShow';
 import { getDurationInMinutes } from '@/utils/timesUtils'; // AÑADIDO
+import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Lock, Save } from 'lucide-react';
 
@@ -64,4 +64,3 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
     </div>
   );
 }
-

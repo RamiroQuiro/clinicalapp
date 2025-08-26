@@ -2,14 +2,32 @@
 import ContenedorChartjs from '../atomos/ContenedorChartjs.astro';
 ---
 
-<div class="w-full">
-  <div id="charts-container" class="flex h-72 overflow-x-auto items-center gap-4 p-4 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-gray-400">
-    <div id="no-data-message" class="hidden w-full text-center text-gray-500">No hay datos de signos vitales para mostrar.</div>
-    <ContenedorChartjs><canvas id="pesoChart"></canvas></ContenedorChartjs>
-    <ContenedorChartjs><canvas id="imcChart"></canvas></ContenedorChartjs>
-    <ContenedorChartjs><canvas id="temperaturaChart"></canvas></ContenedorChartjs>
-    <ContenedorChartjs><canvas id="frecuenciaCardiacaChart"></canvas></ContenedorChartjs>
-    <ContenedorChartjs><canvas id="frecuenciaRespiratoriaChart"></canvas></ContenedorChartjs>
+<div class="w-full max-w-full overflow-hidden">
+  <div
+    id="charts-container"
+    class="flex overflow-x-auto gap-4 p-2 md:p-4 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-gray-400 min-h-[300px] items-stretch"
+  >
+    <div
+      id="no-data-message"
+      class="hidden w-full text-center overflow-hidden text-gray-500 my-auto"
+    >
+      No hay datos de signos vitales para mostrar.
+    </div>
+    <div class="w-[300px] flex-shrink-0">
+      <ContenedorChartjs><canvas id="pesoChart"></canvas></ContenedorChartjs>
+    </div>
+    <div class="w-[300px] flex-shrink-0">
+      <ContenedorChartjs><canvas id="imcChart"></canvas></ContenedorChartjs>
+    </div>
+    <div class="w-[300px] flex-shrink-0">
+      <ContenedorChartjs><canvas id="temperaturaChart"></canvas></ContenedorChartjs>
+    </div>
+    <div class="w-[300px] flex-shrink-0">
+      <ContenedorChartjs><canvas id="frecuenciaCardiacaChart"></canvas></ContenedorChartjs>
+    </div>
+    <div class="w-[300px] flex-shrink-0">
+      <ContenedorChartjs><canvas id="frecuenciaRespiratoriaChart"></canvas></ContenedorChartjs>
+    </div>
   </div>
 </div>
 
@@ -26,6 +44,7 @@ import ContenedorChartjs from '../atomos/ContenedorChartjs.astro';
     try {
       const response = await fetch(`/api/pacientes/signosVitales/${pacienteId}`);
       const data = await response.json();
+      console.log('data de los signos vitales del paciente->', data);
       if (data.status !== 200 || !data.data || data.data.length === 0) {
         console.error('Error o sin datos:', data.msg);
         return { labels: [], datasets: {} };
@@ -187,6 +206,7 @@ import ContenedorChartjs from '../atomos/ContenedorChartjs.astro';
   .scrollbar-thin::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
+    margin: 0 1rem;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: #ccc;
@@ -194,5 +214,11 @@ import ContenedorChartjs from '../atomos/ContenedorChartjs.astro';
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: #aaa;
+  }
+
+  /* Asegurar que los canvas sean responsivos */
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
   }
 </style>

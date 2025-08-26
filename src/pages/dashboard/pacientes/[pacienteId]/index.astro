@@ -6,22 +6,40 @@ import DivBox1 from '../../../../components/atomos/DivBox1.astro';
 import MainDashboard from '../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../components/layouts/LayoutDash.astro';
 import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.astro';
-import Antecedentes from '../../../../components/organismo/Antecedentes.astro';
+import AntecedentesPacientePerfil from '../../../../components/organismo/AtecedentesPacientePerfil';
 import HistorialVisitaPaciente from '../../../../components/organismo/HistorialVisitaPaciente.astro';
 import MedicacionFichaPaciente from '../../../../components/organismo/MedicacionFichaPaciente.astro';
 import NotasMedicas from '../../../../components/organismo/NotasMedicas.astro';
 import PacienteHeader from './components/PacienteHeader.astro';
 
+import { getPacienteData } from '@/services/pacientePerfil.services';
+
 const { pacienteId } = Astro.params;
 const { session, user } = Astro.locals;
 
 // console.log(pacienteData);
+let perfilPaciente = {
+  pacienteData: {},
+  medicamentosData: [],
+  historialVisitas: [],
+  arrayAntecedente: [],
+  arrayArchivosAdjuntos: [],
+  arrayNotasMedicas: [],
+  colorMap: {},
+};
+
+try {
+  perfilPaciente = await getPacienteData(pacienteId as string, user.id as string);
+  console.log('pacienteData', perfilPaciente);
+} catch (error) {
+  console.error('Error fetching paciente data:', error);
+}
 ---
 
 <LayoutDash>
   <MainDashboard h1="Ficha del paciente" pacienteId={pacienteId}>
     <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
-      <PacienteHeader />
+      <PacienteHeader pacienteData={perfilPaciente.pacienteData} />
       <!-- <ContenedoresProgresoHistorial client:load/> -->
       <DivBox1 class="w-full text-primary-texto">
         <details class="w-full tex-center flex items-center justify-center">
@@ -37,22 +55,26 @@ const { session, user } = Astro.locals;
       <div class="flex w-full items-start justify-normal gap-4">
         <Div1Atencion>
           <DivBox1>
-            <Antecedentes antecedentes={[]} />
+            <AntecedentesPacientePerfil
+              client:load
+              pacienteId={pacienteId}
+              antecedentes={perfilPaciente.arrayAntecedente}
+            />
           </DivBox1>
-          <HistorialVisitaPaciente colorMap={[]} visitas={[]} />
+          <HistorialVisitaPaciente colorMap={[]} visitas={perfilPaciente.historialVisitas} />
         </Div1Atencion>
         <Div1Atencion>
-          <MedicacionFichaPaciente colorMap={[]} medicacion={[]} />
-          <ArchivosAdjuntosPaciente documentos={[]} />
-          <NotasMedicas userId={user?.id} notes={[]} />
+          <MedicacionFichaPaciente colorMap={[]} medicacion={perfilPaciente.medicamentosData} />
+          <ArchivosAdjuntosPaciente documentos={perfilPaciente.arrayArchivosAdjuntos} />
+          <NotasMedicas userId={user?.id} notes={perfilPaciente.arrayNotasMedicas} />
         </Div1Atencion>
       </div>
     </div>
   </MainDashboard>
 </LayoutDash>
-<script>
+<!-- <script>
   import { fetchPacientePerfil } from '@/context/store';
   const idPaciente = document.getElementById('mainDashboard')?.dataset.pasisisi;
 
   fetchPacientePerfil(idPaciente);
-</script>
+</script> -->

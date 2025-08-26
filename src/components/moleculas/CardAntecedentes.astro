@@ -10,7 +10,7 @@ const { data } = Astro.props;
 
 // Lógica para detectar subtipos y asignarles un estilo
 const getSubtipoInfo = (descripcion: string) => {
-  const desc = descripcion.toLowerCase();
+  const desc = descripcion?.toLowerCase();
   if (desc.includes('quirúrgico') || desc.includes('cirugía') || desc.includes('operación')) {
     return { texto: 'Quirúrgico', estilo: 'bg-red-100 text-red-800' };
   }
@@ -31,7 +31,7 @@ const getSubtipoInfo = (descripcion: string) => {
   return null; // No se detectó un subtipo específico
 };
 
-const subtipoInfo = getSubtipoInfo(data.descripcion);
+const subtipoInfo = getSubtipoInfo(data.antecedente);
 ---
 
 <div

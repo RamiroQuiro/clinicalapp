@@ -7,15 +7,17 @@ type Props = {
   data: Antecedente;
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
+  onEdit: (antecedente: Antecedente) => void;
 };
 
-export default function CardAntecentes({ data, isOpen, setIsOpen }: Props) {
+export default function CardAntecentes({ data, isOpen, setIsOpen, onEdit }: Props) {
   const handleEdit = () => {
-    setIsOpen();
+    setIsOpen(true);
+    onEdit(data);
   };
 
   return (
-    <div className="flex items-start gap-4 p-2 border border-gray-200/50 rounded-md bg-primary-bg-componentes">
+    <div className="flex items-start gap-4 p-2 border hover:border-primary-100/50 duration-300 border-gray-200/50 rounded-md bg-primary-bg-componentes">
       <div
         className={`w-8 h-8 rounded-full ${data.estado !== 'controlado' ? 'bg-red-100' : 'bg-primary-150'} flex items-center justify-center`}
       >

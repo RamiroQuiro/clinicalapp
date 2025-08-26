@@ -1,18 +1,18 @@
 ---
-import type { Medication } from "../../types";
-import formatDate from "../../utils/formatDate";
+import type { Medication } from '../../types';
+import formatDate from '../../utils/formatDate';
 
 const { medication, colorMap } = Astro.props;
-const getStatusColor = (status: Medication["status"]) => {
+const getStatusColor = (status: Medication['estado']) => {
   switch (status) {
-    case "active":
-      return "bg-accent text-accent-foreground";
-    case "completed":
-      return "bg-blue-100 text-blue-800";
-    case "suspended":
-      return "bg-red-100 text-red-800";
+    case 'activo':
+      return 'bg-green-100 text-green-800';
+    case 'finalizado':
+      return 'bg-gray-100 text-blue-800';
+    case 'pendiente':
+      return 'bg-blue-100 text-red-800';
     default:
-      return "bg-gray-100 text-gray-800";
+      return 'bg-gray-100 text-gray-800';
   }
 };
 ---
@@ -21,19 +21,17 @@ const getStatusColor = (status: Medication["status"]) => {
   style={{
     backgroundColor: colorMap[medication.atencionId],
   }}
-  class="border-b last:border-0"
+  class="border-b bg-white hover:bg-primary-bg-componentes text-primary-texto duration-300 last:border-0"
 >
-  <td class="text-xs px-2 py-2.5 font-medium">{medication.nombre}</td>
+  <td class="text-sm px-2 py-2.5 font-medium">{medication.nombreGenerico}</td>
+  <td class="text-sm px-2 py-2.5 font-medium">{medication.nombreComercial}</td>
   <td class="text-xs p-2">{medication.dosis}</td>
   <td class="text-xs p-2">{medication.frecuencia}</td>
-  <td class="text-xs p-2">{medication.duracion}</td>
-  <td class="text-xs p-2">{formatDate(medication.created_at, 1)}</td>
-  <td class="text-xs p-2">
-    <span
-      class={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(medication.stock)}`}
-    >
+  <td class="text- p-2">{formatDate(medication.created_at, 1)}</td>
+  <td class="text- p-2">
+    <span class={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(medication.estado)}`}>
       <!-- {medication.stock.charAt(0).toUpperCase() + medication.stock.slice(1)} -->
-      activos
+      {medication.estado}
     </span>
   </td>
 </tr>

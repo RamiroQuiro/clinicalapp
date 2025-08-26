@@ -169,7 +169,20 @@ export interface Medication {
   nombre: string;
   dosis: string;
   frecuencia: string;
-  estado: 'activo' | 'completado' | 'suspendido';
+  duracion: number;
+  nombreGenerico:string;
+  nombreComercial:string;
+  laboratorio:string;
+  descripcion:string;
+  tipoMedicamento:string;
+  historiaClinicaId:string;
+  atencionId:string;
+  pacienteId:string;
+  userMedicoId:string;
+  updateUserId:string;
+  precio:number;
+  stock:number;
+  estado: 'activo' | 'finalizado' | 'pendiente';
 }
 
 export interface MedicationsProps {

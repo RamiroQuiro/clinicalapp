@@ -8,9 +8,10 @@ import {
   medicamento,
   notasMedicas,
   pacientes,
+  users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 
 function generateColor(index: number) {
   const colors = ['#A5CDFE38', '#DCECFF45', '#FCE3D54C', '#FFD2B2BD', '#E25B3250'];
@@ -24,6 +25,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       pacienteDataRaw,
       medicamentosData,
       historialVisitas,
+      arrayDiagnosticos,
       arrayAntecedente,
       arrayArchivosAdjuntos,
       arrayNotasMedicas,
@@ -62,16 +64,23 @@ export async function getPacienteData(pacienteId: string, userId: string) {
         .select({
           id: atenciones.id,
           fecha: atenciones.created_at,
-          motivo: atenciones.motivoConsulta,
+          motivoConsulta: atenciones.motivoConsulta,
+          motivoInicial: atenciones.motivoInicial,
+          profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
+
+          tratamientoId: atenciones.tratamientoId,
+          tratamiento: atenciones.tratamientoId,
         })
         .from(atenciones)
-        .innerJoin(diagnostico, eq(diagnostico.atencionId, atenciones.id))
+        .innerJoin(users, eq(users.id, atenciones.userIdMedico))
         .where(eq(atenciones.pacienteId, pacienteId))
         .groupBy(atenciones.id)
-        .orderBy(desc(atenciones.created_at)),
-
+        .orderBy(desc(atenciones.created_at))
+        .limit(10),
+      // diagnostico
+      db.select().from(diagnostico).where(eq(diagnostico.pacienteId, pacienteId)).limit(10),
       // antecedentes
-      db.select().from(antecedentes).where(eq(antecedentes.pacienteId, pacienteId)),
+      db.select().from(antecedentes).where(eq(antecedentes.pacienteId, pacienteId)).limit(10),
 
       // archivos adjuntos
       db
@@ -89,7 +98,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
     ]);
 
     const pacienteData = pacienteDataRaw.at(0);
-    console.log('paciente en el getData ', pacienteData);
+    // console.log('paciente en el getData ', pacienteData);
     if (!pacienteData) {
       throw new Error('Paciente no encontrado');
     }
@@ -104,6 +113,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       pacienteData,
       medicamentosData,
       historialVisitas,
+      arrayDiagnosticos,
       arrayAntecedente,
       arrayArchivosAdjuntos,
       arrayNotasMedicas,

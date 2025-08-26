@@ -1,7 +1,4 @@
-import { pacientePerfilStore } from '@/context/store';
-
 import formatDate from '@/utils/formatDate';
-import { useStore } from '@nanostores/react';
 import {
   ArrowBigRightDash,
   Briefcase,
@@ -15,15 +12,15 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export default function StatsPacienteHeader() {
-  const [patientData, setPatientData] = useState({});
-  const { data, loading, error } = useStore(pacientePerfilStore);
+export default function StatsPacienteHeader({ pacienteData }: { pacienteData: any }) {
+  const [patientData, setPatientData] = useState(pacienteData);
+  // const { data, loading, error } = useStore(pacientePerfilStore);
   // console.log('useStore ->', data?.pacienteData);
   useEffect(() => {
-    if (data && data.pacienteData) {
-      setPatientData(data.pacienteData);
+    if (pacienteData) {
+      setPatientData(pacienteData);
     }
-  }, [data?.pacienteData]);
+  }, [pacienteData]);
 
   const ocupacion = 'empleado';
   const edad = 12;

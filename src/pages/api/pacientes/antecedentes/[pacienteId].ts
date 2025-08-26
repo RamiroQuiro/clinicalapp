@@ -108,7 +108,7 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
         fechaDiagnostico: new Date(data.fechaDiagnostico),
       })
       .where(eq(antecedentes.id, idAntecedente));
-    console.log('update', update);
+
     return createResponse(200, 'Antecedente actualizado correctamente', update);
   } catch (error) {
     console.log(error);

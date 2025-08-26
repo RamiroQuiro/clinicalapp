@@ -29,6 +29,7 @@ const patientData = {
 };
 
 const { pacienteId } = Astro.params;
+const { pacienteData } = Astro.props;
 const ocupacion = 'Empleado';
 const maritalStatus = 'Casado';
 const { session } = Astro.locals;
@@ -52,9 +53,9 @@ const edad = calcularEdad(patientData.fNacimiento);
 <DivBox1>
   <!-- Resto del componente usando patientData -->
   <div class="flex w-full md:flex-row items-start md:items-center gap-6 p-6 h flex-1 flex-between">
-    <UserCheck2Icon className="w-28 h-28" />
+    <UserCheck2Icon className="w-28 h-28 stroke-primary-textoTitle" />
     <!-- datps del paciente -->
-    <StatsPacienteHeader client:load />
+    <StatsPacienteHeader pacienteData={patientData} client:load />
     <div class="flex flex-col gap-2 text-sm">
       <ModalEditarPerfil>
         <FormularioPaciente user paciente={patientData} />

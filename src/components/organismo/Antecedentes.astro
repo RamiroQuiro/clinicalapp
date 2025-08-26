@@ -1,5 +1,5 @@
 ---
-import CardAntecedentes from '../../components/moleculas/CardAntecedentes.astro';
+import CardAntecedentes from '@/components/moleculas/CardAntecentes';
 import type { Antecedente } from '../../types';
 import Button1 from '../atomos/Button1.astro';
 import ContenedorTitleBotonera from '../atomos/ContenedorTitleBotonera.astro';
@@ -10,7 +10,7 @@ interface MedicalHistoryProps {
 }
 
 const { antecedentes } = Astro.props as MedicalHistoryProps;
-
+console.log('componente antecedentes ->', antecedentes);
 const personalConditions = antecedentes?.filter(c => c.tipo === 'personal');
 const familyConditions = antecedentes?.filter(c => c.tipo === 'familiar');
 ---
@@ -30,7 +30,7 @@ const familyConditions = antecedentes?.filter(c => c.tipo === 'familiar');
     <div>
       <h3 class="text-sm mb-1.5">Antecedentes Personales</h3>
       <div class="space-y-3">
-        {personalConditions?.map((diag, index) => <CardAntecedentes data={diag} />)}
+        {personalConditions?.map((diag, index) => <CardAntecedentes client:load data={diag} />)}
       </div>
     </div>
 
