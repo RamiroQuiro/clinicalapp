@@ -1,78 +1,97 @@
 ---
-import type { Documentos } from "../../types";
-import formatDate from "../../utils/formatDate";
+import { Download, Eye, Pencil } from 'lucide-react';
+import type { Documentos } from '../../types';
+import formatDate from '../../utils/formatDate';
+import Button2 from '../atomos/Button2.astro';
+import BotonIndigo from '../moleculas/BotonIndigo.astro';
 
+const { documentos } = Astro.props as Documentos;
 
-const {documentos}=Astro.props as Documentos
-
-
-const getTypeIcon = (tipo:Documentos["tipo"]) => {
+const getTypeIcon = (tipo: Documentos['tipo']) => {
   switch (tipo) {
-    case "laboratorios":
-      return "🧪";
-    case "rayosx":
-      return "📷";
-    case "prescripcion":
-      return "📝";
-    case "derivacion":
-      return "📝";
-    case "electrocardiograma":
-      return "❤️";
+    case 'laboratorios':
+      return '🧪';
+    case 'rayosx':
+      return '📷';
+    case 'prescripcion':
+      return '📝';
+    case 'derivacion':
+      return '📝';
+    case 'electrocardiograma':
+      return '❤️';
     default:
-      return "📄";
+      return '📄';
   }
 };
-const getStatusColor = (status: Documentos["estado"]) => {
+const getStatusColor = (status: Documentos['estado']) => {
   switch (status) {
-    case "pendiente":
-      return "bg-yellow-100 text-yellow-800";
-    case "revisar":
-      return "bg-green-100 text-green-800";
-    case "archivado":
-      return "bg-gray-100 text-gray-800";
+    case 'pendiente':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'revisar':
+      return 'bg-green-100 text-green-800';
+    case 'archivado':
+      return 'bg-gray-100 text-gray-800';
     default:
-      return "bg-gray-100 text-gray-800";
+      return 'bg-gray-100 text-gray-800';
   }
 };
 ---
 
-<table class="w-full">
-  <thead>
+<div
+  class="text-primary-textoTitle overflow-x-auto w-full bg-primary-bg-componentes rounded-lg border"
+>
+  <table class="w-full">
+    <thead class="w-full">
       <tr class="text-left border-b">
-        <th class="pb-3 text-sm font-medium text-muted-foreground "
-        >Documento</th
-        >
-        <th class="pb-3 text-sm font-medium text-muted-foreground">Fecha</th>
-        <th class="pb-3 text-sm font-medium text-muted-foreground">Tamaño</th>
-        <th class="pb-3 text-sm font-medium text-muted-foreground">Estado</th>
+        <th class="py-2 pl-2 text-sm font-medium capitalize">Documento</th>
+        <th class="py-2 pl-2 text-sm font-medium capitalize">Fecha</th>
+        <th class="py-2 pl-2 text-sm font-medium capitalize">Tamaño</th>
+        <th class="py-2 pl-2 text-sm font-medium capitalize">Estado</th>
+        <th class="py-2 pl-2 text-sm font-medium capitalize">Acciones</th>
       </tr>
     </thead>
     <tbody>
-      
-      {documentos?.slice(0,5)?.map((doc, index) => {
-        const dateFormat=formatDate(doc.created_at)
-        return(
-        <tr  class="border-b last:border-0">
-            <td class="py-4">
-              <div class="flex items-center gap-2">
-                <span class="text-xl">{getTypeIcon(doc.tipo)}</span>
-                <div>
-                  <p class="font-medium text-sm">{doc.nombre}</p>
-                 
+      {
+        documentos?.slice(0, 5)?.map((doc, index) => {
+          const dateFormat = formatDate(doc.created_at, 1);
+          return (
+            <tr class="border-b bg-white hover:bg-primary-bg-componentes text-primary-texto duration-300 last:border-0">
+              <td class="-4">
+                <div class="flex flex-col items-center gap-1">
+                  <span class="text-sm">{getTypeIcon(doc.tipo)}</span>
+                  <div>
+                    <p class="font- text-sm">{doc.nombre}</p>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td class="py-4 text-sm">{dateFormat}</td>
-            <td class="py-4 text-sm">{doc.tamaño}</td>
-            <td class="py-4">
-              <span
-                class={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(doc.estado)}`}
-              >
-                {doc.estado.charAt(0).toUpperCase() + doc.estado.slice(1)}
-              </span>
-            </td>
-          </tr>
-        )})
+              </td>
+              <td class="py-4 text-sm">{dateFormat}</td>
+              <td class="py-4 text-sm">{doc.tamaño}</td>
+              <td class="py-4">
+                <span
+                  class={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(doc.estado)}`}
+                >
+                  {doc.estado.charAt(0).toUpperCase() + doc.estado.slice(1)}
+                </span>
+              </td>
+              <td class="py-4">
+                <Button2>
+                  <Pencil size={16} />
+                </Button2>
+                <BotonIndigo>
+                  <a
+                    href={`/api/documentos/serve/${doc.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2"
+                  >
+                    <Eye size={16} />/ <Download size={16} />
+                  </a>
+                </BotonIndigo>
+              </td>
+            </tr>
+          );
+        })
       }
     </tbody>
   </table>
+</div>

@@ -38,7 +38,8 @@ export default function CardAntecentes({ data, isOpen, setIsOpen, onEdit }: Prop
         className={`px-2 py-1 text-xs font-medium bg-accent items-center justify-center`}
         onClick={handleEdit}
       >
-        <Pencil size={16} className="mx-auto" /> <p className="text-[10px] mx-auto">Editar</p>
+        <Pencil size={16} className="mx-auto" />
+        {/* <p className="text-[10px] mx-auto">Editar</p> */}
       </Button3>
     </div>
   );

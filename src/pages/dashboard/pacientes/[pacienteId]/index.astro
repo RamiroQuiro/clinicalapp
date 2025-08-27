@@ -1,6 +1,5 @@
 ---
 import ArchivosAdjuntosPaciente from '@/components/organismo/ArchivosAdjuntosPaciente.astro';
-import Button1 from '../../../../components/atomos/Button1.astro';
 import Div1Atencion from '../../../../components/atomos/Div1Atencion.astro';
 import DivBox1 from '../../../../components/atomos/DivBox1.astro';
 import MainDashboard from '../../../../components/atomos/MainDashboard.astro';
@@ -42,13 +41,37 @@ try {
       <PacienteHeader pacienteData={perfilPaciente.pacienteData} />
       <!-- <ContenedoresProgresoHistorial client:load/> -->
       <DivBox1 class="w-full text-primary-texto">
-        <details class="w-full tex-center flex items-center justify-center">
+        <details class="w-full group">
           <summary
-            class="px-2 py-0 bg-primary-bacSidebar shadow- shadow-primary-100 cursor-pointer w-full text-sm font-semibold text-center flex items-center justify-between"
-            ><p>Pogresos</p><Button1>ver más</Button1></summary
+            class="px-4 py-3
+            hover:bg-primary-bg-componentes
+            duration-300
+            cursor-pointer
+            flex items-center justify-between
+            hover:bg-opacity-90"
           >
-          <div class="w-full overflow-hidden">
-            <ContenedorCharts />
+            <span class="font-semibold text-primary-textoTitle">Progresos</span>
+            <span
+              class="text-sm text-primary-100 font-medium group-open:hidden animate-aparecer duration-300"
+              >Ver más</span
+            >
+            <span
+              class="text-sm text-primary-100 font-medium hidden group-open:inline animate-aparecer duration-300"
+              >Ver menos</span
+            >
+          </summary>
+
+          <div
+            class="mt-2 p-4
+            bg-primary-bg-componentes
+            border
+            rounded-lg
+          shadow-md
+            overflow-x-auto"
+          >
+            <div class="min-w-[800px] md:min-w-0">
+              <ContenedorCharts />
+            </div>
           </div>
         </details>
       </DivBox1>

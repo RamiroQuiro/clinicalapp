@@ -22,6 +22,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       data: null,
     };
   }
+  console.log('datos de la atencion obtrenidos... ahora traigo los signos vitales 🔎...');
   const [signosVitalesAtencion] = await db
     .select({
       temperatura: signosVitales.temperatura,
@@ -38,6 +39,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .from(signosVitales)
     .where(eq(signosVitales.atencionId, atencionId))
     .orderBy(desc(signosVitales.created_at));
+  console.log('signos vitales traidos 🔎...', signosVitalesAtencion);
 
   const diagnosticosAtencion = await db
     .select({
@@ -50,6 +52,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(diagnostico)
     .where(eq(diagnostico.atencionId, atencionId));
+  console.log('diagnosticos traidos 🔎...', diagnosticosAtencion);
 
   const [tratamientoAtencion] = await db
     .select({
@@ -61,6 +64,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(tratamiento)
     .where(eq(tratamiento.atencionesId, atencionId));
+  console.log('tratamiento traido 🔎...', tratamientoAtencion);
 
   const medicamentosAtencion = await db
     .select({
@@ -74,17 +78,19 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(medicamento)
     .where(eq(medicamento.atencionId, atencionId));
-  // 2. Si está cerrada → devolver info mínima y aviso
+  console.log('medicamentos traidos 🔎...', medicamentosAtencion);
 
-  if (atencionData.estado === 'finalizada') {
-    return {
-      error: false,
-      message: 'La atención ya está cerrada',
-      data: {
-        atencion: atencionData,
-      },
-    };
-  }
+  // // 2. Si está cerrada → devolver info mínima y aviso
+
+  // if (atencionData.estado === 'finalizada') {
+  //   continue {
+  //     error: false,
+  //     message: 'La atención ya está cerrada',
+  //     data: {
+  //       atencion: atencionData,
+  //     },
+  //   };
+  // }
 
   // 3. Si está en curso → traer datos completos
   const pacienteData = (
@@ -111,7 +117,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       .leftJoin(historiaClinica, eq(historiaClinica.pacienteId, pacientes.id))
       .where(eq(pacientes.id, pacienteId))
   ).at(0);
-
+  console.log('pacienteData 🔎...', pacienteData);
   if (!pacienteData) {
     return {
       error: true,
@@ -134,6 +140,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(antecedentes)
     .where(eq(antecedentes.pacienteId, pacienteId));
+  console.log('antecedentes traidos 🔎...', antecedentesData);
 
   // Signos vitales (últimos 4 registros)
   const fecthSignosVitalesData = await db
@@ -142,6 +149,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .where(eq(signosVitales.pacienteId, pacienteId))
     .orderBy(desc(signosVitales.created_at))
     .limit(4);
+  console.log('signos vitales traidos para el progeso🔎...', fecthSignosVitalesData);
 
   const signosVitalesData = [
     'temperatura',
