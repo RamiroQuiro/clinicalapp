@@ -1,12 +1,13 @@
 ---
-import { Download, Eye, Pencil } from 'lucide-react';
+import { Download, Eye } from 'lucide-react';
 import type { Documentos } from '../../types';
 import formatDate from '../../utils/formatDate';
-import Button2 from '../atomos/Button2.astro';
 import BotonIndigo from '../moleculas/BotonIndigo.astro';
+import ContenedeorModal from './ContenedeorModal.astro';
+import FormularioArchivosAdjuntos from './FormularioArchivosAdjuntos';
 
 const { documentos } = Astro.props as Documentos;
-
+const { pacienteId } = Astro.params;
 const getTypeIcon = (tipo: Documentos['tipo']) => {
   switch (tipo) {
     case 'laboratorios':
@@ -74,9 +75,9 @@ const getStatusColor = (status: Documentos['estado']) => {
                 </span>
               </td>
               <td class="py-4">
-                <Button2>
-                  <Pencil size={16} />
-                </Button2>
+                <ContenedeorModal label="Editar" title="Editar" id="modal-editar">
+                  <FormularioArchivosAdjuntos pacienteId={pacienteId} doc={doc} client:load />
+                </ContenedeorModal>
                 <BotonIndigo>
                   <a
                     href={`/api/documentos/serve/${doc.id}`}

@@ -1,10 +1,12 @@
 import { lucia } from '@/lib/auth';
+import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
-import db from '../../../../db';
-import { archivosAdjuntos } from '../../../../db/schema';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import db from '../../../../db';
+import { archivosAdjuntos } from '../../../../db/schema';
 
 export const POST: APIRoute = async ({ request, params, cookies }) => {
   const formData = await request.formData();
@@ -84,5 +86,42 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
       }),
       { status: 500 }
     );
+  }
+};
+
+export const PUT: APIRoute = async ({ request, params, cookies }) => {
+  const formData = await request.formData();
+  const { pacienteId } = params;
+  console.log('formData', formData);
+  try {
+    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+    if (!sessionId) {
+      return new Response('No autorizado', { status: 401 });
+    }
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      return new Response('No autorizado', { status: 401 });
+    }
+    const id = formData.get('id')?.toString();
+    const descripcion = formData.get('descripcion')?.toString();
+    const nombre = formData.get('nombre')?.toString();
+    const estado = formData.get('estado')?.toString();
+    const tipo = formData.get('tipo')?.toString();
+
+    const update = await db
+      .update(archivosAdjuntos)
+      .set({
+        descripcion: descripcion,
+        nombre: nombre,
+        estado: estado,
+        tipo: tipo,
+      })
+      .where(and(eq(archivosAdjuntos.id, id), eq(archivosAdjuntos.pacienteId, pacienteId)))
+      .returning();
+    console.log('updateDate', update);
+    return createResponse(200, 'Archivos actualizados correctamente.', update);
+  } catch (error) {
+    console.error('Error al actualizar archivos adjuntos:', error);
+    return createResponse(500, 'Error al actualizar archivos adjuntos', error);
   }
 };
