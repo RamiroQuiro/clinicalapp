@@ -1,11 +1,6 @@
 import db from '@/db';
-import {
-  atenciones,
-  fichaPaciente,
-  historiaClinica,
-  pacienteProfesional,
-  pacientes,
-} from '@/db/schema';
+import { atenciones, historiaClinica, pacienteProfesional, pacientes } from '@/db/schema';
+import { getInicioYFinDeMesActual } from '@/utils/timesUtils';
 import { and, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
 
 export async function getDashboardData(userId: string) {
@@ -15,6 +10,8 @@ export async function getDashboardData(userId: string) {
     .from(pacienteProfesional)
     .where(eq(pacienteProfesional.userId, userId));
 
+  const { inicio, fin } = getInicioYFinDeMesActual();
+  console.log('inicio y fin del mes', inicio, fin);
   // Atenciones del mes actual
   const atencionesMes = await db
     .select({ total: count() })
@@ -22,8 +19,8 @@ export async function getDashboardData(userId: string) {
     .where(
       and(
         eq(atenciones.userIdMedico, userId),
-        sql`strftime('%m', ${atenciones.created_at}) = strftime('%m', 'now')`,
-        sql`strftime('%Y', ${atenciones.created_at}) = strftime('%Y', 'now')`
+        gte(atenciones.created_at, new Date(inicio * 1000)),
+        lte(atenciones.created_at, new Date(fin * 1000))
       )
     );
 
@@ -38,7 +35,7 @@ export async function getDashboardData(userId: string) {
     .where(
       and(
         eq(atenciones.userIdMedico, userId),
-        gte(atenciones.created_at, sql`strftime('%s', 'now', '-7 days')`)
+        gte(atenciones.created_at, sql`strftime('%s', 'now', '-30 days')`)
       )
     )
     .groupBy(sql`DATE(${atenciones.created_at})`, atenciones.motivoInicial);
@@ -66,18 +63,19 @@ export async function getDashboardData(userId: string) {
     .where(eq(atenciones.userIdMedico, userId));
 
   // Atenciones del día, clasificadas por turno
-  const inicioDia = sql`strftime('%s', 'now', 'start of day')`;
-  const finDia = sql`strftime('%s', 'now', 'start of day', '+1 day')`;
+  const inicioDia = sql`strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day')`; // Use ISO format for comparison
+  const finDia = sql`strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '+1 day')`; // Use ISO format for comparison
 
   const atencionesHoy = await db
     .select({
       id: atenciones.id,
       pacienteId: atenciones.pacienteId,
-      fecha: atenciones.fecha,
+      // Use inicioConsulta for the main date/time reference
+      fecha: atenciones.created_at, // Use inicioConsulta as the primary date field
       motivoInicial: atenciones.motivoInicial,
       turno: sql`
-        CASE 
-          WHEN CAST(strftime('%H', ${atenciones.fecha}, 'unixepoch') AS INTEGER) < 13 
+        CASE
+          WHEN CAST(strftime('%H', ${atenciones.created_at}) AS INTEGER) < 13
           THEN 'Mañana'
           ELSE 'Tarde'
         END
@@ -87,8 +85,9 @@ export async function getDashboardData(userId: string) {
     .where(
       and(
         eq(atenciones.userIdMedico, userId),
-        gte(atenciones.fecha, inicioDia),
-        lte(atenciones.fecha, finDia)
+        // Compare ISO strings directly
+        gte(atenciones.created_at, inicioDia),
+        lte(atenciones.created_at, finDia)
       )
     );
 
@@ -100,12 +99,11 @@ export async function getDashboardData(userId: string) {
       motivoInicial: atenciones.motivoInicial,
       nombre: pacientes.nombre,
       apellido: pacientes.apellido,
-      obraSocial: fichaPaciente.obraSocial,
+      obraSocial: historiaClinica.obraSocial,
     })
     .from(atenciones)
     .innerJoin(historiaClinica, eq(historiaClinica.id, atenciones.historiaClinicaId))
     .innerJoin(pacientes, eq(pacientes.id, historiaClinica.pacienteId))
-    .leftJoin(fichaPaciente, eq(fichaPaciente.pacienteId, pacientes.id))
     .where(eq(atenciones.userIdMedico, userId))
     .orderBy(desc(atenciones.created_at))
     .limit(10);

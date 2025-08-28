@@ -1,5 +1,3 @@
-import { statsDashStore } from '@/context/store';
-import { useStore } from '@nanostores/react';
 import { Activity, ChartBar, Clock, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import StatsAtenciondelDia from './StatsAtenciondelDia';
@@ -15,8 +13,8 @@ type dataDash = {
   ultimasAtenciones: any[];
   atencionesHoy: any[];
 };
-export default function ContentedorStatsDash({}: Props) {
-  const { data, loading }: { data: dataDash | null; loading: boolean } = useStore(statsDashStore);
+export default function ContentedorStatsDash({ data }: Props) {
+  // const { data, loading }: { data: dataDash | null; loading: boolean } = useStore(statsDashStore);
 
   const [statsDash, setstatsDash] = useState([
     {
@@ -50,25 +48,25 @@ export default function ContentedorStatsDash({}: Props) {
       setstatsDash([
         {
           title: 'Pacientes Totales',
-          value: data?.data?.pacientes ?? 0,
+          value: data?.pacientes,
           icon: Users,
         },
         {
           title: 'Atenciones del Mes',
-          value: data?.data?.atencionesMes?.length ?? 0,
+          value: data?.atencionesMes,
           icon: Activity,
           subtitle: 'este mes',
         },
         {
           title: 'Últimos 7 días',
-          value: data?.data?.atencionesUlt7d?.length ?? 0,
+          value: data?.atencionesUlt7d,
           color: 'orange',
           icon: ChartBar,
           trend: 'neutral',
         },
         {
           title: 'Tiempo Promedio',
-          value: data?.data?.promedioDuracion || 0,
+          value: data?.promedioDuracion,
           icon: Clock,
           subtitle: 'minutos por consulta',
         },

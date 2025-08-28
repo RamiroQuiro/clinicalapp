@@ -3,6 +3,7 @@ import db from '@/db';
 import {
   archivosAdjuntos,
   atenciones,
+  auditLog,
   diagnostico,
   historiaClinica,
   medicamento,
@@ -12,7 +13,7 @@ import {
   users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
-import { asc, desc, eq, gte, sql } from 'drizzle-orm';
+import { asc, desc, eq, sql } from 'drizzle-orm';
 
 function generateColor(index: number) {
   const colors = ['#A5CDFE38', '#DCECFF45', '#FCE3D54C', '#FFD2B2BD', '#E25B3250'];
@@ -129,6 +130,12 @@ export async function getPacienteData(pacienteId: string, userId: string) {
     if (!pacienteData) {
       throw new Error('Paciente no encontrado');
     }
+    const auditoria = await db.insert(auditLog).values({
+      tableName: 'pacientes',
+      userId,
+      actionType: 'VIEW',
+      description: 'ver perfil del paciente',
+    });
 
     // Colores para visitas
     const colorMap = historialVisitas.reduce<Record<string, string>>((map, atencion, index) => {

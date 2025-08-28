@@ -52,7 +52,9 @@ const edad = calcularEdad(patientData.fNacimiento);
 
 <DivBox1>
   <!-- Resto del componente usando patientData -->
-  <div class="flex w-full md:flex-row items-start md:items-center gap-6 p-6 h flex-1 flex-between">
+  <div
+    class="flex w-full md:flex-row items-start md:items-center gap-6 py-4 px-6 h flex-1 flex-between"
+  >
     <UserCheck2Icon className="w-28 h-28 stroke-primary-textoTitle" />
     <!-- datps del paciente -->
     <StatsPacienteHeader pacienteData={pacienteData} client:load />

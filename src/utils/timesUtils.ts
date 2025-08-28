@@ -4,7 +4,7 @@ import { Temporal } from 'temporal-polyfill';
  * Devuelve el timestamp actual en segundos (UTC, sin zona horaria).
  */
 export function getFechaUnix(): number {
-  return Temporal.Now.instant().epochSeconds;
+  return Temporal.Now.instant().epochMilliseconds;
 }
 
 /**
@@ -47,8 +47,8 @@ export function getInicioYFinDeMesActual(): { inicio: number; fin: number } {
     .toInstant();
 
   return {
-    inicio: inicio.epochSeconds,
-    fin: fin.epochSeconds,
+    inicio: inicio.epochMilliseconds,
+    fin: fin.epochMilliseconds,
   };
 }
 
@@ -148,8 +148,7 @@ export function getDurationInMinutes(startIsoString: string, endIsoString: strin
     const diffMinutes = diffMilliseconds / (1000 * 60);
     return diffMinutes;
   } catch (error) {
-    console.error("Error calculating duration:", error);
+    console.error('Error calculating duration:', error);
     return null;
   }
 }
-

@@ -27,13 +27,13 @@ export default function StatsPacienteHeader({ pacienteData }: { pacienteData: an
   const maritalStatus = 'casado';
   return (
     <div className="flex flex-col gap-2 flex-1">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sticky top-0 z-10 bg-white p-4 ">
-        <div className="flex items-end  gap-2 text-primary-textoTitle border-b w-full pb-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2  z-10 bg-white p- ">
+        <div className="flex items-end  gap-4 text-primary-textoTitle border-b w-full pb-2">
           <div className="text-3xl gap-2 inline-flex  items-end justify-center capitalize font-bold">
             <h2>{patientData?.nombre}</h2>
             <h2>{patientData?.apellido}</h2>
           </div>
-          <div className="inline-flex gap-2 items-end">
+          <div className="inline-flex gap-1 items-end">
             <CreditCard />
             <span>{patientData?.dni}</span>
           </div>

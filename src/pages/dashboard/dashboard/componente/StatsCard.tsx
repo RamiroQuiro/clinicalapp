@@ -10,7 +10,6 @@ type Props = {
 };
 
 export default function StatsCard({ title, value, icon: Icon, color, trend, subtitle }: Props) {
-  console.log(value);
   return (
     <DivReact>
       <div className="flex w-full items-center justify-between">

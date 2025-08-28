@@ -1,33 +1,25 @@
 ---
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import { getFechaUnix } from '@/utils/timesUtils';
 import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleBotonera.astro';
 import DivBox1 from '../../../components/atomos/DivBox1.astro';
 import H2 from '../../../components/atomos/H2.astro';
-import { getDashboardData } from '../../../services/dashboard.services';
+import { getDashboardData } from '../../../services/dashboard.servicesV2';
+import ContentedorStatsDash from './componente/ContentedorStatsDash';
 import GraficoMotivosIniciales from './componente/GraficoMotivosIniciales.astro';
 import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astro';
 import Header from './componente/Header.astro';
 import ListaDeEspera from './componente/ListaDeEspera.astro';
 import PacienteList from './componente/PacienteList.astro';
-import StatsAtencionesDelDia from './componente/StatsAtencionesDelDia.astro';
-import ContentedorStatsDash from './componente/ContentedorStatsDash';
 const { user, session } = Astro.locals;
-
-const {
-  pacientes,
-  atencionesMes,
-  atencionesUlt7d,
-  motivos,
-  promedioDuracion,
-  ultimasAtenciones,
-  atencionesHoy,
-} = await getDashboardData(user?.id);
-
+let errorData = false;
+const data = await getDashboardData(user?.id);
+console.log('data dashboard', data);
 // filtrar atenciones del día
-const today = new Date();
+const today = new Date(getFechaUnix() * 1000);
 const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 
-const atencionesDelDia = atencionesHoy.filter(atencion => {
+const atencionesDelDia = data?.atencionesHoy?.filter(atencion => {
   const atencionFecha = new Date(atencion.fecha);
   return (
     atencionFecha.getUTCFullYear() === utcToday.getUTCFullYear() &&
@@ -41,18 +33,24 @@ const atencionTurnoManana = atencionesDelDia?.find(turno => turno.turno === 'ma�
 
 // preparo las stats (antes tenías "stats" sin definir)
 const stats = [
-  { title: 'Pacientes', value: pacientes, color: 'blue', icon: '👤', trend: 'up' },
-  { title: 'Atenciones Mes', value: atencionesMes, color: 'green', icon: '📅', trend: 'neutral' },
+  { title: 'Pacientes', value: data?.pacientes, color: 'blue', icon: '👤', trend: 'up' },
+  {
+    title: 'Atenciones Mes',
+    value: data?.atencionesMes,
+    color: 'green',
+    icon: '📅',
+    trend: 'neutral',
+  },
   {
     title: 'Últimos 7 días',
-    value: atencionesUlt7d,
+    value: data?.atencionesUlt7d,
     color: 'orange',
     icon: '📊',
     trend: 'neutral',
   },
   {
     title: 'Prom. Duración',
-    value: promedioDuracion + ' min',
+    value: data?.promedioDuracion + ' min',
     color: 'purple',
     icon: '⏱️',
     trend: 'neutral',
@@ -65,7 +63,7 @@ const stats = [
     <Header isClickend={true} />
 
     <div class="flex items-center gap-2 justify-evenly">
-      <ContentedorStatsDash client:load />
+      <ContentedorStatsDash data={data} client:load />
     </div>
 
     <div class="flex items-start justify-between gap-2 w-full">
@@ -74,7 +72,7 @@ const stats = [
         <ContenedorTitleBotonera>
           <H2>Ultimas Atenciones</H2>
         </ContenedorTitleBotonera>
-        <PacienteList ultimasAtenciones={ultimasAtenciones} />
+        <PacienteList ultimasAtenciones={data?.ultimasAtenciones} />
       </DivBox1>
 
       <!-- lista de espera -->
@@ -86,16 +84,9 @@ const stats = [
           <GraficoUltimasAtenciones data={atencionesDelDia} />
         </DivBox1>
         <DivBox1 styleDiv="w1/2">
-          <GraficoMotivosIniciales data={motivos} />
+          <GraficoMotivosIniciales data={data?.motivos} />
         </DivBox1>
       </div>
     </div>
   </div>
 </MainDashboard>
-
-<script>
-  import { fetchingDashboard } from '@/context/store';
-  const idUser = document.getElementById('mainDashboard')?.dataset.usisisi;
-  console.log(idUser);
-  fetchingDashboard(idUser);
-</script>
