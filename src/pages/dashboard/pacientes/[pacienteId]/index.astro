@@ -9,6 +9,7 @@ import AntecedentesPacientePerfil from '../../../../components/organismo/Atecede
 import HistorialVisitaPaciente from '../../../../components/organismo/HistorialVisitaPaciente.astro';
 import MedicacionFichaPaciente from '../../../../components/organismo/MedicacionFichaPaciente.astro';
 import NotasMedicas from '../../../../components/organismo/NotasMedicas';
+import ProximosTurnos from '../../../../components/organismo/ProximosTurnos.astro';
 import PacienteHeader from './components/PacienteHeader.astro';
 
 import { getPacienteData } from '@/services/pacientePerfil.services';
@@ -24,6 +25,7 @@ let perfilPaciente = {
   arrayAntecedente: [],
   arrayArchivosAdjuntos: [],
   arrayNotasMedicas: [],
+  proximosTurnos: [],
   colorMap: {},
 };
 
@@ -32,6 +34,36 @@ try {
   console.log('pacienteData', perfilPaciente);
 } catch (error) {
   console.error('Error fetching paciente data:', error);
+}
+
+// Datos de ejemplo para Proximos Turnos
+const turnosDeEjemplo = [
+  {
+    id: "turno1",
+    fecha: "2025-09-05T10:00:00.000Z",
+    hora: "10:00",
+    profesional: "Dr. Alan Grant",
+    motivoConsulta: "Control anual"
+  },
+  {
+    id: "turno2",
+    fecha: "2025-09-12T11:30:00.000Z",
+    hora: "11:30",
+    profesional: "Dra. Ellie Sattler",
+    motivoConsulta: "Presentar resultados de laboratorio"
+  },
+  {
+    id: "turno3",
+    fecha: "2025-09-20T09:00:00.000Z",
+    hora: "09:00",
+    profesional: "Dr. Ian Malcolm",
+    motivoConsulta: "Dolor de cabeza persistente"
+  }
+];
+
+// Sobrescribir con datos de ejemplo si no hay datos reales
+if (!perfilPaciente.proximosTurnos || perfilPaciente.proximosTurnos.length === 0) {
+    perfilPaciente.proximosTurnos = turnosDeEjemplo;
 }
 ---
 
@@ -74,7 +106,8 @@ try {
           </div>
         </details>
       </DivBox1>
-      <div class="flex w-full items-start justify-normal gap-4">
+      <ProximosTurnos turnos={perfilPaciente.proximosTurnos} currentUserId={user?.id} pacienteId={pacienteId} />
+      <div class="flex w-full flex-col items-start justify-normal gap-4 md:flex-row">
         <Div1Atencion>
           <DivBox1>
             <AntecedentesPacientePerfil

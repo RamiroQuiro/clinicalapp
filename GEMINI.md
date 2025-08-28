@@ -98,3 +98,23 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Próximos Pasos**: El usuario continuará trabajando en un `AtencionExistenteV3.tsx` para refinar la visualización de los datos.
 
 ---
+
+---
+## Sesión 6: 2025-08-27
+
+*   **Objetivo**: Implementar la funcionalidad de editar y eliminar notas médicas.
+*   **Implementación**:
+    *   Se añadieron botones de "Editar" y "Eliminar" a la interfaz de `NotasMedicas.tsx`.
+    *   Se implementó la lógica en el frontend para manejar el estado de edición y la confirmación de borrado.
+    *   Se creó el endpoint `POST /api/notas/update.ts` para actualizar notas.
+    *   Se creó el endpoint `POST /api/notas/delete.ts` para el borrado lógico de notas.
+*   **Bug Fix**: Se solucionó un problema que impedía escribir en el editor de texto enriquecido (`react-quill`) al separar el formulario del modal en su propio componente (`FormularioNota.tsx`) para aislar el estado y evitar re-renderizados no deseados.
+*   **Próximos Pasos**: Discutir e implementar una vista de próximos turnos para el paciente.
+
+---
+## Ideas para el Futuro
+
+*   **Generación de PDF para Notas Médicas**:
+    *   **Enfoque recomendado**: Generación en el lado del servidor.
+    *   **Tecnología sugerida**: Usar **Puppeteer** para renderizar una plantilla HTML/CSS con la nota y datos asociados (paciente, profesional, etc.) y convertirla a un PDF de alta calidad.
+    *   **Implementación**: Crear un endpoint de API (ej: `/api/notas/[id]/pdf`) que genere y devuelva el archivo.

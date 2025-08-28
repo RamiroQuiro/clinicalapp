@@ -1,0 +1,51 @@
+---
+import DivBox1 from '../atomos/DivBox1.astro';
+import { CardTurno } from '../moleculas/CardTurno';
+
+const { turnos, currentUserId, pacienteId } = Astro.props;
+---
+
+<DivBox1 class="w-full text-primary-texto">
+  <details class="w-full group">
+    <summary
+      class="px-4 py-3
+    hover:bg-primary-bg-componentes
+    duration-300
+    cursor-pointer
+   
+    flex items-center justify-between
+    hover:bg-opacity-90"
+    >
+      <span class="font-semibold text-primary-textoTitle">Proximos Turnos</span>
+      <span
+        class="text-sm text-primary-100 font-medium group-open:hidden animate-aparecer duration-300"
+        >Ver más</span
+      >
+      <span
+        class="text-sm text-primary-100 font-medium hidden group-open:inline animate-aparecer duration-300"
+        >Ver menos</span
+      >
+    </summary>
+
+    <div class="mt-2 p-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {
+          turnos && turnos.length > 0 ? (
+            turnos.map(turno => (
+              <CardTurno
+                turno={turno}
+                currentUserId={currentUserId}
+                pacienteId={pacienteId}
+                client:load
+              />
+            ))
+          ) : (
+            <p class="text-sm text-gray-500 text-center col-span-full py-4">
+              No hay próximos turnos registrados.
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </details>
+</DivBox1>

@@ -8,10 +8,11 @@ import {
   medicamento,
   notasMedicas,
   pacientes,
+  turnos,
   users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
-import { desc, eq, sql } from 'drizzle-orm';
+import { asc, desc, eq, gte, sql } from 'drizzle-orm';
 
 function generateColor(index: number) {
   const colors = ['#A5CDFE38', '#DCECFF45', '#FCE3D54C', '#FFD2B2BD', '#E25B3250'];
@@ -29,6 +30,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       arrayAntecedente,
       arrayArchivosAdjuntos,
       arrayNotasMedicas,
+      proximosTurnos,
     ] = await Promise.all([
       // datos del paciente
       db
@@ -103,6 +105,23 @@ export async function getPacienteData(pacienteId: string, userId: string) {
         .innerJoin(users, eq(users.id, notasMedicas.userMedicoId))
         .where(eq(notasMedicas.pacienteId, pacienteId))
         .orderBy(desc(notasMedicas.created_at)),
+
+      // Próximos Turnos
+      db
+        .select({
+          id: turnos.id,
+          fecha: turnos.fechaTurno,
+          hora: turnos.horaAtencion,
+          motivoConsulta: turnos.motivoConsulta,
+          profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
+          userMedicoId: turnos.userMedicoId,
+        })
+        .from(turnos)
+        .innerJoin(users, eq(users.id, turnos.userMedicoId))
+        .where(eq(turnos.pacienteId, pacienteId))
+        // .where(gte(turnos.fechaTurno, new Date())) // Filtrar por fechas futuras
+        .orderBy(asc(turnos.fechaTurno))
+        .limit(5),
     ]);
 
     const pacienteData = pacienteDataRaw.at(0);
@@ -125,6 +144,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       arrayAntecedente,
       arrayArchivosAdjuntos,
       arrayNotasMedicas,
+      proximosTurnos,
       colorMap,
     };
   } catch (error) {
