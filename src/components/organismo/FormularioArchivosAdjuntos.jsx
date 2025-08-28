@@ -1,6 +1,7 @@
 import { showToast } from '@/utils/toast/toastShow'; // Assuming you have a toast utility
 import { Download, Eye } from 'lucide-react';
 import { useRef, useState } from 'react'; // Added useRef
+import Button from '../atomos/Button';
 import BotonIndigo from '../moleculas/BotonIndigo';
 import InputFormularioSolicitud from '../moleculas/InputFormularioSolicitud';
 
@@ -319,13 +320,9 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
         </div>
       </div>
       <div className="w-full flex items-center justify-end mt-4">
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="px-2 py-1 rounded-lg font-semibold capitalize active:ring-2 border-primary-150 duration-300 text-xs border bg-primary-150 hover:bg-primary-100/80 hover:text-white"
-        >
-          guardar
-        </button>
+        <Button type="submit" onClick={handleSubmit}>
+          {doc ? 'Actualizar' : 'Agregar'}
+        </Button>
       </div>
     </div>
   );

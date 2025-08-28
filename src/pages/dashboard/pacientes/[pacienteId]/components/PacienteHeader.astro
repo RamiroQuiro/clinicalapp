@@ -55,10 +55,10 @@ const edad = calcularEdad(patientData.fNacimiento);
   <div class="flex w-full md:flex-row items-start md:items-center gap-6 p-6 h flex-1 flex-between">
     <UserCheck2Icon className="w-28 h-28 stroke-primary-textoTitle" />
     <!-- datps del paciente -->
-    <StatsPacienteHeader pacienteData={patientData} client:load />
+    <StatsPacienteHeader pacienteData={pacienteData} client:load />
     <div class="flex flex-col gap-2 text-sm">
       <ModalEditarPerfil>
-        <FormularioPaciente user paciente={patientData} />
+        <FormularioPaciente user paciente={pacienteData} />
       </ModalEditarPerfil>
       <Button1>
         <SaveIcon /> Exportar HC

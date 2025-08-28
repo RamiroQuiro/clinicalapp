@@ -8,7 +8,7 @@ import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.
 import AntecedentesPacientePerfil from '../../../../components/organismo/AtecedentesPacientePerfil';
 import HistorialVisitaPaciente from '../../../../components/organismo/HistorialVisitaPaciente.astro';
 import MedicacionFichaPaciente from '../../../../components/organismo/MedicacionFichaPaciente.astro';
-import NotasMedicas from '../../../../components/organismo/NotasMedicas.astro';
+import NotasMedicas from '../../../../components/organismo/NotasMedicas';
 import PacienteHeader from './components/PacienteHeader.astro';
 
 import { getPacienteData } from '@/services/pacientePerfil.services';
@@ -39,7 +39,6 @@ try {
   <MainDashboard h1="Ficha del paciente" pacienteId={pacienteId}>
     <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
       <PacienteHeader pacienteData={perfilPaciente.pacienteData} />
-      <!-- <ContenedoresProgresoHistorial client:load/> -->
       <DivBox1 class="w-full text-primary-texto">
         <details class="w-full group">
           <summary
@@ -84,12 +83,23 @@ try {
               antecedentes={perfilPaciente.arrayAntecedente}
             />
           </DivBox1>
-          <HistorialVisitaPaciente colorMap={[]} visitas={perfilPaciente.historialVisitas} />
+          <HistorialVisitaPaciente
+            colorMap={perfilPaciente.colorMap}
+            visitas={perfilPaciente.historialVisitas}
+          />
         </Div1Atencion>
         <Div1Atencion>
-          <MedicacionFichaPaciente colorMap={[]} medicacion={perfilPaciente.medicamentosData} />
+          <MedicacionFichaPaciente
+            colorMap={perfilPaciente.colorMap}
+            medicacion={perfilPaciente.medicamentosData}
+          />
           <ArchivosAdjuntosPaciente documentos={perfilPaciente.arrayArchivosAdjuntos} />
-          <NotasMedicas userId={user?.id} notes={perfilPaciente.arrayNotasMedicas} />
+          <NotasMedicas
+            client:load
+            userId={user?.id}
+            pacienteId={pacienteId}
+            notas={perfilPaciente.arrayNotasMedicas}
+          />
         </Div1Atencion>
       </div>
     </div>

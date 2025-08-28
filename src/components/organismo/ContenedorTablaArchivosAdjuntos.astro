@@ -48,7 +48,7 @@ const getStatusColor = (status: Documentos['estado']) => {
         <th class="py-2 pl-2 text-sm font-medium capitalize">Fecha</th>
         <th class="py-2 pl-2 text-sm font-medium capitalize">Tamaño</th>
         <th class="py-2 pl-2 text-sm font-medium capitalize">Estado</th>
-        <th class="py-2 pl-2 text-sm font-medium capitalize">Acciones</th>
+        <th class="py-2 pl-2 text-sm text-center mx-auto font-medium capitalize">Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -74,8 +74,8 @@ const getStatusColor = (status: Documentos['estado']) => {
                   {doc.estado.charAt(0).toUpperCase() + doc.estado.slice(1)}
                 </span>
               </td>
-              <td class="py-4 flex items-center gap-2">
-                <Modal title="Editar" isIcon={true} id="modal-editar">
+              <td class="py-4 flex mx-auto items-center gap-2">
+                <Modal title="Editar Documento" isIcon={true} id="modal-editar">
                   <BotonIndigo slot="icon" id="modal-open-modal-editar">
                     <Edit3 size={16} />
                   </BotonIndigo>

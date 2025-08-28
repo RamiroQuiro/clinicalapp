@@ -1,7 +1,7 @@
 import formatDate from '@/utils/formatDate';
-import { AlertCircle, Heart, Pencil } from 'lucide-react';
+import { AlertCircle, Edit3, Heart } from 'lucide-react';
 import type { Antecedente } from '../../types';
-import Button3 from '../atomos/Button3';
+import BotonIndigo from './BotonIndigo';
 
 type Props = {
   data: Antecedente;
@@ -34,13 +34,13 @@ export default function CardAntecentes({ data, isOpen, setIsOpen, onEdit }: Prop
           Diagnosticado: {formatDate(data?.fechaDiagnostico)}
         </p>
       </div>
-      <Button3
+      <BotonIndigo
         className={`px-2 py-1 text-xs font-medium bg-accent items-center justify-center`}
         onClick={handleEdit}
       >
-        <Pencil size={16} className="mx-auto" />
+        <Edit3 size={16} className="mx-auto" />
         {/* <p className="text-[10px] mx-auto">Editar</p> */}
-      </Button3>
+      </BotonIndigo>
     </div>
   );
 }

@@ -91,8 +91,16 @@ export async function getPacienteData(pacienteId: string, userId: string) {
 
       // notas médicas
       db
-        .select()
+        .select({
+          id: notasMedicas.id,
+          title: notasMedicas.title,
+          descripcion: notasMedicas.descripcion,
+          fecha: notasMedicas.created_at,
+          profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
+          atencionId: notasMedicas.atencionId,
+        })
         .from(notasMedicas)
+        .innerJoin(users, eq(users.id, notasMedicas.userMedicoId))
         .where(eq(notasMedicas.pacienteId, pacienteId))
         .orderBy(desc(notasMedicas.created_at)),
     ]);

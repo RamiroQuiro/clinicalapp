@@ -40,6 +40,7 @@ const { pacienteId } = Astro.params;
           }}
           class="group relative overflow-hidden duration-300 bg-primary-bg-componentes rounded-xl border hover:border-primary-100/50"
         >
+          <div class="absolute top-3 right-3 w-3 h-3 rounded-full" style={{ backgroundColor: colorMap[visit.id] ? colorMap[visit.id].slice(0, 7) : 'transparent' }}></div>
           <details class="p-4 open:bg-primary-bg-claro/5 backdrop-blur-sm open:rounded-lg open:border-primary-100/50 open:border cursor-pointer">
             {/* Header */}
             <summary class="flex items-start justify-between">
