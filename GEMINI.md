@@ -111,6 +111,15 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Bug Fix**: Se solucionó un problema que impedía escribir en el editor de texto enriquecido (`react-quill`) al separar el formulario del modal en su propio componente (`FormularioNota.tsx`) para aislar el estado y evitar re-renderizados no deseados.
 *   **Próximos Pasos**: Discutir e implementar una vista de próximos turnos para el paciente.
 
+*   **Objetivo**: Implementar la visualización de próximos turnos del paciente.
+*   **Discusión de Schema**: Se propuso y se implementó una modificación del schema `turnos.ts` para incluir campos como `estado`, `duracion`, `tipoDeTurno`, `otorgaUserId`, `userMedicoId` y `atencionId`, mejorando la completitud de los datos.
+*   **Implementación**:
+    *   Se actualizó el servicio `pacientePerfil.services.ts` para incluir la consulta de próximos turnos, obteniendo `userMedicoId` para la lógica de permisos.
+    *   Se creó el componente `CardTurno.tsx` con un diseño similar a `CardMedicamentoV2.tsx`, incluyendo un menú de acciones (confirmar, cancelar, iniciar atención).
+    *   Se creó el componente `ProximosTurnos.astro` para mostrar la lista de turnos en tarjetas.
+    *   Se integró `ProximosTurnos.astro` en `index.astro`, posicionándolo debajo de la sección "Progresos" y haciéndolo colapsable.
+    *   Se añadió lógica condicional en `CardTurno.tsx` para habilitar/deshabilitar el botón "Atención" según el `userMedicoId` del turno y el `currentUserId`.
+
 ---
 ## Ideas para el Futuro
 
