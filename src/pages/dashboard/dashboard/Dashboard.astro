@@ -1,6 +1,5 @@
 ---
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
-import { getFechaUnix } from '@/utils/timesUtils';
 import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleBotonera.astro';
 import DivBox1 from '../../../components/atomos/DivBox1.astro';
 import H2 from '../../../components/atomos/H2.astro';
@@ -15,51 +14,10 @@ const { user, session } = Astro.locals;
 let errorData = false;
 const data = await getDashboardData(user?.id);
 console.log('data dashboard', data);
-// filtrar atenciones del día
-const today = new Date(getFechaUnix() * 1000);
-const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-
-const atencionesDelDia = data?.atencionesHoy?.filter(atencion => {
-  const atencionFecha = new Date(atencion.fecha);
-  return (
-    atencionFecha.getUTCFullYear() === utcToday.getUTCFullYear() &&
-    atencionFecha.getUTCMonth() === utcToday.getUTCMonth() &&
-    atencionFecha.getUTCDate() === utcToday.getUTCDate()
-  );
-});
-
-const atencionTurnoTarde = atencionesDelDia?.find(turno => turno.turno === 'tarde')?.total || 0;
-const atencionTurnoManana = atencionesDelDia?.find(turno => turno.turno === 'mañana')?.total || 0;
-
-// preparo las stats (antes tenías "stats" sin definir)
-const stats = [
-  { title: 'Pacientes', value: data?.pacientes, color: 'blue', icon: '👤', trend: 'up' },
-  {
-    title: 'Atenciones Mes',
-    value: data?.atencionesMes,
-    color: 'green',
-    icon: '📅',
-    trend: 'neutral',
-  },
-  {
-    title: 'Últimos 7 días',
-    value: data?.atencionesUlt7d,
-    color: 'orange',
-    icon: '📊',
-    trend: 'neutral',
-  },
-  {
-    title: 'Prom. Duración',
-    value: data?.promedioDuracion + ' min',
-    color: 'purple',
-    icon: '⏱️',
-    trend: 'neutral',
-  },
-];
 ---
 
 <MainDashboard h1="Dashboard">
-  <div class="container py-4 gap-2 px-2 flex flex-col w-[97%]">
+  <div class="py-4 gap-2 px-2 flex flex-col w-[97%]">
     <Header isClickend={true} />
 
     <div class="flex items-center gap-2 justify-evenly">
@@ -81,7 +39,7 @@ const stats = [
       <!-- graficos -->
       <div class="flex flex-col gap-3 w-[40%] items-stretch justify-normal">
         <DivBox1 styleDiv="w12">
-          <GraficoUltimasAtenciones data={atencionesDelDia} />
+          <GraficoUltimasAtenciones data={data?.atencionesUlt7d} />
         </DivBox1>
         <DivBox1 styleDiv="w1/2">
           <GraficoMotivosIniciales data={data?.motivos} />

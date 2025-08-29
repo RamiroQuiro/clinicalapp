@@ -121,7 +121,8 @@ export function getInicioYFinDelAnioActual(): { inicio: number; fin: number } {
  */
 export function getUltimosNDias(n: number): { desde: number; hasta: number } {
   const ahora = Temporal.Now.instant();
-  const desde = ahora.subtract({ days: n });
+
+  const desde = ahora.subtract({ hours: n * 24 });
 
   return {
     desde: desde.epochMilliseconds,

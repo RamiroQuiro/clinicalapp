@@ -1,0 +1,13 @@
+---
+import GraficoUltimasAtencionesV2 from './GraficoUltimasAtencionesV2';
+
+// Asumimos que el userId está disponible en el contexto o se pasa como prop.
+// Aquí usamos un valor por defecto para el ejemplo.
+// Deberías reemplazar esto con la forma en que obtienes el userId del usuario logueado.
+const { user } = Astro.locals;
+const { data } = Astro.props;
+---
+
+<div class="bg-white p-4 rounded-lg shadow-md">
+  <GraficoUltimasAtencionesV2 atenciones={data} client:visible />
+</div>

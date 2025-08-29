@@ -46,8 +46,6 @@ export default function ContentedorStatsDash({ data }: Props) {
     },
   ]);
 
-  console.log('data stats', data);
-
   useEffect(() => {
     if (data) {
       const pacientesComparativa = () => {
@@ -56,9 +54,13 @@ export default function ContentedorStatsDash({ data }: Props) {
         const pacientesMesAnterior = data.filter(p => p.id === 'totalPacientes')[0]
           .pacienteMesAnterior;
 
-        const tendencia =
-          pacientesMesActual > pacientesMesAnterior ? 'upPeriodoActual' : 'downPeriodoAnterior';
-        return { pacientesMesActual, pacientesMesAnterior, tendencia };
+        const tendenciaPacientes =
+          pacientesMesActual == pacientesMesAnterior
+            ? 'neutral'
+            : pacientesMesActual > pacientesMesAnterior
+              ? 'upPeriodoActual'
+              : 'downPeriodoAnterior';
+        return { pacientesMesActual, pacientesMesAnterior, tendenciaPacientes };
       };
 
       const atencionesDiscrimadas = () => {
@@ -66,9 +68,13 @@ export default function ContentedorStatsDash({ data }: Props) {
         const atencionesMesAnterior = data.filter(p => p.id === 'atencionesMes')[0]
           .atencionesMesPasado;
 
-        const tendencia =
-          atencionesMesActual > atencionesMesAnterior ? 'upPeriodoActual' : 'downPeriodoAnterior';
-        return { atencionesMesActual, atencionesMesAnterior, tendencia };
+        const tendenciaAtenciones =
+          atencionesMesActual == atencionesMesAnterior
+            ? 'neutral'
+            : atencionesMesActual > atencionesMesAnterior
+              ? 'upPeriodoActual'
+              : 'downPeriodoAnterior';
+        return { atencionesMesActual, atencionesMesAnterior, tendenciaAtenciones };
       };
 
       const promedioDiscriminadoFuncion = () => {
@@ -76,14 +82,21 @@ export default function ContentedorStatsDash({ data }: Props) {
         const promedioMesAnterior = data.filter(p => p.id === 'promedioDuracion')[0]
           .promedioDuracionMesAnterior;
 
-        const tendencia =
-          promedioMesActual > promedioMesAnterior ? 'upPeriodoActual' : 'downPeriodoAnterior';
-        return { promedioMesActual, promedioMesAnterior, tendencia };
+        const tendenciaPromedio =
+          promedioMesActual == promedioMesAnterior
+            ? 'neutral'
+            : promedioMesActual > promedioMesAnterior
+              ? 'upPeriodoActual'
+              : 'downPeriodoAnterior';
+        return { promedioMesActual, promedioMesAnterior, tendenciaPromedio };
       };
 
-      const { pacientesMesActual, pacientesMesAnterior, tendencia } = pacientesComparativa();
-      const atencionesDiscriminadas = atencionesDiscrimadas();
-      const promedioDiscriminado = promedioDiscriminadoFuncion();
+      const { pacientesMesActual, pacientesMesAnterior, tendenciaPacientes } =
+        pacientesComparativa();
+      const { atencionesMesActual, atencionesMesAnterior, tendenciaAtenciones } =
+        atencionesDiscrimadas();
+      const { promedioMesActual, promedioMesAnterior, tendenciaPromedio } =
+        promedioDiscriminadoFuncion();
 
       setstatsDash([
         {
@@ -98,22 +111,22 @@ export default function ContentedorStatsDash({ data }: Props) {
           title: 'Pacientes',
           value: pacientesMesActual,
           icon: Users,
-          subtitle: tendencia,
+          subtitle: tendenciaPacientes,
         },
         {
           id: 'atencionesMes',
           title: 'Atenciones del Mes',
-          value: data.filter(p => p.id === 'atencionesMes')[0].value,
+          value: atencionesMesActual,
           icon: Activity,
-          subtitle: 'este mes',
+          subtitle: tendenciaAtenciones,
         },
 
         {
           id: 'promedioDuracion',
           title: 'Tiempo Promedio',
-          value: data.filter(p => p.id === 'promedioDuracion')[0].value,
+          value: promedioMesActual,
           icon: Clock,
-          subtitle: 'minutos por consulta',
+          subtitle: tendenciaPromedio,
         },
       ]);
     }

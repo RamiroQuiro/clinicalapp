@@ -1,6 +1,10 @@
 import db from '@/db';
 import { atenciones, historiaClinica, pacienteProfesional, pacientes } from '@/db/schema';
-import { getInicioYFinDeMesActual, getInicioYFinDeMesAnterior } from '@/utils/timesUtils';
+import {
+  getInicioYFinDeMesActual,
+  getInicioYFinDeMesAnterior,
+  getUltimosNDias,
+} from '@/utils/timesUtils';
 import { and, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
 
 export async function getDashboardData(userId: string) {
@@ -8,8 +12,13 @@ export async function getDashboardData(userId: string) {
   // Obtener timestamps
   const mesActualTimestamps = getInicioYFinDeMesActual(); // Devuelve ms
   const mesAnteriorTimestamps = getInicioYFinDeMesAnterior(); // Devuelve segundos
+  const ultimos7diasTimestamps = getUltimosNDias(7);
 
   // Convertir a strings ISO para consistencia en las queries
+  const inicioUltimos7dias = new Date(ultimos7diasTimestamps.desde);
+  console.log('inicioUltimos7dias', inicioUltimos7dias);
+  const finUltimos7dias = new Date(ultimos7diasTimestamps.hasta);
+  console.log('finUltimos7dias', finUltimos7dias);
   const inicioMesActual = new Date(mesActualTimestamps.inicio);
   console.log('inicioMesActual', inicioMesActual);
   const finMesActual = new Date(mesActualTimestamps.fin);
@@ -99,7 +108,8 @@ export async function getDashboardData(userId: string) {
       .where(
         and(
           eq(atenciones.userIdMedico, userId),
-          gte(atenciones.created_at, sql`strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-7 days')`)
+          gte(atenciones.created_at, inicioUltimos7dias),
+          lte(atenciones.created_at, finUltimos7dias)
         )
       )
       .groupBy(sql`DATE(${atenciones.created_at})`, atenciones.motivoInicial),
@@ -163,6 +173,18 @@ export async function getDashboardData(userId: string) {
       .limit(10),
   ]);
 
+  console.log('data dashboard', {
+    pacientesData,
+    atencionesMes,
+    atencionesMesPasado,
+    nuevosPacientesMes,
+    nuevosPacientesMesPasado,
+    atencionesUlt7d,
+    motivos,
+    promedioDuracion,
+    atencionesHoy,
+  });
+
   // --- 3. PROCESAMIENTO Y RETORNO DE DATOS ---
   return {
     stats: [
@@ -170,6 +192,7 @@ export async function getDashboardData(userId: string) {
         id: 'consultasHoy',
         title: 'Consultas Hoy',
         value: atencionesHoy.length,
+        atencionesHoy,
       },
       {
         id: 'totalPacientes',
@@ -194,6 +217,5 @@ export async function getDashboardData(userId: string) {
     atencionesUlt7d,
     motivos,
     ultimasAtenciones,
-    atencionesHoy,
   };
 }

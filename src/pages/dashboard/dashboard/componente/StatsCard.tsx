@@ -2,7 +2,7 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 
 type Props = {
   title: string;
-  value: string;
+  value: number;
   icon: React.ReactNode;
   color?: string;
   trend?: string;

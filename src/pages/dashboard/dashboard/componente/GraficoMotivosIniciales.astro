@@ -1,42 +1,33 @@
 ---
-import ContenedorTitleBotonera from "../../../../components/atomos/ContenedorTitleBotonera.astro"
-import DivBox1 from "../../../../components/atomos/DivBox1.astro"
-import H2 from "../../../../components/atomos/H2.astro"
+import ContenedorTitleBotonera from '../../../../components/atomos/ContenedorTitleBotonera.astro';
+import DivBox1 from '../../../../components/atomos/DivBox1.astro';
+import H2 from '../../../../components/atomos/H2.astro';
 
-const {data}=Astro.props
+const { data } = Astro.props;
 ---
 
 <ContenedorTitleBotonera>
-    <H2>Tendencia Motivos Iniciales</H2>
-  </ContenedorTitleBotonera>
-  
-    <div class="h- w-full flex items-center justify-center text-gray-400">
-      <canvas id="motivosIniciales" class="w-full h-full"></canvas>
-   
-  </div>
+  <H2>Tendencia Motivos Iniciales</H2>
+</ContenedorTitleBotonera>
 
-  <script
-  type="text/javascript"
-  src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+<div class="h- w-full flex items-center justify-center text-gray-400">
+  <canvas id="motivosIniciales" class="w-full h-full"></canvas>
+</div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"
+></script>
 <script define:vars={{ data }}>
   // Agrupar los datos por fecha y separar por turno
 
-
   const initGraficoMotivosIniciales = () => {
     const configDonut = {
-      type: "polarArea",
+      type: 'polarArea',
       data: {
-        labels: data.map((s) => s.motivoInicial),
+        labels: data.map(s => s.motivoInicial),
         datasets: [
           {
-            data: data.map((s) => s.total),
-            backgroundColor: [
-              "#5FA5FA50",
-              "#FAF75F80",
-              "#5FD6FA50",
-              "#FA6D5F50",
-              "#9BE32B50",
-            ],
+            data: data.map(s => s.total),
+            backgroundColor: ['#5FA5FA50', '#FAF75F80', '#5FD6FA50', '#FA6D5F50', '#9BE32B50'],
           },
         ],
       },
@@ -44,16 +35,16 @@ const {data}=Astro.props
         responsive: true,
         plugins: {
           legend: {
-            position: "top",
+            position: 'top',
           },
-        //   title: {
-        //     display: true,
-        //     text: "Motivo Inicial de Atención",
-        //   },
+          //   title: {
+          //     display: true,
+          //     text: "Motivo Inicial de Atención",
+          //   },
         },
       },
     };
-    new Chart(document.getElementById("motivosIniciales"), configDonut);
+    new Chart(document.getElementById('motivosIniciales'), configDonut);
   };
   initGraficoMotivosIniciales();
 </script>
