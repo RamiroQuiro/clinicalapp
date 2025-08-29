@@ -1,21 +1,27 @@
 import { Activity, ChartBar, Clock, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import StatsAtenciondelDia from './StatsAtenciondelDia';
 import StatsCard from './StatsCard';
 
-type Props = {};
+type Props = {
+  data: dataDash | null; // Now receives data as a prop
+};
 type dataDash = {
   pacientes: number;
-  atencionesMes: any[]; // <--- CORREGIDO: Debe ser un array
-  atencionesUlt7d: any[];
-  motivos: any[]; // Asumo que motivos también es un array para contar
+  atencionesMes: number; // Changed from any[] to number based on service
+  atencionesSemana: { fecha: string; turno: string; cantidad: number }[]; // Updated type
+  motivos: { motivoInicial: string; cantidad: number }[]; // Updated type
   promedioDuracion: number;
   ultimasAtenciones: any[];
-  atencionesHoy: any[];
+  atencionesHoy: {
+    id: string;
+    pacienteId: string;
+    fecha: string;
+    motivoInicial: string;
+    turno: string;
+  }[]; // Updated type
 };
-export default function ContentedorStatsDash({ data }: Props) {
-  // const { data, loading }: { data: dataDash | null; loading: boolean } = useStore(statsDashStore);
 
+export default function ContentedorStatsDash({ data }: Props) {
   const [statsDash, setstatsDash] = useState([
     {
       title: 'Pacientes Totales',
@@ -29,11 +35,10 @@ export default function ContentedorStatsDash({ data }: Props) {
       subtitle: 'este mes',
     },
     {
-      title: 'Últimos 7 días',
-      value: 0,
-      color: 'orange',
-      icon: ChartBar,
-      trend: 'neutral',
+      title: 'Motivo Más Frecuente', // New KPI
+      value: 'N/A',
+      icon: ChartBar, // Reusing ChartBar icon
+      subtitle: 'últimos 30 días',
     },
     {
       title: 'Tiempo Promedio',
@@ -42,31 +47,35 @@ export default function ContentedorStatsDash({ data }: Props) {
       subtitle: 'minutos por consulta',
     },
   ]);
-  // console.log('data el contenedor de stat dash ->', data);
+
   useEffect(() => {
     if (data) {
+      const totalManana = data.atencionesHoy.filter(a => a.turno === 'Mañana').length;
+      const totalTarde = data.atencionesHoy.filter(a => a.turno === 'Tarde').length;
+      const totalHoy = data.atencionesHoy.length;
+      const topMotivo = data.motivos.length > 0 ? data.motivos[0].motivoInicial : 'N/A';
+
       setstatsDash([
         {
           title: 'Pacientes Totales',
-          value: data?.pacientes,
+          value: data.pacientes,
           icon: Users,
         },
         {
           title: 'Atenciones del Mes',
-          value: data?.atencionesMes,
+          value: data.atencionesMes,
           icon: Activity,
           subtitle: 'este mes',
         },
         {
-          title: 'Últimos 7 días',
-          value: data?.atencionesUlt7d,
-          color: 'orange',
+          title: 'Motivo Más Frecuente',
+          value: topMotivo,
           icon: ChartBar,
-          trend: 'neutral',
+          subtitle: data.motivos.length > 0 ? `(${data.motivos[0].cantidad} casos)` : 'sin datos',
         },
         {
           title: 'Tiempo Promedio',
-          value: data?.promedioDuracion,
+          value: data.promedioDuracion,
           icon: Clock,
           subtitle: 'minutos por consulta',
         },
@@ -74,16 +83,27 @@ export default function ContentedorStatsDash({ data }: Props) {
     }
   }, [data]);
 
+  // Helper to get the specific stat card by title
+  const getStat = (title: string) => statsDash.find(stat => stat.title === title);
+
+  const pacientesStat = getStat('Pacientes Totales');
+  const atencionesMesStat = getStat('Atenciones del Mes');
+  const motivoFrecuenteStat = getStat('Motivo Más Frecuente');
+  const tiempoPromedioStat = getStat('Tiempo Promedio');
+
+  const totalHoy = data?.atencionesHoy.length ?? 0;
+  const mananaHoy = data?.atencionesHoy.filter(a => a.turno === 'Mañana').length ?? 0;
+  const tardeHoy = data?.atencionesHoy.filter(a => a.turno === 'Tarde').length ?? 0;
+
   return (
-    <div className="flex items-center justify-around gap-2 w-full h-full">
-      <StatsAtenciondelDia />
-      {statsDash.map((stat, index) => (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Pacientes Totales - Large */}
+      {statsDash?.map((stat, index) => (
         <StatsCard
-          key={index}
           title={stat.title}
           value={stat.value}
           icon={stat.icon}
-          color={stat.color}
+          subtitle={stat.subtitle}
           trend={stat.trend}
         />
       ))}

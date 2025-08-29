@@ -9,7 +9,7 @@ type Props = {
 
 export default function StatsAtenciondelDia({ total, manana, tarde }: Props) {
   return (
-    <DivReact>
+    <DivReact className="bg-white/30 dark:bg-gray-700/30 backdrop-filter backdrop-blur-lg shadow-lg !border-none">
       <div className="flex w-full items-center gap-2 justify-between border-b pb-1 mb-1">
         <p className="text-sm font-medium text-gray-600">Consultas Hoy</p>
         <span className="text-2xl text-primary-texto">
