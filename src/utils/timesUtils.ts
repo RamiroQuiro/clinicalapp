@@ -69,8 +69,8 @@ export function getInicioYFinDeMesAnterior(): { inicio: number; fin: number } {
     .toInstant();
 
   return {
-    inicio: inicio.epochSeconds,
-    fin: fin.epochSeconds,
+    inicio: inicio.epochMilliseconds,
+    fin: fin.epochMilliseconds,
   };
 }
 
@@ -93,8 +93,8 @@ export function getInicioYFinMismoMesAnioAnterior(): {
     .toInstant();
 
   return {
-    inicio: inicio.epochSeconds,
-    fin: fin.epochSeconds,
+    inicio: inicio.epochMilliseconds,
+    fin: fin.epochMilliseconds,
   };
 }
 
@@ -111,8 +111,8 @@ export function getInicioYFinDelAnioActual(): { inicio: number; fin: number } {
     .toInstant();
 
   return {
-    inicio: inicio.epochSeconds,
-    fin: fin.epochSeconds,
+    inicio: inicio.epochMilliseconds,
+    fin: fin.epochMilliseconds,
   };
 }
 
@@ -124,8 +124,8 @@ export function getUltimosNDias(n: number): { desde: number; hasta: number } {
   const desde = ahora.subtract({ days: n });
 
   return {
-    desde: desde.epochSeconds,
-    hasta: ahora.epochSeconds,
+    desde: desde.epochMilliseconds,
+    hasta: ahora.epochMilliseconds,
   };
 }
 
