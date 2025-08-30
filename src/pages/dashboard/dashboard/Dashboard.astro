@@ -7,7 +7,6 @@ import { getDashboardData } from '../../../services/dashboard.services';
 import ContentedorStatsDash from './componente/ContentedorStatsDash';
 import GraficoMotivosIniciales from './componente/GraficoMotivosIniciales.astro';
 import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astro';
-import Header from './componente/Header.astro';
 import ListaDeEspera from './componente/ListaDeEspera.astro';
 import PacienteList from './componente/PacienteList.astro';
 const { user, session } = Astro.locals;
@@ -17,9 +16,7 @@ console.log('data dashboard', data);
 ---
 
 <MainDashboard h1="Dashboard">
-  <div class="py-4 gap-2 flex flex-col w-full">
-    <Header isClickend={true} />
-
+  <div class="gap-2 flex flex-col w-full">
     <div class="flex items-center gap-2 justify-evenly">
       <ContentedorStatsDash data={data?.stats} client:load />
     </div>

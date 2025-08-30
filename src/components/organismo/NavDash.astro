@@ -1,6 +1,8 @@
 ---
 import { ChevronDown } from 'lucide-react';
 import BuscadorGlobal from './BuscadorGlobal.tsx';
+import ContenedeorModal from './ContenedeorModal.astro';
+import FormularioPaciente from '@/pages/dashboard/pacientes/FormularioPaciente.astro';
 
 const { user } = Astro.locals;
 ---
@@ -24,9 +26,13 @@ const { user } = Astro.locals;
 
     <!-- Buscador Global como Isla de React -->
     <BuscadorGlobal client:load />
-
+    <ContenedeorModal label="Crear Paciente" title="Crear Paciente" id="crearPaciente">
+      <FormularioPaciente user={user} />
+    </ContenedeorModal>
     <!-- Menú de Usuario -->
-    <div class="flex items-center md:justify-end justify-evenly gap-2 md:pr-5 md:w-auto flex-shrink-0">
+    <div
+      class="flex items-center md:justify-end justify-evenly gap-2 md:pr-5 md:w-auto flex-shrink-0"
+    >
       <div class="relative" id="user-menu-container">
         <button
           id="user-menu-button"
@@ -44,10 +50,16 @@ const { user } = Astro.locals;
           id="user-menu-dropdown"
           class="absolute hidden right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
         >
-          <a href="/dashboard/perfil" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</a>
+          <a
+            href="/dashboard/perfil"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</a
+          >
           <div class="border-t border-gray-100 my-1"></div>
           <form method="post" action="/api/auth/signout" class="w-full">
-            <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+            <button
+              type="submit"
+              class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            >
               Cerrar Sesión
             </button>
           </form>
@@ -70,7 +82,11 @@ const { user } = Astro.locals;
 
   // --- Lógica de Clic Afuera ---
   document.addEventListener('click', event => {
-    if (userMenuDropdown && !userMenuDropdown.classList.contains('hidden') && !userMenuContainer?.contains(event.target as Node)) {
+    if (
+      userMenuDropdown &&
+      !userMenuDropdown.classList.contains('hidden') &&
+      !userMenuContainer?.contains(event.target as Node)
+    ) {
       userMenuDropdown.classList.add('hidden');
     }
   });

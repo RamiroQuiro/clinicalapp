@@ -32,6 +32,18 @@ const { title } = Astro.props;
     </main>
   </body>
 </html>
+
+<script>
+  document.addEventListener('keydown', (event) => {
+    // Check for Ctrl+K on Windows/Linux or Cmd+K on macOS
+    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      event.preventDefault(); // Prevent default browser action (e.g., search)
+      const searchInput = document.getElementById('global-search-input');
+      searchInput?.focus();
+    }
+  });
+</script>
+
 <style is:global>
   /* Registra tu font family personalizada y le indicamos al navegador dónde encontrarla. */
 

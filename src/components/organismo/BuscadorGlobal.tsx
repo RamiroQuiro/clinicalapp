@@ -62,6 +62,7 @@ export default function BuscadorGlobal() {
     <div className="relative md:flex w-1/2 items-center md:justify-center" ref={searchContainerRef}>
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
       <input
+        id="global-search-input" // ID para el foco global
         type="search"
         placeholder="Buscar paciente..."
         className="w-full bg-gray-100/80 border border-transparent rounded-lg pl-10 pr-4 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-100/50 focus:border-primary-100"
