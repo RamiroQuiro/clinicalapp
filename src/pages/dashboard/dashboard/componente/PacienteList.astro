@@ -1,31 +1,47 @@
 ---
-import { Activity, Clock } from "lucide-react";
-import formatDate from "../../../../utils/formatDate";
-import extraerHora from "../../../../utils/extraerHora";
-const {ultimasAtenciones}=Astro.props
+import { Clock, UserCheck } from 'lucide-react';
+import extraerHora from '../../../../utils/extraerHora';
+import formatDate from '../../../../utils/formatDate';
 
-
+interface Atencion {
+  id: string;
+  pacienteId: string;
+  nombrePaciente: string;
+  inicioAtencion: string;
+  obraSocial: string;
+}
+interface Props {
+  ultimasAtenciones: Atencion[];
+}
+const { ultimasAtenciones } = Astro.props as Props;
 ---
 
-
-<div class=" rounded-lg w-full">
-
-    <div class="flex flex-col gap-2 items-center justify-normal w-full">
-      {ultimasAtenciones?.map((aten) => (
-        <a href={`/dashboard/consultas/${aten.id}`} class="py-1 px-4 w-full rounded-lg hover:bg-white  hover:shadow-md hover:-translate-y-0.5 duration-200 bg-primary-bg-componentes -colors cursor-pointer">
-          <div class="flex justify-between items-center">
-            <div>
-              <h3 class="font-medium text-gray-800">{aten.nombre}{' '}{aten.apellido}</h3>
-              <div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                <Clock class="w-4 h-4" />
-                <span class="pr-2">Última visita: {formatDate(aten.inicioAtencion)}{extraerHora(aten.inicioAtencion)}</span>
-              </div>
-            </div>
+<div class="grid gap-3 w-full">
+  {
+    ultimasAtenciones?.map(aten => (
+      <a
+        href={`/dashboard/consultas/aperturaPaciente/${aten.pacienteId}/${aten.id}`}
+        class="block rounded-lg bg-white shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-1 p-4 w-full"
+      >
+        <div class="flex justify-between items-center">
+          {/* Información principal */}
+          <div>
             <div class="flex items-center gap-2">
-              <span class={`text-sm capitalize`}>{aten.obraSocial}</span>
+              <UserCheck className="w-4 h-4" />
+              <h3 class="text-lg font-semibold text-gray-800">{aten.nombrePaciente}</h3>
             </div>
+            <p class="text-sm text-gray-500 mt-1 flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              {formatDate(aten.inicioAtencion)} {extraerHora(aten.inicioAtencion)}
+            </p>
           </div>
-        </a>
-      ))}
-    </div>
-  </div>
+
+          {/* Obra social */}
+          <div class="text-sm text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded-full">
+            {aten.obraSocial || 'Sin obra social'}
+          </div>
+        </div>
+      </a>
+    ))
+  }
+</div>

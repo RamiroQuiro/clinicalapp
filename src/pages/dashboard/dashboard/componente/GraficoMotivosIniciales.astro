@@ -26,7 +26,7 @@ const { data } = Astro.props;
         labels: data.map(s => s.motivoInicial),
         datasets: [
           {
-            data: data.map(s => s.total),
+            data: data.map(s => s.cantidad),
             backgroundColor: ['#5FA5FA50', '#FAF75F80', '#5FD6FA50', '#FA6D5F50', '#9BE32B50'],
           },
         ],

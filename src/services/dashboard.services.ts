@@ -16,17 +16,11 @@ export async function getDashboardData(userId: string) {
 
   // Convertir a strings ISO para consistencia en las queries
   const inicioUltimos7dias = new Date(ultimos7diasTimestamps.desde);
-  console.log('inicioUltimos7dias', inicioUltimos7dias);
   const finUltimos7dias = new Date(ultimos7diasTimestamps.hasta);
-  console.log('finUltimos7dias', finUltimos7dias);
   const inicioMesActual = new Date(mesActualTimestamps.inicio);
-  console.log('inicioMesActual', inicioMesActual);
   const finMesActual = new Date(mesActualTimestamps.fin);
-  console.log('finMesActual', finMesActual);
   const inicioMesAnterior = new Date(mesAnteriorTimestamps.inicio * 1000);
-  console.log('inicioMesAnterior', inicioMesAnterior);
   const finMesAnterior = new Date(mesAnteriorTimestamps.fin * 1000);
-  console.log('finMesAnterior', finMesAnterior);
 
   // --- 2. EJECUCIÓN DE QUERIES EN PARALELO ---
   const [
@@ -100,11 +94,19 @@ export async function getDashboardData(userId: string) {
     // Query 5: Atenciones últimos 7 días (periodo móvil)
     db
       .select({
+        pacienteId: atenciones.pacienteId,
+        id: atenciones.id,
+        nombrePaciente: sql`CONCAT(pacientes.nombre, ' ', pacientes.apellido)`,
         fecha: atenciones.fecha,
         motivoInicial: atenciones.motivoInicial,
+        inicioAtencion: atenciones.inicioAtencion,
+        obraSocial: historiaClinica.obraSocial,
+        finAtencion: atenciones.finAtencion,
         cantidad: count(),
       })
       .from(atenciones)
+      .innerJoin(pacientes, eq(pacientes.id, atenciones.pacienteId))
+      .innerJoin(historiaClinica, eq(historiaClinica.pacienteId, atenciones.pacienteId))
       .where(
         and(
           eq(atenciones.userIdMedico, userId),
@@ -154,23 +156,6 @@ export async function getDashboardData(userId: string) {
           lte(atenciones.created_at, sql`strftime('%Y-%m-%dT23:59:59Z', 'now')`)
         )
       ),
-
-    // Query 9: Últimas 10 atenciones
-    db
-      .select({
-        id: atenciones.id,
-        fecha: atenciones.created_at,
-        motivoInicial: atenciones.motivoInicial,
-        nombre: pacientes.nombre,
-        apellido: pacientes.apellido,
-        obraSocial: historiaClinica.obraSocial,
-      })
-      .from(atenciones)
-      .innerJoin(historiaClinica, eq(historiaClinica.id, atenciones.historiaClinicaId))
-      .innerJoin(pacientes, eq(pacientes.id, historiaClinica.pacienteId))
-      .where(eq(atenciones.userIdMedico, userId))
-      .orderBy(desc(atenciones.created_at))
-      .limit(10),
   ]);
 
   console.log('data dashboard', {
@@ -186,6 +171,12 @@ export async function getDashboardData(userId: string) {
   });
 
   // --- 3. PROCESAMIENTO Y RETORNO DE DATOS ---
+  const ultimasAtencionesProcesadas = atencionesUlt7d
+    .map(atencion => ({
+      ...atencion,
+      fecha: atencion.fecha.toISOString(),
+    }))
+    .slice(0, 10);
   return {
     stats: [
       {
@@ -216,6 +207,6 @@ export async function getDashboardData(userId: string) {
     ],
     atencionesUlt7d,
     motivos,
-    ultimasAtenciones,
+    ultimasAtenciones: ultimasAtencionesProcesadas,
   };
 }

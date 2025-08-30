@@ -30,7 +30,10 @@ console.log('data dashboard', data);
         <ContenedorTitleBotonera>
           <H2>Ultimas Atenciones</H2>
         </ContenedorTitleBotonera>
-        <PacienteList ultimasAtenciones={data?.ultimasAtenciones} />
+        <PacienteList
+          ultimasAtenciones={data?.ultimasAtenciones}
+          pacienteId={data?.ultimasAtenciones[0].pacienteId}
+        />
       </DivBox1>
 
       <!-- lista de espera -->
