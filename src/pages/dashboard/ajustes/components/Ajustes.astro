@@ -1,124 +1,117 @@
 ---
 import DivBox1 from '@/components/atomos/DivBox1.astro';
 import FormCont from '@/components/atomos/FormCont.astro';
-import FromularioPerfilAvatar from './FormularioPerfilAvatar'
+import FromularioPerfilAvatar from './FormularioPerfilAvatar';
 import H2 from '@/components/atomos/H2.astro';
 import Titulo1 from '@/components/atomos/Titulo1.astro';
 import Button1 from '@/components/atomos/Button1.astro';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
-import ContenedorInputForm from '@/components/moleculas/ContenedorInputForm.astro' 
+import ContenedorInputForm from '@/components/moleculas/ContenedorInputForm.astro';
 const { user } = Astro.props;
 ---
 
 <MainDashboard h1="Ajustes">
-  <div class="container py-4 gap-2 px-2 flex flex-col w- w-[97%]">
+  <div class="container py-4 gap-2 px-2 flex flex-col w-full">
     <DivBox1>
-      <FormCont title="datos" id="formularioAjustes" >
+      <FormCont title="datos" id="formularioAjustes">
         <div class="flex items-center justify-between w-full gap-2">
-            <ContenedorInputForm
+          <ContenedorInputForm
             id="nombre"
             label="nombre"
             name="nombre"
             type="text"
             value={user?.text}
-            />
-            <ContenedorInputForm
+          />
+          <ContenedorInputForm
             id="apellido"
             label="apellido"
             name="apellido"
             type="text"
             value={user?.apellido}
-            />
+          />
         </div>
         <div class="flex items-center justify-between w-full gap-2">
-        <ContenedorInputForm
-        id="email"
-        label="email"
-        name="email"
-        type="email"
-        value={user?.email}
-        />
-        <ContenedorInputForm
-        id="celular"
-        label="celular"
-        name="celular"
-        type="text"
-        value={user?.celular}
-        />
+          <ContenedorInputForm
+            id="email"
+            label="email"
+            name="email"
+            type="email"
+            value={user?.email}
+          />
+          <ContenedorInputForm
+            id="celular"
+            label="celular"
+            name="celular"
+            type="text"
+            value={user?.celular}
+          />
         </div>
         <div class="flex items-center justify-between w-full gap-2">
-            <ContenedorInputForm
+          <ContenedorInputForm
             id="domicilio"
             label="domicilio"
             name="domicilio"
             type="text"
             value={user?.domicilio}
-            />
-            <ContenedorInputForm
+          />
+          <ContenedorInputForm
             id="ciudad"
             label="ciudad"
             name="ciudad"
             type="text"
             value={user?.ciudad}
-            />
+          />
         </div>
         <div class="flex items-center justify-between w-full gap-2">
-            <ContenedorInputForm
+          <ContenedorInputForm
             id="provincia"
             label="provincia"
             name="provincia"
             type="text"
             value={user?.provincia}
-            />
-            <ContenedorInputForm
-            id="pais"
-            label="pais"
-            name="pais"
-            type="text"
-            value={user?.pais}
-            />
+          />
+          <ContenedorInputForm id="pais" label="pais" name="pais" type="text" value={user?.pais} />
         </div>
       </FormCont>
     </DivBox1>
     <DivBox1>
       <div class="flex items-start justify-between w-full gap-2">
-      <div class="w-1/3">
-        <Titulo1>Foto/Avatar/Logo</Titulo1>
-        <FromularioPerfilAvatar client:load/>
-    </div>
+        <div class="w-1/3">
+          <Titulo1>Foto/Avatar/Logo</Titulo1>
+          <FromularioPerfilAvatar client:load />
+        </div>
         <div class="w-2/3">
-            <FormCont title="Cambio Clave" id="formularioPassword" >
-                
-                                <ContenedorInputForm
-                                id="passwordActual"
-                                label="password actual"
-                                name="passwordActual"
-                                type="password"
-                                />
+          <FormCont title="Cambio Clave" id="formularioPassword">
+            <ContenedorInputForm
+              id="passwordActual"
+              label="password actual"
+              name="passwordActual"
+              type="password"
+            />
             <div class="flex items-center justify-between w-full gap-2">
-                <ContenedorInputForm
+              <ContenedorInputForm
                 id="passwordNueva"
                 label="password nueva"
                 name="passwordNueva"
                 type="password"
-                />
-                <ContenedorInputForm
+              />
+              <ContenedorInputForm
                 id="passwordReNew"
                 label="volver a Escribir"
                 name="passwordReNew"
                 type="password"
-                />
+              />
             </div>
             <div class="flex items-center justify-end mt-2 w-full gap-2">
-            <Button1>guardar</Button1>    
+              <Button1>guardar</Button1>
             </div>
-            </div>
-            </FormCont>  
+          </FormCont>
         </div>
-    </div>
+      </div>
     </DivBox1>
   </div>
 </MainDashboard>
+
 <script>
   const formularioAjustes = document.getElementById('formularioAjustes');
 

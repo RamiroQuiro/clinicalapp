@@ -1,17 +1,12 @@
 ---
 import Loader from '../../utils/loader/Loader.astro';
 import NavDash from '../organismo/NavDash.astro';
-import Sidebar from '../organismo/Sidebar.astro';
-
+import SidebarV3 from '../organismo/SidebarV3.astro';
 interface Props {
   title: string;
-  dataCliente: string;
-  userData: { nombre: string; apellido: string; userName: string };
 }
 
-const { title, dataCliente, userData } = Astro.props;
-
-const url = Astro.url;
+const { title } = Astro.props;
 ---
 
 <!doctype html>
@@ -25,16 +20,16 @@ const url = Astro.url;
     <title>{title}</title>
   </head>
   <body
-    class="bg-gradient-to-r from-primary-bg-componentes via-primary-bg-componentes to-primary-bg-componentes-2 md:min-h-[125vh] text-primary-texto relative overflow-x-hidden flex flex-col"
+    class="bg-gradient-to-r flex from-primary-bg-componentes via-primary-bg-componentes to-primary-bg-componentes-2 text-primary-texto relative overflow-x-hidden"
   >
-    <!-- <LoaderGral/> -->
-
-    <Sidebar />
-    <NavDash dataCliente={dataCliente} userData={userData} />
+    <SidebarV3 />
     <Loader />
-    <div class="min-h-screen min-w-screen flex items-start justify-end mt-14">
+
+    <!-- Contenido Principal -->
+    <main class="w-full transition-all duration-300 ease-in-out">
+      <NavDash title={title} />
       <slot />
-    </div>
+    </main>
   </body>
 </html>
 <style is:global>

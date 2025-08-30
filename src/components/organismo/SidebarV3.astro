@@ -1,0 +1,158 @@
+---
+// 1. Importamos los iconos de lucide-react como si fueran componentes
+import {
+  PanelLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Home,
+  CalendarDays,
+  Users,
+  CreditCard,
+  BarChart3,
+  Settings,
+  LogOut,
+} from 'lucide-react';
+// 2. Obtenemos los datos del usuario y la ruta actual
+const { session, user } = Astro.locals;
+const { pathname } = Astro.url;
+const currentPath = pathname;
+// 3. Definimos las secciones y asignamos el componente del icono directamente
+const sections = [
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    icon: Home,
+  },
+  {
+    name: 'Agenda',
+    href: '/dashboard/agenda',
+    icon: CalendarDays,
+  },
+  {
+    name: 'Pacientes',
+    href: '/dashboard/pacientes',
+    icon: Users,
+  },
+  {
+    name: 'Facturación',
+    href: '/dashboard/facturacion',
+    icon: CreditCard,
+  },
+  {
+    name: 'Reportes',
+    href: '/dashboard/reportes',
+    icon: BarChart3,
+  },
+  {
+    name: 'Configuración',
+    href: '/dashboard/ajustes',
+    icon: Settings,
+  },
+];
+---
+
+<aside
+  id="aside"
+  class="hidden group/sidebar  md:flex md:flex-col items-center justify-start py-4 h-screen sticky top-0 md:w-16 border-r bg-white/60 backdrop-blur-sm text-primary-textoTitle z-50 transition-all duration-300 ease-in-out"
+>
+  <div class="w-full px-4 mx-auto flex items-center justify-end">
+    <PanelLeftOpen
+      id="openMenu"
+      size={35}
+      className="cursor-pointer hover:bg-gray-200 p-1 rounded-full duration-300"
+    />
+    <PanelLeftClose
+      id="closeMenu"
+      size={35}
+      className="cursor-pointer hidden hover:bg-gray-200 p-1 rounded-full duration-300"
+    />
+  </div>
+  <!-- logo ramaCode -->
+  <div id="logo" class="items-center justify-center h-20 hidden">
+    <a href="/dashboard" class="transition-transform duration-300 group-hover:scale-110">
+      <img src="/ramaCodeBlanco.png" alt="Logo Completo" class="w-24 h-24 animate-aparecer" />
+    </a>
+  </div>
+
+  <nav
+    class="flex-1 flex flex-col w-full duration-300 px-3 items-start mt-10 animate-aparecer space-y-2"
+  >
+    {
+      sections.map(section => {
+        const isActive =
+          currentPath === section.href ||
+          (section.href !== '/dashboard' && currentPath.startsWith(section.href));
+        return (
+          <a
+            href={section.href}
+            class:list={[
+              'flex items-center w-full group/item px-2.5 py-2.5 text-sm font-medium rounded-lg transition-colors',
+              {
+                'bg-primary-100 text-white': isActive,
+                'text-primary-texto hover:bg-primary-100 hover:text-white': !isActive,
+              },
+            ]}
+          >
+            <section.icon className="h-5 w-5 flex-shrink-0" />
+            <!-- Texto para el menú expandido -->
+            <span class="menu-text-inline hidden group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
+              {section.name}
+            </span>
+            <!-- Tooltip para el menú contraído -->
+            <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm text-white z-50">
+              {section.name}
+            </span>
+          </a>
+        );
+      })
+    }
+  </nav>
+  <div class="px-2 py-4 border-t w-full border-gray-200">
+    <div class="flex items-center w-full justify-center group-hover:justify-start group-hover:px-2">
+      <img
+        class="h-10 w-10 rounded-full object-contain flex-shrink-0"
+        src="/ramaCodeBlanco.png"
+        alt="Avatar"
+      />
+      <div class="ml-3 hidden group animate-aparecer divide-purple-300" id="spanRamacode">
+        <p class="text-sm font-medium text-primary-texto whitespace-nowrap">RamaCode</p>
+        <p class="text-xs text-primary-texto whitespace-nowrap">www.ramacode.com</p>
+      </div>
+    </div>
+    <!-- <a
+      href="/api/auth/signout"
+      class="flex items-center justify-center group-hover:justify-start w-full group-hover:px-4 px-2 py-2.5 mt-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-red-800 hover:text-white transition-colors"
+    >
+      <LogOut size={20} className="h-6 w-6 flex-shrink-0" />
+      <span class="hidden group-hover:md:inline ml-3 whitespace-nowrap">Cerrar Sesión</span>
+    </a> -->
+  </div>
+</aside>
+
+<script>
+  const btnOpen = document.getElementById('openMenu');
+  const btnClose = document.getElementById('closeMenu');
+  const sidebar = document.getElementById('aside');
+  const logo = document.getElementById('logo');
+  const spanRamacode = document.getElementById('spanRamacode');
+
+  const toggleMenu = () => {
+    // Toggle a state class on the sidebar
+    sidebar.classList.toggle('is-open');
+
+    // Toggle sidebar width
+    sidebar.classList.toggle('md:w-16');
+    sidebar.classList.toggle('md:w-64');
+
+    // Toggle button visibility
+    btnOpen.classList.toggle('hidden');
+    btnClose.classList.toggle('hidden');
+
+    // Toggle logo and other elements
+    logo.classList.toggle('hidden');
+    spanRamacode.classList.toggle('hidden');
+  };
+
+  btnOpen?.addEventListener('click', toggleMenu);
+  btnClose?.addEventListener('click', toggleMenu);
+</script>

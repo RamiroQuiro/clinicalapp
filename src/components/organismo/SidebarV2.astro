@@ -1,0 +1,199 @@
+---
+// 1. Importamos los iconos de lucide-react como si fueran componentes
+import { Home, CalendarDays, Users, CreditCard, BarChart3, Settings, LogOut } from 'lucide-react';
+
+// 2. Definimos las secciones y asignamos el componente del icono directamente
+const sections = [
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    icon: Home,
+  },
+  {
+    name: 'Agenda',
+    href: '/dashboard/agenda',
+    icon: CalendarDays,
+  },
+  {
+    name: 'Pacientes',
+    href: '/dashboard/pacientes',
+    icon: Users,
+  },
+  {
+    name: 'Facturación',
+    href: '/dashboard/facturacion',
+    icon: CreditCard,
+  },
+  {
+    name: 'Reportes',
+    href: '/dashboard/reportes',
+    icon: BarChart3,
+  },
+  {
+    name: 'Configuración',
+    href: '/dashboard/ajustes',
+    icon: Settings,
+  },
+];
+
+// 3. Obtenemos los datos del usuario y la ruta actual
+const { locals, url } = Astro;
+const currentUser = locals.user;
+const currentPath = url.pathname;
+
+const user = {
+  name: currentUser?.name ?? 'Usuario',
+  email: currentUser?.email ?? 'email@example.com',
+  avatarUrl: currentUser?.avatarUrl ?? '/avatarDefault.png',
+};
+---
+
+<div class="print:hidden">
+  <!-- Mobile Header -->
+  <div
+    class="md:hidden flex items-center justify-between bg-gray-800 p-4 text-white fixed top-0 left-0 right-0 z-40"
+  >
+    <a href="/dashboard" class="flex items-center space-x-2">
+      <img src="/ramaCodeBlanco.png" alt="Logo" class="h-8 w-auto" />
+    </a>
+    <button id="mobile-menu-button" class="p-2 rounded-md hover:bg-gray-700">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16m-7 6h7"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile Menu (Sliding Panel) -->
+  <div
+    id="mobile-menu"
+    class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden"
+  >
+    <div class="flex flex-col h-full p-4">
+      <nav class="flex-1 space-y-2">
+        {
+          sections.map(section => {
+            const isActive =
+              currentPath === section.href ||
+              (section.href !== '/dashboard' && currentPath.startsWith(section.href));
+            return (
+              <a
+                href={section.href}
+                class:list={[
+                  'flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors',
+                  {
+                    'bg-gray-700 text-white': isActive,
+                    'text-gray-300 hover:bg-gray-700 hover:text-white': !isActive,
+                  },
+                ]}
+              >
+                <section.icon class="mr-3 h-5 w-5" />
+                {section.name}
+              </a>
+            );
+          })
+        }
+      </nav>
+      <div class="pt-4 border-t border-gray-700">
+        <div class="flex items-center">
+          <img class="h-10 w-10 rounded-full object-cover" src={user.avatarUrl} alt="Avatar" />
+          <div class="ml-3">
+            <p class="text-sm font-medium text-white">{user.name}</p>
+            <p class="text-xs text-gray-400">{user.email}</p>
+          </div>
+        </div>
+        <a
+          href="/api/auth/signout"
+          class="flex items-center w-full px-4 py-2.5 mt-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-red-800 hover:text-white transition-colors"
+        >
+          <LogOut class="mr-3 h-5 w-5" />
+          Cerrar Sesión
+        </a>
+      </div>
+    </div>
+  </div>
+  <div id="overlay" class="fixed inset-0 bg-black opacity-50 z-40 hidden md:hidden"></div>
+
+  <!-- Desktop Sidebar -->
+  <aside
+    class="group hidden md:flex md:flex-col md:fixed md:inset-y-0 md:w-20 hover:md:w-64 bg-gray-800 text-white z-30 transition-all duration-300 ease-in-out"
+  >
+    <div class="flex items-center justify-center h-20 border-b border-gray-700">
+      <a href="/dashboard" class="transition-transform duration-300 group-hover:scale-110">
+        <img src="/favicon.svg" alt="Logo" class="h-8 w-auto group-hover:hidden" />
+        <img
+          src="/ramaCodeBlanco.png"
+          alt="Logo Completo"
+          class="h-10 w-auto hidden group-hover:block"
+        />
+      </a>
+    </div>
+    <div class="flex flex-col flex-1 overflow-y-auto">
+      <nav class="flex-1 px-2 py-4 space-y-2">
+        {
+          sections.map(section => {
+            const isActive =
+              currentPath === section.href ||
+              (section.href !== '/dashboard' && currentPath.startsWith(section.href));
+            return (
+              <a
+                href={section.href}
+                class:list={[
+                  'flex items-center justify-center group-hover:justify-start group-hover:px-4 px-2 py-2.5 text-sm font-medium rounded-lg transition-colors',
+                  {
+                    'bg-gray-700 text-white': isActive,
+                    'text-gray-300 hover:bg-gray-700 hover:text-white': !isActive,
+                  },
+                ]}
+              >
+                <section.icon class="h-6 w-6 flex-shrink-0" />
+                <span class="hidden group-hover:md:inline ml-3 whitespace-nowrap">
+                  {section.name}
+                </span>
+              </a>
+            );
+          })
+        }
+      </nav>
+      <div class="px-2 py-4 border-t border-gray-700">
+        <div class="flex items-center justify-center group-hover:justify-start group-hover:px-2">
+          <img
+            class="h-10 w-10 rounded-full object-cover flex-shrink-0"
+            src={user.avatarUrl}
+            alt="Avatar"
+          />
+          <div class="hidden group-hover:md:block ml-3">
+            <p class="text-sm font-medium text-white whitespace-nowrap">{user.name}</p>
+            <p class="text-xs text-gray-400 whitespace-nowrap">{user.email}</p>
+          </div>
+        </div>
+        <a
+          href="/api/auth/signout"
+          class="flex items-center justify-center group-hover:justify-start w-full group-hover:px-4 px-2 py-2.5 mt-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-red-800 hover:text-white transition-colors"
+        >
+          <LogOut class="h-6 w-6 flex-shrink-0" />
+          <span class="hidden group-hover:md:inline ml-3 whitespace-nowrap">Cerrar Sesión</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+  const menuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const overlay = document.getElementById('overlay');
+
+  function toggleMenu() {
+    mobileMenu.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+  }
+
+  if (menuButton && mobileMenu && overlay) {
+    menuButton.addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', toggleMenu);
+  }
+</script>

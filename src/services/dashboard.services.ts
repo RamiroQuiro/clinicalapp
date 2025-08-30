@@ -101,6 +101,7 @@ export async function getDashboardData(userId: string) {
         motivoInicial: atenciones.motivoInicial,
         inicioAtencion: atenciones.inicioAtencion,
         obraSocial: historiaClinica.obraSocial,
+        estado: atenciones.estado,
         finAtencion: atenciones.finAtencion,
         cantidad: count(),
       })

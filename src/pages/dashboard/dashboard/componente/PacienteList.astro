@@ -1,5 +1,6 @@
 ---
-import { Clock, UserCheck } from 'lucide-react';
+import BotonIndigo from '@/components/moleculas/BotonIndigo.astro';
+import { Calendar, Clock, UserCheck } from 'lucide-react';
 import extraerHora from '../../../../utils/extraerHora';
 import formatDate from '../../../../utils/formatDate';
 
@@ -21,24 +22,30 @@ const { ultimasAtenciones } = Astro.props as Props;
     ultimasAtenciones?.map(aten => (
       <a
         href={`/dashboard/consultas/aperturaPaciente/${aten.pacienteId}/${aten.id}`}
-        class="block rounded-lg bg-white shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-1 p-4 w-full"
+        class="block rounded-lg bg-white border  shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-1 p-4 w-full"
       >
         <div class="flex justify-between items-center">
           {/* Información principal */}
-          <div>
+          <div class="w-2/3">
             <div class="flex items-center gap-2">
-              <UserCheck className="w-4 h-4" />
+              <UserCheck className="w-6 h-6 stroke-indigo-600" />
               <h3 class="text-lg font-semibold text-gray-800">{aten.nombrePaciente}</h3>
             </div>
-            <p class="text-sm text-gray-500 mt-1 flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              {formatDate(aten.inicioAtencion)} {extraerHora(aten.inicioAtencion)}
-            </p>
+            <div class="text-sm text-gray-500 mt-1 flex items-start gap-1 flex-col w-full">
+              <p class="flex items-center gap-1">
+                <Calendar className="w-4 h-4 stroke-indigo-600" />
+                {formatDate(aten.inicioAtencion)}{' '}
+              </p>
+              <span class="text-sm flex items-center gap-1 text-primary-textoTitle font-semibold">
+                <Clock className="w-4 h-4 stroke-indigo-600" />
+                {extraerHora(aten.inicioAtencion)}
+              </span>
+            </div>
           </div>
-
-          {/* Obra social */}
-          <div class="text-sm text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded-full">
-            {aten.obraSocial || 'Sin obra social'}
+          <div class="flex flex-col items-center gap-2">
+            {/* Obra social */}
+            <BotonIndigo>{aten.obraSocial || 'Sin obra social'}</BotonIndigo>
+            {aten.estado && <BotonIndigo>{aten.estado}</BotonIndigo>}
           </div>
         </div>
       </a>
