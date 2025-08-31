@@ -1,5 +1,5 @@
 ---
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, PanelLeftOpen } from 'lucide-react';
 import BuscadorGlobal from './BuscadorGlobal.tsx';
 import ContenedeorModal from './ContenedeorModal.astro';
 import FormularioPaciente from '@/pages/dashboard/pacientes/FormularioPaciente.astro';
@@ -10,7 +10,7 @@ const { user } = Astro.locals;
 <nav
   class="bg-white z-20 w-full border-b md:right-0 text-sm text-primary-textoTitle md:h-16 flex items-center justify-between"
 >
-  <div class="w-full flex flex-col px-4 md:flex-row md:m-0 h-full items-center justify-between">
+  <div class="w-full flex py-2 px-4 md:flex-row md:m-0 h-full items-center justify-between">
     <div class="md:flex hidden flex-col items-start md:justify-start justify-between gap-1">
       <h3 class="font-semibold capitalize">Bienvenido {user?.nombre} {user?.apellido}</h3>
       <span class="text-sm font-">
@@ -67,6 +67,16 @@ const { user } = Astro.locals;
       </div>
     </div>
   </div>
+  <!-- 
+  <button
+    id="btnResponsiveMenu"
+    class="md:hidden flex items-center bg-primary-bg-componentes border rounded-full justify-center gap-2 mr-5 md:w-auto flex-shrink-0"
+  >
+    <PanelLeftOpen
+      size={37}
+      className="cursor-pointer hover:bg-gray-200 p-1 rounded-full duration-300"
+    />
+  </button> -->
 </nav>
 
 <script>

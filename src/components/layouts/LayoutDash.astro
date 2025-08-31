@@ -34,13 +34,40 @@ const { title } = Astro.props;
 </html>
 
 <script>
-  document.addEventListener('keydown', (event) => {
+  document.addEventListener('keydown', event => {
     // Check for Ctrl+K on Windows/Linux or Cmd+K on macOS
     if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
       event.preventDefault(); // Prevent default browser action (e.g., search)
       const searchInput = document.getElementById('global-search-input');
       searchInput?.focus();
     }
+  });
+</script>
+
+<script>
+  const btnResponsiveMenu = document.getElementById('btnResponsiveMenu');
+  const aside = document.getElementById('aside');
+  const btnOpen = document.getElementById('openMenu');
+  const btnClose = document.getElementById('closeMenu');
+  const sidebar = document.getElementById('aside');
+  const logo = document.getElementById('logo');
+  const spanRamacode = document.getElementById('spanRamacode');
+
+  btnResponsiveMenu?.addEventListener('click', () => {
+    // Toggle a state class on the sidebar
+    sidebar.classList.toggle('is-open');
+
+    // Toggle sidebar width
+    sidebar.classList.toggle('md:w-16');
+    sidebar.classList.toggle('md:w-64');
+
+    // Toggle button visibility
+    btnOpen.classList.toggle('hidden');
+    btnClose.classList.toggle('hidden');
+
+    // Toggle logo and other elements
+    logo.classList.toggle('hidden');
+    spanRamacode.classList.toggle('hidden');
   });
 </script>
 

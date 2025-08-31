@@ -53,9 +53,9 @@ const sections = [
 
 <aside
   id="aside"
-  class="hidden group/sidebar  md:flex md:flex-col items-center justify-start py-4 h-screen sticky top-0 md:w-16 border-r bg-white/60 backdrop-blur-sm text-primary-textoTitle z-50 transition-all duration-300 ease-in-out"
+  class=" group/sidebar w-full fixed bottom-0 left-0 h-   md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:w-16 border-r bg-white/60 backdrop-blur-sm text-primary-textoTitle z-50 transition-all duration-300 ease-in-out"
 >
-  <div class="w-full px-4 mx-auto flex items-center justify-end">
+  <div class="w-full hidden md:flex px-4 mx-auto  items-center justify-end">
     <PanelLeftOpen
       id="openMenu"
       size={35}
@@ -75,7 +75,7 @@ const sections = [
   </div>
 
   <nav
-    class="flex-1 flex flex-col w-full duration-300 px-3 items-start mt-10 animate-aparecer space-y-2"
+    class="flex-1 flex md:flex-col w-full duration-300 px-1 md:px-3 items-center justify-evenly md:items-start md:mt-10 animate-aparecer space-y-2"
   >
     {
       sections.map(section => {
@@ -86,14 +86,14 @@ const sections = [
           <a
             href={section.href}
             class:list={[
-              'flex items-center w-full group/item px-2.5 py-2.5 text-sm font-medium rounded-lg transition-colors',
+              'flex items-center w-fit md:w-full group/item p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
               {
                 'bg-primary-100 text-white': isActive,
                 'text-primary-texto hover:bg-primary-100 hover:text-white': !isActive,
               },
             ]}
           >
-            <section.icon className="h-5 w-5 flex-shrink-0" />
+            <section.icon className="md:h-5 md:w-5 h-5 w-5 md:flex-shrink-0" />
             <!-- Texto para el menú expandido -->
             <span class="menu-text-inline hidden group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
               {section.name}
@@ -107,7 +107,7 @@ const sections = [
       })
     }
   </nav>
-  <div class="px-2 py-4 border-t w-full border-gray-200">
+  <div class="px-2 py-4 border-t w-full hidden md:block border-gray-200">
     <div class="flex items-center w-full justify-center group-hover:justify-start group-hover:px-2">
       <img
         class="h-10 w-10 rounded-full object-contain flex-shrink-0"
