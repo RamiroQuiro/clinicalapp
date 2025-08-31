@@ -121,6 +121,24 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
     *   Se añadió lógica condicional en `CardTurno.tsx` para habilitar/deshabilitar el botón "Atención" según el `userMedicoId` del turno y el `currentUserId`.
 
 ---
+## Sesión 7: 2025-08-30
+
+*   **Objetivo**: Refactorizar la barra de navegación (`NavDash`) e implementar un buscador de pacientes global y profesional.
+*   **Decisión de Arquitectura Clave**: Tras iterar con un enfoque multi-componente (Input en Astro + Nanostore + Resultados en React), se decidió a petición del usuario encapsular toda la funcionalidad en una **única Isla de React** (`BuscadorGlobal.tsx`) para mayor robustez y simpleza, eliminando la necesidad de stores intermedios para esta funcionalidad.
+*   **Implementación - `NavDash`**:
+    *   Se rediseñó el menú de usuario para usar un dropdown desde el avatar, proveyendo enlaces a "Mi Perfil" y "Cerrar Sesión".
+    *   El usuario optó por mantener el saludo "Bienvenido [Nombre] + Fecha" en lugar de un título de página dinámico.
+    *   El botón de "Crear Paciente" fue movido por el usuario al `NavDash` para tener un acceso global.
+*   **Implementación - Buscador Global**:
+    *   **Componente (`BuscadorGlobal.tsx`)**: Se creó un componente React "todo en uno" que maneja el estado del input, el debouncing para no saturar la API, la llamada fetch, y el renderizado de la lista de resultados.
+    *   **Backend (`/api/pacientes/buscar.ts`)**: Se creó un nuevo endpoint que realiza una búsqueda case-insensitive en la base de datos (sobre `nombre`, `apellido` y `dni`) usando Drizzle ORM y devuelve los resultados.
+    *   **UX - Acciones Rápidas**: Los resultados de la búsqueda se mejoraron para incluir botones de acción ("Dar Turno", "Atender", "Perfil"), convirtiendo el buscador en una paleta de comandos.
+    *   **UX - Atajo de Teclado**: Se implementó un atajo de teclado global (`Ctrl+K` / `Cmd+K`) en el layout principal para dar foco al buscador desde cualquier parte de la aplicación.
+*   **Layout y Refactorización**:
+    *   Se corrigieron conflictos de `group-hover` en el `Sidebar` mediante el uso de grupos nombrados en Tailwind CSS.
+    *   Se discutieron y exploraron varios patrones de layout para el dashboard y los títulos de página, revirtiendo algunos cambios a preferencia del usuario para dejar el layout final a su gusto.
+
+---
 ## Ideas para el Futuro
 
 *   **Generación de PDF para Notas Médicas**:

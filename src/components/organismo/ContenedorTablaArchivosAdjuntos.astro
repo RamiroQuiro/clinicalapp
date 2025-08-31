@@ -1,8 +1,10 @@
 ---
-import { Download, Eye } from 'lucide-react';
+import { Download, Edit3, Eye } from 'lucide-react';
 import type { Documentos } from '../../types';
 import formatDate from '../../utils/formatDate';
 import BotonIndigo from '../moleculas/BotonIndigo.astro';
+import Modal from '../moleculas/Modal.astro';
+import FormularioArchivosAdjuntos from './FormularioArchivosAdjuntos';
 
 const { documentos } = Astro.props as Documentos;
 
@@ -69,7 +71,13 @@ const getStatusColor = (status: Documentos['estado']) => {
                 {doc.estado.charAt(0).toUpperCase() + doc.estado.slice(1)}
               </span>
             </td>
-            <td class="py-4">
+            <td class="py-4 flex items-center gap-2">
+              <Modal title="Editar Documento" id="modal-editar" isIcon={true}>
+                <BotonIndigo slot="icon" id="modal-open-modal-editar">
+                  <Edit3 size={16} />
+                </BotonIndigo>
+                <FormularioArchivosAdjuntos pacienteId={doc.pacienteId} doc={doc} />
+              </Modal>
               <BotonIndigo>
                 <a
                   href={`/api/documentos/serve/${doc.id}`}

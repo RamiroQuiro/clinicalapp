@@ -12,7 +12,6 @@ import PacienteList from './componente/PacienteList.astro';
 const { user, session } = Astro.locals;
 let errorData = false;
 const data = await getDashboardData(user?.id);
-console.log('data dashboard', data);
 ---
 
 <MainDashboard h1="Dashboard">
