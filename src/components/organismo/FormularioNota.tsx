@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '../atomos/Input';
 import RichTextEditor from '../moleculas/RichTextEditor';
+import { useSpeechRecognition } from '../../hook/useSpeechRecognition'; // Nuevo import
+import { Mic } from 'lucide-react'; // Nuevo import
 
 interface Props {
   onSave: (data: { title: string; descripcion: string }) => void;
@@ -18,6 +20,16 @@ interface Props {
 const FormularioNota: React.FC<Props> = ({ onSave, onCancel, noteContent }) => {
   const [title, setTitle] = useState(noteContent.title || '');
   const [descripcion, setDescripcion] = useState(noteContent.descripcion || '');
+
+  // Llamada al hook de reconocimiento de voz
+  const { isListening, newFinalSegment, startListening, stopListening, error } = useSpeechRecognition();
+
+  // Efecto para añadir el texto transcrito a la descripción
+  useEffect(() => {
+    if (newFinalSegment) {
+      setDescripcion(prevDesc => prevDesc + newFinalSegment);
+    }
+  }, [newFinalSegment]);
 
   const handleSave = () => {
     onSave({ title, descripcion });
@@ -44,6 +56,20 @@ const FormularioNota: React.FC<Props> = ({ onSave, onCancel, noteContent }) => {
         onChange={e => setTitle(e.target.value)}
         className="w-full p-2 border rounded-md mb-4"
       />
+      <div className="mb-2 flex items-center justify-between"> {/* Nuevo wrapper para editor y botón de micrófono */}
+        <label className="block text-sm font-medium text-gray-700">Descripción</label>
+        <button
+          type="button"
+          onClick={isListening ? stopListening : startListening}
+          className={`p-2 rounded-full transition-colors duration-200 ${
+            isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+          title={isListening ? 'Detener dictado' : 'Iniciar dictado'}
+        >
+          <Mic size={20} />
+        </button>
+      </div>
+      {error && <p className="text-red-500 text-xs mb-2">{error}</p>} {/* Nuevo display de error */}
       <div style={{ height: '250px' }}>
         <RichTextEditor
           theme="snow"

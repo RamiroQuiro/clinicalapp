@@ -81,6 +81,7 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Próximos Pasos**: Activar la funcionalidad de carga de detalles de visitas anteriores en `HistorialVisitasPantalla.tsx`.
 
 ---
+
 ## Sesión 5: 2025-08-22
 
 *   **Objetivo**: Implementar la visualización de detalles de atenciones médicas anteriores y corregir errores en el formulario de la consulta actual.
@@ -137,6 +138,21 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Layout y Refactorización**:
     *   Se corrigieron conflictos de `group-hover` en el `Sidebar` mediante el uso de grupos nombrados en Tailwind CSS.
     *   Se discutieron y exploraron varios patrones de layout para el dashboard y los títulos de página, revirtiendo algunos cambios a preferencia del usuario para dejar el layout final a su gusto.
+
+---
+## Sesión 8: 2025-08-30
+
+*   **Objetivo**: Implementar el dictado por voz (Speech-to-Text) para campos de texto y resolver problemas relacionados.
+*   **Decisión de Arquitectura Clave**: Implementación de dictado por voz usando un custom hook de React (`useSpeechRecognition.ts`) para encapsular la lógica de la Web Speech API.
+*   **Implementación - Dictado por Voz**:
+    *   **Hook (`useSpeechRecognition.ts`)**: Se creó un custom hook de React para manejar la API `SpeechRecognition`, proveyendo estados/funciones (`isListening`, `newFinalSegment`, `startListening`, `stopListening`, `error`).
+    *   **Integración (`FormularioNota.tsx`)**: Se integró el hook en el componente `FormularioNota.tsx` (usado en el modal de "Notas Médicas").
+    *   **UI**: Se añadió un botón de micrófono al formulario que alterna la escucha y provee feedback visual.
+    *   **Manejo de Texto**: Se configuró el componente para añadir `newFinalSegment` a la descripción de la nota, asegurando una acumulación correcta sin repeticiones.
+*   **Depuración y Refinamientos**:
+    *   **Compatibilidad del Navegador**: Se identificaron y abordaron problemas con el soporte de la API `SpeechRecognition` en ciertos navegadores (ej. Opera GX), añadiendo manejo de errores.
+    *   **Lógica de Acumulación**: Se refinó el hook `useSpeechRecognition.ts` y la integración en `FormularioNota.tsx` para añadir correctamente solo los nuevos segmentos de texto transcrito, resolviendo problemas de repetición.
+    *   **Manejo de Errores**: Se implementaron comprobaciones robustas para la inicialización de `recognitionRef` para prevenir errores en tiempo de ejecución cuando la API no es soportada o inicializada.
 
 ---
 ## Ideas para el Futuro
