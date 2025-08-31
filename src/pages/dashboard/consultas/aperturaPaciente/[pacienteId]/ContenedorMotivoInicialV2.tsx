@@ -74,8 +74,8 @@ const ContenedorMotivoInicialV2 = () => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-2 relative">
-      <div className="flex items-center justify-start gap-2">
+    <div className="w-full min-w-0 flex flex-col gap-2 relative">
+      <div className="flex flex-col md:flex-row md:items-center justify-start gap-2">
         <label
           className="text-sm font-semibold text-primary-textoTitle"
           htmlFor="motivoInicialSearch"

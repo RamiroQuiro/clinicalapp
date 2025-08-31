@@ -38,7 +38,7 @@ export default function Contenedor({ data }: { data: any }) {
         </nav>
       </div>
 
-      <div className="w-full mt-2">
+      <div className="w-full  mb-8 mt-2">
         <RenderizacionPantalla activeTab={activeTab} data={data} />
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
   Mail,
   MapPin,
   Phone,
+  UserCheck2Icon,
   UserIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -26,10 +27,12 @@ export default function StatsPacienteHeader({ pacienteData }: { pacienteData: an
   const edad = 12;
   const maritalStatus = 'casado';
   return (
-    <div className="flex flex-col gap-2 flex-1">
+    <div className="flex flex-col gap-2 flex-1 w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2  z-10 bg-white p- ">
-        <div className="flex items-end  gap-4 text-primary-textoTitle border-b w-full pb-2">
+        <div className="flex items-center flex-wrap gap-4 text-primary-textoTitle border-b w-full pb-2">
+          <UserCheck2Icon className=" w-16 h-16 hidden md:block stroke-primary-textoTitle" />
           <div className="text-3xl gap-2 inline-flex  items-end justify-center capitalize font-bold">
+            <UserCheck2Icon className=" w-16 h-16 md:hidden stroke-primary-textoTitle" />
             <h2>{patientData?.nombre}</h2>
             <h2>{patientData?.apellido}</h2>
           </div>
@@ -47,7 +50,7 @@ export default function StatsPacienteHeader({ pacienteData }: { pacienteData: an
       </div>
 
       {/* --- SECCIÓN DE DETALLES REFACTORIZADA --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-sm  border-gray-200 mt-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 md:gap-x-6 md:gap-y-4 gap-y-2 text-sm  border-gray-200 mt-4">
         {/* --- Columna de Datos de Contacto --- */}
         <div className="flex items-start gap-3">
           <Phone className="w-5 h-5 text-primary-100 mt-1 flex-shrink-0" />

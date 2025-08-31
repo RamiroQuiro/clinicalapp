@@ -50,7 +50,7 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex md:flex-col flex-row w-full md:w-fit md:items-center gap-2">
       <Button id="guardarBorradorV2" onClick={() => handleGuardarBorrador('borrador')}>
         <p className=" inline-flex items-center gap-2">
           <Save className="mr- w-4 h-4" /> Guardar Borrador

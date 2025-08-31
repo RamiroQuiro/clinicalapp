@@ -137,7 +137,7 @@ export default function ContentedorStatsDash({ data }: Props) {
   const tardeHoy = 0;
 
   return (
-    <div className="grid gap-2 grid-cols-2 lg:grid-cols-4 w-full">
+    <div className="grid gap-2 grid-cols-2 lg:grid-cols-4 md:w-full itse">
       {/* Pacientes Totales - Large */}
       {statsDash?.map((stat, index) => (
         <div key={stat.id}>

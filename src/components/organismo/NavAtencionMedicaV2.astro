@@ -15,66 +15,61 @@ const { nombre, apellido, dni, fotoUrl } = pacienteData;
 <DivBox1
   styleDiv="bg-white/70 backdrop-blur-sm shadow-sm rounded-b-lg sticky top-0 z-40 border-b border-x p-2 border-gray-200"
 >
-  <div class="px- sm:px- lg:px- w-full">
-    <div class="flex items-center justify-between gap-2 h-">
-      <!-- Datos del Paciente -->
-      <div class="flex items-center gap-4">
-        <Image
-          src={fotoUrl || avatarDefault}
-          alt="Foto de perfil"
-          class="h-16 w-16 rounded-full object-cover"
-          width={40}
-          height={40}
-        />
-        <div>
-          <h1 class="text-2xl capitalize font-semibold text-gray-800">{nombre} {apellido}</h1>
-          <p class="text-lg text-gray-500">DNI: {dni}</p>
-        </div>
+  <div class="flex md:items-center flex-col md:flex-row justify-between gap-2 h- w-full">
+    <!-- Datos del Paciente -->
+    <div class="flex items-center gap-4">
+      <Image
+        src={fotoUrl || avatarDefault}
+        alt="Foto de perfil"
+        class="h-16 w-16 rounded-full object-cover hidden md:block"
+        width={40}
+        height={40}
+      />
+      <div>
+        <h1 class="text-2xl capitalize font-semibold text-gray-800">{nombre} {apellido}</h1>
+        <p class="text-lg text-gray-500">DNI: {dni}</p>
       </div>
-      <div
-        class="flex border- px-3 w-fit flex-1 items-center text-sm h-full font- justify-evenly flex-wrap gap-4"
-      >
-        <div class="flex items-start capitalize text-sm flex-col">
-          <p>Sexo:</p>
-          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.sexo}</span>
-        </div>
-        <div class="flex items-start capitalize text-sm flex-col">
-          <p>Celular:</p>
-          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.celular}</span>
-        </div>
-        <div class="flex items-start capitalize text-sm flex-col">
-          <p>Email:</p>
-          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.email}</span>
-        </div>
-        <div class="flex items-start capitalize text-sm flex-col">
-          <p>Obra Social:</p>
-          <span class="font-normal text-primary-textoTitle text-base"
-            >{pacienteData.obraSocial}</span
-          >
-        </div>
-        <div class="flex items-start capitalize text-sm flex-col">
-          <p>Fecha de Nacimiento:</p>
-          <span class="font-normal text-primary-textoTitle text-base"
-            >{pacienteData.fNacimiento.toLocaleDateString()}</span
-          >
-        </div>
-        <div class="flex items-start capitalize text-sm flex-col">
-          <p>Domicilio:</p>
-          <span class="font-normal text-primary-textoTitle text-base">{pacienteData.domicilio}</span
-          >
-        </div>
+    </div>
+    <div
+      class="hidden md:flex border- px-3 w-fit flex-1 md:items-center text-sm h-full font- justify-evenly flex-wrap gap-4"
+    >
+      <div class="flex items-start capitalize text-sm flex-col">
+        <p>Sexo:</p>
+        <span class="font-normal text-primary-textoTitle text-base">{pacienteData.sexo}</span>
       </div>
-      <!-- Botones de Acción -->
-      <div class="flex flex-col items-center gap-2">
-        <a href={`/dashboard/pacientes/${pacienteId}`} class="text-sm">
-          <Button1
-            ><p class="inline-flex items-center gap-2">
-              <Table2 className=" w-4 h-4" /> Ficha del Paciente
-            </p></Button1
-          >
-        </a>
-        <ContenedorBotonesFinalizrConsulta client:load />
+      <div class="flex items-start capitalize text-sm flex-col">
+        <p>Celular:</p>
+        <span class="font-normal text-primary-textoTitle text-base">{pacienteData.celular}</span>
       </div>
+      <div class="flex items-start capitalize text-sm flex-col">
+        <p>Email:</p>
+        <span class="font-normal text-primary-textoTitle text-base">{pacienteData.email}</span>
+      </div>
+      <div class="flex items-start capitalize text-sm flex-col">
+        <p>Obra Social:</p>
+        <span class="font-normal text-primary-textoTitle text-base">{pacienteData.obraSocial}</span>
+      </div>
+      <div class="flex items-start capitalize text-sm flex-col">
+        <p>Fecha de Nacimiento:</p>
+        <span class="font-normal text-primary-textoTitle text-base"
+          >{pacienteData.fNacimiento.toLocaleDateString()}</span
+        >
+      </div>
+      <div class="flex items-start capitalize text-sm flex-col">
+        <p>Domicilio:</p>
+        <span class="font-normal text-primary-textoTitle text-base">{pacienteData.domicilio}</span>
+      </div>
+    </div>
+    <!-- Botones de Acción -->
+    <div class="flex md:flex-col flex-row w-full md:w-fit items-center gap-2">
+      <a href={`/dashboard/pacientes/${pacienteId}`} class="text-sm">
+        <Button1
+          ><p class="inline-flex items-center gap-2">
+            <Table2 className=" w-4 h-4" /> Ficha del Paciente
+          </p></Button1
+        >
+      </a>
+      <ContenedorBotonesFinalizrConsulta client:load />
     </div>
   </div>
 </DivBox1>

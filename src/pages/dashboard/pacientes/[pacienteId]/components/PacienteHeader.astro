@@ -4,7 +4,7 @@ import DivBox1 from '@/components/atomos/DivBox1.astro';
 import ModalEditarPerfil from '@/components/moleculas/ModalEditarPerfil.astro';
 import FormularioPaciente from '@/pages/dashboard/pacientes/FormularioPaciente.astro';
 import { generateId } from 'lucia';
-import { PlusIcon, SaveIcon, UserCheck2Icon } from 'lucide-react';
+import { PlusIcon, SaveIcon } from 'lucide-react';
 import StatsPacienteHeader from './StatsPacienteHeader';
 
 // Datos de ejemplo para el paciente
@@ -53,12 +53,13 @@ const edad = calcularEdad(patientData.fNacimiento);
 <DivBox1>
   <!-- Resto del componente usando patientData -->
   <div
-    class="flex w-full md:flex-row items-start md:items-center gap-6 py-4 px-6 h flex-1 flex-between"
+    class="flex w-full flex-col md:flex-row items-start md:items-center gap-6 -4 px-2 md:px-6 h flex-1 flex-between"
   >
-    <UserCheck2Icon className="w-28 h-28 stroke-primary-textoTitle" />
     <!-- datps del paciente -->
     <StatsPacienteHeader pacienteData={pacienteData} client:load />
-    <div class="flex flex-col gap-2 text-sm">
+    <div
+      class="flex md:flex-col items-center w-full md:w-auto md:justify-between justify-end gap-2 text-sm"
+    >
       <ModalEditarPerfil>
         <FormularioPaciente user paciente={pacienteData} />
       </ModalEditarPerfil>

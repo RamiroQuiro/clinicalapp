@@ -262,16 +262,16 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       }
 
       if (result.plan_a_seguir) {
-      setConsultaField('planSeguir', result.plan_a_seguir);
-    }
+        setConsultaField('planSeguir', result.plan_a_seguir);
+      }
 
-    if (result.sintomas) {
-      setConsultaField('sintomas', result.sintomas);
-    }
+      if (result.sintomas) {
+        setConsultaField('sintomas', result.sintomas);
+      }
 
-    if (result.motivoConsulta) {
-      setConsultaField('motivoConsulta', result.motivoConsulta);
-    }
+      if (result.motivoConsulta) {
+        setConsultaField('motivoConsulta', result.motivoConsulta);
+      }
 
       // Optionally clear the dictation text after processing
       setDictationText('');
@@ -315,7 +315,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         </div>
       )}
 
-      <fieldset disabled={isLocked} className="flex flex-col gap-2 disabled:opacity-60">
+      <fieldset
+        disabled={isLocked}
+        className="flex flex-col w-full min-w-0 gap-2 disabled:opacity-60"
+      >
         <Section title="Motivo de Consulta">
           {/* Contenedor de motivo inicial */}
           <ContenedorMotivoInicialV2 />
@@ -436,7 +439,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         </div>
         <Section title="Tratamiento Farmacologico">
           <div className="flex justify-between gap-2">
-            <div className="flex justify-evenly w-full  items-center gap-2">
+            <div className="flex flex-col md:flex-row justify-evenly w-full  md:items-center gap-2">
               <Input
                 label="Nombre Generico"
                 className="w-full"

@@ -59,7 +59,10 @@ export default function BuscadorGlobal() {
   }, [searchContainerRef]);
 
   return (
-    <div className="relative md:flex w-1/2 items-center md:justify-center" ref={searchContainerRef}>
+    <div
+      className="relative md:flex md:w-1/2 w-full items-center md:justify-center"
+      ref={searchContainerRef}
+    >
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
       <input
         id="global-search-input" // ID para el foco global

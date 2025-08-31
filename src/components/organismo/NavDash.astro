@@ -3,14 +3,17 @@ import { ChevronDown, PanelLeftOpen } from 'lucide-react';
 import BuscadorGlobal from './BuscadorGlobal.tsx';
 import ContenedeorModal from './ContenedeorModal.astro';
 import FormularioPaciente from '@/pages/dashboard/pacientes/FormularioPaciente.astro';
+import Titulo1 from '../atomos/Titulo1.astro';
 
 const { user } = Astro.locals;
 ---
 
 <nav
-  class="bg-white z-20 w-full border-b md:right-0 text-sm text-primary-textoTitle md:h-16 flex items-center justify-between"
+  class="bg-white z-20 w-full border-b md:right-0 text-sm text-primary-textoTitle md:h-16 flex items-center justify-between py-1"
 >
-  <div class="w-full flex py-2 px-4 md:flex-row md:m-0 h-full items-center justify-between">
+  <div
+    class="w-full flex flex-col-reverse md:flex-row py-2 px-4 md:m-0 h-full items-center justify-between"
+  >
     <div class="md:flex hidden flex-col items-start md:justify-start justify-between gap-1">
       <h3 class="font-semibold capitalize">Bienvenido {user?.nombre} {user?.apellido}</h3>
       <span class="text-sm font-">
@@ -26,43 +29,49 @@ const { user } = Astro.locals;
 
     <!-- Buscador Global como Isla de React -->
     <BuscadorGlobal client:load />
-    <ContenedeorModal label="Crear Paciente" title="Crear Paciente" id="crearPaciente">
-      <FormularioPaciente user={user} />
-    </ContenedeorModal>
-    <!-- Menú de Usuario -->
     <div
-      class="flex items-center md:justify-end justify-evenly gap-2 md:pr-5 md:w-auto flex-shrink-0"
+      class="n flex items-center justify-between md:w-auto w-full mb-2 md:mb-0 md:justify-end gap-2"
     >
-      <div class="relative" id="user-menu-container">
-        <button
-          id="user-menu-button"
-          class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-100 transition-colors"
-        >
-          <img
-            class="h-9 w-9 rounded-full object-cover"
-            src={user?.avatar || '/avatarDefault.png'}
-            alt="Avatar de usuario"
-          />
-          <span class="hidden md:inline">{user?.nombre}</span>
-          <ChevronDown class="h-4 w-4 hidden md:inline" />
-        </button>
-        <div
-          id="user-menu-dropdown"
-          class="absolute hidden right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
-        >
-          <a
-            href="/dashboard/perfil"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</a
+      <h1 class="text-2xl w-f font-semibold md:hidden block">clinicaApp</h1>
+      <ContenedeorModal label="Crear Paciente" title="Crear Paciente" id="crearPaciente">
+        <FormularioPaciente user={user} />
+      </ContenedeorModal>
+
+      <!-- Menú de Usuario -->
+      <div
+        class="flex items-center md:justify-end justify-evenly gap-2 md:pr-5 md:w-auto flex-shrink-0"
+      >
+        <div class="relative" id="user-menu-container">
+          <button
+            id="user-menu-button"
+            class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-100 transition-colors"
           >
-          <div class="border-t border-gray-100 my-1"></div>
-          <form method="post" action="/api/auth/signout" class="w-full">
-            <button
-              type="submit"
-              class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            <img
+              class="h-9 w-9 rounded-full object-cover"
+              src={user?.avatar || '/avatarDefault.png'}
+              alt="Avatar de usuario"
+            />
+            <span class="hidden md:inline">{user?.nombre}</span>
+            <ChevronDown class="h-4 w-4 hidden md:inline" />
+          </button>
+          <div
+            id="user-menu-dropdown"
+            class="absolute hidden right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
+          >
+            <a
+              href="/dashboard/perfil"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</a
             >
-              Cerrar Sesión
-            </button>
-          </form>
+            <div class="border-t border-gray-100 my-1"></div>
+            <form method="post" action="/api/auth/signout" class="w-full">
+              <button
+                type="submit"
+                class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              >
+                Cerrar Sesión
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
