@@ -270,69 +270,80 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             placeholder="Describe los síntomas que reporta el paciente..."
           />
         </Section>
+        <div className="flex justify-between gap-2">
+          {/* <Section title="Diagnostico presuntivo">
+            <div className="mt-2 space-y-2">
+              <TextArea
+                rows={10}
+                name="diagnosticoPresuntivo"
+                value={$consulta.diagnosticoPresuntivo}
+                onChange={handleFormChange}
+                placeholder="Escribe el diagnostico presuntivo"
+              />
+            </div>
+          </Section> */}
+          <Section title="Diagnóstico">
+            <div className="space-y-4">
+              <Input
+                label="Nombre del Diagnóstico"
+                name="diagnostico"
+                value={currentDiagnostico.diagnostico}
+                onChange={e =>
+                  setCurrentDiagnostico({ ...currentDiagnostico, diagnostico: e.target.value })
+                }
+                placeholder="Ej: Faringitis aguda"
+              />
+              <TextArea
+                label="Observaciones"
+                name="observaciones"
+                value={currentDiagnostico.observaciones}
+                onChange={e =>
+                  setCurrentDiagnostico({ ...currentDiagnostico, observaciones: e.target.value })
+                }
+                placeholder="Detalles adicionales del diagnóstico..."
+                rows={2}
+              />
+              <Input
+                label="Código CIE"
+                name="codigoCIE"
+                value={currentDiagnostico.codigoCIE}
+                onChange={e =>
+                  setCurrentDiagnostico({ ...currentDiagnostico, codigoCIE: e.target.value })
+                }
+                placeholder="Código CIE"
+              />
+              <Button onClick={addDiagnostico} variant="secondary">
+                Agregar Diagnóstico
+              </Button>
+            </div>
 
-        <Section title="Diagnóstico">
-          <div className="space-y-4">
-            <Input
-              label="Nombre del Diagnóstico"
-              name="diagnostico"
-              value={currentDiagnostico.diagnostico}
-              onChange={e =>
-                setCurrentDiagnostico({ ...currentDiagnostico, diagnostico: e.target.value })
-              }
-              placeholder="Ej: Faringitis aguda"
-            />
-            <TextArea
-              label="Observaciones"
-              name="observaciones"
-              value={currentDiagnostico.observaciones}
-              onChange={e =>
-                setCurrentDiagnostico({ ...currentDiagnostico, observaciones: e.target.value })
-              }
-              placeholder="Detalles adicionales del diagnóstico..."
-              rows={2}
-            />
-            <Input
-              label="Código CIE"
-              name="codigoCIE"
-              value={currentDiagnostico.codigoCIE}
-              onChange={e =>
-                setCurrentDiagnostico({ ...currentDiagnostico, codigoCIE: e.target.value })
-              }
-              placeholder="Código CIE"
-            />
-            <Button onClick={addDiagnostico} variant="secondary">
-              Agregar Diagnóstico
-            </Button>
-          </div>
-
-          <ul className=" mt-2 space-y-2 flex flex-col">
-            {$consulta.diagnosticos.map(diag => (
-              <li
-                key={diag.id}
-                className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
-              >
-                <div className="flex items-center justify-start gap-4">
-                  <p className="flex items-center gap-2 ">
-                    🤕 {diag.diagnostico} {diag.observaciones && `- ${diag.observaciones}`}
-                  </p>
-                  <p className="">{diag.codigoCIE}</p>
-                </div>
-                <button
-                  title="Eliminar Diagnóstico"
-                  className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
-                  onClick={() => deletDiagnostico(diag.id)}
+            <ul className=" mt-2 space-y-2 flex flex-col">
+              {$consulta.diagnosticos.map(diag => (
+                <li
+                  key={diag.id}
+                  className="px-3 py-1 hover:bg-primary-bg-componentes border shadow-sm rounded-md justify-between w-full flex items-center"
                 >
-                  <Trash />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        <Section title="Medicamento">
-          <div className="mt-2 space-y-2">
-            <div className="flex justify-evenly  items-center gap-2">
+                  <div className="flex items-center justify-start gap-4">
+                    <p className="flex items-center gap-2 ">
+                      🤕 {diag.diagnostico} {diag.observaciones && `- ${diag.observaciones}`}
+                    </p>
+                    <p className="">{diag.codigoCIE}</p>
+                  </div>
+                  <button
+                    title="Eliminar Diagnóstico"
+                    className="text-red-500 border p-1  rounded-lg hover:bg-red-500 hover:text-white duration-150"
+                    onClick={() => deletDiagnostico(diag.id)}
+                  >
+                    <Trash />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        </div>
+        <Section title="Tratamiento Farmacologico">
+          <div className="flex justify-between gap-2">
+            <div className="flex justify-evenly w-full  items-center gap-2">
               <Input
                 label="Nombre Generico"
                 className="w-full"
@@ -369,10 +380,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
                   setCurrentMedicamento({ ...currentMedicamento, frecuencia: e.target.value })
                 }
               />
+              <Button onClick={addMedicamento} variant="secondary">
+                Agregar Medicamento
+              </Button>
             </div>
-            <Button onClick={addMedicamento} variant="secondary">
-              Agregar Medicamento
-            </Button>
           </div>
 
           <ul className="mt-2 space-y-3">
@@ -398,6 +409,24 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               </li>
             ))}
           </ul>
+        </Section>
+
+        <Section title="Tratamiento no farmacologico">
+          <TextArea
+            name="tratamiento"
+            value={$consulta.tratamiento}
+            onChange={handleFormChange}
+            placeholder="Describe el plan o tratemiento, próximas citas, estudios, etc."
+          />
+        </Section>
+
+        <Section title="Plan a Seguir">
+          <TextArea
+            name="planSeguir"
+            value={$consulta.planSeguir}
+            onChange={handleFormChange}
+            placeholder="Describe el plan de tratamiento, próximas citas, estudios, etc."
+          />
         </Section>
       </fieldset>
     </div>

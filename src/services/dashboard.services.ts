@@ -33,7 +33,6 @@ export async function getDashboardData(userId: string) {
     motivos,
     promedioDuracion,
     atencionesHoy,
-    ultimasAtenciones,
   ] = await Promise.all([
     // Query 0: Total de pacientes (histórico)
     db

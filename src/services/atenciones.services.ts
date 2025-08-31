@@ -177,11 +177,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       atencion: {
         ...atencionData,
         diagnosticos: diagnosticosAtencion,
-        tratamiento: tratamientoAtencion || {
-          fechaInicio: '',
-          fechaFin: '',
-          tratamiento: '',
-        },
         medicamentos: medicamentosAtencion,
         signosVitales: signosVitalesAtencion || {
           tensionArterial: 0,

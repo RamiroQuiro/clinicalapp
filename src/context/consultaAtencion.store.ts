@@ -10,7 +10,7 @@ export interface Consulta {
   sintomas: string;
   historiaClinicaId: string;
   estado: string; // AÑADIDO
-
+  planSeguir: string;
   signosVitales: {
     presionArterial: number;
     frecuenciaCardiaca: number;
@@ -20,11 +20,7 @@ export interface Consulta {
   notas: string;
   observaciones: string;
   diagnosticos: { diagnostico: string; observaciones: string; codigoCIE: string; id: string }[];
-  tratamiento: {
-    fechaInicio: string;
-    fechaFin: string;
-    tratamiento: string;
-  };
+  tratamiento: string;
   medicamentos: {
     nombreGenerico: string;
     nombreComercial: string;
@@ -51,14 +47,11 @@ const initialConsulta: Consulta = {
     frecuenciaRespiratoria: 0,
     temperatura: 0,
   },
+  planSeguir: '',
   observaciones: '',
   notas: '',
   pacienteId: '',
-  tratamiento: {
-    fechaInicio: '',
-    fechaFin: '',
-    tratamiento: '',
-  },
+  tratamiento: '',
   medicamentos: [
     {
       nombreGenerico: '',

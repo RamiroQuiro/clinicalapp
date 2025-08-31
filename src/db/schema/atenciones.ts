@@ -20,6 +20,8 @@ export const atenciones = sqliteTable('atenciones', {
   motivoConsulta: text('motivoConsulta'),
   sintomas: text('sintomas', { mode: 'text' }),
   tratamientoId: text('tratamientoId'),
+  tratamiento: text('tratamiento'),
+  planSeguir: text('planSeguir'),
   motivoInicial: text('motivoInicial'),
   observaciones: text('observaciones'),
   estado: text('estado', { enum: ['pendiente', 'en_curso', 'enAtencion', 'finalizada'] }).default(
