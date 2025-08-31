@@ -20,6 +20,9 @@ import {
 import { useEffect, useState } from 'react';
 import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
 
+import { useSpeechRecognition } from '@/hook/useSpeechRecognition';
+import { Mic, StopCircle } from 'lucide-react';
+
 // --- Configuración de Signos Vitales ---
 const vitalSignsConfig = [
   {
@@ -100,6 +103,17 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     id: '',
   });
 
+  const [dictationText, setDictationText] = useState('');
+  const {
+    isListening,
+    newFinalSegment,
+    startListening,
+    stopListening,
+    error: speechError,
+  } = useSpeechRecognition();
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [aiProcessingError, setAiProcessingError] = useState<string | null>(null);
+
   // --- NUEVO: Lógica de bloqueo de la consulta ---
   const [isLocked, setIsLocked] = useState(false);
   const [unlockInput, setUnlockInput] = useState('');
@@ -126,6 +140,12 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       setIsLocked(false);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (newFinalSegment) {
+      setDictationText(prev => prev + newFinalSegment + ' ');
+    }
+  }, [newFinalSegment]);
 
   const handleUnlock = () => {
     if (unlockInput === 'modificar') {
@@ -188,6 +208,79 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       'medicamentos',
       current.filter(med => med.id !== medId)
     );
+  };
+
+  const processDictation = async () => {
+    if (!dictationText.trim()) return;
+
+    setIsProcessingAI(true);
+    setAiProcessingError(null);
+
+    try {
+      const response = await fetch('/api/atencion/process-notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: dictationText }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al procesar con IA');
+      }
+
+      const result = await response.json();
+      console.log('AI Processed Result:', result);
+
+      // Update fields based on AI response
+      if (result.diagnostico && result.diagnostico.nombre) {
+        const newDiag = {
+          diagnostico: result.diagnostico.nombre,
+          observaciones: result.diagnostico.observaciones || '',
+          codigoCIE: result.diagnostico.codigoCIE || '',
+          id: `ai_diag_${Date.now()}`,
+        };
+        setConsultaField('diagnosticos', [...$consulta.diagnosticos, newDiag]);
+      }
+
+      if (result.medicamentos && Array.isArray(result.medicamentos)) {
+        result.medicamentos.forEach((med: any) => {
+          const newMed = {
+            nombreGenerico: med.nombreGenerico || '',
+            nombreComercial: med.nombreComercial || '',
+            dosis: med.dosis || '',
+            frecuencia: med.frecuencia || '',
+            id: `ai_med_${Date.now()}`,
+          };
+          setConsultaField('medicamentos', [...$consulta.medicamentos, newMed]);
+        });
+      }
+
+      if (result.tratamiento) {
+        setConsultaField('tratamiento', result.tratamiento);
+      }
+
+      if (result.plan_a_seguir) {
+      setConsultaField('planSeguir', result.plan_a_seguir);
+    }
+
+    if (result.sintomas) {
+      setConsultaField('sintomas', result.sintomas);
+    }
+
+    if (result.motivoConsulta) {
+      setConsultaField('motivoConsulta', result.motivoConsulta);
+    }
+
+      // Optionally clear the dictation text after processing
+      setDictationText('');
+    } catch (err: any) {
+      console.error('Error processing dictation with AI:', err);
+      setAiProcessingError(err.message);
+    } finally {
+      setIsProcessingAI(false);
+    }
   };
 
   return (
@@ -409,6 +502,37 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               </li>
             ))}
           </ul>
+        </Section>
+
+        <Section title="Dictado de Notas (IA)">
+          <div className="flex flex-col gap-2">
+            <TextArea
+              name="dictationInput"
+              value={dictationText}
+              onChange={e => setDictationText(e.target.value)}
+              placeholder="Dicta aquí tus notas para que la IA las procese..."
+              rows={5}
+            />
+            <div className="flex items-center gap-2">
+              <Button onClick={startListening} disabled={isListening}>
+                <Mic className="w-5 h-5 mr-2" />
+                {isListening ? 'Escuchando...' : 'Iniciar Dictado'}
+              </Button>
+              <Button onClick={stopListening} disabled={!isListening} variant="secondary">
+                <StopCircle className="w-5 h-5 mr-2" />
+                Detener Dictado
+              </Button>
+              <Button onClick={processDictation} disabled={!dictationText || isProcessingAI}>
+                {isProcessingAI ? 'Procesando...' : 'Procesar con IA'}
+              </Button>
+            </div>
+            {speechError && (
+              <p className="text-red-500 text-sm mt-1">Error de dictado: {speechError}</p>
+            )}
+            {aiProcessingError && (
+              <p className="text-red-500 text-sm mt-1">Error de IA: {aiProcessingError}</p>
+            )}
+          </div>
         </Section>
 
         <Section title="Tratamiento no farmacologico">
