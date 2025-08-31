@@ -7,36 +7,10 @@ const { pacienteId, atencionId } = Astro.params as { pacienteId: string; atencio
 const { user, session } = Astro.locals;
 let errorData;
 // tengo q implemtar type para historiClinica
-
-const diagnosticoData = [
-  {
-    tipo: 'Diagnostico1',
-    observaciones: 'Observaciones1',
-  },
-  {
-    tipo: 'Diagnostico2',
-    observaciones: 'Observaciones2',
-  },
-];
-
-const medicamentosData = [
-  {
-    nombre: 'Medicamento1',
-    dosis: 2,
-    frecuencia: 'diaria',
-    duracion: '2 semanas',
-  },
-  {
-    nombre: 'Medicamento2',
-    dosis: 1,
-    frecuencia: 'semanal',
-    duracion: '1 mes',
-  },
-];
 ---
 
-<LayoutDash title={`Atención a `}>
-  <MainDashboard h1={`Atención a`}>
+<LayoutDash title={`Atención  `}>
+  <MainDashboard h1={`Atención `}>
     <!-- {
       !isExistHC&&
       <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
