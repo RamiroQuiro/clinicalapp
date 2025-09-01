@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     port: 4322,
     host: true,
-    allowedHosts: ['clinicalapp.controlstock.online', 'clinicalapp.controlstock.online'],
+    allowedHosts: ['clinicalapp.controlstock.online'],
   },
   devToolbar: {
     enabled: false,
