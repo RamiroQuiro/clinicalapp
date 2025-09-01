@@ -5,14 +5,15 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   server: {
-    port: 4321,
+    port: 4322,
     host: true,
+    allowedHosts: ['clinicalapp.controlstock.online', 'clinicalapp.controlstock.online'],
   },
   devToolbar: {
     enabled: false,
   },
   integrations: [react(), tailwind()],
-  outDir: './src',
+
   output: 'server',
   adapter: node({
     mode: 'standalone',
