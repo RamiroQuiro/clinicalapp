@@ -1,10 +1,16 @@
-import { atenciones, diagnostico, medicamento, signosVitales, tratamiento } from '@/db/schema'; // Importa las tablas necesarias
+import { atenciones, diagnostico, medicamento, signosVitales } from '@/db/schema'; // Importa las tablas necesarias
 import type { APIRoute } from 'astro';
 
 import db from '@/db';
 import { getFechaUnix } from '@/utils/timesUtils';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; // Para generar IDs únicos
+
+// Helper para parsear números de forma segura
+const safeParseFloat = (value: any) => {
+  const num = parseFloat(value);
+  return isNaN(num) || !isFinite(num) ? null : num;
+};
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const { user, session } = locals;
@@ -30,7 +36,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       observaciones,
       medicamentos,
       diagnosticos,
-
+      planSeguir,
       notas,
       tratamiento: tratamientoData,
       status,
@@ -67,9 +73,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
             sintomas,
             observaciones,
             motivoInicial,
-            inicioAtencion: new Date(inicioConsulta), // ADDED
-            finAtencion: new Date(finConsulta), // ADDED
-            duracionAtencion: duracionConsulta, // ADDED
+            inicioAtencion: inicioConsulta ? new Date(inicioConsulta) : null, // ADDED
+            finAtencion: finConsulta ? new Date(finConsulta) : null, // ADDED
+            duracionAtencion: safeParseFloat(duracionConsulta), // ADDED
             updated_at: new Date(),
             estado: status,
             ultimaModificacionPorId: user.id, // ADDED
@@ -83,18 +89,35 @@ export const POST: APIRoute = async ({ request, locals }) => {
           motivoInicial,
           motivoConsulta,
           sintomas,
+          ultimaModificacionPorId: user.id,
           observaciones,
+          tratamiento: tratamientoData,
+          planSeguir,
           historiaClinicaId,
           estado: status,
           userIdMedico: user.id,
           inicioAtencion: inicioConsulta ? new Date(inicioConsulta) : null, // ADDED
           finAtencion: finConsulta ? new Date(finConsulta) : null, // ADDED
-          duracionAtencion: duracionConsulta, // ADDED
+          duracionAtencion: safeParseFloat(duracionConsulta), // ADDED
         });
       }
 
       console.log('empezando a ingresar los signos vitales 🖋️', svData);
       // 2. Guardar/Actualizar Signos Vitales (1 a 1 con atención)
+      // Process svData to ensure all numerical fields are safely parsed
+      const processedSvData = {
+        tensionArterial: safeParseFloat(svData?.tensionArterial),
+        frecuenciaCardiaca: safeParseFloat(svData?.frecuenciaCardiaca),
+        frecuenciaRespiratoria: safeParseFloat(svData?.frecuenciaRespiratoria),
+        temperatura: safeParseFloat(svData?.temperatura),
+        saturacionOxigeno: safeParseFloat(svData?.saturacionOxigeno),
+        peso: safeParseFloat(svData?.peso),
+        talla: safeParseFloat(svData?.talla),
+        imc: safeParseFloat(svData?.imc),
+        glucosa: safeParseFloat(svData?.glucosa),
+        // Add other numerical vital signs if any
+      };
+
       const existingSV = await tx
         .select()
         .from(signosVitales)
@@ -105,7 +128,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         // Actualizamos el registro existente
         await tx
           .update(signosVitales)
-          .set({ ...svData })
+          .set({ ...processedSvData }) // MODIFIED to use processedSvData
           .where(eq(signosVitales.atencionId, currentAtencionId));
       } else {
         // Insertamos uno nuevo
@@ -114,7 +137,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           atencionId: currentAtencionId,
           pacienteId,
           userId: user.id,
-          ...svData,
+          ...processedSvData, // MODIFIED to use processedSvData
         });
       }
 
@@ -130,37 +153,39 @@ export const POST: APIRoute = async ({ request, locals }) => {
             atencionId: currentAtencionId,
             pacienteId,
             userMedicoId: user.id,
+            estado: d.estado,
             historiaClinicaId,
             diagnostico: d.diagnostico, // Asegúrate que el frontend envíe 'diagnostico'
             observaciones: d.observaciones,
             codigoCIE: d.codigoCIE, // Y 'codigoCIE'
+            ultimaModificacionPorId: user.id,
           }))
         );
       }
-      console.log('Datos de la consulta: trtamiento data', tratamientoData);
-      // 4. Guardar/Actualizar Tratamientos
-      if (tratamientoData.tratamiento) {
-        // Eliminamos los tratamientos existentes para esta atención
-        await tx.delete(tratamiento).where(eq(tratamiento.atencionesId, currentAtencionId));
+      // console.log('Datos de la consulta: trtamiento data', tratamientoData);
+      // // 4. Guardar/Actualizar Tratamientos
+      // if (tratamientoData.tratamiento) {
+      //   // Eliminamos los tratamientos existentes para esta atención
+      //   await tx.delete(tratamiento).where(eq(tratamiento.atencionesId, currentAtencionId));
 
-        // Insertamos los nuevos tratamientos
-        await tx.insert(tratamiento).values({
-          id: nanoid(),
-          atencionesId: currentAtencionId,
-          pacienteId,
-          userMedicoId: user.id,
-          tratamiento: tratamientoData.tratamiento,
-        });
-      } else {
-        // Insertamos los nuevos tratamientos
-        await tx.insert(tratamiento).values({
-          id: nanoid(),
-          atencionesId: currentAtencionId,
-          pacienteId,
-          userMedicoId: user.id,
-          tratamiento: tratamientoData.tratamiento,
-        });
-      }
+      //   // Insertamos los nuevos tratamientos
+      //   await tx.insert(tratamiento).values({
+      //     id: nanoid(),
+      //     atencionesId: currentAtencionId,
+      //     pacienteId,
+      //     userMedicoId: user.id,
+      //     tratamiento: tratamientoData.tratamiento,
+      //   });
+      // } else {
+      //   // Insertamos los nuevos tratamientos
+      //   await tx.insert(tratamiento).values({
+      //     id: nanoid(),
+      //     atencionesId: currentAtencionId,
+      //     pacienteId,
+      //     userMedicoId: user.id,
+      //     tratamiento: tratamientoData.tratamiento,
+      //   });
+      // }
 
       // 5. Guardar Medicamentos (asumiendo que se insertan nuevos cada vez)
       // Tu interfaz Consulta tiene 'medicamentos: string[]', pero tu componente
@@ -177,8 +202,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             historiaClinicaId: historiaClinicaId,
             nombreGenerico: m.nombreGenerico,
             nombreComercial: m.nombreComercial,
-            dosis: m.dosis,
-            frecuencia: m.frecuencia,
+            dosis: safeParseFloat(m.dosis),
+            frecuencia: safeParseFloat(m.frecuencia),
             atencionId: currentAtencionId,
             pacienteId,
             userMedicoId: user.id,

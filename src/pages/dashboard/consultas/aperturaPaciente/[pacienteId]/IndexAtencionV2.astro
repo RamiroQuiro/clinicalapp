@@ -4,12 +4,12 @@ import { getDatosNuevaAtencion } from '@/services/atenciones.services';
 import Contenedor from './componenteAtencionV2/Contenedor.tsx';
 
 const { pacienteId, atencionId } = Astro.params;
-console.log('params', pacienteId, atencionId);
+
 const { data, error, message } = await getDatosNuevaAtencion(
   pacienteId as string,
   atencionId as string
 );
-console.log('esta es la data en index atencion v2', data);
+// console.log('esta es la data en index atencion v2', data);
 if (error) {
   console.log('error', error, message);
   // errorData = {

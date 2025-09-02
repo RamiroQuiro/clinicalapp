@@ -28,6 +28,13 @@ export const callAIModel = async (text: string) => {
           "frecuencia": "string | null"
         }
       ],
+      "signosVitales": {
+        "frecuenciaCardiaca": "number | null",
+        "frecuenciaRespiratoria": "number | null",
+        "presionArterial": "string | null",
+        "temperatura": "number | null",
+        "satO2": "number | null"
+      },
       "tratamiento": "string | null",
       "plan_a_seguir": "string | null",
       "sintomas": "string | null",

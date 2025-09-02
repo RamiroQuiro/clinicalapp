@@ -20,6 +20,10 @@ export const diagnostico = sqliteTable('diagnostico', {
     .references(() => users.id, { onDelete: 'cascade' }),
   observaciones: text('observaciones'),
   tratamiento: text('tratamiento'),
+  estado: text('estado', { enum: ['activo', 'curado', 'controlado'] })
+    .notNull()
+    .default('activo'),
+  ultimaModificacionPorId: text('ultimaModificacionPorId').references(() => users.id),
   updated_at: integer('updated_at', { mode: 'timestamp' }),
   created_at: integer('created_at', { mode: 'timestamp' })
     .notNull()

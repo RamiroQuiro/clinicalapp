@@ -19,7 +19,13 @@ export interface Consulta {
   };
   notas: string;
   observaciones: string;
-  diagnosticos: { diagnostico: string; observaciones: string; codigoCIE: string; id: string }[];
+  diagnosticos: {
+    diagnostico: string;
+    observaciones: string;
+    codigoCIE: string;
+    id: string;
+    estado: string;
+  }[];
   tratamiento: string;
   medicamentos: {
     nombreGenerico: string;
@@ -61,7 +67,15 @@ const initialConsulta: Consulta = {
       id: '',
     },
   ],
-  diagnosticos: [],
+  diagnosticos: [
+    {
+      diagnostico: '',
+      observaciones: '',
+      codigoCIE: '',
+      id: '',
+      estado: '',
+    },
+  ],
   inicioConsulta: null, // AÑADIDO
   finConsulta: null, // AÑADIDO
   duracionConsulta: null, // AÑADIDO
