@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
+import SectionArchivosAtencion from './SectionArchivosAtencion';
 import SectionDiagnostico from './SectionDiagnostico';
 import SectionMedicamentos from './SectionMedicamentos';
 import SectionNotasMedicas from './SectionNotasMedicas';
@@ -107,16 +108,27 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
   useEffect(() => {
     if (!data || !data.atencion) return;
-    consultaStore.set({ ...data.atencion });
 
-    if (!data.atencion.inicioConsulta) {
+    // Ensure nested objects and arrays exist to prevent runtime errors
+    const atencionData = {
+      ...data.atencion,
+      archivos: data.atencion.archivos || [],
+      notas: data.atencion.notas || [],
+      diagnosticos: data.atencion.diagnosticos || [],
+      medicamentos: data.atencion.medicamentos || [],
+      signosVitales: data.atencion.signosVitales || {},
+    };
+
+    consultaStore.set(atencionData);
+
+    if (!atencionData.inicioConsulta) {
       setConsultaField('inicioConsulta', new Date().toISOString());
     }
 
     if (data.signosVitalesHistorial) {
       setSignosVitalesHistorial(data.signosVitalesHistorial);
     }
-    if (data.atencion.estado === 'finalizada') {
+    if (atencionData.estado === 'finalizada') {
       setIsLocked(true);
     } else {
       setIsLocked(false);
@@ -339,6 +351,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             placeholder="Describe el plan de tratamiento, próximas citas, estudios, etc."
           />
         </Section>
+
+        <SectionArchivosAtencion $consulta={$consulta} />
 
         {/* Notas Médicas */}
 

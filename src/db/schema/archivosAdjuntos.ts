@@ -1,9 +1,13 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { atenciones } from './atenciones';
+import { users } from './users';
 
 export const archivosAdjuntos = sqliteTable('archivosAdjuntos', {
   id: text('id').primaryKey().unique(),
   nombre: text('nombre').notNull(),
+  atencionId: text('atencionId').references(() => atenciones.id, { onDelete: 'cascade' }),
+  userMedicoId: text('userMedicoId').references(() => users.id, { onDelete: 'cascade' }),
   pacienteId: text('pacienteId').notNull(),
   descripcion: text('descripcion').notNull(),
   url: text('url').notNull(),
