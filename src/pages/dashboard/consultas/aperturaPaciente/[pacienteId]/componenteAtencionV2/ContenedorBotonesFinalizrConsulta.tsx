@@ -10,7 +10,7 @@ type Props = {};
 
 export default function ContenedorBotonesFinalizrConsulta({}: Props) {
   const $consulta = useStore(consultaStore);
-  console.log('esta es la consulta en el contendor de botones pantalla ->', $consulta);
+  // console.log('esta es la consulta en el contendor de botones pantalla ->', $consulta);
   const handleGuardarBorrador = async (modoFetch: string) => {
     try {
       if (modoFetch === 'finalizada') {

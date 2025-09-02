@@ -4,6 +4,7 @@ import {
   diagnostico,
   historiaClinica,
   medicamento,
+  notasMedicas,
   pacientes,
   signosVitales,
   tratamiento,
@@ -40,6 +41,12 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .where(eq(signosVitales.atencionId, atencionId))
     .orderBy(desc(signosVitales.created_at));
   console.log('signos vitales traidos 🔎...', signosVitalesAtencion);
+  // traer notas de la atencion
+  const notasAtencion = await db
+    .select()
+    .from(notasMedicas)
+    .where(eq(notasMedicas.atencionId, atencionId));
+  console.log('notas traidas 🔎...', notasAtencion);
 
   const diagnosticosAtencion = await db
     .select({
@@ -189,6 +196,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
           talla: 0,
           imc: 0,
         },
+        notas: notasAtencion,
       },
       paciente: pacienteData,
       antecedentes: antecedentesData,

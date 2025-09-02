@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import formatDate from '@/utils/formatDate';
 import { showToast } from '@/utils/toast/toastShow';
@@ -16,46 +16,23 @@ interface Note {
   profesional: string;
   fecha: string;
   descripcion: string;
+  atencionId?: string; // Add atencionId to the Note interface
 }
 
 interface Props {
+  notas: Note[]; // Now receives notes as a prop
   userId?: string;
   pacienteId: string;
+  atencionId?: string; // Add atencionId to the Props interface
+  onNoteChange: () => void; // Callback to notify parent of changes
 }
 
-const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
-  const [notas, setNotas] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const NotasMedicasAtencion: React.FC<Props> = ({ notas, userId, pacienteId, atencionId, onNoteChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [noteContent, setNoteContent] = useState<Partial<Note>>({
     title: '',
     descripcion: '',
   });
-
-  const fetchNotas = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/pacientes/${pacienteId}/notas`);
-      if (!response.ok) {
-        throw new Error('Error al cargar las notas.');
-      }
-      const data = await response.json();
-      setNotas(data.notas);
-    } catch (err: any) {
-      console.error('Error al cargar las notas:', err);
-      setError(err.message);
-      showToast(`Error: ${err.message}`, { background: 'bg-red-500' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (pacienteId) {
-      fetchNotas();
-    }
-  }, [pacienteId]);
 
   const handleOpenModal = (nota?: Note) => {
     setIsModalOpen(true);
@@ -72,7 +49,7 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
     const url = isEditing ? '/api/notas/update' : '/api/notas/create';
     const body = isEditing
       ? { id: noteContent.id, title, descripcion }
-      : { title, descripcion, pacienteId, userId };
+      : { title, descripcion, pacienteId, userId, atencionId }; // Include atencionId for new notes
 
     try {
       const response = await fetch(url, {
@@ -83,7 +60,7 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
 
       if (response.ok) {
         showToast(`Nota ${isEditing ? 'actualizada' : 'guardada'} con éxito`, { background: 'bg-green-500' });
-        fetchNotas(); // Re-fetch notes to update the list
+        onNoteChange(); // Notify parent to re-fetch/update notes
       } else {
         const errorData = await response.json();
         showToast(`Error al guardar la nota: ${errorData.message || 'Inténtalo de nuevo.'}`, { background: 'bg-red-500' });
@@ -106,7 +83,7 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
 
         if (response.ok) {
           showToast('Nota eliminada con éxito', { background: 'bg-green-500' });
-          fetchNotas(); // Re-fetch notes to update the list
+          onNoteChange(); // Notify parent to re-fetch/update notes
         } else {
           const errorData = await response.json();
           showToast(`Error al eliminar la nota: ${errorData.message || 'Inténtalo de nuevo.'}`, { background: 'bg-red-500' });
@@ -116,14 +93,6 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
       }
     }
   };
-
-  if (loading) {
-    return <div className="text-center py-4">Cargando notas...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center py-4 text-red-500">Error: {error}</div>;
-  }
 
   return (
     <DivReact className=" p-4 rounded-lg shadow-md border">
@@ -192,4 +161,4 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
   );
 };
 
-export default NotasMedicas;
+export default NotasMedicasAtencion;

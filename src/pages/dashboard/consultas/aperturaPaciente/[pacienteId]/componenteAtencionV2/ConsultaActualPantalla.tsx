@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
 import SectionDiagnostico from './SectionDiagnostico';
 import SectionMedicamentos from './SectionMedicamentos';
+import SectionNotasMedicas from './SectionNotasMedicas';
 
 // --- Configuración de Signos Vitales ---
 const vitalSignsConfig = [
@@ -338,6 +339,14 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             placeholder="Describe el plan de tratamiento, próximas citas, estudios, etc."
           />
         </Section>
+
+        {/* Notas Médicas */}
+
+        <SectionNotasMedicas
+          $consulta={$consulta}
+          handleFormChange={handleFormChange}
+          pacienteId={$consulta.pacienteId}
+        />
       </fieldset>
     </div>
   );

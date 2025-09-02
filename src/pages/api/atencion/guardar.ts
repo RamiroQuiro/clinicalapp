@@ -1,4 +1,4 @@
-import { atenciones, diagnostico, medicamento, signosVitales } from '@/db/schema'; // Importa las tablas necesarias
+import { atenciones, diagnostico, medicamento, notasMedicas, signosVitales } from '@/db/schema'; // Importa las tablas necesarias
 import type { APIRoute } from 'astro';
 
 import db from '@/db';
@@ -207,6 +207,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
             atencionId: currentAtencionId,
             pacienteId,
             userMedicoId: user.id,
+          }))
+        );
+      }
+
+      // guardado de notas
+      if (notas && notas.length > 0) {
+        await tx.insert(notasMedicas).values(
+          notas.map(n => ({
+            id: n.id,
+            atencionId: currentAtencionId,
+            pacienteId,
+            userMedicoId: user.id,
+            title: n.title,
+            descripcion: n.descripcion,
+            created_at: n.created_at,
+            estado: n.estado,
           }))
         );
       }

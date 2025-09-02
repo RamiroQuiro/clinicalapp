@@ -17,7 +17,13 @@ export interface Consulta {
     frecuenciaRespiratoria: number;
     temperatura: number;
   };
-  notas: string;
+  notas: {
+    title: string;
+    descripcion: string;
+    profesional: string;
+    fecha: string;
+    id: string;
+  }[];
   observaciones: string;
   diagnosticos: {
     diagnostico: string;
@@ -55,7 +61,7 @@ const initialConsulta: Consulta = {
   },
   planSeguir: '',
   observaciones: '',
-  notas: '',
+  notas: [],
   pacienteId: '',
   tratamiento: '',
   medicamentos: [
@@ -107,15 +113,43 @@ export function addTratamiento(tratamiento: string, fechaInicio: string, fechaFi
     },
   });
 }
-// Agregar medicamento
-export function addMedicamento(nombre: string) {
+
+// Agregar Nota
+export function addNota(nota: {
+  title: string;
+  descripcion: string;
+  profesional: string;
+  id: string;
+}) {
+  const current = consultaStore.get();
+
+  consultaStore.set({
+    ...current,
+    notas: [
+      ...current.notas,
+      {
+        title: nota.title,
+        descripcion: nota.descripcion,
+        profesional: nota.profesional,
+        fecha: new Date().toISOString(),
+        id: nota.id,
+      },
+    ],
+  });
+}
+
+// Editar Nota
+export function editNota(nota: {
+  title: string;
+  descripcion: string;
+  created_at: string;
+  userMedicoId: string;
+  id: string;
+}) {
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
-    medicamentos: [
-      ...current.medicamentos,
-      { nombreComercial: '', nombreGenerico: '', dosis: '', frecuencia: '', id: '' },
-    ],
+    notas: current.notas.map(n => (n.id === nota.id ? nota : n)),
   });
 }
 
