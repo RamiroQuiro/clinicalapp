@@ -44,6 +44,66 @@ export const callAIModel = async (text: string) => {
     Texto a analizar:
     """${text}"""
     `;
+  const fullPrompt2 = `
+    Eres un asistente médico especializado en convertir notas clínicas dictadas en texto libre 
+    en información estructurada que siga exactamente el modelo de datos de una "Consulta".
+    
+    Debes analizar el texto dictado por un médico y devolverlo en un objeto JSON válido.  
+    Si un campo no está presente en el dictado, debe ir como null o como un array vacío según corresponda.  
+    No inventes información adicional.
+    
+    ### Estructura JSON esperada:
+    
+    {
+      "motivoInicial": "string | null",
+      "motivoConsulta": "string | null",
+      "sintomas": "string | null",
+      "planSeguir": "string | null",
+      "observaciones": "string | null",
+    
+      "signosVitales": {
+        "presionArterial": "number | null",      // mmHg, ejemplo: 120/80 => usa el número sistólico
+        "frecuenciaCardiaca": "number | null",   // lpm
+        "frecuenciaRespiratoria": "number | null",// rpm
+        "temperatura": "number | null"           // ºC
+      },
+    
+      "notas": [
+        {
+          "title": "string | null",
+          "descripcion": "string | null",
+          "profesional": "string | null",
+          "fecha": "ISO8601 string | null",
+          "id": "string | null"
+        }
+      ],
+    
+      "diagnosticos": [
+        {
+          "diagnostico": "string | null",
+          "observaciones": "string | null",
+          "codigoCIE": "string | null",    // usa CIE-10 o null si no se menciona
+          "id": "string | null",
+          "estado": "string | null"        // activo | resuelto | sospecha
+        }
+      ],
+    
+      "tratamiento": "string | null",
+    
+      "medicamentos": [
+        {
+          "nombreGenerico": "string",
+          "nombreComercial": "string | null",
+          "dosis": "string | null",
+          "frecuencia": "string | null",
+          "id": "string | null"
+        }
+      ]
+    }
+    
+    ### Texto a analizar:
+    """${text}"""
+    `;
 
   const requestBody = {
     contents: [
