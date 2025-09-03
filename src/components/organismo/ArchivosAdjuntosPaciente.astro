@@ -1,5 +1,4 @@
 ---
-import { DocumentosAdjuntosProps } from '../../types/index';
 import Button1 from '../atomos/Button1.astro';
 import ContenedorTitleBotonera from '../atomos/ContenedorTitleBotonera.astro';
 import DivBox1 from '../atomos/DivBox1.astro';
@@ -8,7 +7,7 @@ import ContenedeorModal from './ContenedeorModal.astro';
 import ContenedorTablaArchivosAdjuntos from './ContenedorTablaArchivosAdjuntos.astro';
 
 const { pacienteId } = Astro.params;
-const { documentos } = Astro.props as DocumentosAdjuntosProps;
+const { documentos, colorMap } = Astro.props;
 ---
 
 <DivBox1>
@@ -22,6 +21,6 @@ const { documentos } = Astro.props as DocumentosAdjuntosProps;
     </div>
   </ContenedorTitleBotonera>
   <div class="overflow-x-auto w-full">
-    <ContenedorTablaArchivosAdjuntos documentos={documentos} />
+    <ContenedorTablaArchivosAdjuntos colorMap={colorMap} documentos={documentos} />
   </div>
 </DivBox1>

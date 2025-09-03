@@ -12,6 +12,7 @@ import FormularioNota from './FormularioNota';
 // Tipos
 interface Note {
   id: number | string;
+  atencionId: string;
   title: string;
   profesional: string;
   fecha: string;
@@ -21,9 +22,10 @@ interface Note {
 interface Props {
   userId?: string;
   pacienteId: string;
+  colorMap: Record<string, string>;
 }
 
-const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
+const NotasMedicas: React.FC<Props> = ({ userId, pacienteId, colorMap }) => {
   const [notas, setNotas] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -146,6 +148,7 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
         {notas?.length > 0 ? (
           notas?.map(nota => (
             <div
+              style={{ backgroundColor: colorMap[nota.atencionId] }}
               key={nota.id}
               className="p-4 bg-primary-bg-componentes border hover:border-primary-100/50 transition-colors duration-300 rounded-lg shadow-sm"
             >

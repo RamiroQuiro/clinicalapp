@@ -1,7 +1,8 @@
+import { users } from '@/db/schema';
 import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { generateId } from 'lucia';
 import db from '../../../../db';
 import { notasMedicas } from '../../../../db/schema/notasMedicas';
@@ -54,10 +55,14 @@ export const GET: APIRoute = async ({ params }) => {
       .select({
         id: notasMedicas.id,
         title: notasMedicas.title,
+        atencionId: notasMedicas.atencionId,
+        profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
+        fecha: notasMedicas.created_at,
         descripcion: notasMedicas.descripcion,
         created_at: notasMedicas.created_at,
       })
       .from(notasMedicas)
+      .innerJoin(users, eq(notasMedicas.userMedicoId, users.id))
       .where(eq(notasMedicas.pacienteId, pacienteId));
     return createResponse(200, 'notas', notas);
   } catch (error) {

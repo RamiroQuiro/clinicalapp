@@ -6,7 +6,7 @@ import BotonIndigo from '../moleculas/BotonIndigo.astro';
 import Modal from '../moleculas/Modal.astro';
 import FormularioArchivosAdjuntos from './FormularioArchivosAdjuntos';
 
-const { documentos } = Astro.props as Documentos;
+const { documentos, colorMap } = Astro.props;
 
 const getTypeIcon = (tipo: Documentos['tipo']) => {
   switch (tipo) {
@@ -53,7 +53,12 @@ const getStatusColor = (status: Documentos['estado']) => {
       documentos?.slice(0, 5)?.map((doc, index) => {
         const dateFormat = formatDate(doc.created_at);
         return (
-          <tr class="border-b last:border-0">
+          <tr
+            style={{
+              backgroundColor: colorMap[doc.atencionId],
+            }}
+            class="border-b last:border-0"
+          >
             <td class="py-4">
               <div class="flex items-center gap-2">
                 <span class="text-xl">{getTypeIcon(doc.tipo)}</span>
