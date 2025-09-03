@@ -55,7 +55,7 @@ export type optionsSelectInputType = {
   name?: string;
 };
 
-export type AtencionMedicaExiste {
+export type AtencionMedicaExiste = {
   atencionData: {
     id: string;
     historiaClinicaId: string | null;

@@ -12,7 +12,6 @@ export default defineConfig({
     enabled: false,
   },
   integrations: [react(), tailwind()],
-  outDir: './src',
   output: 'server',
   adapter: node({
     mode: 'standalone',

@@ -1,10 +1,10 @@
-import { db } from '../db'; // Ajusta la ruta a tu instancia de Drizzle si es necesario
+import db from '@/db';
 import { auditLog } from '../db/schema';
 
 interface LogEntry {
   userId: string;
   actionType: string; // Ej: CREATE_PATIENT, VIEW_PATIENT_RECORD, LOGIN_SUCCESS
-  tableName: string;  // Ej: 'pacientes', 'atenciones'
+  tableName: string; // Ej: 'pacientes', 'atenciones'
   recordId?: string;
   oldValue?: any;
   newValue?: any;
@@ -32,7 +32,7 @@ export async function logAuditEvent(entry: LogEntry) {
       description: entry.description,
     });
   } catch (error) {
-    console.error("Error al registrar el evento de auditoría:", error);
+    console.error('Error al registrar el evento de auditoría:', error);
     // En un sistema de producción, considera un mecanismo de fallback o alerta
     // si la auditoría falla, ya que es un proceso crítico.
   }

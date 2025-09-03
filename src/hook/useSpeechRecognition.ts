@@ -40,14 +40,18 @@ export const useSpeechRecognition = () => {
     recognition.lang = 'es-AR';
 
     recognition.onresult = (event) => {
-      let final = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          final += event.results[i][0].transcript;
+      let latestFinalSegment = '';
+      // Iterar desde el final para encontrar el último resultado final
+      for (let i = event.results.length - 1; i >= event.resultIndex; --i) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          latestFinalSegment = result[0].transcript;
+          break; // Encontrado el último segmento final, no es necesario ir más atrás
         }
       }
-      if (final) {
-        setNewFinalSegment(final + ' ');
+
+      if (latestFinalSegment) {
+        setNewFinalSegment(latestFinalSegment + ' ');
       }
     };
 
