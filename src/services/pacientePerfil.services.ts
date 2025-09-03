@@ -7,7 +7,6 @@ import {
   diagnostico,
   historiaClinica,
   medicamento,
-  notasMedicas,
   pacientes,
   turnos,
   users,
@@ -30,7 +29,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       arrayDiagnosticos,
       arrayAntecedente,
       arrayArchivosAdjuntos,
-      arrayNotasMedicas,
+      // arrayNotasMedicas,
       proximosTurnos,
     ] = await Promise.all([
       // datos del paciente
@@ -92,20 +91,20 @@ export async function getPacienteData(pacienteId: string, userId: string) {
         .where(eq(archivosAdjuntos.pacienteId, pacienteId))
         .orderBy(desc(archivosAdjuntos.created_at)),
 
-      // notas médicas
-      db
-        .select({
-          id: notasMedicas.id,
-          title: notasMedicas.title,
-          descripcion: notasMedicas.descripcion,
-          fecha: notasMedicas.created_at,
-          profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
-          atencionId: notasMedicas.atencionId,
-        })
-        .from(notasMedicas)
-        .innerJoin(users, eq(users.id, notasMedicas.userMedicoId))
-        .where(eq(notasMedicas.pacienteId, pacienteId))
-        .orderBy(desc(notasMedicas.created_at)),
+      // // notas médicas
+      // db
+      //   .select({
+      //     id: notasMedicas.id,
+      //     title: notasMedicas.title,
+      //     descripcion: notasMedicas.descripcion,
+      //     fecha: notasMedicas.created_at,
+      //     profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
+      //     atencionId: notasMedicas.atencionId,
+      //   })
+      //   .from(notasMedicas)
+      //   .innerJoin(users, eq(users.id, notasMedicas.userMedicoId))
+      //   .where(eq(notasMedicas.pacienteId, pacienteId))
+      //   .orderBy(desc(notasMedicas.created_at)),
 
       // Próximos Turnos
       db
@@ -150,7 +149,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       arrayDiagnosticos,
       arrayAntecedente,
       arrayArchivosAdjuntos,
-      arrayNotasMedicas,
+      // arrayNotasMedicas,
       proximosTurnos,
       colorMap,
     };

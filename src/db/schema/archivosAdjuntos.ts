@@ -12,7 +12,7 @@ export const archivosAdjuntos = sqliteTable('archivosAdjuntos', {
   descripcion: text('descripcion').notNull(),
   url: text('url').notNull(),
   updated_at: integer('updated_at', { mode: 'timestamp' }),
-  estado: text('estado'),
+  estado: text('estado', { enum: ['pendiente', 'revisar', 'archivado'] }).default('pendiente'),
   tipo: text('tipo'),
   created_at: integer('created_at', { mode: 'timestamp' })
     .notNull()

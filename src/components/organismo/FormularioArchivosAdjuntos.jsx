@@ -68,6 +68,10 @@ export default function FormularioArchivosAdjuntos({
     setSelectedFiles(prevFiles => prevFiles.filter(file => file !== fileToRemove));
   };
 
+  const handleEstadoChange = e => {
+    setFormData(prev => ({ ...prev, estado: e.target.value }));
+  };
+
   const handleChangeFormulario = e => {
     const { name, value } = e.target;
     setFormData({
@@ -283,13 +287,13 @@ export default function FormularioArchivosAdjuntos({
         </div>
       )}
 
-      <div className="w-full flex items-center justify-normal gap-2">
+      <div className="w-full flex items-center justify-between gap-2">
         <div className="w-full flex flex-col items-start justify-between gap-2">
           <label
             htmlFor="tipo"
-            className="text-primary-texto duration-300 group-hover group-hover:text-primary-200 capitalize focus:text-primary-200 text-xs"
+            className="text-sm font-semibold text-primary-textoTitle mb-2 block"
           >
-            Tipo de estudio
+            Tipo de estudio:
           </label>
           <select
             name="tipo"
@@ -308,7 +312,7 @@ export default function FormularioArchivosAdjuntos({
             ))}
           </select>
         </div>
-        <div className="w-full flex flex-col items-start justify-between gap-2">
+        {/* <div className="w-full flex flex-col items-start justify-between gap-2">
           <label
             htmlFor="estado"
             className="text-primary-texto duration-300 group-hover group-hover:text-primary-200 capitalize focus:text-primary-200 text-xs"
@@ -328,6 +332,34 @@ export default function FormularioArchivosAdjuntos({
               </option>
             ))}
           </select>
+        </div> */}
+        <div className="w-full flex flex-col items-center justify-center gap-2">
+          <label className="text-sm font-semibold text-primary-textoTitle mb-2 block">
+            Estado del Diagnóstico:
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {['pendiente', 'revisar', 'archivado'].map(statusOption => (
+              <label
+                key={statusOption}
+                className={`cursor-pointer px-4 py-2 rounded-full text-xs font-medium transition-colors duration-200
+                  ${
+                    formData.estado === statusOption
+                      ? 'bg-indigo-600 text-white shadow-md border ring-indigo-600/50 ring-1'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border ring-indigo-600/50 ring-1'
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="estado"
+                  value={statusOption}
+                  checked={formData.estado === statusOption}
+                  onChange={handleEstadoChange}
+                  className="hidden" // Hide default radio button
+                />
+                {statusOption}
+              </label>
+            ))}
+          </div>
         </div>
       </div>
       <div className="w-full flex items-center justify-end mt-4">

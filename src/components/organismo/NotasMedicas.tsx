@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import formatDate from '@/utils/formatDate';
 import { showToast } from '@/utils/toast/toastShow';
@@ -36,12 +36,12 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
   const fetchNotas = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/pacientes/${pacienteId}/notas`);
+      const response = await fetch(`/api/pacientes/notasMedicas/${pacienteId}`);
       if (!response.ok) {
         throw new Error('Error al cargar las notas.');
       }
       const data = await response.json();
-      setNotas(data.notas);
+      setNotas(data.data);
     } catch (err: any) {
       console.error('Error al cargar las notas:', err);
       setError(err.message);
@@ -82,14 +82,20 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
       });
 
       if (response.ok) {
-        showToast(`Nota ${isEditing ? 'actualizada' : 'guardada'} con éxito`, { background: 'bg-green-500' });
+        showToast(`Nota ${isEditing ? 'actualizada' : 'guardada'} con éxito`, {
+          background: 'bg-green-500',
+        });
         fetchNotas(); // Re-fetch notes to update the list
       } else {
         const errorData = await response.json();
-        showToast(`Error al guardar la nota: ${errorData.message || 'Inténtalo de nuevo.'}`, { background: 'bg-red-500' });
+        showToast(`Error al guardar la nota: ${errorData.message || 'Inténtalo de nuevo.'}`, {
+          background: 'bg-red-500',
+        });
       }
     } catch (error: any) {
-      showToast(`Error de red: ${error.message || 'Inténtalo de nuevo.'}`, { background: 'bg-red-500' });
+      showToast(`Error de red: ${error.message || 'Inténtalo de nuevo.'}`, {
+        background: 'bg-red-500',
+      });
     }
 
     handleCloseModal();
@@ -109,10 +115,14 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
           fetchNotas(); // Re-fetch notes to update the list
         } else {
           const errorData = await response.json();
-          showToast(`Error al eliminar la nota: ${errorData.message || 'Inténtalo de nuevo.'}`, { background: 'bg-red-500' });
+          showToast(`Error al eliminar la nota: ${errorData.message || 'Inténtalo de nuevo.'}`, {
+            background: 'bg-red-500',
+          });
         }
       } catch (error: any) {
-        showToast(`Error de red: ${error.message || 'Inténtalo de nuevo.'}`, { background: 'bg-red-500' });
+        showToast(`Error de red: ${error.message || 'Inténtalo de nuevo.'}`, {
+          background: 'bg-red-500',
+        });
       }
     }
   };
@@ -129,14 +139,12 @@ const NotasMedicas: React.FC<Props> = ({ userId, pacienteId }) => {
     <DivReact className=" p-4 rounded-lg shadow-md border">
       <div className="flex border-b pb-2 justify-between items-center text-primary-textoTitle w-full mb-2">
         <h2 className="text-lg font-semibold text-primary-textoTitle">Notas Médicas</h2>
-        <Button onClick={() => handleOpenModal()}>
-          Agregar Nota
-        </Button>
+        <Button onClick={() => handleOpenModal()}>Agregar Nota</Button>
       </div>
 
       <div className="space-y-4">
-        {notas.length > 0 ? (
-          notas.map(nota => (
+        {notas?.length > 0 ? (
+          notas?.map(nota => (
             <div
               key={nota.id}
               className="p-4 bg-primary-bg-componentes border hover:border-primary-100/50 transition-colors duration-300 rounded-lg shadow-sm"

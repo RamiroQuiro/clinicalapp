@@ -76,7 +76,7 @@ const getStatusColor = (status: Documentos['estado']) => {
                 <BotonIndigo slot="icon" id="modal-open-modal-editar">
                   <Edit3 size={16} />
                 </BotonIndigo>
-                <FormularioArchivosAdjuntos pacienteId={doc.pacienteId} doc={doc} />
+                <FormularioArchivosAdjuntos client:load pacienteId={doc.pacienteId} doc={doc} />
               </Modal>
               <BotonIndigo>
                 <a

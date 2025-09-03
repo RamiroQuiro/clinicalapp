@@ -1,8 +1,9 @@
 import { lucia } from '@/lib/auth';
+import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
 import db from '../../../../db';
-import {} from '../../../../db/schema';
 import { notasMedicas } from '../../../../db/schema/notasMedicas';
 
 export const POST: APIRoute = async ({ request, params, cookies }) => {
@@ -42,5 +43,25 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
         msg: 'error al guardar antecedentes',
       })
     );
+  }
+};
+
+export const GET: APIRoute = async ({ params }) => {
+  const { pacienteId } = params;
+
+  try {
+    const notas = await db
+      .select({
+        id: notasMedicas.id,
+        title: notasMedicas.title,
+        descripcion: notasMedicas.descripcion,
+        created_at: notasMedicas.created_at,
+      })
+      .from(notasMedicas)
+      .where(eq(notasMedicas.pacienteId, pacienteId));
+    return createResponse(200, 'notas', notas);
+  } catch (error) {
+    console.error('Error al obtener notas:', error);
+    return createResponse(500, 'Error al obtener notas', error);
   }
 };
