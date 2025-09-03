@@ -1,6 +1,17 @@
 // src/stores/consulta.store.ts
 import { atom } from 'nanostores';
 
+// Definimos el tipo para un archivo adjunto
+export interface ArchivoAdjunto {
+  id: string;
+  nombre: string;
+  url: string;
+  tipo: string;
+  descripcion: string;
+  atencionId: string;
+  created_at: string;
+}
+
 // Definimos el tipo de la consulta
 export interface Consulta {
   id: string;
@@ -17,9 +28,21 @@ export interface Consulta {
     frecuenciaRespiratoria: number;
     temperatura: number;
   };
-  notas: string;
+  notas: {
+    title: string;
+    descripcion: string;
+    profesional: string;
+    fecha: string;
+    id: string;
+  }[];
   observaciones: string;
-  diagnosticos: { diagnostico: string; observaciones: string; codigoCIE: string; id: string }[];
+  diagnosticos: {
+    diagnostico: string;
+    observaciones: string;
+    codigoCIE: string;
+    id: string;
+    estado: string;
+  }[];
   tratamiento: string;
   medicamentos: {
     nombreGenerico: string;
@@ -28,6 +51,7 @@ export interface Consulta {
     frecuencia: string;
     id: string;
   }[];
+  archivos: ArchivoAdjunto[]; // AÑADIDO PARA ARCHIVOS
   inicioConsulta: string | null; // AÑADIDO
   finConsulta: string | null; // AÑADIDO
   duracionConsulta: number | null; // AÑADIDO
@@ -49,7 +73,8 @@ const initialConsulta: Consulta = {
   },
   planSeguir: '',
   observaciones: '',
-  notas: '',
+  notas: [],
+  archivos: [], // AÑADIDO PARA ARCHIVOS
   pacienteId: '',
   tratamiento: '',
   medicamentos: [
@@ -61,7 +86,15 @@ const initialConsulta: Consulta = {
       id: '',
     },
   ],
-  diagnosticos: [],
+  diagnosticos: [
+    {
+      diagnostico: '',
+      observaciones: '',
+      codigoCIE: '',
+      id: '',
+      estado: '',
+    },
+  ],
   inicioConsulta: null, // AÑADIDO
   finConsulta: null, // AÑADIDO
   duracionConsulta: null, // AÑADIDO
@@ -93,15 +126,37 @@ export function addTratamiento(tratamiento: string, fechaInicio: string, fechaFi
     },
   });
 }
-// Agregar medicamento
-export function addMedicamento(nombre: string) {
+
+// Agregar Nota
+export function addNota(nota: {
+  title: string;
+  descripcion: string;
+  profesional: string;
+  id: string;
+}) {
+  const current = consultaStore.get();
+
+  consultaStore.set({
+    ...current,
+    notas: [
+      ...current.notas,
+      {
+        title: nota.title,
+        descripcion: nota.descripcion,
+        profesional: nota.profesional,
+        fecha: new Date().toISOString(),
+        id: nota.id,
+      },
+    ],
+  });
+}
+
+// Editar Nota
+export function editNota(nota: any) { // Tipo ajustado para aceptar la nota completa
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
-    medicamentos: [
-      ...current.medicamentos,
-      { nombreComercial: '', nombreGenerico: '', dosis: '', frecuencia: '', id: '' },
-    ],
+    notas: current.notas.map(n => (n.id === nota.id ? nota : n)),
   });
 }
 
@@ -113,6 +168,28 @@ export function removeMedicamento(index: number) {
     medicamentos: current.medicamentos.filter((_, i) => i !== index),
   });
 }
+
+// --- NUEVAS FUNCIONES PARA ARCHIVOS ---
+
+// Agregar Archivo
+export function addArchivo(archivo: ArchivoAdjunto) {
+  const current = consultaStore.get();
+  const currentArchivos = current.archivos || []; // Ensure it's an array
+  consultaStore.set({
+    ...current,
+    archivos: [...currentArchivos, archivo],
+  });
+}
+
+// Eliminar Archivo
+export function removeArchivo(archivoId: string) {
+  const current = consultaStore.get();
+  consultaStore.set({
+    ...current,
+    archivos: current.archivos.filter(a => a.id !== archivoId),
+  });
+}
+
 
 // // Resetear consulta (cuando finalizas/guardas)
 // export function resetConsulta() {

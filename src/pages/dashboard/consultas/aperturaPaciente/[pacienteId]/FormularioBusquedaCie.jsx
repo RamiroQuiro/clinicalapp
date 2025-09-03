@@ -2,7 +2,7 @@ import InputComponenteJsx from '@/pages/dashboard/dashboard/componente/InputComp
 import { FileSearch, SquarePlus } from 'lucide-react';
 import { useRef, useState } from 'react';
 
-export default function FormularioBusquedaCie() {
+export default function FormularioBusquedaCie({ onSelectCIE }) {
   const [search, setSearch] = useState('');
   const [resultado, setResultado] = useState([]);
   const [buscando, setBuscando] = useState(false);
@@ -53,15 +53,13 @@ export default function FormularioBusquedaCie() {
   };
 
   const hanldeSelectDiagnositco = codeEntity => {
-    document.getElementById('codigoCIE').value = codeEntity.cie11;
-    document.getElementById('diagnostico').value = codeEntity.title;
-
     setSearch('');
     setResultado([]);
+    onSelectCIE(codeEntity);
   };
 
   return (
-    <div className="w-full flex items-center justify-between gap-2 relative">
+    <div className="w-full flex mb-4 items-center justify-between gap-2 relative">
       <div className="w-full flex items-center justify-between text-sm gap-2">
         <InputComponenteJsx
           placeholder="Busqueda"

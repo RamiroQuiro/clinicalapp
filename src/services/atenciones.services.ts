@@ -1,9 +1,11 @@
 import db from '@/db';
 import {
+  archivosAdjuntos,
   atenciones,
   diagnostico,
   historiaClinica,
   medicamento,
+  notasMedicas,
   pacientes,
   signosVitales,
   tratamiento,
@@ -39,7 +41,13 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .from(signosVitales)
     .where(eq(signosVitales.atencionId, atencionId))
     .orderBy(desc(signosVitales.created_at));
-  console.log('signos vitales traidos 🔎...', signosVitalesAtencion);
+  // console.log('signos vitales traidos 🔎...', signosVitalesAtencion);
+  // traer notas de la atencion
+  const notasAtencion = await db
+    .select()
+    .from(notasMedicas)
+    .where(eq(notasMedicas.atencionId, atencionId));
+  // console.log('notas traidas 🔎...', notasAtencion);
 
   const diagnosticosAtencion = await db
     .select({
@@ -64,7 +72,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(tratamiento)
     .where(eq(tratamiento.atencionesId, atencionId));
-  console.log('tratamiento traido 🔎...', tratamientoAtencion);
+  // console.log('tratamiento traido 🔎...', tratamientoAtencion);
 
   const medicamentosAtencion = await db
     .select({
@@ -78,7 +86,14 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(medicamento)
     .where(eq(medicamento.atencionId, atencionId));
-  console.log('medicamentos traidos 🔎...', medicamentosAtencion);
+  // console.log('medicamentos traidos 🔎...', medicamentosAtencion);
+
+  // traer archivos adjuntos
+  const archivosAdjuntosAtencion = await db
+    .select()
+    .from(archivosAdjuntos)
+    .where(eq(archivosAdjuntos.atencionId, atencionId));
+  console.log('archivos adjuntos traidos 🔎...', archivosAdjuntosAtencion);
 
   // // 2. Si está cerrada → devolver info mínima y aviso
 
@@ -117,7 +132,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       .leftJoin(historiaClinica, eq(historiaClinica.pacienteId, pacientes.id))
       .where(eq(pacientes.id, pacienteId))
   ).at(0);
-  console.log('pacienteData 🔎...', pacienteData);
+  // console.log('pacienteData 🔎...', pacienteData);
   if (!pacienteData) {
     return {
       error: true,
@@ -140,7 +155,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     })
     .from(antecedentes)
     .where(eq(antecedentes.pacienteId, pacienteId));
-  console.log('antecedentes traidos 🔎...', antecedentesData);
+  // console.log('antecedentes traidos 🔎...', antecedentesData);
 
   // Signos vitales (últimos 4 registros)
   const fecthSignosVitalesData = await db
@@ -149,7 +164,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .where(eq(signosVitales.pacienteId, pacienteId))
     .orderBy(desc(signosVitales.created_at))
     .limit(4);
-  console.log('signos vitales traidos para el progeso🔎...', fecthSignosVitalesData);
+  // console.log('signos vitales traidos para el progeso🔎...', fecthSignosVitalesData);
 
   const signosVitalesData = [
     'temperatura',
@@ -178,6 +193,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
         ...atencionData,
         diagnosticos: diagnosticosAtencion,
         medicamentos: medicamentosAtencion,
+        archivosAdjuntos: archivosAdjuntosAtencion,
         signosVitales: signosVitalesAtencion || {
           tensionArterial: 0,
           frecuenciaCardiaca: 0,
@@ -189,6 +205,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
           talla: 0,
           imc: 0,
         },
+        notas: notasAtencion,
       },
       paciente: pacienteData,
       antecedentes: antecedentesData,

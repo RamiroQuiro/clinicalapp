@@ -1,6 +1,6 @@
-import { showToast } from '@/utils/toast/toastShow'; // Assuming you have a toast utility
+import { showToast } from '@/utils/toast/toastShow';
 import { Download, Eye } from 'lucide-react';
-import { useRef, useState } from 'react'; // Added useRef
+import { useRef, useState } from 'react';
 import Button from '../atomos/Button';
 import BotonIndigo from '../moleculas/BotonIndigo';
 import InputFormularioSolicitud from '../moleculas/InputFormularioSolicitud';
@@ -13,11 +13,17 @@ const initialData = {
   tipo: '',
 };
 
-export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
-  const [selectedFiles, setSelectedFiles] = useState([]); // Changed from 'file' to 'selectedFiles' array
+export default function FormularioArchivosAdjuntos({
+  pacienteId,
+  doc,
+  atencionId, // Prop para la consulta
+  onUploadComplete, // Callback para la consulta
+  isConsulta = false, // Flag para diferenciar contexto
+}) {
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [formData, setFormData] = useState(doc || initialData);
-  const [isDragging, setIsDragging] = useState(false); // For drag-and-drop visual feedback
-  const fileInputRef = useRef(null); // Ref for the hidden file input
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
 
   const optionsTipo = [
     { id: 1, value: 'laboratorios', nombre: 'Laboratorios' },
@@ -25,7 +31,7 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
     { id: 3, value: 'prescripcion', nombre: 'Prescripcion' },
     { id: 4, value: 'derivacion', nombre: 'Derivacion' },
     { id: 5, value: 'electrocardiograma', nombre: 'Electrocardiograma' },
-    { id: 6, value: 'otros', nombre: 'Otros' }, // Corrected 'otos' to 'Otros'
+    { id: 6, value: 'otros', nombre: 'Otros' },
   ];
 
   const optionsEstado = [
@@ -35,7 +41,7 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
   ];
 
   const allowedFileTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-  const maxFileSizeMB = 5; // Max file size in MB
+  const maxFileSizeMB = 5;
 
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
@@ -55,7 +61,7 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
       return true;
     });
     setSelectedFiles(prevFiles => [...prevFiles, ...validFiles]);
-    e.target.value = null; // Clear the input so same file can be selected again
+    e.target.value = null;
   };
 
   const handleRemoveFile = fileToRemove => {
@@ -128,51 +134,60 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
     }
 
     const dataToSend = new FormData();
-    dataToSend.append('pacienteId', pacienteId);
     dataToSend.append('nombre', formData.nombre);
+
     dataToSend.append('descripcion', formData.descripcion);
     dataToSend.append('estado', formData.estado);
     dataToSend.append('id', formData.id);
+
     dataToSend.append('tipo', formData.tipo);
 
-    selectedFiles.forEach((file, index) => {
-      dataToSend.append(`files`, file); // Append each file with the same key 'files'
+    if (isConsulta) {
+      dataToSend.append('atencionId', atencionId);
+    } else {
+      dataToSend.append('pacienteId', pacienteId);
+    }
+
+    selectedFiles.forEach(file => {
+      dataToSend.append(`files`, file);
     });
 
     const urlFetch = `/api/pacientes/documentos/${pacienteId}`;
-    const methodFetch = doc ? 'PUT' : 'POST';
+    const methodFetch = doc ? 'PUT' : 'POST'; // PUT para editar, POST para crear
+
     try {
       const response = await fetch(urlFetch, {
         method: methodFetch,
-        // No 'Content-Type' header when sending FormData, browser sets it automatically
         body: dataToSend,
       });
 
       if (response.ok) {
-        showToast('Documentos subidos y datos guardados correctamente.', {
+        const responseData = await response.json();
+        showToast('Documentos subidos correctamente.', {
           background: 'bg-green-500',
         });
-        // Reset form
+
+        // Limpiar formulario
         setSelectedFiles([]);
-        setFormData({
-          id: null,
-          descripcion: '',
-          nombre: '',
-          estado: 'revisar',
-          tipo: '',
-        });
-        // Reload page or update parent component to show new files
-        document.location.reload();
+        setFormData(initialData);
+
+        if (isConsulta && onUploadComplete) {
+          // En la consulta, usamos el callback para actualizar el estado en tiempo real
+          onUploadComplete(responseData.documento); // Asumiendo que la API devuelve el documento creado
+        } else {
+          // En el perfil del paciente, recargamos la página
+          document.location.reload();
+        }
       } else {
         const errorData = await response.json();
         console.error('Error en el servidor:', errorData);
-        showToast(`Error al enviar los datos: ${errorData.message || 'Inténtalo de nuevo.'}`, {
+        showToast(`Error al subir: ${errorData.message || 'Inténtalo de nuevo.'}`, {
           background: 'bg-red-500',
         });
       }
     } catch (error) {
-      console.error('Error al enviar los datos:', error);
-      showToast(`Error al enviar los datos: ${error.message || 'Inténtalo de nuevo.'}`, {
+      console.error('Error de red:', error);
+      showToast(`Error de red: ${error.message || 'Inténtalo de nuevo.'}`, {
         background: 'bg-red-500',
       });
     }
@@ -197,8 +212,8 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
         </label>
         <textarea
           className="p-2 border w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:border-transparent focus:ring-offset-2 focus:ring-primary-100 text-sm focus:border-primary-100 placeholder:text-gray-400 transition "
-          rows="3" // Reduced rows for better initial view
-          name="descripcion" // Corrected name from 'descripciones' to 'descripcion'
+          rows="3"
+          name="descripcion"
           id="descripcion"
           placeholder="Escribe aquí observaciones..."
           value={formData.descripcion}
@@ -206,7 +221,6 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
         ></textarea>
       </div>
 
-      {/* comprbar si es editar o es nuevo archivo */}
       {doc ? (
         <div className="w-full flex items-center justify-start text-sm gap-2">
           <p>Documento actual:</p>
@@ -215,7 +229,7 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
               href={`/api/documentos/serve/${doc.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2"
             >
               <Eye size={16} />/ <Download size={16} />
             </a>
@@ -230,20 +244,20 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          onClick={() => fileInputRef.current.click()} // Click to open file dialog
+          onClick={() => fileInputRef.current.click()}
         >
           Arrastra y suelta archivos aquí, o haz click para seleccionar.
           <input
             type="file"
-            multiple // Allow multiple files
-            accept=".pdf, .jpg, .jpeg, .png" // Accepted file types
+            multiple
+            accept=".pdf, .jpg, .jpeg, .png"
             onChange={handleFileChange}
             className="hidden"
             ref={fileInputRef}
           />
         </div>
       )}
-      {/* Selected Files List */}
+
       {selectedFiles.length > 0 && (
         <div className="w-full mt-2 p-2 border rounded-lg bg-gray-50">
           <p className="text-xs font-semibold text-primary-texto mb-1">Archivos seleccionados:</p>
@@ -269,7 +283,6 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
         </div>
       )}
 
-      {/* selectores */}
       <div className="w-full flex items-center justify-normal gap-2">
         <div className="w-full flex flex-col items-start justify-between gap-2">
           <label
@@ -287,8 +300,7 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
           >
             <option value="" disabled>
               seleccionar
-            </option>{' '}
-            {/* Added empty option for initial state */}
+            </option>
             {optionsTipo.map(opcion => (
               <option key={opcion.id} value={opcion.value} className="text-xs">
                 {opcion.nombre}
@@ -302,8 +314,7 @@ export default function FormularioArchivosAdjuntos({ pacienteId, doc }) {
             className="text-primary-texto duration-300 group-hover group-hover:text-primary-200 capitalize focus:text-primary-200 text-xs"
           >
             Estado
-          </label>{' '}
-          {/* Corrected label */}
+          </label>
           <select
             name="estado"
             id="estado"

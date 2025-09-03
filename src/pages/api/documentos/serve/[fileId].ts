@@ -9,7 +9,7 @@ import path from 'node:path';
 
 export const GET: APIRoute = async ({ request, params, cookies }) => {
   const { fileId } = params;
-
+  console.log('fileId', fileId);
   try {
     // 1. Authentication and Authorization
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;

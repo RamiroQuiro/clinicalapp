@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { Mic } from 'lucide-react'; // Nuevo import
+import React, { useEffect, useState } from 'react';
+import { useSpeechRecognition } from '../../hook/useSpeechRecognition'; // Nuevo import
 import Input from '../atomos/Input';
 import RichTextEditor from '../moleculas/RichTextEditor';
-import { useSpeechRecognition } from '../../hook/useSpeechRecognition'; // Nuevo import
-import { Mic } from 'lucide-react'; // Nuevo import
 
 interface Props {
   onSave: (data: { title: string; descripcion: string }) => void;
+  onEdit: (data: { title: string; descripcion: string }) => void;
   onCancel: () => void;
   noteContent: {
     title: string;
@@ -17,12 +18,21 @@ interface Props {
   };
 }
 
-const FormularioNota: React.FC<Props> = ({ onSave, onCancel, noteContent }) => {
+const FormularioNota: React.FC<Props> = ({ onSave, onEdit, onCancel, noteContent }) => {
   const [title, setTitle] = useState(noteContent.title || '');
   const [descripcion, setDescripcion] = useState(noteContent.descripcion || '');
 
   // Llamada al hook de reconocimiento de voz
-  const { isListening, newFinalSegment, startListening, stopListening, error } = useSpeechRecognition();
+  const { isListening, newFinalSegment, startListening, stopListening, error } =
+    useSpeechRecognition();
+
+  useEffect(() => {
+    if (noteContent.id) {
+      setTitle(noteContent.title);
+      setDescripcion(noteContent.descripcion);
+      startListening();
+    }
+  }, [noteContent]);
 
   // Efecto para añadir el texto transcrito a la descripción
   useEffect(() => {
@@ -56,13 +66,17 @@ const FormularioNota: React.FC<Props> = ({ onSave, onCancel, noteContent }) => {
         onChange={e => setTitle(e.target.value)}
         className="w-full p-2 border rounded-md mb-4"
       />
-      <div className="mb-2 flex items-center justify-between"> {/* Nuevo wrapper para editor y botón de micrófono */}
+      <div className="mb-2 flex items-center justify-between">
+        {' '}
+        {/* Nuevo wrapper para editor y botón de micrófono */}
         <label className="block text-sm font-medium text-gray-700">Descripción</label>
         <button
           type="button"
           onClick={isListening ? stopListening : startListening}
           className={`p-2 rounded-full transition-colors duration-200 ${
-            isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            isListening
+              ? 'bg-red-500 text-white animate-pulse'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
           title={isListening ? 'Detener dictado' : 'Iniciar dictado'}
         >
@@ -90,7 +104,7 @@ const FormularioNota: React.FC<Props> = ({ onSave, onCancel, noteContent }) => {
           onClick={handleSave}
           className="px-4 py-2 bg-primary-100 text-white rounded-lg hover:bg-primary-100/90"
         >
-          Guardar
+          {noteContent.id ? 'Editar' : 'Guardar'}
         </button>
       </div>
     </div>

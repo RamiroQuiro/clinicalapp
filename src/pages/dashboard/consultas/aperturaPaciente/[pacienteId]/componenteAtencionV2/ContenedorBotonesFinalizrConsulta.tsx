@@ -1,7 +1,7 @@
 import Button from '@/components/atomos/Button';
 // --- CAMBIADO: Importar consultaStore ---
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store'; // MODIFICADO
-import { getDurationInMinutes } from '@/utils/timesUtils'; // AÑADIDO
+import { getDurationInMinutes, getFechaUnix } from '@/utils/timesUtils'; // AÑADIDO
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Lock, Save } from 'lucide-react';
@@ -9,18 +9,16 @@ import { Lock, Save } from 'lucide-react';
 type Props = {};
 
 export default function ContenedorBotonesFinalizrConsulta({}: Props) {
-  // --- CAMBIADO: Usar consultaStore ---
   const $consulta = useStore(consultaStore);
-  console.log('esta es la consulta en el contendor de botones pantalla ->', $consulta);
+  // console.log('esta es la consulta en el contendor de botones pantalla ->', $consulta);
   const handleGuardarBorrador = async (modoFetch: string) => {
     try {
-      // NUEVA LÓGICA PARA CONSULTA FINALIZADA
       if (modoFetch === 'finalizada') {
-        const now = new Date().toISOString();
-        setConsultaField('finConsulta', now);
+        const now = new Date(getFechaUnix() * 1000);
+        setConsultaField('finConsulta', now.toISOString());
 
         if ($consulta.inicioConsulta) {
-          const duration = getDurationInMinutes($consulta.inicioConsulta, now);
+          const duration = getDurationInMinutes($consulta.inicioConsulta, now.toISOString());
           setConsultaField('duracionConsulta', duration);
         } else {
           // Manejar el caso en que inicioConsulta pueda faltar (ej. datos antiguos, error)
@@ -41,11 +39,11 @@ export default function ContenedorBotonesFinalizrConsulta({}: Props) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Error en el servidor');
 
-      showToast('Consulta guardada con éxito', { backgorund: 'bg-green-500' });
+      showToast('Consulta guardada con éxito', { background: 'bg-green-500' });
       // --- AÑADIDO: Resetear la store después de guardar ---
     } catch (error) {
       console.error('Error al guardar la consulta:', error);
-      showToast(`Error al guardar: ${error.message}`, { backgorund: 'bg-primary-400' });
+      showToast(`Error al guardar: ${error.message}`, { background: 'bg-primary-400' });
     }
   };
 

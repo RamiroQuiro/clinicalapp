@@ -26,6 +26,7 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
     const descripcion = formData.get('descripcion')?.toString();
     const estado = formData.get('estado')?.toString();
     const tipo = formData.get('tipo')?.toString();
+    const atencionId = formData.get('atencionId')?.toString();
     const files = formData.getAll('files') as File[];
 
     if (!nombre || !tipo || files.length === 0) {
@@ -58,6 +59,7 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
       uploadedFilesData.push({
         id: generateId(13),
         pacienteId,
+        atencionId: atencionId || null, // Add atencionId to the object
         descripcion: descripcion || '',
         nombre: nombre, // Use the single name for all files for now, or adjust frontend to send name per file
         url: fileInternalPath, // Store the internal path
@@ -103,6 +105,7 @@ export const PUT: APIRoute = async ({ request, params, cookies }) => {
       return new Response('No autorizado', { status: 401 });
     }
     const id = formData.get('id')?.toString();
+    const atencionId = formData.get('atencionId')?.toString();
     const descripcion = formData.get('descripcion')?.toString();
     const nombre = formData.get('nombre')?.toString();
     const estado = formData.get('estado')?.toString();
@@ -111,8 +114,10 @@ export const PUT: APIRoute = async ({ request, params, cookies }) => {
     const update = await db
       .update(archivosAdjuntos)
       .set({
+        atencionId,
         descripcion: descripcion,
         nombre: nombre,
+        userMedicoId: user.id,
         estado: estado,
         tipo: tipo,
       })
