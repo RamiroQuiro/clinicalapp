@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, index } from 'drizzle-orm/sqlite-core';
+import { users } from './users';
 
 /**
  * Tabla de Auditoría (Audit Log)
@@ -15,7 +16,7 @@ export const auditLog = sqliteTable('auditLog', {
     .$defaultFn(() => crypto.randomUUID()),
 
   // Quién realizó la acción
-  userId: text('userId').notNull(),
+  userId: text('userId').references(() => users.id),
 
   // Qué acción se realizó. Ej: CREATE, VIEW, UPDATE, DELETE, LOGIN_SUCCESS, LOGIN_FAILURE, EXPORT
   actionType: text('actionType', {
@@ -48,4 +49,11 @@ export const auditLog = sqliteTable('auditLog', {
 
   // Descripción adicional legible por humanos
   description: text('description'),
+}, (table) => {
+  return {
+    userIdIdx: index("userId_idx").on(table.userId),
+    timestampIdx: index("timestamp_idx").on(table.timestamp),
+    actionTypeIdx: index("actionType_idx").on(table.actionType),
+    tableNameIdx: index("tableName_idx").on(table.tableName),
+  };
 });

@@ -1,27 +1,41 @@
 ---
 import MainDashboard from '../../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../../components/layouts/LayoutDash.astro';
+import { logAuditEvent } from '../../../../../lib/audit';
 import IndexAtencionV2 from './IndexAtencionV2.astro';
-const { pacienteId, atencionId } = Astro.params as { pacienteId: string; atencionId: string };
 
+const { pacienteId, atencionId } = Astro.params as { pacienteId: string; atencionId: string };
 const { user, session } = Astro.locals;
-let errorData;
-// tengo q implemtar type para historiClinica
+
+// 1. Seguridad: Validar sesión
+if (!session || !user) {
+  return Astro.redirect('/login');
+}
+
+// 2. Auditoría: Registrar el acceso a la página de atención
+const ipAddress = Astro.request.headers.get('x-forwarded-for') || undefined;
+const userAgent = Astro.request.headers.get('user-agent') || undefined;
+
+await logAuditEvent({
+  userId: user.id,
+  actionType: 'VIEW',
+  tableName: 'atenciones', // Se está viendo la página de una atención
+  recordId: atencionId,
+  description: `El usuario ${user.name} (${user.email}) accedió a la página de la atención con ID ${atencionId}.`,
+  ipAddress,
+  userAgent,
+});
+
+let errorData: { msg: string } | null = null;
 ---
 
-<LayoutDash title={`Atención  `}>
-  <MainDashboard h1={`Atención `}>
-    <!-- {
-      !isExistHC&&
-      <div class="w-full flex items-center py-2 text-primary-400 font-semibold text-lg justify-center bg-primary-400/30">
-        <p>Atencion Finalziada</p>
-      </div>
-    } -->
+<LayoutDash title={`Atención`}>
+  <MainDashboard h1={`Atención`}>
     {
       !errorData ? (
         <IndexAtencionV2 />
       ) : (
-        <div class="w-screen h-screen flex items-center justify-center  text-primary-textoTitle text-xl font-bold -translate-y-10 ">
+        <div class="w-screen h-screen flex items-center justify-center text-primary-textoTitle text-xl font-bold -translate-y-10">
           {errorData.msg}
         </div>
       )

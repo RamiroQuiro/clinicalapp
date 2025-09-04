@@ -155,6 +155,38 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
     *   **Manejo de Errores**: Se implementaron comprobaciones robustas para la inicialización de `recognitionRef` para prevenir errores en tiempo de ejecución cuando la API no es soportada o inicializada.
 
 ---
+## Sesión 9: 2025-09-02
+
+*   **Objetivo**: Definir el roadmap de desarrollo y comenzar con la implementación del sistema de auditoría.
+*   **Acción**: Se establece el siguiente roadmap de funcionalidades a desarrollar:
+
+    ### Roadmap de Desarrollo
+
+    #### 1. Consolidar y Mejorar lo Existente
+    *   **Auditoría de Acciones Críticas (Prioridad Actual)**: Implementar un sistema de logs para registrar eventos importantes (ej: modificar consulta finalizada, eliminar registros, etc.).
+    *   Revisar y finalizar la edición de pacientes.
+    *   Generación de PDF para consultas, notas y recetas.
+
+    #### 2. Expandir el Flujo de la Consulta
+    *   Módulo de Recetas/Prescripciones: para crear, guardar e imprimir recetas.
+    *   Módulo de Órdenes de Estudio: para generar e imprimir solicitudes de laboratorio, imágenes, etc.
+
+    #### 3. Gestión de Agenda y Turnos
+    *   Implementar una vista de calendario (agenda) para el médico.
+    *   Flujo completo para agendar, reprogramar y cancelar turnos.
+    *   Manejar estados de turno (Confirmado, Cancelado, Ausente, etc.).
+
+    #### 4. Administración y Facturación
+    *   Módulo de Cobros por consulta.
+    *   Historial de pagos del paciente.
+
+    #### 5. Mejoras de Usabilidad y Experiencia (UX)
+    *   Dashboard más interactivo con estadísticas y alertas.
+    *   Sistema de notificaciones dentro de la app.
+
+*   **Próximos Pasos**: Iniciar la implementación del módulo de auditoría, comenzando por el análisis del schema `auditLog.ts`.
+
+---
 ## Ideas para el Futuro
 
 *   **Generación de PDF para Notas Médicas**:

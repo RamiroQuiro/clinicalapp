@@ -1,63 +1,83 @@
 import db from '@/db';
 import { users } from '@/db/schema';
+import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIContext } from 'astro';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
-export async function POST({ request, locals, redirect, cookies }: APIContext): Promise<Response> {
+
+export async function POST({ request, cookies }: APIContext): Promise<Response> {
   const formData = await request.json();
-  const { email, password, userName } = await formData;
+  const { email, password } = formData;
+  const ipAddress = request.headers.get('x-forwarded-for') || undefined;
+  const userAgent = request.headers.get('user-agent') || undefined;
 
   if (!email || !password) {
-    return new Response(JSON.stringify({ data: 'email y contraseña requerida', status: 400 }));
+    return createResponse(400, 'Email y contraseña son requeridos');
   }
 
-  //   verificar si el usuario existe
-  const findUser = (await db.select().from(users).where(eq(users.email, email))).at(0);
-  console.log('aqui se esta ingresando con  ->', findUser);
-  if (!findUser) {
-    return createResponse(400, 'email o contraseña incorrecta');
+  const user = (await db.select().from(users).where(eq(users.email, email))).at(0);
+
+  if (!user) {
+    await logAuditEvent({
+      userId: email, // Usamos el email porque no tenemos ID de usuario
+      actionType: 'LOGIN_FAILURE',
+      tableName: 'users',
+      description: `Intento de login fallido: usuario no encontrado con email ${email}.`,
+      ipAddress,
+      userAgent,
+    });
+    return createResponse(400, 'Email o contraseña incorrecta');
   }
 
-  // crear usuario en DB
+  const isPasswordValid = await bcrypt.compare(password, user.password);
 
-  // Hacemos comapracion  hash de la contraseña
-  if (!(await bcrypt.compare(password, findUser.password))) {
-    return new Response(
-      JSON.stringify({
-        data: 'contraseña incorrecta',
-        status: 402,
-      })
-    );
+  if (!isPasswordValid) {
+    await logAuditEvent({
+      userId: user.id,
+      actionType: 'LOGIN_FAILURE',
+      tableName: 'users',
+      recordId: user.id,
+      description: `Intento de login fallido: contraseña incorrecta para el usuario ${user.email}.`,
+      ipAddress,
+      userAgent,
+    });
+    return createResponse(400, 'Email o contraseña incorrecta');
   }
 
-  const session = await lucia.createSession(findUser.id, {});
+  const session = await lucia.createSession(user.id, {});
   const sessionCookie = lucia.createSessionCookie(session.id);
   cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-  // Crear una cookie con los datos del usuario
+
   const userData = {
-    id: findUser.id,
-    nombre: findUser.nombre,
-    apellido: findUser.apellido,
-    email: findUser.email,
-    rol: findUser.rol,
+    id: user.id,
+    nombre: user.nombre,
+    apellido: user.apellido,
+    email: user.email,
+    rol: user.rol,
   };
 
-  const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '14d' }); // Firmar la cookie
+  const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '14d' });
   cookies.set('userData', token, {
     httpOnly: true,
-    secure: import.meta.env.NODE_ENV === 'production', // Solo enviar en HTTPS en producción
+    secure: import.meta.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 14 * 24 * 3600, // 14 días
+    maxAge: 14 * 24 * 3600,
     path: '/',
   });
 
-  return new Response(
-    JSON.stringify({
-      data: 'usuario creado con exito',
-      status: 200,
-    })
-  );
+  await logAuditEvent({
+    userId: user.id,
+    actionType: 'LOGIN_SUCCESS',
+    tableName: 'users',
+    recordId: user.id,
+    description: `El usuario ${user.email} ha iniciado sesión correctamente.`,
+    ipAddress,
+    userAgent,
+  });
+
+  return createResponse(200, 'Inicio de sesión exitoso');
 }
+

@@ -1,34 +1,74 @@
 ---
 import NavAtencionMedicaV2 from '@/components/organismo/NavAtencionMedicaV2.astro';
+import { logAuditEvent } from '@/lib/audit';
 import { getDatosNuevaAtencion } from '@/services/atenciones.services';
 import Contenedor from './componenteAtencionV2/Contenedor.tsx';
 
 const { pacienteId, atencionId } = Astro.params;
+const { user, session } = Astro.locals;
+
+// 1. Seguridad: Validar sesión
+if (!session || !user) {
+  // No renderizar nada o mostrar un mensaje de error si no hay sesión
+  // La página contenedora ya debería redirigir, esto es defensa en profundidad.
+} else {
+  const { data, error, message } = await getDatosNuevaAtencion(
+    pacienteId as string,
+    atencionId as string
+  );
+  console.log(
+    'datos locals',
+    `El usuario ${user.nombre} ${user.apellido} (${user.email}) cargó los datos de la atención con ID ${atencionId} para la vista de consulta.`
+  );
+
+  if (error) {
+    console.log('error', error, message);
+  } else if (data) {
+    // 2. Auditoría: Registrar el acceso a los datos de la atención
+    const ipAddress = Astro.request.headers.get('x-forwarded-for') || undefined;
+    const userAgent = Astro.request.headers.get('user-agent') || undefined;
+
+    await logAuditEvent({
+      userId: user.id,
+      actionType: 'VIEW',
+      tableName: 'atenciones',
+      recordId: atencionId,
+      description: `El usuario ${user.nombre} ${user.apellido} (${user.email}) cargó los datos de la atención con ID ${atencionId} para la vista de consulta.`,
+      ipAddress,
+      userAgent,
+    });
+  }
+}
 
 const { data, error, message } = await getDatosNuevaAtencion(
   pacienteId as string,
   atencionId as string
 );
-// console.log('esta es la data en index atencion v2', data);
+
 if (error) {
   console.log('error', error, message);
-  // errorData = {
-  //   msg: 'Error al buscar el paciente , intentelo de nuevo 🙈',
-  // };
 }
 ---
 
 <div class="p gap-2 flex flex-col w-full" id="containerAtencion">
-{
-
-// aqwui va un pagina para mostrar un error
-
-error && <div>{message}</div>}
-{!error && (
-<NavAtencionMedicaV2 pacienteData={data?.paciente} />
-
-  <div class="w-full flex flex-col">
-    <Contenedor client:load data={data} />
-  </div>)
-}
+  {
+    !session || !user ? (
+      <div>No autorizado</div>
+    ) : error ? (
+      <div>{message}</div>
+    ) : (
+      <>
+        <NavAtencionMedicaV2 pacienteData={data?.paciente} />
+        {/* <div class="w-full flex flex-col">
+          <button
+            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4 self-end"
+            onclick={`window.open('/api/atencion/${atencionId}/reporteAten.ts', '_blank');`}
+          >
+            Generar PDF de Atención
+          </button> */}
+          <Contenedor client:load data={data} />
+        </div>
+      </>
+    )
+  }
 </div>

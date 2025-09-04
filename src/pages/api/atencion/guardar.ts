@@ -2,6 +2,7 @@ import { atenciones, diagnostico, medicamento, notasMedicas, signosVitales } fro
 import type { APIRoute } from 'astro';
 
 import db from '@/db';
+import { logAuditEvent } from '@/lib/audit';
 import { getFechaUnix } from '@/utils/timesUtils';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; // Para generar IDs únicos
@@ -226,6 +227,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
           }))
         );
       }
+    });
+    const action: 'CREATE' | 'UPDATE' = consultaData.id ? 'UPDATE' : 'CREATE';
+    // Auditoría
+    await logAuditEvent({
+      userId: user.id,
+      actionType: action,
+      tableName: 'atenciones',
+      recordId: currentAtencionId,
+      description: `El usuario ${user.nombre}
+      ${user.apellido} guardó la atención con ID
+      ${currentAtencionId}. Estado: ${status}`,
+      ipAddress: request.headers.get('x-forwarded-for') || undefined,
+      userAgent: request.headers.get('user-agent') || undefined,
     });
 
     return new Response(

@@ -1,98 +1,94 @@
-import type { APIContext } from 'astro';
-
 import db from '@/db';
 import { users } from '@/db/schema';
+import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
+import { createResponse } from '@/utils/responseAPI';
+import type { APIContext } from 'astro';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import { generateId } from 'lucia';
 
-export async function POST({ request, redirect, cookies }: APIContext): Promise<Response> {
+export async function POST({ request, cookies }: APIContext): Promise<Response> {
   const formData = await request.json();
-  console.log(formData);
-  const { email, password, nombre, apellido } = await formData;
-  // console.log(email, password);
+  const { email, password, nombre, apellido } = formData;
+  const ipAddress = request.headers.get('x-forwarded-for') || undefined;
+  const userAgent = request.headers.get('user-agent') || undefined;
+
   if (!email || !password || !nombre || !apellido) {
-    return new Response(
-      JSON.stringify({
-        data: 'faltan campos requeridos',
-        status: 400,
-      })
-    );
+    return createResponse(400, 'Faltan campos requeridos');
   }
   if (password.length < 6) {
-    return new Response(
-      JSON.stringify({
-        data: 'contraseña mayor a 6 caracteres',
-        status: 400,
-      })
-    );
+    return createResponse(400, 'La contraseña debe tener al menos 6 caracteres');
   }
 
-  //   verificar si el usuario existe
-  const existingUser = await db.select().from(users).where(eq(users.email, email));
-  // console.log(existingUser);
+  const existingUser = await db.query.users.findFirst({ where: eq(users.email, email) });
 
-  if (existingUser.length > 0) {
-    return new Response(
-      JSON.stringify({
-        data: 'email ya registrado',
-        status: 400,
-      })
-    );
+  if (existingUser) {
+    return createResponse(400, 'El email ya está registrado');
   }
-
-  // crear usuario en DB
 
   const userId = generateId(15);
-  // Hacemos hash de la contraseña
   const hashPassword = await bcrypt.hash(password, 12);
 
-  const newUser = (
-    await db
-      .insert(users)
-      .values([
-        {
+  try {
+    const newUser = (
+      await db
+        .insert(users)
+        .values({
           id: userId,
           email: email,
           nombre: nombre,
           apellido: apellido,
           password: hashPassword,
-        },
-      ])
-      .returning()
-  ).at(0);
-  console.log('NUEV USUARIO->', newUser);
-  const session = await lucia.createSession(userId, {
-    nombre: nombre,
-    apellido: apellido,
-  });
-  console.log('sesion de usuario de alta ', session);
-  const sessionCookie = lucia.createSessionCookie(session.id);
-  cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+        })
+        .returning()
+    ).at(0);
 
-  // Crear una cookie con los datos del usuario
-  const userData = {
-    id: newUser.id,
-    nombre: newUser.nombre,
-    apellido: newUser.apellido,
-    email: newUser.email,
-  };
+    if (!newUser) {
+      return createResponse(500, 'No se pudo crear el usuario');
+    }
 
-  const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '14d' }); // Firmar la cookie
-  cookies.set('userData', token, {
-    httpOnly: true,
-    secure: import.meta.env.NODE_ENV === 'production', // Solo enviar en HTTPS en producción
-    sameSite: 'strict',
-    maxAge: 14 * 24 * 3600, // 14 días en segundos
-    path: '/',
-  });
+    // Clonar el objeto de usuario y eliminar la contraseña para la auditoría
+    const newValueForAudit = { ...newUser };
+    delete newValueForAudit.password;
 
-  return new Response(
-    JSON.stringify({
-      data: 'usuario creado con exito',
-      status: 200,
-    })
-  );
+    await logAuditEvent({
+      userId: userId, // El usuario que se está creando es el actor principal
+      actionType: 'CREATE',
+      tableName: 'users',
+      recordId: userId,
+      newValue: newValueForAudit,
+      description: `Se ha registrado un nuevo usuario: ${email}`,
+      ipAddress,
+      userAgent,
+    });
+
+    const session = await lucia.createSession(userId, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+
+    const userData = {
+      id: newUser.id,
+      nombre: newUser.nombre,
+      apellido: newUser.apellido,
+      email: newUser.email,
+      rol: newUser.rol,
+    };
+
+    const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '14d' });
+    cookies.set('userData', token, {
+      httpOnly: true,
+      secure: import.meta.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 14 * 24 * 3600,
+      path: '/',
+    });
+
+    return createResponse(200, 'Usuario creado con éxito');
+  } catch (error) {
+    console.error('Error al crear el usuario:', error);
+    return createResponse(500, 'Error interno del servidor');
+  }
 }
+

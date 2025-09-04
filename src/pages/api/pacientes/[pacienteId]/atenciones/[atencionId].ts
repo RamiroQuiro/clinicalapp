@@ -8,19 +8,33 @@ import {
   signosVitales,
   users,
 } from '@/db/schema';
+import { logAuditEvent } from '@/lib/audit';
+import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { desc, eq } from 'drizzle-orm';
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, request, cookies }) => {
   const { pacienteId, atencionId } = params;
+  const ipAddress = request.headers.get('x-forwarded-for') || undefined;
+  const userAgent = request.headers.get('user-agent') || undefined;
+
+  // 1. Autenticación
+  const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+  if (!sessionId) {
+    return createResponse(401, 'No autorizado');
+  }
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session || !user) {
+    return createResponse(401, 'No autorizado');
+  }
 
   if (!pacienteId || !atencionId) {
     return createResponse(400, 'Se requieren el ID del paciente y de la atención');
   }
 
   try {
-    // 1. Buscar la atención por ID
+    // Consultas a la base de datos (sin cambios)
     const [atencionData] = await db
       .select({
         id: atenciones.id,
@@ -43,7 +57,6 @@ export const GET: APIRoute = async ({ params }) => {
       return createResponse(404, 'Atención no encontrada');
     }
 
-    // 2. Obtener datos completos sin importar el estado
     const [pacienteData] = await db
       .select({
         id: pacientes.id,
@@ -91,6 +104,17 @@ export const GET: APIRoute = async ({ params }) => {
       },
       pacienteData: pacienteData,
     };
+
+    // 2. Registrar evento de auditoría
+    await logAuditEvent({
+      userId: user.id,
+      actionType: 'VIEW',
+      tableName: 'atenciones',
+      recordId: atencionId,
+      description: `El usuario ${user.name} (${user.email}) vio los detalles de la atención con ID ${atencionId} para el paciente con ID ${pacienteId}.`,
+      ipAddress,
+      userAgent,
+    });
 
     return createResponse(200, 'Datos de la atención obtenidos correctamente', responseData);
   } catch (error) {
