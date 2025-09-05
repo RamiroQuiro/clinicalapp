@@ -193,3 +193,47 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
     *   **Enfoque recomendado**: Generación en el lado del servidor.
     *   **Tecnología sugerida**: Usar **Puppeteer** para renderizar una plantilla HTML/CSS con la nota y datos asociados (paciente, profesional, etc.) y convertirla a un PDF de alta calidad.
     *   **Implementación**: Crear un endpoint de API (ej: `/api/notas/[id]/pdf`) que genere y devuelva el archivo.
+
+---
+
+## Sesión 10: 2025-09-03
+
+*   **Objetivo**: Definir el flujo de trabajo para la finalización de consultas y la gestión de enmiendas.
+*   **Flujo Detallado: Finalización de Consulta y Gestión de Enmiendas**:
+
+    #### 1. Confirmación al Finalizar la Consulta (Modal de Advertencia)
+    *   **Acción:** Al hacer clic en "Finalizar Consulta".
+    *   **Comportamiento:** Se muestra un modal de seguridad/advertencia.
+    *   **Contenido del Modal:**
+        *   Mensaje claro: "Al finalizar la consulta, el registro se sellará y no podrá ser modificado directamente. Cualquier cambio futuro deberá realizarse mediante una enmienda."
+        *   Botones: "Confirmar Finalización" y "Cancelar".
+
+    #### 2. "Sellado" del Registro (UI y Base de Datos)
+    *   **Base de Datos:** Una vez confirmada, el `estado` de la `atencion` se actualiza a `finalizado`.
+    *   **Interfaz de Usuario (UI):**
+        *   El formulario de la consulta se vuelve **completamente de solo lectura**. Todos los campos de entrada se deshabilitan o se muestran como texto estático.
+        *   Los botones "Guardar Borrador" y "Finalizar Consulta" desaparecen o se deshabilitan.
+        *   Aparece un nuevo botón: **"Crear Enmienda"** (o "Añadir Adenda").
+
+    #### 3. Modal de Enmienda (Adenda)
+    *   **Acción:** Al hacer clic en el botón "Crear Enmienda".
+    *   **Comportamiento:** Se abre un nuevo modal.
+    *   **Contenido del Modal de Enmienda:**
+        *   **Campo Obligatorio: "Motivo de la Enmienda":** Un campo de texto para que el profesional explique brevemente *por qué* se hace la enmienda (ej. "Corrección de diagnóstico", "Aclaración de tratamiento").
+        *   **Campo Principal: "Detalles de la Enmienda":** Un área de texto (idealmente un editor de texto enriquecido) donde el profesional escribe la enmienda completa, explicando los cambios o adiciones (ej. "Se aclara que el cuadro corresponde a gastroenteritis y no a reflujo.").
+        *   Botones: "Guardar Enmienda" y "Cancelar".
+    *   **Registro Automático:** Al guardar la enmienda, se registra automáticamente:
+        *   El profesional que la hizo.
+        *   La fecha y hora exacta de la enmienda.
+        *   La enmienda en sí (el motivo y los detalles).
+
+    #### 4. Almacenamiento de Enmiendas en la Base de Datos
+    *   **Nueva Tabla:** Se crea una nueva tabla (ej. `atencionAmendments`) para almacenar estas enmiendas.
+    *   **Campos Clave:** `id`, `atencionId` (Foreign Key a la atención original), `userId` (quién hizo la enmienda), `timestamp`, `reason` (motivo breve), `details` (texto completo de la enmienda).
+
+    #### 5. Visualización de Enmiendas
+    *   **En la Consulta Finalizada:** Cuando se visualiza una consulta que ha sido finalizada, se muestra:
+        *   El contenido original de la consulta.
+        *   Debajo, una sección clara que lista **todas las enmiendas asociadas**, mostrando la fecha, el profesional y el texto de cada enmienda.
+
+*   **Próximos Pasos**: Implementar el flujo de finalización de consulta y gestión de enmiendas, comenzando por el modal de confirmación.
