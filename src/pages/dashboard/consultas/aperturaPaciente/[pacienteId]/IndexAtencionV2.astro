@@ -7,23 +7,21 @@ import Contenedor from './componenteAtencionV2/Contenedor.tsx';
 const { pacienteId, atencionId } = Astro.params;
 const { user, session } = Astro.locals;
 
+let esFinalizada = false; // Default value
+
 // 1. Seguridad: Validar sesión
 if (!session || !user) {
   // No renderizar nada o mostrar un mensaje de error si no hay sesión
-  // La página contenedora ya debería redirigir, esto es defensa en profundidad.
 } else {
   const { data, error, message } = await getDatosNuevaAtencion(
     pacienteId as string,
     atencionId as string
   );
-  console.log(
-    'datos locals',
-    `El usuario ${user.nombre} ${user.apellido} (${user.email}) cargó los datos de la atención con ID ${atencionId} para la vista de consulta.`
-  );
 
   if (error) {
     console.log('error', error, message);
   } else if (data) {
+    esFinalizada = data.atencion?.estado === 'finalizada';
     // 2. Auditoría: Registrar el acceso a los datos de la atención
     const ipAddress = Astro.request.headers.get('x-forwarded-for') || undefined;
     const userAgent = Astro.request.headers.get('user-agent') || undefined;
@@ -47,6 +45,8 @@ const { data, error, message } = await getDatosNuevaAtencion(
 
 if (error) {
   console.log('error', error, message);
+} else if (data) {
+  esFinalizada = data.atencion?.estado === 'finalizada';
 }
 ---
 
@@ -58,15 +58,9 @@ if (error) {
       <div>{message}</div>
     ) : (
       <>
-        <NavAtencionMedicaV2 pacienteData={data?.paciente} />
+        <NavAtencionMedicaV2 pacienteData={data?.paciente} esFinalizada={esFinalizada} />
         <div class="w-full flex flex-col">
-          <button
-            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4 self-end"
-            onclick={`window.open('/api/pacientes/${pacienteId}/atenciones/${atencionId}/reporteAten', '_blank');`}
-          >
-            Generar PDF de Atención
-          </button>
-          <Contenedor client:load data={data} />
+          <Contenedor client:load data={data} esFinalizada={esFinalizada} />
         </div>
       </>
     )
