@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
 import { pacientes } from './pacientes';
@@ -22,11 +22,3 @@ export const notasMedicas = sqliteTable('notasMedicas', {
   updated_at: integer('updated_at', { mode: 'timestamp' }),
   deleted_at: integer('deleted_at', { mode: 'timestamp' }),
 });
-
-// --- RELACIONES ---
-export const notasMedicasRelations = relations(notasMedicas, ({ one }) => ({
-  atencion: one(atenciones, {
-    fields: [notasMedicas.atencionId],
-    references: [atenciones.id],
-  }),
-}));

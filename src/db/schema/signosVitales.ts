@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
 import { pacientes } from './pacientes';
@@ -43,11 +43,3 @@ export const signosVitales = sqliteTable(
     unique().on(t.atencionId, t.pacienteId),
   ]
 );
-
-// --- RELACIONES ---
-export const signosVitalesRelations = relations(signosVitales, ({ one }) => ({
-  atencion: one(atenciones, {
-    fields: [signosVitales.atencionId],
-    references: [atenciones.id],
-  }),
-}));

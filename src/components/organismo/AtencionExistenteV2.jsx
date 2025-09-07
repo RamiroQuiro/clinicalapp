@@ -75,17 +75,17 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <InfoItem
-              icon={<Calendar1 className="w-5 h-5 stroke-primary-100" />}
+              icon={<Calendar1 className="h-4 w-4" />}
               label="Inicio de Consulta"
               value={atencion?.atencionData?.inicioConsulta}
             />
             <InfoItem
-              icon={<Calendar1 className="w-5 h-5 stroke-primary-100" />}
+              icon={<Calendar1 className="h-4 w-4" />}
               label="Fin de Consulta"
               value={atencion?.atencionData?.finConsulta}
             />
             <InfoItem
-              icon={<Clock className="w-5 h-5 stroke-primary-100" />}
+              icon={<Clock className="h-4 w-4" />}
               label="Duración de la Atención"
               value={atencion?.atencionData?.duracionAtencion}
             />
@@ -140,7 +140,7 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
           <CardTitle>Detalles de Atención</CardTitle>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium">Atendido por:</span>
-            <span className="capitalize">{`${paciente?.nombreProfesional}`}</span>
+            <span className="capitalize">{`${atencion?.nombreDoctor} ${atencion?.apellidoDoctor}`}</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

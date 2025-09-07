@@ -16,7 +16,7 @@ import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import puppeteer from 'puppeteer';
 
-export const GET: APIRoute = async ({ params, request, cookies }) => {
+export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
   const { pacienteId, atencionId } = params;
   const ipAddress = request.headers.get('x-forwarded-for') || undefined;
   const userAgent = request.headers.get('user-agent') || undefined;
@@ -26,7 +26,8 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
   if (!sessionId) {
     return createResponse(401, 'No autorizado');
   }
-  const { session, user } = await lucia.validateSession(sessionId);
+  const { user } = locals;
+  const { session } = await lucia.validateSession(sessionId);
   if (!session || !user) {
     return createResponse(401, 'No autorizado');
   }
@@ -46,9 +47,9 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
         observaciones: atenciones.observaciones,
         estado: atenciones.estado,
         created_at: atenciones.created_at,
-        inicioAtencion: atenciones.inicioAtencion,
-        finAtencion: atenciones.finAtencion,
-        duracionAtencion: atenciones.duracionAtencion,
+        inicioConsulta: atenciones.inicioAtencion,
+        finConsulta: atenciones.finAtencion,
+        duracionConsulta: atenciones.duracionAtencion,
         nombreDoctor: users.nombre,
         apellidoDoctor: users.apellido,
       })
@@ -107,14 +108,19 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
       pacienteData: pacienteData,
     };
 
+    console.log('Paso 1: Datos de la atención obtenidos.');
+
     // 3. Generar HTML
     const htmlContent = generateReportHtml(reportData);
+    console.log('Paso 2: HTML generado.');
 
     // 4. Usar Puppeteer para generar el PDF
+    console.log('Paso 3: Iniciando Puppeteer...');
     browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    console.log('Paso 4: PDF generado en buffer.');
 
     // 5. Registrar evento de auditoría
     await logAuditEvent({
@@ -128,6 +134,7 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
     });
 
     // 6. Enviar el PDF como respuesta
+    console.log('Paso 5: Enviando respuesta PDF.');
     return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',

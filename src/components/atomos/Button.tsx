@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utilsStyles'; // Importamos nuestra nueva utilidad
+import { cn } from '@/utils/cn'; // Importamos nuestra nueva utilidad
 import * as React from 'react';
 
 // Definimos las variantes que el botón puede tener
@@ -9,6 +9,8 @@ const buttonVariants = {
       primary: 'bg-primary-100 text-white hover:bg-primary-100/90 focus:ring-primary-100',
       secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
       cancel: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-600',
+      outline: 'bg-transparent text-gray-800 hover:bg-gray-200 focus:ring-gray-400',
+      downloadPDF: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-600',
       grisOscuro: 'bg-gray-800 text-white hover:bg-gray-900 focus:ring-gray-700',
       // Estilo copiado de BotonIndigo.tsx
       indigo:

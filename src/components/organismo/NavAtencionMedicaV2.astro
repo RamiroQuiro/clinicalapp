@@ -7,7 +7,7 @@ import Button2 from '../atomos/Button2.astro';
 import DivBox1 from '../atomos/DivBox1.astro';
 import Button1 from '../atomos/Button1.astro';
 import { Table, Table2 } from 'lucide-react';
-const { pacienteId } = Astro.params;
+const { pacienteId, atencionId } = Astro.params;
 const { pacienteData, esFinalizada } = Astro.props;
 const { nombre, apellido, dni, fotoUrl } = pacienteData;
 ---
@@ -62,14 +62,12 @@ const { nombre, apellido, dni, fotoUrl } = pacienteData;
     </div>
     <!-- Botones de Acción -->
     <div class="flex md:flex-col flex-row w-full md:w-fit items-center gap-2">
-      <a href={`/dashboard/pacientes/${pacienteId}`} class="text-sm">
-        <Button1
-          ><p class="inline-flex items-center gap-2">
-            <Table2 className=" w-4 h-4" /> Ficha del Paciente
-          </p></Button1
-        >
-      </a>
-      <ContenedorBotonesFinalizrConsulta client:load esFinalizada={esFinalizada} />
+      <ContenedorBotonesFinalizrConsulta
+        client:load
+        pacienteId={pacienteId}
+        atencionId={atencionId}
+        esFinalizada={esFinalizada}
+      />
     </div>
   </div>
 </DivBox1>

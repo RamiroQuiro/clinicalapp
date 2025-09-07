@@ -38,21 +38,22 @@ export default function FormularioLogin() {
           password: formulario.password,
         }), // Reemplazar 'nuevoEstado' con el nuevo estado deseado
       });
+      console.log(fetiiching);
       const dataRes = await fetiiching.json();
       console.log(dataRes);
-      if (dataRes.status == 200) {
+      if (dataRes.code == 200) {
         window.location.href = '/dashboard';
         loader(false);
       }
-      if (dataRes.status == 400) {
+      if (dataRes.code == 400) {
         showToast(dataRes.data, { background: 'bg-red-600' });
         loader(false);
       }
-      if (dataRes.status == 401) {
+      if (dataRes.code == 401) {
         showToast(dataRes.data, { background: 'bg-red-600' });
         loader(false);
       }
-      if (dataRes.status == 402) {
+      if (dataRes.code == 402) {
         showToast(dataRes.data, {
           background: 'bg-red-600',
         });

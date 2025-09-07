@@ -3,8 +3,9 @@ import type { APIRoute } from 'astro';
 
 import db from '@/db';
 import { logAuditEvent } from '@/lib/audit';
+import { createResponse } from '@/utils/responseAPI';
 import { getFechaUnix } from '@/utils/timesUtils';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; // Para generar IDs únicos
 
 // Helper para parsear números de forma segura
@@ -54,6 +55,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }),
         { status: 400 }
       );
+    }
+
+    const isConsultaFinalizada = await db
+      .select()
+      .from(atenciones)
+      .where(and(eq(atenciones.id, consultaData.id), eq(atenciones.estado, 'finalizada')));
+    if (isConsultaFinalizada) {
+      return createResponse(400, 'Consulta finalizada, crea una enmienda si es necesario');
     }
 
     let currentAtencionId = consultaData.id || nanoid(); // Genera un ID si no existe

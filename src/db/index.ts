@@ -10,6 +10,6 @@ const client = createClient({
   authToken: import.meta.env.TURSO_DB_AUTH_TOKEN,
 });
 
-const db = drizzle(client, { schema: 'public' });
+const db = drizzle(client);
 
 export default db;
