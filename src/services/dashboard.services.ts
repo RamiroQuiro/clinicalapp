@@ -98,10 +98,10 @@ export async function getDashboardData(userId: string) {
         nombrePaciente: sql`CONCAT(pacientes.nombre, ' ', pacientes.apellido)`,
         fecha: atenciones.fecha,
         motivoInicial: atenciones.motivoInicial,
-        inicioAtencion: atenciones.inicioAtencion,
+        inicioAtencion: atenciones.inicioConsulta,
         obraSocial: historiaClinica.obraSocial,
         estado: atenciones.estado,
-        finAtencion: atenciones.finAtencion,
+        finAtencion: atenciones.finConsulta,
         cantidad: count(),
       })
       .from(atenciones)

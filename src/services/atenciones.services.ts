@@ -8,79 +8,99 @@ import {
   notasMedicas,
   pacientes,
   signosVitales,
-  tratamiento,
-  users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
-import { desc, eq, sql } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
-  // 1. Buscar la atención principal. Esta es la única consulta que bloquea el resto.
-  const atencionData = await db.query.atenciones.findFirst({
-    where: eq(atenciones.id, atencionId),
-    with: {
-      medico: {
-        columns: {
-          nombre: true,
-          apellido: true,
-        },
-      },
-    },
-  });
+  // 1. Buscamos la atención para verificar su estado. Esta es la única consulta inicial.
+  const [atencionData] = await db.select().from(atenciones).where(eq(atenciones.id, atencionId));
 
   if (!atencionData) {
-    return { error: true, message: 'Atención no encontrada', data: null };
+    return {
+      error: true,
+      message: 'Atención no encontrada',
+      data: null,
+    };
   }
 
-  // 2. Definir todas las consultas secundarias de forma declarativa.
-  // Estas consultas son promesas "frías", no se ejecutan hasta que se les hace un `await` o `then`.
+  // 2. Definimos las promesas para los datos que siempre se necesitan.
+  // (No se ejecutan hasta que se usa Promise.all)
 
-  const pacienteQuery = db.query.pacientes.findFirst({
-    where: eq(pacientes.id, pacienteId),
-    with: {
-      historiaClinica: true,
-    },
-  });
+  // Busca los datos del paciente y su historia clínica.
+  const pacientePromise = db
+    .select({
+      id: pacientes.id,
+      nombre: pacientes.nombre,
+      apellido: pacientes.apellido,
+      dni: pacientes.dni,
+      sexo: pacientes.sexo,
+      celular: historiaClinica.celular,
+      email: historiaClinica.email,
+      provincia: historiaClinica.provincia,
+      fNacimiento: pacientes.fNacimiento,
+      nObraSocial: historiaClinica.nObraSocial,
+      obraSocial: historiaClinica.obraSocial,
+      ciudad: historiaClinica.ciudad,
+      grupoSanguineo: historiaClinica.grupoSanguineo,
+      estatura: historiaClinica.estatura,
+      historiaClinicaId: historiaClinica.id,
+      domicilio: pacientes.domicilio,
+    })
+    .from(pacientes)
+    .leftJoin(historiaClinica, eq(historiaClinica.pacienteId, pacientes.id))
+    .where(eq(pacientes.id, pacienteId));
 
-  const signosVitalesQuery = db.query.signosVitales.findFirst({
-    where: eq(signosVitales.atencionId, atencionId),
-    orderBy: desc(signosVitales.created_at),
-  });
+  // Busca los diagnósticos asociados a la atención.
+  const diagnosticosPromise = db
+    .select()
+    .from(diagnostico)
+    .where(eq(diagnostico.atencionId, atencionId));
 
-  const notasQuery = db.query.notasMedicas.findMany({
-    where: eq(notasMedicas.atencionId, atencionId),
-  });
+  // Busca los medicamentos recetados en la atención.
+  const medicamentosPromise = db
+    .select()
+    .from(medicamento)
+    .where(eq(medicamento.atencionId, atencionId));
 
-  const diagnosticosQuery = db.query.diagnostico.findMany({
-    where: eq(diagnostico.atencionId, atencionId),
-  });
+  // Busca las notas médicas de la atención.
+  const notasPromise = db
+    .select()
+    .from(notasMedicas)
+    .where(eq(notasMedicas.atencionId, atencionId));
 
-  const medicamentosQuery = db.query.medicamento.findMany({
-    where: eq(medicamento.atencionId, atencionId),
-  });
+  // Busca los archivos adjuntos a la atención.
+  const archivosPromise = db
+    .select()
+    .from(archivosAdjuntos)
+    .where(eq(archivosAdjuntos.atencionId, atencionId));
 
-  const archivosQuery = db.query.archivosAdjuntos.findMany({
-    where: eq(archivosAdjuntos.atencionId, atencionId),
-  });
+  // Busca los últimos signos vitales registrados para la atención.
+  const signosVitalesPromise = db
+    .select()
+    .from(signosVitales)
+    .where(eq(signosVitales.atencionId, atencionId))
+    .orderBy(desc(signosVitales.created_at));
 
-  // 3. Si la atención está finalizada, solo ejecutamos las consultas esenciales en paralelo.
+  // 3. Si la atención está finalizada, ejecutamos solo las promesas esenciales.
   if (atencionData.estado === 'finalizada') {
     const [
-      pacienteData,
-      signosVitalesAtencion,
-      notasAtencion,
+      pacienteResult,
       diagnosticosAtencion,
       medicamentosAtencion,
+      notasAtencion,
       archivosAtencion,
+      signosVitalesAtencion,
     ] = await Promise.all([
-      pacienteQuery,
-      signosVitalesQuery,
-      notasQuery,
-      diagnosticosQuery,
-      medicamentosQuery,
-      archivosQuery,
+      pacientePromise,
+      diagnosticosPromise,
+      medicamentosPromise,
+      notasPromise,
+      archivosPromise,
+      signosVitalesPromise,
     ]);
 
+    const pacienteData = pacienteResult[0];
     if (!pacienteData) {
       return { error: true, message: 'Paciente no encontrado', data: null };
     }
@@ -94,53 +114,59 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
           diagnosticos: diagnosticosAtencion,
           medicamentos: medicamentosAtencion,
           archivosAdjuntos: archivosAtencion,
-          signosVitales: signosVitalesAtencion || {},
+          signosVitales: signosVitalesAtencion[0] || null,
           notas: notasAtencion,
         },
         paciente: pacienteData,
-        antecedentes: [], // No se cargan para la vista finalizada
-        signosVitalesHistorial: [], // No se carga para la vista finalizada
+        antecedentes: [],
+        signosVitalesHistorial: [],
       },
     };
   }
 
-  // 4. Si la atención está en curso, definimos las consultas adicionales.
-  const antecedentesQuery = db.query.antecedentes.findMany({
-    where: eq(antecedentes.pacienteId, pacienteId),
-  });
+  // 4. Si no está finalizada, definimos las promesas adicionales.
 
-  const signosHistorialQuery = db.query.signosVitales.findMany({
-    where: eq(signosVitales.pacienteId, pacienteId),
-    orderBy: desc(signosVitales.created_at),
-    limit: 4,
-  });
+  // Busca todos los antecedentes del paciente.
+  const antecedentesPromise = db
+    .select()
+    .from(antecedentes)
+    .where(eq(antecedentes.pacienteId, pacienteId));
 
-  // 5. Ejecutamos TODAS las consultas en paralelo.
+  // Busca el historial de signos vitales para los gráficos.
+  const signosHistorialPromise = db
+    .select()
+    .from(signosVitales)
+    .where(eq(signosVitales.pacienteId, pacienteId))
+    .orderBy(desc(signosVitales.created_at))
+    .limit(4);
+
+  // 5. Ejecutamos TODAS las promesas juntas.
   const [
-    pacienteData,
-    signosVitalesAtencion,
-    notasAtencion,
+    pacienteResult,
     diagnosticosAtencion,
     medicamentosAtencion,
+    notasAtencion,
     archivosAtencion,
+    signosVitalesAtencion,
     antecedentesData,
     fecthSignosVitalesData,
   ] = await Promise.all([
-    pacienteQuery,
-    signosVitalesQuery,
-    notasQuery,
-    diagnosticosQuery,
-    medicamentosQuery,
-    archivosQuery,
-    antecedentesQuery,
-    signosHistorialQuery,
+    pacientePromise,
+    diagnosticosPromise,
+    medicamentosPromise,
+    notasPromise,
+    archivosPromise,
+    signosVitalesPromise,
+    antecedentesPromise,
+    signosHistorialPromise,
   ]);
 
+  const pacienteData = pacienteResult[0];
   if (!pacienteData) {
     return { error: true, message: 'Paciente no encontrado', data: null };
   }
 
-  // 6. Procesamos los datos para los gráficos (esto es rápido, se hace después de las consultas).
+  // 6. Procesamos los datos para los gráficos.
   const signosVitalesData = [
     'temperatura',
     'pulso',
@@ -160,7 +186,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     return { tipo, historial };
   });
 
-  // 7. Devolvemos el objeto de datos completo.
+  // 7. Devolvemos la estructura de datos completa.
   return {
     error: false,
     message: 'Atención en curso',
@@ -170,7 +196,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
         diagnosticos: diagnosticosAtencion,
         medicamentos: medicamentosAtencion,
         archivosAdjuntos: archivosAtencion,
-        signosVitales: signosVitalesAtencion || {},
+        signosVitales: signosVitalesAtencion[0] || null,
         notas: notasAtencion,
       },
       paciente: pacienteData,
