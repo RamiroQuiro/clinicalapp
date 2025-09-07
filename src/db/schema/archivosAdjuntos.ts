@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
 import { users } from './users';
@@ -19,3 +19,11 @@ export const archivosAdjuntos = sqliteTable('archivosAdjuntos', {
     .default(sql`(strftime('%s', 'now'))`),
   deleted_at: integer('deleted_at', { mode: 'timestamp' }),
 });
+
+// --- RELACIONES ---
+export const archivosAdjuntosRelations = relations(archivosAdjuntos, ({ one }) => ({
+  atencion: one(atenciones, {
+    fields: [archivosAdjuntos.atencionId],
+    references: [atenciones.id],
+  }),
+}));

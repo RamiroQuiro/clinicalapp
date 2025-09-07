@@ -1,5 +1,7 @@
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { atenciones } from './atenciones';
+import { historiaClinica } from './historiaClinica';
 
 export const pacientes = sqliteTable('pacientes', {
   id: text('id').primaryKey(), // ID único del paciente
@@ -20,3 +22,12 @@ export const pacientes = sqliteTable('pacientes', {
   deleted_at: integer('deleted_at', { mode: 'timestamp' }),
   activo: integer('activo', { mode: 'boolean' }).default(true),
 });
+
+// --- RELACIONES ---
+export const pacientesRelations = relations(pacientes, ({ many, one }) => ({
+  atenciones: many(atenciones),
+  historiaClinica: one(historiaClinica, {
+    fields: [pacientes.id],
+    references: [historiaClinica.pacienteId],
+  }),
+}));

@@ -1,5 +1,6 @@
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { atenciones } from './atenciones';
 
 export const users = sqliteTable('users', {
   id: text('id').primaryKey().unique(),
@@ -21,3 +22,8 @@ export const users = sqliteTable('users', {
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),
 });
+
+// --- RELACIONES ---
+export const usersRelations = relations(users, ({ many }) => ({
+  atenciones: many(atenciones),
+}));

@@ -1,17 +1,14 @@
 import Button from '@/components/atomos/Button';
-import ModalReact from '@/components/moleculas/ModalReact';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { getDurationInMinutes, getFechaUnix } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
-import { FilePlus, Lock, Save, TriangleAlert } from 'lucide-react';
+import { CircleX, Lock, Save, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-type Props = {
-  esFinalizada: boolean;
-};
+type Props = {};
 
-export default function ContenedorBotonesFinalizrConsulta({ esFinalizada }: Props) {
+export default function ContenedorBotonesFinalizrConsulta({}: Props) {
   const $consulta = useStore(consultaStore);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -59,60 +56,65 @@ export default function ContenedorBotonesFinalizrConsulta({ esFinalizada }: Prop
 
   return (
     <>
-      <div className="flex md:flex-col flex-row w-full md:w-fit md:items-center gap-2">
-        {esFinalizada ? (
-          <Button id="crearEnmienda" variant="grisOscuro">
-            <p className="inline-flex items-center gap-2">
-              <FilePlus className="mr- w-4 h-4" /> Crear Enmienda
-            </p>
-          </Button>
-        ) : (
-          <>
-            <Button id="guardarBorradorV2" onClick={() => handleGuardarBorrador('borrador')}>
-              <p className="inline-flex items-center gap-2">
-                <Save className="mr- w-4 h-4" /> Guardar Borrador
-              </p>
-            </Button>
-            <Button id="finalizarConsultaV2" onClick={handleFinalizarClick}>
-              <p className="inline-flex items-center gap-2">
-                <Lock className="mr- w-4 h-4" /> Finalizar Consulta
-              </p>
-            </Button>
-          </>
-        )}
-      </div>
-
       {isModalOpen && (
-        <ModalReact
-          title="Confirmar Finalización de Consulta"
-          onClose={() => setIsModalOpen(false)}
-          id="confirmarFinalizacion"
-          className="w-[500px]"
+        <div
+          style={{ margin: 0, position: 'fixed' }}
+          className="fixed top-0 left-0 mt-0 pt-10 w-full h-screen z-[80]  flex items-start  justify-center"
+          onClick={() => setIsModalOpen(false)}
         >
-          <div className="p-4 flex flex-col items-center text-center">
-            <TriangleAlert className="w-16 h-16 text-yellow-400 mb-4" />
-            <h2 className="text-lg font-semibold mb-2">Atención</h2>
-            <p className="text-gray-600 mb-6">
-              Al finalizar la consulta, el registro se sellará y no podrá ser modificado
-              directamente. Cualquier cambio futuro deberá realizarse mediante una enmienda.
-            </p>
-            <div className="flex justify-center gap-4 w-full">
-              <Button
+          <div
+            className={`bg-white  w-[50vw] border boder-2 border-primary-400 relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit max-h overflow-y-auto `}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header Fijo */}
+            <div className="flex justify-between items-center p-4 border-b bg-primary-bg-componentes flex-shrink-0">
+              <h3 className="text-xl font-semibold text-gray-800">Atención</h3>
+              <button
+                className="text-gray-500 hover:text-primary-100 transition-colors rounded-full p-1"
                 onClick={() => setIsModalOpen(false)}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800"
               >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleConfirmarFinalizacion}
-                className="bg-primary-100 hover:bg-primary-200 text-white"
-              >
-                Confirmar Finalización
-              </Button>
+                <CircleX size={24} />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto flex-grow max-h-[87vh]">
+              <div className="p-4 flex flex-col items-center text-center">
+                <TriangleAlert className="w-16 h-16 text-yellow-400 mb-4" />
+                <h2 className="text-lg font-semibold mb-2">Atención</h2>
+                <p className="text-gray-600 mb-6">
+                  Al finalizar la consulta, el registro se sellará y no podrá ser modificado
+                  directamente. Cualquier cambio futuro deberá realizarse mediante una enmienda.
+                </p>
+                <div className="flex justify-center gap-4 w-full">
+                  <Button
+                    onClick={() => setIsModalOpen(false)}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleConfirmarFinalizacion}
+                    className="bg-primary-100 hover:bg-primary-200 text-white"
+                  >
+                    Confirmar Finalización
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-        </ModalReact>
+        </div>
       )}
+      <div className="flex md:flex-col flex-row w-full md:w-fit md:items-center gap-2">
+        <Button id="guardarBorradorV2" onClick={() => handleGuardarBorrador('borrador')}>
+          <p className="inline-flex items-center gap-2">
+            <Save className="mr- w-4 h-4" /> Guardar Borrador
+          </p>
+        </Button>
+        <Button id="finalizarConsultaV2" onClick={handleFinalizarClick}>
+          <p className="inline-flex items-center gap-2">
+            <Lock className="mr- w-4 h-4" /> Finalizar Consulta
+          </p>
+        </Button>
+      </div>
     </>
   );
 }

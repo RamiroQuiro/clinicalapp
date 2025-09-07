@@ -17,6 +17,8 @@ export const RenderizacionPantalla = ({
 }) => {
   // Si la consulta está finalizada y la pestaña es la de la consulta actual,
   // mostramos la vista de solo lectura.
+  console.log('esFinalizada', esFinalizada);
+  console.log('activeTab', activeTab);
   if (esFinalizada && activeTab === 'consultaActual') {
     return <AtencionExistenteV2 data={data} onClose={() => {}} />;
   }
