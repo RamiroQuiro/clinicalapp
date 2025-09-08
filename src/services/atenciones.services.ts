@@ -77,10 +77,24 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
 
   // Busca los últimos signos vitales registrados para la atención.
   const signosVitalesPromise = db
-    .select()
+    .select({
+      temperatura: signosVitales.temperatura,
+      pulso: signosVitales.pulso,
+      respiracion: signosVitales.respiracion,
+      presionArterial: signosVitales.presionArterial,
+      saturacionOxigeno: signosVitales.saturacionOxigeno,
+      glucosa: signosVitales.glucosa,
+      peso: signosVitales.peso,
+      talla: signosVitales.talla,
+      imc: signosVitales.imc,
+      frecuenciaCardiaca: signosVitales.frecuenciaCardiaca,
+      frecuenciaRespiratoria: signosVitales.frecuenciaRespiratoria,
+      tensionArterial: signosVitales.tensionArterial || null,
+      dolor: signosVitales.dolor,
+      fechaRegistro: signosVitales.fechaRegistro,
+    })
     .from(signosVitales)
-    .where(eq(signosVitales.atencionId, atencionId))
-    .orderBy(desc(signosVitales.created_at));
+    .where(eq(signosVitales.atencionId, atencionId));
 
   // 3. Si la atención está finalizada, ejecutamos solo las promesas esenciales.
   if (atencionData.estado === 'finalizada') {
@@ -173,6 +187,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     'frecuenciaCardiaca',
     'frecuenciaRespiratoria',
     'tensionArterial',
+
     'saturacionOxigeno',
     'glucosa',
     'peso',

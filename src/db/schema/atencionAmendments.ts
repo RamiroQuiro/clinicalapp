@@ -13,10 +13,13 @@ export const atencionAmendments = sqliteTable('atencionAmendments', {
   userIdMedico: text('userIdMedico')
     .references(() => users.id)
     .notNull(),
-  motivo: text('motivo').notNull(),
-  detalle: text('detalle').notNull(),
-  razon: text('razon'),
-  campoModificado: text('campoModificado'),
+  seccion: text('seccion').notNull(),
+  contenidoOriginal: text('contenidoOriginal').notNull(),
+  contenidoCorregido: text('contenidoCorregido').notNull(),
+  justificacion: text('justificacion').notNull(),
+  motivo: text('motivo'),
+  tipo: text('tipo'),
+  titulo: text('titulo'),
   created_at: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),

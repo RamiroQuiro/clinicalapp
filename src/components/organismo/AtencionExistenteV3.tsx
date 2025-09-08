@@ -128,12 +128,12 @@ export const AtencionExistenteV3 = ({ data, onClose }: ComponentProps) => {
         <InfoItem
           icon={<Calendar1 size={16} />}
           label="Incio de Consulta"
-          value={atencion?.atencionData?.inicioConsulta}
+          value={atencion?.atencionData?.inicioAtencion}
         />
         <InfoItem
           icon={<Calendar1 size={16} />}
           label="Fin de Consulta"
-          value={atencion?.atencionData?.finConsulta}
+          value={atencion?.atencionData?.finAtencion}
         />
         <InfoItem
           icon={<Clock size={16} />}

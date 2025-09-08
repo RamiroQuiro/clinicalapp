@@ -77,12 +77,12 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
             <InfoItem
               icon={<Calendar1 className="h-4 w-4" />}
               label="Inicio de Consulta"
-              value={atencion?.atencionData?.inicioConsulta}
+              value={atencion?.atencionData?.inicioAtencion}
             />
             <InfoItem
               icon={<Calendar1 className="h-4 w-4" />}
               label="Fin de Consulta"
-              value={atencion?.atencionData?.finConsulta}
+              value={atencion?.atencionData?.finAtencion}
             />
             <InfoItem
               icon={<Clock className="h-4 w-4" />}

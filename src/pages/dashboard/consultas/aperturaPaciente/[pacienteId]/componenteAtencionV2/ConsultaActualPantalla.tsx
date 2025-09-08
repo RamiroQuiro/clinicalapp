@@ -7,6 +7,7 @@ import Section from '@/components/moleculas/Section';
 import ModalDictadoIA from '@/components/organismo/ModalDictadoIA';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { dataFormularioContexto } from '@/context/store'; // New import for AI integration
+import { getFechaUnix } from '@/utils/timesUtils';
 import { useStore } from '@nanostores/react';
 import {
   Calculator,
@@ -108,11 +109,13 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
   useEffect(() => {
     if (!data || !data.atencion) return;
+    const inicioAtencion = new Date(getFechaUnix() * 1000);
 
     // Ensure nested objects and arrays exist to prevent runtime errors
     const atencionData = {
       ...data.atencion,
       archivos: data.atencion.archivos || [],
+      inicioAtencion: inicioAtencion.toISOString(),
       notas: data.atencion.notas || [],
       diagnosticos: data.atencion.diagnosticos || [],
       medicamentos: data.atencion.medicamentos || [],
@@ -121,8 +124,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
     consultaStore.set(atencionData);
 
-    if (!atencionData.inicioConsulta) {
-      setConsultaField('inicioConsulta', new Date().toISOString());
+    if (!atencionData.inicioAtencion) {
+      setConsultaField('inicioAtencion', new Date().toISOString());
     }
 
     if (data.signosVitalesHistorial) {

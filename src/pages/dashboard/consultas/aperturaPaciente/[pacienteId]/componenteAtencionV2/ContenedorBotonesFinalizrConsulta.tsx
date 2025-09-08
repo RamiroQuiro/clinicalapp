@@ -1,6 +1,6 @@
 import Button from '@/components/atomos/Button';
 import ModalReact from '@/components/moleculas/ModalReact';
-import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
+import { consultaStore } from '@/context/consultaAtencion.store';
 import { getDurationInMinutes, getFechaUnix } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
@@ -20,6 +20,7 @@ export default function ContenedorBotonesFinalizrConsulta({
   atencionId,
 }: Props) {
   const $consulta = useStore(consultaStore);
+  console.log('esta es $consulta', $consulta);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnmiendaModalOpen, setIsEnmiendaModalOpen] = useState(false);
 
@@ -35,15 +36,25 @@ export default function ContenedorBotonesFinalizrConsulta({
 
     try {
       if (modoFetch === 'finalizada') {
-        const now = new Date(getFechaUnix() * 1000);
-        setConsultaField('finConsulta', now.toISOString());
+        const finAtencion = new Date(getFechaUnix() * 1000);
+        const now = finAtencion.toISOString();
+        consultaStore.set({
+          ...consultaStore.get(),
+          finAtencion: now,
+        });
 
-        if ($consulta.inicioConsulta) {
-          const duration = getDurationInMinutes($consulta.inicioConsulta, now.toISOString());
-          setConsultaField('duracionConsulta', duration);
+        if ($consulta.inicioAtencion) {
+          const duration = getDurationInMinutes($consulta.inicioAtencion, now);
+          consultaStore.set({
+            ...consultaStore.get(),
+            duracionAtencion: duration,
+          });
         } else {
           console.warn('inicioConsulta no está definido. No se pudo calcular la duración.');
-          setConsultaField('duracionConsulta', 0);
+          consultaStore.set({
+            ...consultaStore.get(),
+            duracionAtencion: 0,
+          });
         }
       }
 
@@ -51,7 +62,7 @@ export default function ContenedorBotonesFinalizrConsulta({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...$consulta,
+          ...consultaStore.get(), // Usar el estado más reciente
           status: modoFetch,
         }),
       });
@@ -129,7 +140,7 @@ export default function ContenedorBotonesFinalizrConsulta({
           title="Confirmar Finalización de Consulta"
           onClose={() => setIsModalOpen(false)}
           id="confirmarFinalizacionModal"
-          className="w-[500px]"
+          className="w-[60vw]"
         >
           <div className="p-4 flex flex-col items-center text-center">
             <TriangleAlert className="w-16 h-16 text-yellow-400 mb-4" />

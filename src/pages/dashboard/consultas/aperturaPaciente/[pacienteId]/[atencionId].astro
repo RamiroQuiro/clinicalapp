@@ -1,7 +1,6 @@
 ---
 import MainDashboard from '../../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../../components/layouts/LayoutDash.astro';
-import { logAuditEvent } from '../../../../../lib/audit';
 import IndexAtencionV2 from './IndexAtencionV2.astro';
 
 const { pacienteId, atencionId } = Astro.params as { pacienteId: string; atencionId: string };
@@ -11,20 +10,6 @@ const { user, session } = Astro.locals;
 if (!session || !user) {
   return Astro.redirect('/login');
 }
-
-// 2. Auditoría: Registrar el acceso a la página de atención
-const ipAddress = Astro.request.headers.get('x-forwarded-for') || undefined;
-const userAgent = Astro.request.headers.get('user-agent') || undefined;
-
-await logAuditEvent({
-  userId: user.id,
-  actionType: 'VIEW',
-  tableName: 'atenciones', // Se está viendo la página de una atención
-  recordId: atencionId,
-  description: `El usuario ${user.name} (${user.email}) accedió a la página de la atención con ID ${atencionId}.`,
-  ipAddress,
-  userAgent,
-});
 
 let errorData: { msg: string } | null = null;
 ---

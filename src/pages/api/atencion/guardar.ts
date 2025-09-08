@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
   try {
     const consultaData: Consulta & { status: string; atencionId?: string } = await request.json();
-
+    console.log('ingresando los datos emepezando con la atencion', consultaData);
     const {
       motivoInicial,
       pacienteId,
@@ -42,9 +42,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       notas,
       tratamiento: tratamientoData,
       status,
-      inicioConsulta, // ADDED
-      finConsulta, // ADDED
-      duracionConsulta, // ADDED
+      inicioAtencion, // ADDED
+      finAtencion, // ADDED
+      duracionAtencion, // ADDED
     } = consultaData;
 
     // Validaciones básicas
@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const isConsultaFinalizada = await db
+    const [isConsultaFinalizada] = await db
       .select()
       .from(atenciones)
       .where(and(eq(atenciones.id, consultaData.id), eq(atenciones.estado, 'finalizada')));
@@ -65,10 +65,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return createResponse(400, 'Consulta finalizada, crea una enmienda si es necesario');
     }
 
+    console.log('ingresando los datos emepezando con la atencion', isConsultaFinalizada);
+
     let currentAtencionId = consultaData.id || nanoid(); // Genera un ID si no existe
 
     await db.transaction(async tx => {
-      const fechaHoy = new Date(getFechaUnix());
+      const fechaHoy = new Date(getFechaUnix() * 1000);
+      console.log('fechaHoy', fechaHoy);
       // 1. Guardar/Actualizar Atención principal
       // Aquí deberías decidir si es una inserción o una actualización.
       // Por simplicidad, asumiremos inserción por ahora, o que el id se maneja en el frontend.
@@ -83,10 +86,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
             sintomas,
             observaciones,
             motivoInicial,
-            inicioAtencion: inicioConsulta ? new Date(inicioConsulta) : null, // ADDED
-            finAtencion: finConsulta ? new Date(finConsulta) : null, // ADDED
-            duracionAtencion: safeParseFloat(duracionConsulta), // ADDED
-            updated_at: new Date(),
+            inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null, // ADDED
+            finAtencion: finAtencion ? new Date(finAtencion) : null, // ADDED
+            duracionAtencion: safeParseFloat(duracionAtencion), // ADDED
+            updated_at: fechaHoy,
             estado: status,
             ultimaModificacionPorId: user.id, // ADDED
           })
@@ -106,9 +109,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
           historiaClinicaId,
           estado: status,
           userIdMedico: user.id,
-          inicioAtencion: inicioConsulta ? new Date(inicioConsulta) : null, // ADDED
-          finAtencion: finConsulta ? new Date(finConsulta) : null, // ADDED
-          duracionAtencion: safeParseFloat(duracionConsulta), // ADDED
+          inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null, // ADDED
+          finAtencion: finAtencion ? new Date(finAtencion) : null, // ADDED
+          duracionAtencion: safeParseFloat(duracionAtencion), // ADDED
+          created_at: fechaHoy,
+          updated_at: fechaHoy,
         });
       }
 

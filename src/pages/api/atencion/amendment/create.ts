@@ -1,6 +1,5 @@
 import db from '@/db';
 import { atencionAmendments } from '@/db/schema/atencionAmendments';
-
 import { logAuditEvent } from '@/lib/audit';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
@@ -14,20 +13,30 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return createResponse(401, 'No autorizado');
   }
 
-  const { atencionId, motivo, detalle } = await request.json();
+  const {
+    atencionId,
+    motivo,
+    seccion,
+    contenidoOriginal,
+    contenidoCorregido,
+    justificacion,
+  } = await request.json();
 
-  if (!atencionId || !motivo || !detalle) {
+  if (!atencionId || !motivo || !seccion || !contenidoCorregido || !justificacion) {
     return createResponse(400, 'Faltan datos requeridos para la enmienda.');
   }
 
   try {
-    const newAmendment = await db
+    const [newAmendment] = await db
       .insert(atencionAmendments)
       .values({
         atencionId,
-        userId: user.id,
+        userIdMedico: user.id,
         motivo,
-        detalle,
+        seccion,
+        contenidoOriginal,
+        contenidoCorregido,
+        justificacion,
       })
       .returning();
 
@@ -35,14 +44,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
       userId: user.id,
       actionType: 'CREATE',
       tableName: 'atencionAmendments',
-      recordId: newAmendment[0].id,
-      newValue: newAmendment[0],
-      description: `El usuario ${user.name} (${user.email}) creó una enmienda para la atención ${atencionId}. Motivo: ${motivo}`,
+      recordId: newAmendment.id,
+      newValue: newAmendment,
+      description: `El usuario ${user.name} (${user.email}) creó una enmienda en la sección '${seccion}' de la atención ${atencionId}.`,
       ipAddress,
       userAgent,
     });
 
-    return createResponse(201, 'Enmienda creada con éxito', newAmendment[0]);
+    return createResponse(201, 'Enmienda creada con éxito', newAmendment);
   } catch (error) {
     console.error('Error al crear la enmienda:', error);
     return createResponse(500, 'Error interno del servidor al crear la enmienda.');

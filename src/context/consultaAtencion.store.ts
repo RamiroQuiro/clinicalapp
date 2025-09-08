@@ -26,6 +26,14 @@ export interface Consulta {
     presionArterial: number;
     frecuenciaCardiaca: number;
     frecuenciaRespiratoria: number;
+    dolor: string | null;
+    fechaRegistro: string | null;
+    glucosa: number;
+    imc: number;
+    peso: number;
+    talla: number;
+    saturacionOxigeno: number;
+    tensionArterial: number;
     temperatura: number;
   };
   notas: {
@@ -52,9 +60,9 @@ export interface Consulta {
     id: string;
   }[];
   archivos: ArchivoAdjunto[]; // AÑADIDO PARA ARCHIVOS
-  inicioConsulta: string | null; // AÑADIDO
-  finConsulta: string | null; // AÑADIDO
-  duracionConsulta: number | null; // AÑADIDO
+  inicioAtencion: string | null; // AÑADIDO
+  finAtencion: string | null; // AÑADIDO
+  duracionAtencion: number | null; // AÑADIDO
 }
 
 // Estado inicial
@@ -68,6 +76,14 @@ const initialConsulta: Consulta = {
   signosVitales: {
     presionArterial: 0,
     frecuenciaCardiaca: 0,
+    tensionArterial: 0,
+    saturacionOxigeno: 0,
+    glucosa: 0,
+    peso: 0,
+    talla: 0,
+    imc: 0,
+    dolor: null,
+    fechaRegistro: null,
     frecuenciaRespiratoria: 0,
     temperatura: 0,
   },
@@ -95,9 +111,9 @@ const initialConsulta: Consulta = {
       estado: '',
     },
   ],
-  inicioConsulta: null, // AÑADIDO
-  finConsulta: null, // AÑADIDO
-  duracionConsulta: null, // AÑADIDO
+  inicioAtencion: null, // AÑADIDO
+  finAtencion: null, // AÑADIDO
+  duracionAtencion: null, // AÑADIDO
 };
 
 // Creamos el store
@@ -152,7 +168,8 @@ export function addNota(nota: {
 }
 
 // Editar Nota
-export function editNota(nota: any) { // Tipo ajustado para aceptar la nota completa
+export function editNota(nota: any) {
+  // Tipo ajustado para aceptar la nota completa
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
@@ -189,7 +206,6 @@ export function removeArchivo(archivoId: string) {
     archivos: current.archivos.filter(a => a.id !== archivoId),
   });
 }
-
 
 // // Resetear consulta (cuando finalizas/guardas)
 // export function resetConsulta() {
