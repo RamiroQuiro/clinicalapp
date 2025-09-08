@@ -1,13 +1,17 @@
 import Button from '@/components/atomos/Button';
+import ModalReact from '@/components/moleculas/ModalReact';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { getDurationInMinutes, getFechaUnix } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
-import { CircleX, FileDown, FilePlus, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
+import { FileDown, FilePlus, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
+import FormularioEnmienda from './FormularioEnmienda';
 
 type Props = {
   esFinalizada: boolean;
+  pacienteId: string;
+  atencionId: string;
 };
 
 export default function ContenedorBotonesFinalizrConsulta({
@@ -17,7 +21,7 @@ export default function ContenedorBotonesFinalizrConsulta({
 }: Props) {
   const $consulta = useStore(consultaStore);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log('estos son datos del $consulta', $consulta);
+  const [isEnmiendaModalOpen, setIsEnmiendaModalOpen] = useState(false);
 
   const handleGuardarBorrador = async (modoFetch: string) => {
     if (
@@ -75,7 +79,7 @@ export default function ContenedorBotonesFinalizrConsulta({
       <div className="flex md:flex-col flex-row w-full md:w-fit md:items-center gap-2">
         {esFinalizada ? (
           <>
-            <Button id="crearEnmienda">
+            <Button id="crearEnmienda" onClick={() => setIsEnmiendaModalOpen(true)}>
               <p className="inline-flex items-center gap-2">
                 <FilePlus className="mr- w-4 h-4" /> Crear Enmienda
               </p>
@@ -85,7 +89,7 @@ export default function ContenedorBotonesFinalizrConsulta({
               target="_blank"
               className="text-sm"
             >
-              <Button variant="downloadPDF" id="descargaPdf">
+              <Button variant="secondary" id="descargaPdf">
                 <p className="inline-flex items-center gap-2">
                   <FileDown className="mr- w-4 h-4" /> Descargar PDF
                 </p>
@@ -116,52 +120,42 @@ export default function ContenedorBotonesFinalizrConsulta({
       </div>
 
       {isModalOpen && (
-        <div
-          style={{ margin: 0, position: 'fixed' }}
-          className="fixed top-0 left-0 mt-0 w-full h-screen z-[80] -opacity-50 flex items-start  justify-center pb-10"
-          onClick={() => setIsModalOpen(false)}
+        <ModalReact
+          title="Confirmar Finalización de Consulta"
+          onClose={() => setIsModalOpen(false)}
+          id="confirmarFinalizacionModal"
+          className="w-[500px]"
         >
-          <div
-            className={`bg-white relative md:max-w-[50vw] rounded-lg  border-primary-400/70 border-2 overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit max-h overflow-y-auto w-fit `}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header Fijo */}
-            <div className="flex justify-between items-center  p-4 border-b bg-primary-bg-componentes flex-shrink-0">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Confirmar Finalización de Consulta
-              </h3>
-              <button
-                id={`modal-close-${'finalizarConsultaV2'}`}
-                className="text-gray-500 hover:text-primary-100 transition-colors rounded-full p-1"
-                onClick={() => setIsModalOpen(false)}
-              >
-                <CircleX size={24} />
-              </button>
-            </div>
-            <div className="p-4 flex flex-col items-center text-center">
-              <TriangleAlert className="w-16 h-16 text-yellow-400 mb-4" />
-              <h2 className="text-lg font-semibold mb-2">Atención</h2>
-              <p className="text-gray-600 mb-6">
-                Al finalizar la consulta, el registro se sellará y no podrá ser modificado
-                directamente. Cualquier cambio futuro deberá realizarse mediante una enmienda.
-              </p>
-              <div className="flex justify-center gap-4 w-full">
-                <Button
-                  onClick={() => setIsModalOpen(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleConfirmarFinalizacion}
-                  className="bg-primary-100 hover:bg-primary-200 text-white"
-                >
-                  Confirmar Finalización
-                </Button>
-              </div>
+          <div className="p-4 flex flex-col items-center text-center">
+            <TriangleAlert className="w-16 h-16 text-yellow-400 mb-4" />
+            <h2 className="text-lg font-semibold mb-2">Atención</h2>
+            <p className="text-gray-600 mb-6">
+              Al finalizar la consulta, el registro se sellará y no podrá ser modificado
+              directamente. Cualquier cambio futuro deberá realizarse mediante una enmienda.
+            </p>
+            <div className="flex justify-center gap-4 w-full">
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary">
+                Cancelar
+              </Button>
+              <Button onClick={handleConfirmarFinalizacion}>
+                Confirmar Finalización
+              </Button>
             </div>
           </div>
-        </div>
+        </ModalReact>
+      )}
+
+      {isEnmiendaModalOpen && (
+        <ModalReact
+          title="Crear Nueva Enmienda"
+          onClose={() => setIsEnmiendaModalOpen(false)}
+          id="enmiendaModal"
+        >
+          <FormularioEnmienda
+            atencionId={atencionId}
+            onClose={() => setIsEnmiendaModalOpen(false)}
+          />
+        </ModalReact>
       )}
     </>
   );
