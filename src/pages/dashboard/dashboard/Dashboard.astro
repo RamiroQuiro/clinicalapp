@@ -12,6 +12,8 @@ import PacienteList from './componente/PacienteList.astro';
 const { user, session } = Astro.locals;
 let errorData = false;
 const data = await getDashboardData(user?.id);
+
+console.log('dashboard data ->', data);
 ---
 
 <MainDashboard h1="Dashboard">
@@ -24,10 +26,7 @@ const data = await getDashboardData(user?.id);
         <ContenedorTitleBotonera>
           <H2>Ultimas Atenciones</H2>
         </ContenedorTitleBotonera>
-        <PacienteList
-          ultimasAtenciones={data?.ultimasAtenciones}
-          pacienteId={data?.ultimasAtenciones[0].pacienteId}
-        />
+        <PacienteList ultimasAtenciones={data?.ultimasAtenciones} />
       </DivBox1>
 
       <!-- lista de espera -->

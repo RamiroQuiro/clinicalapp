@@ -3,17 +3,17 @@
 import { Image } from 'astro:assets';
 import avatarDefault from '/public/avatarDefault.png';
 import ContenedorBotonesFinalizrConsulta from '@/pages/dashboard/consultas/aperturaPaciente/[pacienteId]/componenteAtencionV2/ContenedorBotonesFinalizrConsulta.tsx';
-import Button2 from '../atomos/Button2.astro';
 import DivBox1 from '../atomos/DivBox1.astro';
-import Button1 from '../atomos/Button1.astro';
-import { Table, Table2 } from 'lucide-react';
 const { pacienteId, atencionId } = Astro.params;
 const { pacienteData, esFinalizada } = Astro.props;
 const { nombre, apellido, dni, fotoUrl } = pacienteData;
 ---
 
 <DivBox1
-  styleDiv="bg-white/70 backdrop-blur-sm shadow-sm rounded-b-lg sticky top-0 z-40 border-b border-x p-2 border-gray-200"
+  variant="default"
+  rounded="lg"
+  shadow="md"
+  className={`${esFinalizada ? 'bg-gray-700' : 'bg-white/70 backdrop-blur-sm'}  shadow-sm rounded-b-lg sticky top-0 z-0 border-b border-x p-2 border-gray-200`}
 >
   <div class="flex md:items-center flex-col md:flex-row justify-between gap-2 h- w-full">
     <!-- Datos del Paciente -->
@@ -64,8 +64,8 @@ const { nombre, apellido, dni, fotoUrl } = pacienteData;
     <div class="flex md:flex-col flex-row w-full md:w-fit items-center gap-2">
       <ContenedorBotonesFinalizrConsulta
         client:load
-        pacienteId={pacienteId}
-        atencionId={atencionId}
+        pacienteId={pacienteId || ''}
+        atencionId={atencionId || ''}
         esFinalizada={esFinalizada}
       />
     </div>

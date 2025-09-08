@@ -1,7 +1,7 @@
 import db from '@/db';
-import { atencionAmendments } from '@/db/schema';
+import { atencionAmendments } from '@/db/schema/atencionAmendments';
+
 import { logAuditEvent } from '@/lib/audit';
-import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 
@@ -14,19 +14,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return createResponse(401, 'No autorizado');
   }
 
-  const { atencionId, reason, details } = await request.json();
+  const { atencionId, motivo, detalle } = await request.json();
 
-  if (!atencionId || !reason || !details) {
+  if (!atencionId || !motivo || !detalle) {
     return createResponse(400, 'Faltan datos requeridos para la enmienda.');
   }
 
   try {
-    const newAmendment = await db.insert(atencionAmendments).values({
-      atencionId,
-      userId: user.id,
-      reason,
-      details,
-    }).returning();
+    const newAmendment = await db
+      .insert(atencionAmendments)
+      .values({
+        atencionId,
+        userId: user.id,
+        motivo,
+        detalle,
+      })
+      .returning();
 
     await logAuditEvent({
       userId: user.id,
@@ -34,7 +37,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       tableName: 'atencionAmendments',
       recordId: newAmendment[0].id,
       newValue: newAmendment[0],
-      description: `El usuario ${user.name} (${user.email}) creó una enmienda para la atención ${atencionId}. Motivo: ${reason}`,
+      description: `El usuario ${user.name} (${user.email}) creó una enmienda para la atención ${atencionId}. Motivo: ${motivo}`,
       ipAddress,
       userAgent,
     });

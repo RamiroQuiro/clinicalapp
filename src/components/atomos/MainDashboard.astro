@@ -11,12 +11,12 @@ const { user, session } = Astro.locals;
 >
   {
     h1 && (
-      <div class="w-full py-2 md:px-5 px-2 flex items-center justify-between ">
+      <div class="w-full py-2 md:px-4 px-2 flex items-center justify-between ">
         <h1 class="text-lg  font-semibold text-primary-textoTitle ">{h1}</h1>
       </div>
     )
   }
-  <div class="w-full md:px-5 px-2 flex flex-col items-center justify-start rounded-lg h-full">
+  <div class="w-full md:px-4 px-2 flex flex-col items-center justify-start rounded-lg h-full">
     <slot />
   </div>
 </div>

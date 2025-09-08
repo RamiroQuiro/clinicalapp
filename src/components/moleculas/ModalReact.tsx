@@ -13,7 +13,7 @@ export default function ModalReact({ onClose, children, className, title, id }: 
   return (
     <div
       style={{ margin: 0, position: 'fixed' }}
-      className="fixed top-0 left-0 mt-0 w-full h-screen z-[80] bg-black bg-opacity-50 flex items-center  justify-center backdrop-blur-sm"
+      className="fixed top-0 left-0 mt-0 w-full h-screen z-[999] bg-black bg-opacity-70 flex items-center  justify-center backdrop-blur-sm"
       onClick={() => onClose(false)}
     >
       <div

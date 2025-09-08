@@ -51,9 +51,10 @@ const sections = [
 ];
 ---
 
+
 <aside
   id="aside"
-  class=" group/sidebar w-full fixed bottom-0 left-0 h-   md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:w-16 md:border-r border-t bg-white/60 backdrop-blur-sm text-primary-textoTitle z-50 transition-all duration-300 ease-in-out"
+  class=" group/sidebar w-full fixed bottom-0 left-0 h-  z-20  md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:self-start md:w-16 md:border-r border-t bg-white/60 backdrop-blur-sm md:backdrop-blur-none text-primary-textoTitle transition-all duration-300 ease-in-out"
 >
   <div class="w-full hidden md:flex px-4 mx-auto  items-center justify-end">
     <PanelLeftOpen
@@ -86,7 +87,7 @@ const sections = [
           <a
             href={section.href}
             class:list={[
-              'flex items-center w-fit md:w-full group/item p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
+              'flex items-center w-fit md:w-full group/item z-50 p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
               {
                 'bg-primary-100 text-white': isActive,
                 'text-primary-texto hover:bg-primary-100 hover:text-white': !isActive,
@@ -99,7 +100,7 @@ const sections = [
               {section.name}
             </span>
             <!-- Tooltip para el menú contraído -->
-            <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm text-white z-50">
+            <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm  text-white z-[999]">
               {section.name}
             </span>
           </a>

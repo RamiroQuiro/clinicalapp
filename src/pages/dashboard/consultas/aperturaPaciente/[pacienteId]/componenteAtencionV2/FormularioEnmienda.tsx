@@ -1,7 +1,10 @@
 import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
+import InputDate from '@/components/atomos/InputDate';
 import { TextArea } from '@/components/atomos/TextArea';
+import { CardContent, CardTitle } from '@/components/organismo/Card';
 import { showToast } from '@/utils/toast/toastShow';
+import { AlertTriangle, FileEdit, User } from 'lucide-react';
 import { useState } from 'react';
 
 type Props = {
@@ -46,45 +49,117 @@ export default function FormularioEnmienda({ atencionId, onClose }: Props) {
     }
   };
 
+  const motivosEnmienda = [
+    { value: 'correccion', label: 'Corrección de información incorrecta' },
+    { value: 'adicion', label: 'Adición de información omitida' },
+    { value: 'aclaracion', label: 'Aclaración de información ambigua' },
+    { value: 'actualizacion', label: 'Actualización de información' },
+  ];
+
+  const seccionesDisponibles = [
+    { value: 'diagnosticos', label: 'Diagnósticos' },
+    { value: 'medicamentos', label: 'Medicamentos' },
+    { value: 'sintomas', label: 'Síntomas y Anamnesis' },
+    { value: 'signosVitales', label: 'Signos Vitales' },
+    { value: 'observaciones', label: 'Observaciones' },
+    { value: 'motivoConsulta', label: 'Motivo de Consulta' },
+  ];
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4 w-[500px]">
-      <div>
-        <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
-          Motivo de la Enmienda
-        </label>
-        <Input
-          id="reason"
-          name="reason"
-          value={reason}
-          onChange={e => setReason(e.target.value)}
-          placeholder="Ej: Corrección de diagnóstico"
-          disabled={isLoading}
-        />
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <FileEdit className="h-5 w-5 text-primary" />
+          <CardTitle className="text-xl">Formulario de Enmienda Médica</CardTitle>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <AlertTriangle className="h-4 w-4" />
+          <span>Las enmiendas quedan registradas permanentemente en el historial médico</span>
+        </div>
       </div>
 
-      <div>
-        <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">
-          Detalles de la Enmienda
-        </label>
-        <TextArea
-          id="details"
-          name="details"
-          value={details}
-          onChange={e => setDetails(e.target.value)}
-          placeholder="Escriba aquí el texto completo de la enmienda..."
-          rows={6}
-          disabled={isLoading}
-        />
-      </div>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Información General */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputDate name="fechaEnmienda" />
 
-      <div className="flex justify-end gap-2 mt-2">
-        <Button type="button" variant="secondary" onClick={onClose} disabled={isLoading}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Guardando...' : 'Guardar Enmienda'}
-        </Button>
-      </div>
-    </form>
+            <select name="motivoEnmienda" id="">
+              {motivosEnmienda.map(motivo => (
+                <option key={motivo.value} value={motivo.value}>
+                  {motivo.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <select name="seccionEnmendar" id="">
+            {seccionesDisponibles.map(seccion => (
+              <option key={seccion.value} value={seccion.value}>
+                {seccion.label}
+              </option>
+            ))}
+          </select>
+
+          <br />
+
+          {/* Contenido Original y Corregido */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Input
+              name="contenidoOriginal"
+              placeholder="Contenido original de la sección seleccionada"
+              className="min-h-24 bg-muted"
+              readOnly
+            />
+
+            <Input
+              name="contenidoCorregido"
+              placeholder="Ingrese el contenido corregido o actualizado"
+              className="min-h-24"
+            />
+
+            <TextArea
+              name="contenidoCorregido"
+              placeholder="Ingrese el contenido corregido o actualizado"
+              className="min-h-24"
+            />
+          </div>
+
+          <TextArea
+            name="justificacion"
+            placeholder="Explique detalladamente el motivo y la necesidad de esta enmienda"
+            className="min-h-20"
+          />
+
+          <br />
+
+          {/* Información del Médico */}
+          <div className="space-y-4">
+            <h4 className="font-semibold flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Médico que Realiza la Enmienda
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input name="medicoEnmienda" placeholder="Nombre Completo del Médico" />
+
+              <Input name="matriculaMedico" placeholder="Matrícula Profesional" />
+
+              <Input name="matriculaMedico" placeholder="Matrícula Profesional" />
+            </div>
+          </div>
+
+          {/* Botones de Acción */}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button type="submit" className="min-w-32">
+              Registrar Enmienda
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </div>
   );
 }

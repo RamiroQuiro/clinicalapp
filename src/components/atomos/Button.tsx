@@ -3,7 +3,7 @@ import * as React from 'react';
 
 // Definimos las variantes que el botón puede tener
 const buttonVariants = {
-  base: 'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
+  base: 'inline-flex items-center justify-center rounded-md text-sm font-thin transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 w-fit disabled:opacity-50 disabled:cursor-not-allowed',
   variants: {
     variant: {
       primary: 'bg-primary-100 text-white hover:bg-primary-100/90 focus:ring-primary-100',

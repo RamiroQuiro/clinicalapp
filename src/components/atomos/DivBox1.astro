@@ -1,9 +1,24 @@
 ---
-const { styleDiv } = Astro.props;
+import { cn } from '@/utils/cn';
+
+interface Props {
+  variant?: 'default' | 'outline' | 'ghost' | 'primary';
+  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'inner';
+  className?: string;
+}
+const { variant, rounded, shadow, className } = Astro.props;
+const mergedClasses = cn(
+  'flex items-start p-3 text-primary-texto w-full',
+  variant,
+  rounded,
+  shadow,
+  className
+);
 ---
 
 <div
-  class={`${styleDiv}  bg-white border--150 rounded-lg  flex items-start focus:border-primary-100 border justify-between p-3  shadow-sm text-primary-texto`}
+  class={`${mergedClasses}  bg-white border--150 rounded-lg  flex items-start focus:border-primary-100 border justify-between shadow-sm text-primary-texto`}
 >
   <div class="flex flex-col gap-y-2 items-start w-full justify-between">
     <slot />

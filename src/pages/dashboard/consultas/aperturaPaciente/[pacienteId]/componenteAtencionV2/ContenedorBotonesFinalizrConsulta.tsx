@@ -4,7 +4,7 @@ import { consultaStore, setConsultaField } from '@/context/consultaAtencion.stor
 import { getDurationInMinutes, getFechaUnix } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
-import { FileDown, FilePlus, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
+import { Edit3, FileDown, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import FormularioEnmienda from './FormularioEnmienda';
 
@@ -77,11 +77,23 @@ export default function ContenedorBotonesFinalizrConsulta({
   return (
     <>
       <div className="flex md:flex-col flex-row w-full md:w-fit md:items-center gap-2">
+        <a href={`/dashboard/pacientes/${pacienteId}`} className="text-sm">
+          <Button>
+            <p className="inline-flex items-center gap-2">
+              <Table2 className=" w-4 h-4" /> Ficha Paciente
+            </p>
+          </Button>
+        </a>
         {esFinalizada ? (
           <>
-            <Button id="crearEnmienda" onClick={() => setIsEnmiendaModalOpen(true)}>
+            <Button
+              id="crearEnmienda"
+              variant="bgTransparent"
+              onClick={() => setIsEnmiendaModalOpen(true)}
+            >
               <p className="inline-flex items-center gap-2">
-                <FilePlus className="mr- w-4 h-4" /> Crear Enmienda
+                <Edit3 className="mr- w-4 h-4" />
+                Enmienda
               </p>
             </Button>
             <a
@@ -98,13 +110,6 @@ export default function ContenedorBotonesFinalizrConsulta({
           </>
         ) : (
           <>
-            <a href={`/dashboard/pacientes/${$consulta.pacienteId}`} className="text-sm">
-              <Button>
-                <p className="inline-flex items-center gap-2">
-                  <Table2 className=" w-4 h-4" /> Ficha del Paciente
-                </p>
-              </Button>
-            </a>
             <Button id="guardarBorradorV2" onClick={() => handleGuardarBorrador('borrador')}>
               <p className="inline-flex items-center gap-2">
                 <Save className="mr- w-4 h-4" /> Guardar Borrador
@@ -137,9 +142,7 @@ export default function ContenedorBotonesFinalizrConsulta({
               <Button onClick={() => setIsModalOpen(false)} variant="secondary">
                 Cancelar
               </Button>
-              <Button onClick={handleConfirmarFinalizacion}>
-                Confirmar Finalización
-              </Button>
+              <Button onClick={handleConfirmarFinalizacion}>Confirmar Finalización</Button>
             </div>
           </div>
         </ModalReact>

@@ -64,7 +64,7 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Header con información de tiempo y botón de enmienda */}
       <Card>
         <CardHeader>

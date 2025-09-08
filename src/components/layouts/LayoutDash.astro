@@ -19,17 +19,19 @@ const { title } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body
-    class="bg-gradient-to-r flex from-primary-bg-componentes via-primary-bg-componentes to-primary-bg-componentes-2 text-primary-texto relative overflow-x-hidden"
-  >
-    <SidebarV3 />
-    <Loader />
+  <body>
+    <div
+      class="bg-gradient-to-r flex from-primary-bg-componentes via-primary-bg-componentes to-primary-bg-componentes-2 text-primary-texto relative"
+    >
+      <SidebarV3 />
+      <Loader />
 
-    <!-- Contenido Principal -->
-    <main class="w-full min-w-0 transition-all duration-300 ease-in-out">
-      <NavDash title={title} />
-      <slot />
-    </main>
+      <!-- Contenido Principal -->
+      <main class="w-full min-w-0 transition-all duration-300 ease-in-out h-fit">
+        <NavDash title={title} />
+        <slot />
+      </main>
+    </div>
   </body>
 </html>
 
