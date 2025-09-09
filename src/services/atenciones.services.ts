@@ -1,6 +1,7 @@
 import db from '@/db';
 import {
   archivosAdjuntos,
+  atencionAmendments,
   atenciones,
   diagnostico,
   historiaClinica,
@@ -96,6 +97,13 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .from(signosVitales)
     .where(eq(signosVitales.atencionId, atencionId));
 
+  // Busca las enmiendas de la atención.
+  const enmiendasPromise = db
+    .select()
+    .from(atencionAmendments)
+    .where(eq(atencionAmendments.atencionId, atencionId))
+    .orderBy(desc(atencionAmendments.created_at));
+
   // 3. Si la atención está finalizada, ejecutamos solo las promesas esenciales.
   if (atencionData.estado === 'finalizada') {
     const [
@@ -105,6 +113,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       notasAtencion,
       archivosAtencion,
       signosVitalesAtencion,
+      enmiendasAtencion,
     ] = await Promise.all([
       pacientePromise,
       diagnosticosPromise,
@@ -112,6 +121,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       notasPromise,
       archivosPromise,
       signosVitalesPromise,
+      enmiendasPromise,
     ]);
 
     const pacienteData = pacienteResult[0];
@@ -130,6 +140,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
           archivosAdjuntos: archivosAtencion,
           signosVitales: signosVitalesAtencion[0] || null,
           notas: notasAtencion,
+          enmiendas: enmiendasAtencion,
         },
         paciente: pacienteData,
         antecedentes: [],

@@ -7,9 +7,10 @@ type Props = {
   className?: string;
   title: string;
   id: string;
+  icon?: React.ReactNode;
 };
 
-export default function ModalReact({ onClose, children, className, title, id }: Props) {
+export default function ModalReact({ onClose, children, className, title, id, icon }: Props) {
   return (
     <div
       style={{ margin: 0, position: 'fixed' }}
@@ -22,7 +23,10 @@ export default function ModalReact({ onClose, children, className, title, id }: 
       >
         {/* Header Fijo */}
         <div className="flex justify-between items-center p-4 border-b bg-primary-bg-componentes flex-shrink-0">
-          <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
+          <div className="flex items-center gap-2">
+            {icon}
+            <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
+          </div>
           <button
             id={`modal-close-${id}`}
             className="text-gray-500 hover:text-primary-100 transition-colors rounded-full p-1"

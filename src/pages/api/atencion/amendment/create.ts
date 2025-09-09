@@ -6,6 +6,7 @@ import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const { user, session } = locals;
+
   const ipAddress = request.headers.get('x-forwarded-for') || undefined;
   const userAgent = request.headers.get('user-agent') || undefined;
 
@@ -20,6 +21,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     contenidoOriginal,
     contenidoCorregido,
     justificacion,
+    userIdMedico,
   } = await request.json();
 
   if (!atencionId || !motivo || !seccion || !contenidoCorregido || !justificacion) {
@@ -31,7 +33,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .insert(atencionAmendments)
       .values({
         atencionId,
-        userIdMedico: user.id,
+        userIdMedico,
         motivo,
         seccion,
         contenidoOriginal,
@@ -41,12 +43,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .returning();
 
     await logAuditEvent({
-      userId: user.id,
+      userId: userIdMedico,
       actionType: 'CREATE',
       tableName: 'atencionAmendments',
       recordId: newAmendment.id,
       newValue: newAmendment,
-      description: `El usuario ${user.name} (${user.email}) creó una enmienda en la sección '${seccion}' de la atención ${atencionId}.`,
+      description: `El usuario ${user.nombre} (${user.email}) creó una enmienda en la sección '${seccion}' de la atención ${atencionId}.`,
       ipAddress,
       userAgent,
     });

@@ -1,9 +1,9 @@
 import Button from '@/components/atomos/Button';
 import { TextArea } from '@/components/atomos/TextArea';
-import { CardContent, CardTitle } from '@/components/organismo/Card';
+import { CardContent } from '@/components/organismo/Card';
 import type { Atencion, Diagnostico, Medicamento, User } from '@/types';
 import { showToast } from '@/utils/toast/toastShow';
-import { AlertTriangle, FileEdit, User as UserIcon } from 'lucide-react';
+import { AlertTriangle, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 // Tipos para las props del componente
@@ -12,6 +12,7 @@ type Props = {
     diagnosticos: Diagnostico[];
     medicamentos: Medicamento[];
   };
+  paciente: Paciente;
   user: User; // Datos del médico que realiza la enmienda
   onClose: () => void;
 };
@@ -26,6 +27,7 @@ const motivosEnmienda = [
 
 const seccionesDisponibles = [
   { value: '', label: 'Seleccione una sección...' },
+  { value: 'motivoInicial', label: 'Motivo Inicial' },
   { value: 'motivoConsulta', label: 'Motivo de Consulta' },
   { value: 'sintomas', label: 'Síntomas y Anamnesis' },
   { value: 'diagnosticos', label: 'Diagnósticos' },
@@ -34,7 +36,7 @@ const seccionesDisponibles = [
   { value: 'signosVitales', label: 'Signos Vitales' },
 ];
 
-export default function FormularioEnmienda({ atencion, user, onClose }: Props) {
+export default function FormularioEnmienda({ atencion, paciente, user, onClose }: Props) {
   // Estados para los campos del formulario (componentes controlados)
   const [motivo, setMotivo] = useState(motivosEnmienda[0].value);
   const [seccion, setSeccion] = useState('');
@@ -46,7 +48,11 @@ export default function FormularioEnmienda({ atencion, user, onClose }: Props) {
   // Efecto para actualizar el contenido original cuando se selecciona una sección
   useEffect(() => {
     let original = '';
+    console.log('atencion', atencion, 'y la seleccion de la seccion', seccion);
     switch (seccion) {
+      case 'motivoInicial':
+        original = atencion.motivoInicial || 'No especificado';
+        break;
       case 'motivoConsulta':
         original = atencion.motivoConsulta || 'No especificado';
         break;
@@ -92,7 +98,7 @@ export default function FormularioEnmienda({ atencion, user, onClose }: Props) {
     setIsLoading(true);
     const dataToSend = {
       atencionId: atencion.id,
-      medicoId: user.id,
+      userIdMedico: atencion.userIdMedico,
       motivo,
       seccion,
       contenidoOriginal,
@@ -124,12 +130,6 @@ export default function FormularioEnmienda({ atencion, user, onClose }: Props) {
   return (
     <div className="w-full md:w-[65vw] mx-auto p-2">
       <div className="space-y-1 mb-6">
-        <div className="flex items-center gap-2">
-          <FileEdit className="h-5 w-5 text-primary-100" />
-          <CardTitle className="text-xl text-primary-texto">
-            Formulario de Enmienda Médica
-          </CardTitle>
-        </div>
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <AlertTriangle className="h-4 w-4" />
           <span>Las enmiendas quedan registradas permanentemente en el historial médico.</span>

@@ -4,7 +4,7 @@ import { consultaStore } from '@/context/consultaAtencion.store';
 import { getDurationInMinutes, getFechaUnix } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
-import { Edit3, FileDown, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
+import { Edit3, FileDown, FileEdit, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import FormularioEnmienda from './FormularioEnmienda';
 
@@ -20,7 +20,7 @@ export default function ContenedorBotonesFinalizrConsulta({
   atencionId,
 }: Props) {
   const $consulta = useStore(consultaStore);
-  console.log('esta es $consulta', $consulta);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnmiendaModalOpen, setIsEnmiendaModalOpen] = useState(false);
 
@@ -161,12 +161,14 @@ export default function ContenedorBotonesFinalizrConsulta({
 
       {isEnmiendaModalOpen && (
         <ModalReact
-          title="Crear Nueva Enmienda"
+          icon={<FileEdit className="h-6 w-6 text-primary-100" />}
+          title={'Formulario de Enmienda Médica'}
           onClose={() => setIsEnmiendaModalOpen(false)}
           id="enmiendaModal"
         >
           <FormularioEnmienda
-            atencionId={atencionId}
+            atencion={$consulta.atencion}
+            paciente={$consulta.paciente}
             onClose={() => setIsEnmiendaModalOpen(false)}
           />
         </ModalReact>
