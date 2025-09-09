@@ -3,7 +3,7 @@ import { Temporal } from 'temporal-polyfill';
 /**
  * Devuelve el timestamp actual en segundos (UTC, sin zona horaria).
  */
-export function getFechaUnix(): number {
+export function getFechaEnMilisegundos(): number {
   return Temporal.Now.instant().epochMilliseconds;
 }
 

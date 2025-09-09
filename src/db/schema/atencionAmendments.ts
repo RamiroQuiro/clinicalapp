@@ -8,10 +8,10 @@ export const atencionAmendments = sqliteTable('atencionAmendments', {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   atencionId: text('atencionId')
-    .references(() => atenciones.id)
+    .references(() => atenciones.id, { onDelete: 'cascade' })
     .notNull(),
   userIdMedico: text('userIdMedico')
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: 'cascade' })
     .notNull(),
   seccion: text('seccion').notNull(),
   contenidoOriginal: text('contenidoOriginal').notNull(),

@@ -1,6 +1,6 @@
 import db from '@/db';
 import { atenciones } from '@/db/schema';
-import { getFechaUnix } from '@/utils/timesUtils';
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
 import { nanoid } from 'nanoid';
 
@@ -15,7 +15,7 @@ export const GET: APIRoute = async ({ request, locals, redirect }) => {
       return new Response(JSON.stringify({ error: 'Faltan datos requeridos' }), { status: 400 });
     }
 
-    const horaInicio = new Date(getFechaUnix() * 1000);
+    const horaInicio = new Date(getFechaEnMilisegundos());
     // 1. Crear la nueva atención
     const idAtencion = 'aten_' + nanoid(15);
     const atencionNueva = await db

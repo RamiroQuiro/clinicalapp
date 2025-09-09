@@ -1,7 +1,7 @@
 import Button from '@/components/atomos/Button';
 import ModalReact from '@/components/moleculas/ModalReact';
 import { consultaStore } from '@/context/consultaAtencion.store';
-import { getDurationInMinutes, getFechaUnix } from '@/utils/timesUtils';
+import { getDurationInMinutes, getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Edit3, FileDown, FileEdit, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
@@ -36,7 +36,7 @@ export default function ContenedorBotonesFinalizrConsulta({
 
     try {
       if (modoFetch === 'finalizada') {
-        const finAtencion = new Date(getFechaUnix() * 1000);
+        const finAtencion = new Date(getFechaEnMilisegundos());
         const now = finAtencion.toISOString();
         consultaStore.set({
           ...consultaStore.get(),

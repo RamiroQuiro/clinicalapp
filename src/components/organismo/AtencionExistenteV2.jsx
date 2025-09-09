@@ -82,6 +82,8 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
   const { atencion, paciente } = data;
   const edad = paciente?.fNacimiento ? calcularEdad(paciente?.fNacimiento) : 'N/A';
 
+  console.log('datos en la atencionexitente v2->', data);
+
   return (
     <div className="space-y-2">
       {/* ... (Otras tarjetas como Header, Datos del Paciente, etc. se mantienen igual) ... */}
@@ -96,17 +98,17 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
             <InfoItem
               icon={<Calendar1 className="h-6 w-6 stroke-primary-100" />}
               label="Inicio de Consulta"
-              value={atencion?.atencion?.inicioAtencion}
+              value={formatDate(atencion?.inicioAtencion)}
             />
             <InfoItem
               icon={<Calendar1 className="h-6 w-6 stroke-primary-100" />}
               label="Fin de Consulta"
-              value={atencion?.atencion?.finAtencion}
+              value={formatDate(atencion?.finAtencion)}
             />
             <InfoItem
               icon={<Clock className="h-6 w-6 stroke-primary-100" />}
               label="Duración de la Atención"
-              value={atencion?.atencion?.duracionAtencion}
+              value={atencion?.duracionAtencion}
             />
           </div>
         </CardContent>

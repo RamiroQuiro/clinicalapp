@@ -11,7 +11,6 @@ export default function Table({ columnas, arrayBody, styleTable, renderBotonActi
     columnas,
     arrayBody,
   });
-  console.log('consola de la tabla arraybody->', arrayBody);
   return (
     <table
       className={`${styleTable} table-auto items-start bg-transparent w-full border-collapse  rounded-md border overflow-hidden`}

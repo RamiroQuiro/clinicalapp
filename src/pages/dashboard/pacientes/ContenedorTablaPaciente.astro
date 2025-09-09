@@ -3,7 +3,6 @@ import DivBox1 from '@/components/atomos/DivBox1.astro';
 import db from '@/db';
 import { pacienteProfesional, pacientes } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
 import ConfeccionTablaPaciente from './ConfeccionTablaPaciente';
 const { session } = Astro.locals;
 let pacientesData = [];
@@ -28,9 +27,8 @@ try {
     );
 
   pacientesData = dataDB.map(paciente => {
-    const idHC = nanoid(15);
     return {
-      href: `/dashboard/consultas/aperturaPaciente/${paciente.id}/${idHC}`,
+      href: `/api/atencion/nueva?pacienteId=${paciente.id}`,
       id: paciente.id,
       nombreApellido: `${paciente.nombre}  ${paciente.apellido} `,
       dni: paciente.dni,

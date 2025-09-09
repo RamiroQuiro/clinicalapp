@@ -4,7 +4,7 @@ import type { APIRoute } from 'astro';
 import db from '@/db';
 import { logAuditEvent } from '@/lib/audit';
 import { createResponse } from '@/utils/responseAPI';
-import { getFechaUnix } from '@/utils/timesUtils';
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; // Para generar IDs únicos
 
@@ -70,7 +70,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let currentAtencionId = consultaData.id || nanoid(); // Genera un ID si no existe
 
     await db.transaction(async tx => {
-      const fechaHoy = new Date(getFechaUnix() * 1000);
+      const fechaHoy = new Date(getFechaEnMilisegundos());
       console.log('fechaHoy', fechaHoy);
       // 1. Guardar/Actualizar Atención principal
       // Aquí deberías decidir si es una inserción o una actualización.

@@ -1,4 +1,4 @@
-import { getFechaUnix } from '@/utils/timesUtils';
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
 // import { motivos } from '@/db/schema/motivos'; // Se necesitará importar el schema, hay que crearlo.
 
@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     // Por ahora, devolvemos un mock hasta tener el schema
     const nuevoMotivo = {
-      id: `mock_${Date.now(getFechaUnix() * 1000)}`,
+      id: `mock_${Date.now()}`,
       nombre: nombre.trim(),
       creadoPor: session.userId,
     };

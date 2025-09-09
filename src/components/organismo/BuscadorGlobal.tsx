@@ -28,7 +28,10 @@ export default function BuscadorGlobal() {
       try {
         const response = await fetch(`/api/pacientes/buscar?q=${encodeURIComponent(query)}`);
         if (!response.ok) throw new Error('Error en la respuesta de la API');
-        const data: PacienteResult[] = await response.json();
+        const responseData = await response.json();
+        // Si la data viene en una propiedad (ej: { data: [...] }), la extraemos.
+        // Si no, usamos la respuesta directamente.
+        const data = responseData.data || responseData;
         setResults(data);
       } catch (error) {
         console.error('Error al buscar pacientes:', error);
@@ -75,7 +78,7 @@ export default function BuscadorGlobal() {
       />
 
       {isFocused && query.length > 0 && (
-        <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-[80] max-h-96 overflow-y-auto">
           {loading && <p className="p-4 text-sm text-gray-500">Buscando...</p>}
           {!loading && results.length === 0 && query.length > 1 && (
             <p className="p-4 text-sm text-gray-500">
@@ -111,7 +114,7 @@ export default function BuscadorGlobal() {
                         className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
                       >
                         <User size={14} />
-                        <span>Perfil</span>
+                        <span>Ficha</span>
                       </a>
                     </div>
                   </div>

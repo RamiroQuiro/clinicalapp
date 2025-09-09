@@ -1,0 +1,35 @@
+---
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import TablaGenericaV2 from '../components/tablaComponente2/TablaGenericaV2.jsx';
+
+// Datos de ejemplo para la tabla
+const sampleData = [
+  { id: 1, name: 'Juan Perez', age: 30, city: 'Buenos Aires' },
+  { id: 2, name: 'Maria Garcia', age: 24, city: 'Cordoba' },
+  { id: 3, name: 'Carlos Lopez', age: 35, city: 'Rosario' },
+  { id: 4, name: 'Ana Rodriguez', age: 28, city: 'Mendoza' },
+  { id: 5, name: 'Pedro Martinez', age: 42, city: 'Salta' },
+  { id: 6, name: 'Laura Fernandez', age: 29, city: 'La Plata' },
+  { id: 7, name: 'Miguel Sanchez', age: 33, city: 'Tucuman' },
+  { id: 8, name: 'Sofia Ramirez', age: 27, city: 'Mar del Plata' },
+  { id: 9, name: 'Diego Gomez', age: 31, city: 'Santa Fe' },
+  { id: 10, name: 'Valeria Diaz', age: 26, city: 'Corrientes' },
+  { id: 11, name: 'Ricardo Torres', age: 38, city: 'Neuquen' },
+  { id: 12, name: 'Florencia Ruiz', age: 25, city: 'San Juan' },
+];
+
+// Definición de columnas para la tabla
+const sampleColumns = [
+  { key: 'id', label: 'ID', sortable: true },
+  { key: 'name', label: 'Nombre Completo', sortable: true },
+  { key: 'age', label: 'Edad', sortable: true },
+  { key: 'city', label: 'Ciudad', sortable: true },
+];
+---
+
+<LayoutDash title="Test de Tabla Genérica V2">
+  <h1 class="text-3xl font-bold mb-6">Demostración de Tabla Genérica V2</h1>
+  <div class="p-4 bg-white rounded-lg shadow-md">
+    <TablaGenericaV2 client:load data={sampleData} columns={sampleColumns} itemsPerPage={5} />
+  </div>
+</LayoutDash>

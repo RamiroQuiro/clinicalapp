@@ -1,87 +1,81 @@
-import React from 'react'
+import { CalendarPlus, Stethoscope, User } from 'lucide-react';
+import { atencion, dataFormularioContexto } from '../../context/store';
 import BotonEditar from '../moleculas/BotonEditar';
 import BotonEliminar from '../moleculas/BotonEliminar';
-import { atencion, dataFormularioContexto } from '../../context/store';
-import { showToast } from '../../utils/toast/toastShow';
-
 
 //   botonera de acciones
-export const RenderActionsPacientes = (data) => (
-    <div className="flex gap-2 pr-5 justify-end items-center text-xs">
-        <button
-            className="bg-primary-100 text-white px-1 py-0.5 rounded hover:bg-primary-100/80 duration-150"
-            onClick={() => (document.location.href = `/dashboard/pacientes/${data.id}`)}
-        >
-            ficha
-        </button>
-        <button
-            className="bg-primary-200 text-white  px-1 py-0.5 rounded hover:bg-primary-200/80 duration-150"
-            onClick={(e) => {
-                e.stopPropagation();
-                document.location.href = data.href;
-            }}
-        >
-            atender
-        </button>
-        <button
-            className="bg-primary-400 text-white  px-1 py-0.5 rounded hover:bg-primary-400/80 duration-150"
-            onClick={(e) => {
-                e.stopPropagation();
-                alert(`Eliminar: ${data.id}`);
-            }}
-        >
-            Eliminar
-        </button>
-    </div>
+export const RenderActionsPacientes = data => (
+  <div className="flex gap-2 pr-5 justify-end items-center text-xs">
+    <a
+      href={`/dashboard/pacientes/${data.id}`}
+      className="flex items-center gap-1 text-xs p-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
+    >
+      <User size={14} />
+      <span>Ficha</span>
+    </a>
+    <a
+      href={`/dashboard/consultas/aperturaPaciente/${data.id}`}
+      className="flex items-center gap-1 text-xs p-1 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+    >
+      <CalendarPlus size={14} />
+      <span>Dar Turno</span>
+    </a>
+    <a
+      href={`/api/atencion/nueva?pacienteId=${data.id}`}
+      className="flex items-center gap-1 text-xs p-1 rounded-md bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+    >
+      <Stethoscope size={14} />
+      <span>Atender</span>
+    </a>
+  </div>
 );
 
 // botoner para acciones de diagnosticos
 
-export const RenderActionsEditDeletDiagnostico = (data) =>{
-    const handleEditModal=(data)=>{
-        dataFormularioContexto.set(data)
-        const modal = document.getElementById("modal-dialogDiagnostico");
-          modal.showModal();
-          // e.showModal()
-    }
+export const RenderActionsEditDeletDiagnostico = data => {
+  const handleEditModal = data => {
+    dataFormularioContexto.set(data);
+    const modal = document.getElementById('modal-dialogDiagnostico');
+    modal.showModal();
+    // e.showModal()
+  };
 
-    const handleDeletDiag = async ({id}) => {
-        const newDiagnosticos=atencion.get().diagnosticos.filter(diag=>diag.id!=id)
-        atencion.set({
-            ...atencion.get(),
-            diagnosticos:newDiagnosticos
-        })
-    }
+  const handleDeletDiag = async ({ id }) => {
+    const newDiagnosticos = atencion.get().diagnosticos.filter(diag => diag.id != id);
+    atencion.set({
+      ...atencion.get(),
+      diagnosticos: newDiagnosticos,
+    });
+  };
 
-    return(
+  return (
     <div className="flex gap-2 pr-5 justify-end items-center text-xs">
-        <BotonEditar handleClick={()=>handleEditModal(data)}/>
-        <BotonEliminar handleClick={()=>handleDeletDiag(data)} />
+      <BotonEditar handleClick={() => handleEditModal(data)} />
+      <BotonEliminar handleClick={() => handleDeletDiag(data)} />
     </div>
-);}
+  );
+};
 
+export const RenderActionsEditDeletMedicamentos = data => {
+  const handleEditModal = data => {
+    dataFormularioContexto.set(data);
+    const modal = document.getElementById(`dialog-modal-medicamentos`);
+    modal.showModal();
+    // e.showModal()
+  };
 
+  const handleDeletMed = async ({ id }) => {
+    const newMedicamentos = atencion.get().medicamentos.filter(med => med.id != id);
+    atencion.set({
+      ...atencion.get(),
+      medicamentos: newMedicamentos,
+    });
+  };
 
-export const RenderActionsEditDeletMedicamentos = (data) =>{
-    const handleEditModal=(data)=>{
-        dataFormularioContexto.set(data)
-        const modal = document.getElementById(`dialog-modal-medicamentos`);
-          modal.showModal();
-          // e.showModal()
-    }
-
-    const handleDeletMed = async ({id}) => {
-        const newMedicamentos=atencion.get().medicamentos.filter(med=>med.id!=id)
-            atencion.set({
-                ...atencion.get(),
-                medicamentos:newMedicamentos
-            })
-       
-    }
-
-    return(
+  return (
     <div className="flex gap-2 pr-5 justify-end items-center text-xs">
-        <BotonEditar handleClick={()=>handleEditModal(data)}/>
-        <BotonEliminar handleClick={()=>handleDeletMed(data)} />
+      <BotonEditar handleClick={() => handleEditModal(data)} />
+      <BotonEliminar handleClick={() => handleDeletMed(data)} />
     </div>
-);}
+  );
+};

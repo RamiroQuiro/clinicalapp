@@ -7,7 +7,7 @@ import Section from '@/components/moleculas/Section';
 import ModalDictadoIA from '@/components/organismo/ModalDictadoIA';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { dataFormularioContexto } from '@/context/store'; // New import for AI integration
-import { getFechaUnix } from '@/utils/timesUtils';
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { useStore } from '@nanostores/react';
 import {
   Calculator,
@@ -109,7 +109,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
   useEffect(() => {
     if (!data || !data.atencion) return;
-    const inicioAtencion = new Date(getFechaUnix() * 1000);
+    const inicioAtencion = new Date(getFechaEnMilisegundos());
 
     // Ensure nested objects and arrays exist to prevent runtime errors
     const atencionData = {
@@ -305,7 +305,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
         <Section title="Signos Vitales">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {vitalSignsConfig.map(vital => {
+            {vitalSignsConfig?.map((vital, _index) => {
               const historyData =
                 signosVitalesHistorial.find(h => h.tipo === vital.name)?.historial || [];
               return (
@@ -315,7 +315,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
                   label={vital.label}
                   unit={vital.unit}
                   icon={vital.icon}
-                  value={$consulta?.signosVitales[vital?.name]}
+                  value={signosVitalesHistorial[vital?.name]}
                   onChange={handleSignosVitalesChange}
                   history={historyData}
                 />

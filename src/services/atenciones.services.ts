@@ -9,6 +9,7 @@ import {
   notasMedicas,
   pacientes,
   signosVitales,
+  users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
 import { desc, eq } from 'drizzle-orm';
@@ -27,6 +28,19 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
 
   // 2. Definimos las promesas para los datos que siempre se necesitan.
   // (No se ejecutan hasta que se usa Promise.all)
+
+  // Busca los datos del medico que atendio
+  const medicoPromise = db
+    .select({
+      id: users.id,
+      nombre: users.nombre,
+      apellido: users.apellido,
+      email: users.email,
+      celular: users.celular,
+      mp: users.mp,
+    })
+    .from(users)
+    .where(eq(users.id, atencionData.userIdMedico));
 
   // Busca los datos del paciente y su historia clínica.
   const pacientePromise = db
@@ -114,6 +128,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       archivosAtencion,
       signosVitalesAtencion,
       enmiendasAtencion,
+      medicoAtencion,
     ] = await Promise.all([
       pacientePromise,
       diagnosticosPromise,
@@ -122,6 +137,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       archivosPromise,
       signosVitalesPromise,
       enmiendasPromise,
+      medicoPromise,
     ]);
 
     const pacienteData = pacienteResult[0];
@@ -135,6 +151,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       data: {
         atencion: {
           ...atencionData,
+          medico: medicoAtencion[0],
           diagnosticos: diagnosticosAtencion,
           medicamentos: medicamentosAtencion,
           archivosAdjuntos: archivosAtencion,
