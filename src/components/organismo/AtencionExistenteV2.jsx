@@ -1,6 +1,5 @@
 import calcularEdad from '@/utils/calcularEdad';
 import formatDate from '@/utils/formatDate';
-import { getDurationInMinutes } from '@/utils/timesUtils';
 import {
   Calendar,
   Calendar1,
@@ -41,7 +40,7 @@ const EnmiendaTimelineItem = ({ enmienda, isLast }) => {
     <div className="relative pl-10">
       {/* Línea vertical de la timeline */}
       {!isLast && <div className="absolute left-4 top-5 h-full w-px bg-gray-300" />}
-      
+
       {/* Círculo con ícono en la timeline */}
       <div className="absolute left-0 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 ring-8 ring-white">
         <FilePenLine className="h-4 w-4 text-gray-600" />
@@ -51,18 +50,25 @@ const EnmiendaTimelineItem = ({ enmienda, isLast }) => {
       <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h4 className="font-bold text-gray-800">{enmienda.justificacion}</h4>
         <p className="mb-3 text-xs text-gray-500">
-          Realizada por: <span className="font-semibold">{enmienda.userIdMedico}</span> el {formatDate(enmienda.created_at)}
+          Realizada por: <span className="font-semibold">{enmienda.userIdMedico}</span> el{' '}
+          {formatDate(enmienda.created_at)}
         </p>
-        
+
         <div className="space-y-2 text-sm">
-            <div className='bg-red-50 border-l-4 border-red-400 p-2 rounded-r-md'>
-                <p className='font-semibold text-red-800'>Contenido Original:</p>
-                <div className="prose prose-sm max-w-none text-red-700" dangerouslySetInnerHTML={renderHTML(enmienda.contenidoOriginal)} />
-            </div>
-            <div className='bg-green-50 border-l-4 border-green-500 p-2 rounded-r-md'>
-                <p className='font-semibold text-green-800'>Contenido Corregido:</p>
-                <div className="prose prose-sm max-w-none text-green-700" dangerouslySetInnerHTML={renderHTML(enmienda.contenidoCorregido)} />
-            </div>
+          <div className="bg-red-50 border-l-4 border-red-400 p-2 rounded-r-md">
+            <p className="font-semibold text-red-800">Contenido Original:</p>
+            <div
+              className="prose prose-sm max-w-none text-red-700"
+              dangerouslySetInnerHTML={renderHTML(enmienda.contenidoOriginal)}
+            />
+          </div>
+          <div className="bg-green-50 border-l-4 border-green-500 p-2 rounded-r-md">
+            <p className="font-semibold text-green-800">Contenido Corregido:</p>
+            <div
+              className="prose prose-sm max-w-none text-green-700"
+              dangerouslySetInnerHTML={renderHTML(enmienda.contenidoCorregido)}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -77,7 +83,7 @@ export const AtencionExistenteV2 = ({ data, onClose }) => {
   const edad = paciente?.fNacimiento ? calcularEdad(paciente?.fNacimiento) : 'N/A';
 
   return (
-    <div className="space-y-2 bg-gray-50 p-2">
+    <div className="space-y-2">
       {/* ... (Otras tarjetas como Header, Datos del Paciente, etc. se mantienen igual) ... */}
       <Card>
         <CardHeader>
