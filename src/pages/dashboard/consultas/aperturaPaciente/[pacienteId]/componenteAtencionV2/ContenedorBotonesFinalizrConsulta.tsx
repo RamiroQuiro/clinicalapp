@@ -21,58 +21,65 @@ export default function ContenedorBotonesFinalizrConsulta({
 }: Props) {
   const $consulta = useStore(consultaStore);
 
+  const [isFinalized, setIsFinalized] = useState(esFinalizada);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnmiendaModalOpen, setIsEnmiendaModalOpen] = useState(false);
 
-  const handleGuardarBorrador = async (modoFetch: string) => {
+  const handleGuardarBorrador = async (modoFetch: 'borrador' | 'finalizada') => {
     if (
-      $consulta.motivoInicial === '' ||
-      $consulta.motivoInicial === null ||
-      $consulta.motivoInicial === 'undefined'
+      !$consulta.motivoInicial
     ) {
       showToast('Debe ingresar un motivo inicial', { background: 'bg-red-500' });
-      return;
+      return false;
     }
 
     try {
+      let dataToSave = { ...consultaStore.get() };
+
       if (modoFetch === 'finalizada') {
         const finAtencion = new Date(getFechaEnMilisegundos());
         const now = finAtencion.toISOString();
-        consultaStore.set({
-          ...consultaStore.get(),
-          finAtencion: now,
-        });
+        let duracion = 0;
 
-        if ($consulta.inicioAtencion) {
-          const duration = getDurationInMinutes($consulta.inicioAtencion, now);
-          consultaStore.set({
-            ...consultaStore.get(),
-            duracionAtencion: duration,
-          });
+        if (dataToSave.inicioAtencion) {
+          duracion = getDurationInMinutes(dataToSave.inicioAtencion, now) || 0;
         } else {
           console.warn('inicioConsulta no está definido. No se pudo calcular la duración.');
-          consultaStore.set({
-            ...consultaStore.get(),
-            duracionAtencion: 0,
-          });
         }
+
+        dataToSave = {
+          ...dataToSave,
+          finAtencion: now,
+          duracionAtencion: duracion,
+          estado: 'finalizada',
+        };
       }
 
       const response = await fetch('/api/atencion/guardar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...consultaStore.get(), // Usar el estado más reciente
+          ...dataToSave,
           status: modoFetch,
         }),
       });
+
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Error en el servidor');
 
-      showToast('Consulta guardada con éxito', { background: 'bg-green-500' });
+      consultaStore.set(dataToSave);
+
+      const successMessage =
+        modoFetch === 'finalizada'
+          ? 'Consulta finalizada y guardada'
+          : 'Borrador guardado con éxito';
+      showToast(successMessage, { background: 'bg-green-500' });
+
+      return true;
     } catch (error) {
       console.error('Error al guardar la consulta:', error);
       showToast(`Error al guardar: ${error.message}`, { background: 'bg-primary-400' });
+      return false;
     }
   };
 
@@ -80,9 +87,13 @@ export default function ContenedorBotonesFinalizrConsulta({
     setIsModalOpen(true);
   };
 
-  const handleConfirmarFinalizacion = () => {
-    handleGuardarBorrador('finalizada');
+  const handleConfirmarFinalizacion = async () => {
+    const success = await handleGuardarBorrador('finalizada');
     setIsModalOpen(false);
+    if (success) {
+      setIsFinalized(true);
+      window.dispatchEvent(new CustomEvent('consulta-finalizada'));
+    }
   };
 
   return (
@@ -95,7 +106,7 @@ export default function ContenedorBotonesFinalizrConsulta({
             </p>
           </Button>
         </a>
-        {esFinalizada ? (
+        {isFinalized ? (
           <>
             <Button
               id="crearEnmienda"

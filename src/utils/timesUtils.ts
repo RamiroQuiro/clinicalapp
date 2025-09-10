@@ -138,15 +138,15 @@ export function getUltimosNDias(n: number): { desde: number; hasta: number } {
  */
 export function getDurationInMinutes(startIsoString: string, endIsoString: string): number | null {
   try {
-    const startDate = new Date(startIsoString);
-    const endDate = new Date(endIsoString);
+    const startDate = Temporal.PlainDateTime.from(startIsoString);
+    const endDate = Temporal.PlainDateTime.from(endIsoString);
 
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    if (startDate === null || endDate === null) {
       return null; // Invalid date
     }
 
-    const diffMilliseconds = endDate.getTime() - startDate.getTime();
-    const diffMinutes = diffMilliseconds / (1000 * 60);
+    const duration = endDate.subtract(startDate);
+    const diffMinutes = duration.to({ unit: 'minutes' });
     return diffMinutes;
   } catch (error) {
     console.error('Error calculating duration:', error);

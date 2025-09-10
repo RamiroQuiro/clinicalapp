@@ -116,7 +116,7 @@ export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
 
     // 4. Usar Puppeteer para generar el PDF
     console.log('Paso 3: Iniciando Puppeteer...');
-    browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });

@@ -13,7 +13,7 @@ export default function Table({ columnas, arrayBody, styleTable, renderBotonActi
   });
   return (
     <table
-      className={`${styleTable} table-auto items-start bg-transparent w-full border-collapse  rounded-md border overflow-hidden`}
+      className={`${styleTable} table-fixed items-start bg-transparent w-full border-collapse  rounded-md border overflow-hidden`}
     >
       <THead columnas={columnas} arrayBody={arrayBody} />
       <TBody

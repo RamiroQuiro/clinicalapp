@@ -164,20 +164,24 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 
     #### 1. Consolidar y Mejorar lo Existente
     *   **Auditoría de Acciones Críticas (Prioridad Actual)**: Implementar un sistema de logs para registrar eventos importantes (ej: modificar consulta finalizada, eliminar registros, etc.).
+    *   **Flujo de Finalización de Consulta (En progreso)**: Implementar el flujo de feedback (toast) y botones dinámicos (Generar PDF, etc.) tras finalizar una consulta.
     *   Revisar y finalizar la edición de pacientes.
-    *   Generación de PDF para consultas, notas y recetas.
+    *   Generación y Exportación de Documentos:
+        *   Generación de PDF para consultas, notas, recetas, etc.
+        *   Funcionalidad para compartir documentos (ej: Enviar por Mail, Enviar por WhatsApp).
 
     #### 2. Expandir el Flujo de la Consulta
-    *   Módulo de Recetas/Prescripciones: para crear, guardar e imprimir recetas.
-    *   Módulo de Órdenes de Estudio: para generar e imprimir solicitudes de laboratorio, imágenes, etc.
+    *   Módulo de Recetas/Prescripciones (Receta Electrónica).
+    *   Módulo de Órdenes de Estudio.
+    *   Módulo de Derivaciones.
 
     #### 3. Gestión de Agenda y Turnos
     *   Implementar una vista de calendario (agenda) para el médico.
-    *   Flujo completo para agendar, reprogramar y cancelar turnos.
+    *   Flujo completo para agendar, reprogramar y cancelar turnos desde varias partes de la app (post-consulta, perfil del paciente, etc.).
     *   Manejar estados de turno (Confirmado, Cancelado, Ausente, etc.).
 
     #### 4. Administración y Facturación
-    *   Módulo de Cobros por consulta.
+    *   Módulo de Cobros y Facturación por consulta.
     *   Historial de pagos del paciente.
 
     #### 5. Mejoras de Usabilidad y Experiencia (UX)
