@@ -176,6 +176,7 @@ export async function getDashboardData(userId: string) {
       ...atencion,
       fecha: atencion.fecha.toISOString(),
     }))
+    .sort((a, b) => b.fecha.localeCompare(a.fecha))
     .slice(0, 10);
   return {
     stats: [

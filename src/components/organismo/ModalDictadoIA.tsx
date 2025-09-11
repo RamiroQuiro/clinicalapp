@@ -100,7 +100,7 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
             className="flex-grow sm:flex-grow-0"
           >
             <Mic className="w-5 h-5" />
-            {isListening ? 'Escuchando...' : 'Iniciar Dictado'}
+            {isListening ? 'Escuchando...' : 'Iniciar'}
           </Button>
           <Button
             onClick={stopListening}
@@ -125,7 +125,7 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
             disabled={!dictationText || isProcessingAI}
             className="flex-grow sm:flex-grow-0 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
-            {isProcessingAI ? 'Procesando...' : 'Procesar con IA'}
+            {isProcessingAI ? 'Procesando...' : 'Procesar'}
           </Button>
         </div>
         {speechError && (

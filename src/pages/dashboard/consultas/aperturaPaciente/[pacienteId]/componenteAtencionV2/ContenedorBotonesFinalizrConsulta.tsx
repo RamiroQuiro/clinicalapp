@@ -4,8 +4,21 @@ import { consultaStore } from '@/context/consultaAtencion.store';
 import { getDurationInMinutes, getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
-import { Edit3, FileDown, FileEdit, Lock, Save, Table2, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Edit3,
+  FileDown,
+  FileEdit,
+  Lock,
+  Mail,
+  MessageSquare,
+  MoreVertical,
+  Printer,
+  Save,
+  Table2,
+  TriangleAlert,
+  Wallet,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import FormularioEnmienda from './FormularioEnmienda';
 
 type Props = {
@@ -20,15 +33,87 @@ export default function ContenedorBotonesFinalizrConsulta({
   atencionId,
 }: Props) {
   const $consulta = useStore(consultaStore);
-
   const [isFinalized, setIsFinalized] = useState(esFinalizada);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnmiendaModalOpen, setIsEnmiendaModalOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const opcionesBotones = [
+    {
+      id: 'descargaPdf',
+      icon: <FileDown className="mr- w-4 h-4" />,
+      label: 'PDF',
+      onClick: () => {},
+      variant: 'ghost',
+      className: 'text-white hover:bg-slate-700/50',
+    },
+    {
+      id: 'recetaMedica',
+      icon: <FileEdit className="mr- w-4 h-4" />,
+      label: 'Receta Medica',
+      onClick: () => {
+        window.open(`/dashboard/pacientes/${pacienteId}/atenciones/${atencionId}/receta`, '_blank');
+      },
+      variant: 'ghost',
+      className: 'text-white hover:bg-slate-700/50',
+    },
+    {
+      id: 'enviarMail',
+      icon: <Mail className="mr- w-4 h-4" />,
+      label: 'Mail',
+      onClick: () => {
+        window.open(`/dashboard/pacientes/${pacienteId}/atenciones/${atencionId}/mail`, '_blank');
+      },
+      variant: 'ghost',
+      className: 'text-white hover:bg-slate-700/50',
+    },
+    {
+      id: 'enviarWhatsApp',
+      icon: <MessageSquare className="mr- w-4 h-4" />,
+      label: 'WhatsApp',
+      onClick: () => {
+        window.open(
+          `/dashboard/pacientes/${pacienteId}/atenciones/${atencionId}/whatsapp`,
+          '_blank'
+        );
+      },
+      variant: 'ghost',
+      className: 'text-white hover:bg-slate-700/50',
+    },
+    {
+      id: 'imprimirReceta',
+      icon: <Printer className="mr- w-4 h-4" />,
+      label: 'Imprimir Receta',
+      onClick: () => {},
+      variant: 'ghost',
+      className: 'text-white hover:bg-slate-700/50',
+    },
+    {
+      id: 'facturarConsulta',
+      icon: <Wallet className="mr- w-4 h-4" />,
+      label: 'Facturar Consulta',
+      onClick: () => {},
+      variant: 'ghost',
+      className: 'text-white hover:bg-slate-700/50',
+    },
+  ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownRef]);
 
   const handleGuardarBorrador = async (modoFetch: 'borrador' | 'finalizada') => {
-    if (
-      !$consulta.motivoInicial
-    ) {
+    if (!$consulta.motivoInicial) {
       showToast('Debe ingresar un motivo inicial', { background: 'bg-red-500' });
       return false;
     }
@@ -84,11 +169,14 @@ export default function ContenedorBotonesFinalizrConsulta({
   };
 
   const handleFinalizarClick = () => {
+    document.getElementById('navAtencionMedica')?.classList.remove('backdrop-blur-sm');
     setIsModalOpen(true);
   };
 
   const handleConfirmarFinalizacion = async () => {
     const success = await handleGuardarBorrador('finalizada');
+
+    document.getElementById('navAtencionMedica')?.classList.add('backdrop-blur-sm');
     setIsModalOpen(false);
     if (success) {
       setIsFinalized(true);
@@ -107,29 +195,52 @@ export default function ContenedorBotonesFinalizrConsulta({
           </Button>
         </a>
         {isFinalized ? (
-          <>
+          <div className="flex  bg- rounded-lg flex-row w-full md:w-fit md:items-center gap">
             <Button
               id="crearEnmienda"
-              variant="bgTransparent"
+              variant="blanco"
+              className="text- rounded-r-none hover:bg-slate-700/50 border-r border-slate-700"
               onClick={() => setIsEnmiendaModalOpen(true)}
+              title="Crear Enmienda"
             >
               <p className="inline-flex items-center gap-2">
                 <Edit3 className="mr- w-4 h-4" />
                 Enmienda
               </p>
             </Button>
-            <a
-              href={`/api/pacientes/${pacienteId}/atenciones/${atencionId}/reporteAten`}
-              target="_blank"
-              className="text-sm"
-            >
-              <Button variant="secondary" id="descargaPdf">
-                <p className="inline-flex items-center gap-2">
-                  <FileDown className="mr- w-4 h-4" /> Descargar PDF
-                </p>
+
+            {/* Dropdown Menu */}
+            <div className="relative" ref={dropdownRef}>
+              <Button
+                variant="blanco"
+                className="text- border-l border-slate-700 rounded-l-none hover:bg-slate-700/50"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                title="Más acciones"
+              >
+                <MoreVertical className="w-5 h-5" />
               </Button>
-            </a>
-          </>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-60 bg-slate-800 rounded-md shadow-lg z-20 border border-slate-700">
+                  <ul className="py-1 text-slate-200">
+                    <li className="px-4 py-2 text-sm font-semibold text-slate-400 border-b border-slate-700">
+                      Más Acciones
+                    </li>
+                    {opcionesBotones.map(opcion => (
+                      <li
+                        key={opcion.id}
+                        title={opcion.label}
+                        onClick={opcion.onClick}
+                        className="flex items-center gap-2 space-x-2 px-4 py-2 hover:bg-slate-700 cursor-pointer"
+                      >
+                        {opcion.icon}
+                        {opcion.label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           <>
             <Button id="guardarBorradorV2" onClick={() => handleGuardarBorrador('borrador')}>
@@ -153,7 +264,7 @@ export default function ContenedorBotonesFinalizrConsulta({
           id="confirmarFinalizacionModal"
           className="w-[60vw]"
         >
-          <div className="p-4 flex flex-col items-center text-center">
+          <div className="p-4 flex flex-col w-[50vw] items-center text-center">
             <TriangleAlert className="w-16 h-16 text-yellow-400 mb-4" />
             <h2 className="text-lg font-semibold mb-2">Atención</h2>
             <p className="text-gray-600 mb-6">
@@ -161,7 +272,7 @@ export default function ContenedorBotonesFinalizrConsulta({
               directamente. Cualquier cambio futuro deberá realizarse mediante una enmienda.
             </p>
             <div className="flex justify-center gap-4 w-full">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary">
+              <Button onClick={() => setIsModalOpen(false)} variant="cancel">
                 Cancelar
               </Button>
               <Button onClick={handleConfirmarFinalizacion}>Confirmar Finalización</Button>

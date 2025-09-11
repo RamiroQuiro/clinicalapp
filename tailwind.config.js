@@ -1,16 +1,32 @@
 /** @type {import('tailwindcss').Config} */
+// paleta de colores numero 1
+//  100: '#5FA5FA',
+// 150: '#5FA5FA50',
+// 200: '#5FD6FA',
+// 300: '#FAF75FFF',
+// 400: '#FA6D5F',
+// 500: '#9BE32B',
+// 600: '#2B60E3',
+// paleta de colores numero 2
+//  100: '#1E1B4B',
+// 150: '#1E1B4B50',
+// 200: '#9F976E',
+// 300: '#4A431B',
+// 400: '#FA6D5F',
+// 500: '#9F976E',
+// 600: '#2B60E3',
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
   theme: {
     extend: {
       colors: {
         primary: {
-          100: '#5FA5FA',
-          150: '#5FA5FA50',
-          200: '#5FD6FA',
-          300: '#FAF75FFF',
+          100: '#1E1B4B',
+          150: '#0F172A',
+          200: '#9F976E',
+          300: '#4A431B',
           400: '#FA6D5F',
-          500: '#9BE32B',
+          500: '#9F976E',
           600: '#2B60E3',
           'bg-claro': '#E9E9F1',
           'bg-componentes': '#F9FAFB',

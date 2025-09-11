@@ -54,18 +54,18 @@ const sections = [
 
 <aside
   id="aside"
-  class=" group/sidebar w-full fixed bottom-0 left-0 h-  z-20  md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:self-start md:w-16 md:border-r border-t bg-white/60 backdrop-blur-sm md:backdrop-blur-none text-primary-textoTitle transition-all duration-300 ease-in-out"
+  class=" group/sidebar w-full fixed bottom-0 left-0 h-  z-20  md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:self-start md:w-16 md:border-r border-t bg-gradient-to-b from-indigo-950 to-slate-900 backdrop-blur-sm md:backdrop-blur-none text-primary-textoTitle transition-all duration-300 ease-in-out"
 >
   <div class="w-full hidden md:flex px-4 mx-auto  items-center justify-end">
     <PanelLeftOpen
       id="openMenu"
       size={35}
-      className="cursor-pointer hover:bg-gray-200 p-1 rounded-full duration-300"
+      className="cursor-pointer stroke-white hover:bg-gray-200 p-1 rounded-full duration-300"
     />
     <PanelLeftClose
       id="closeMenu"
       size={35}
-      className="cursor-pointer hidden hover:bg-gray-200 p-1 rounded-full duration-300"
+      className="cursor-pointer hidden stroke-white hover:bg-gray-200 p-1 rounded-full duration-300"
     />
   </div>
   <!-- logo ramaCode -->
@@ -90,7 +90,7 @@ const sections = [
               'flex items-center w-fit md:w-full group/item z-50 p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
               {
                 'bg-primary-100 text-white': isActive,
-                'text-primary-texto hover:bg-primary-100 hover:text-white': !isActive,
+                'text-white hover:bg-primary-100 hover:text-white': !isActive,
               },
             ]}
           >

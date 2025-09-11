@@ -71,7 +71,7 @@ export const CardMedicamentoV2 = ({ medicamento, onStatusChange }) => {
             <ul className="flex flex-col animate- items-start p-4 justify-center bg-white/70 backdrop-blur-sm rounded-lg border shadow-md  gap-2 absolute top-6 right-12  w-1/2 z-20 ">
               <li
                 onClick={e => handleMedicamentoChangeStatus(e, 'activo')}
-                className="cursor-pointer w-full border-b pl-2 font-li hover:bg-primary-150 rounded-md duration-200 hover:-translate-y-0.5"
+                className="cursor-pointer w-full border-b pl-2 font-li hover:bg-primary-100/50 rounded-md duration-200 hover:-translate-y-0.5"
               >
                 activo
               </li>

@@ -1,5 +1,5 @@
 ---
-import NavAtencionMedicaV2 from '@/components/organismo/NavAtencionMedicaV2.astro';
+import NavAtencionMedicaV2 from '@/components/organismo/NavAtencionMedicaV2.tsx';
 import { logAuditEvent } from '@/lib/audit';
 import { getDatosNuevaAtencion } from '@/services/atenciones.services';
 import Contenedor from './componenteAtencionV2/Contenedor.tsx';
@@ -7,16 +7,18 @@ import Contenedor from './componenteAtencionV2/Contenedor.tsx';
 const { pacienteId, atencionId } = Astro.params;
 const { user, session } = Astro.locals;
 
-let esFinalizada = false; // Default value
+let esFinalizada = false;
+let data, error, message;
 
-// 1. Seguridad: Validar sesión
-if (!session || !user) {
-  // No renderizar nada o mostrar un mensaje de error si no hay sesión
-} else {
-  const { data, error, message } = await getDatosNuevaAtencion(
+// 1. Seguridad: Validar sesión y obtener datos UNA SOLA VEZ
+if (session && user) {
+  const result = await getDatosNuevaAtencion(
     pacienteId as string,
     atencionId as string
   );
+  data = result.data;
+  error = result.error;
+  message = result.message;
 
   if (error) {
     console.log('error', error, message);
@@ -37,17 +39,6 @@ if (!session || !user) {
     });
   }
 }
-
-const { data, error, message } = await getDatosNuevaAtencion(
-  pacienteId as string,
-  atencionId as string
-);
-
-if (error) {
-  console.log('error', error, message);
-} else if (data) {
-  esFinalizada = data.atencion?.estado === 'finalizada';
-}
 ---
 
 <div class="p gap-2 flex flex-col w-full" id="containerAtencion">
@@ -58,7 +49,7 @@ if (error) {
       <div>{message}</div>
     ) : (
       <>
-        <NavAtencionMedicaV2 pacienteData={data?.paciente} esFinalizada={esFinalizada} />
+        <NavAtencionMedicaV2 client:load pacienteData={data?.paciente} esFinalizada={esFinalizada} pacienteId={pacienteId} atencionId={atencionId} />
         <div class="w-full flex flex-col">
           <Contenedor client:load data={data} esFinalizada={esFinalizada} />
         </div>

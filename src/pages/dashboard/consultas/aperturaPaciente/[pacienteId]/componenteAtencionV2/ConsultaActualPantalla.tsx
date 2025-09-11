@@ -1,6 +1,5 @@
 import Button from '@/components/atomos/Button';
 import DivReact from '@/components/atomos/DivReact';
-import Input from '@/components/atomos/Input';
 import { TextArea } from '@/components/atomos/TextArea';
 import ContenedorSignosVitales from '@/components/moleculas/ContenedorSignosVitales';
 import Section from '@/components/moleculas/Section';
@@ -13,7 +12,6 @@ import {
   Calculator,
   Droplet,
   HeartPulse,
-  Lock,
   Mic,
   Percent,
   Ruler,
@@ -242,7 +240,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         onProcesado={handleProcesadoIA}
       />
 
-      {isLocked && (
+      {/* {isLocked && (
         <div
           className="p-4 mb-4 text-sm text-orange-800 rounded-lg bg-orange-50 border border-orange-300 flex flex-col gap-3"
           role="alert"
@@ -270,7 +268,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             </Button>
           </div>
         </div>
-      )}
+      )} */}
 
       <fieldset
         disabled={isLocked}
@@ -283,7 +281,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             </p>
             <Button onClick={() => setIsDictadoModalOpen(true)} className="self-start">
               <Mic className="w-5 h-5 " />
-              Abrir Asistente de Dictado
+              Abrir Dictado
             </Button>
           </div>
         </DivReact>
