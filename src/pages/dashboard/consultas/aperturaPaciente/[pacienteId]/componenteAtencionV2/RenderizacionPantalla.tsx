@@ -21,7 +21,7 @@ export const RenderizacionPantalla = ({
     return <AtencionExistenteV2 data={data} onClose={() => {}} />;
   }
 
-  console.log('renderizaciond e la pantalla', data);
+  console.log('renderizaciond de la pantalla', data);
 
   // Lógica original para las demás pestañas o si la consulta no está finalizada
   switch (activeTab) {

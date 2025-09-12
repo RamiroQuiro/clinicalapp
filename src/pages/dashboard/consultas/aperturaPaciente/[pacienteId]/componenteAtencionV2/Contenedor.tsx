@@ -16,6 +16,7 @@ const tabs = [
 export default function Contenedor({ data, esFinalizada }: { data: any; esFinalizada: boolean }) {
   const [activeTab, setActiveTab] = useState('consultaActual');
   consultaStore.set(data);
+
   return (
     <div className="w-full mt-2">
       {!esFinalizada && (

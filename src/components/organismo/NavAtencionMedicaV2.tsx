@@ -123,7 +123,7 @@ export default function NavAtencionMedicaV2({
       // Inicia la animación y el cambio de estado
       consultaStore.set({
         ...consultaStore.get(),
-        atencion: { ...consultaStore.get().atencion, estado: 'finalizada' },
+        estado: 'finalizada',
       });
       setIsFinalized(true);
       setIsAnimating(true);

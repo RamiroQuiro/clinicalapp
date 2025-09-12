@@ -102,7 +102,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
   const [isDictadoModalOpen, setIsDictadoModalOpen] = useState(false);
 
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState($consulta.estado === 'finalizada');
   const [unlockInput, setUnlockInput] = useState('');
 
   useEffect(() => {
@@ -123,18 +123,17 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     consultaStore.set(atencionData);
 
     if (!atencionData.inicioAtencion) {
-      setConsultaField('inicioAtencion', new Date().toISOString());
+      setConsultaField('inicioAtencion', new Date(getFechaEnMilisegundos()).toISOString());
     }
 
     if (data.signosVitalesHistorial) {
       setSignosVitalesHistorial(data.signosVitalesHistorial);
     }
-    if (atencionData.estado === 'finalizada') {
-      setIsLocked(true);
-    } else {
-      setIsLocked(false);
-    }
   }, [data]);
+
+  useEffect(() => {
+    setIsLocked($consulta.estado === 'finalizada');
+  }, [$consulta.estado]);
 
   const handleUnlock = () => {
     if (unlockInput === 'modificar') {
