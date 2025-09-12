@@ -16,6 +16,8 @@ export const medicamento = sqliteTable('medicamentos', {
   laboratorio: text('laboratorio'), // Ej: Roemmers
   descripcion: text('descripcion'), // Observaciones libres
   tipoMedicamento: text('tipoMedicamento'), // Ej: Antibiótico, Analgésico
+  via: text('via'),
+  indicacion: text('indicacion'),
 
   // RELACIONES
   historiaClinicaId: text('historiaClinicaId').references(() => historiaClinica.id, {

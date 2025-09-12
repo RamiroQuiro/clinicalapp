@@ -12,10 +12,7 @@ let data, error, message;
 
 // 1. Seguridad: Validar sesión y obtener datos UNA SOLA VEZ
 if (session && user) {
-  const result = await getDatosNuevaAtencion(
-    pacienteId as string,
-    atencionId as string
-  );
+  const result = await getDatosNuevaAtencion(pacienteId as string, atencionId as string);
   data = result.data;
   error = result.error;
   message = result.message;
@@ -49,7 +46,13 @@ if (session && user) {
       <div>{message}</div>
     ) : (
       <>
-        <NavAtencionMedicaV2 client:load pacienteData={data?.paciente} esFinalizada={esFinalizada} pacienteId={pacienteId} atencionId={atencionId} />
+        <NavAtencionMedicaV2
+          client:load
+          pacienteData={data?.paciente}
+          esFinalizada={esFinalizada}
+          pacienteId={pacienteId}
+          atencionId={atencionId}
+        />
         <div class="w-full flex flex-col">
           <Contenedor client:load data={data} esFinalizada={esFinalizada} />
         </div>

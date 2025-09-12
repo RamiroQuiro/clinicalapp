@@ -37,6 +37,7 @@ export default function ContenedorBotonesFinalizrConsulta({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnmiendaModalOpen, setIsEnmiendaModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const opcionesBotones = [
@@ -113,6 +114,7 @@ export default function ContenedorBotonesFinalizrConsulta({
   }, [dropdownRef]);
 
   const handleGuardarBorrador = async (modoFetch: 'borrador' | 'finalizada') => {
+    setIsLoading(true);
     if (!$consulta.motivoInicial) {
       showToast('Debe ingresar un motivo inicial', { background: 'bg-red-500' });
       return false;
@@ -165,18 +167,18 @@ export default function ContenedorBotonesFinalizrConsulta({
       console.error('Error al guardar la consulta:', error);
       showToast(`Error al guardar: ${error.message}`, { background: 'bg-primary-400' });
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleFinalizarClick = () => {
-    document.getElementById('navAtencionMedica')?.classList.remove('backdrop-blur-sm');
     setIsModalOpen(true);
   };
 
   const handleConfirmarFinalizacion = async () => {
     const success = await handleGuardarBorrador('finalizada');
-
-    document.getElementById('navAtencionMedica')?.classList.add('backdrop-blur-sm');
+    setIsLoading(false);
     setIsModalOpen(false);
     if (success) {
       setIsFinalized(true);
@@ -275,7 +277,9 @@ export default function ContenedorBotonesFinalizrConsulta({
               <Button onClick={() => setIsModalOpen(false)} variant="cancel">
                 Cancelar
               </Button>
-              <Button onClick={handleConfirmarFinalizacion}>Confirmar Finalización</Button>
+              <Button onClick={handleConfirmarFinalizacion} disabled={isLoading}>
+                {isLoading ? 'Finalizando...' : 'Confirmar Finalización'}
+              </Button>
             </div>
           </div>
         </ModalReact>
