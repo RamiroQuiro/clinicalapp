@@ -30,7 +30,7 @@ export const RenderizacionPantalla = ({
     case 'antecedentes':
       return <AntecedentesPantalla data={data.antecedentes} pacienteId={data.paciente.id} />;
     case 'signos':
-      return <SignosVitalesPantalla signosVitalesHistorial={data.signosVitalesHistorial} />;
+      return <SignosVitalesPantalla signosVitalesHistorial={data.signosVitalesHistorial} paciente={data.paciente} />;
     case 'diagnostico':
       return <DiagnosticosPantalla data={data} />;
     case 'medicamentos':

@@ -2,6 +2,7 @@ import Button from '@/components/atomos/Button';
 import DivReact from '@/components/atomos/DivReact';
 import { TextArea } from '@/components/atomos/TextArea';
 import ContenedorSignosVitales from '@/components/moleculas/ContenedorSignosVitales';
+import { GraficoPercentil } from '@/components/moleculas/GraficoPercentil';
 import Section from '@/components/moleculas/Section';
 import ModalDictadoIA from '@/components/organismo/ModalDictadoIA';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
@@ -319,47 +320,150 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               );
             })}
           </div>
-        </Section>
 
-        <Section title="Síntomas (Anamnesis)">
-          <TextArea
-            name="sintomas"
-            value={$consulta.sintomas}
-            onChange={handleFormChange}
-            placeholder="Describe los síntomas que reporta el paciente..."
+          {/* --- Inicio: Integración de Calculadora de Percentiles (dentro de details) --- */}
+          <div className="mt-6">
+            <details className="w-full group border border-gray-200 rounded-lg">
+              <summary className="px-4 py-3 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <span className="font-semibold text-gray-700">Percentiles de Crecimiento</span>
+                <span className="text-sm text-gray-500 group-open:hidden">Ver más</span>
+                <span className="text-sm text-gray-500 hidden group-open:inline">Ver menos</span>
+              </summary>
+              <div className="p-4">
+                {' '}
+                {/* Content wrapper for padding */}
+                {(() => {
+                  const getAgeInMonths = birthDate => {
+                    if (!birthDate) return Infinity;
+                    const today = new Date();
+                    const birth = new Date(birthDate);
+                    let months = (today.getFullYear() - birth.getFullYear()) * 12;
+                    months -= birth.getMonth();
+                    months += today.getMonth();
+                    return months <= 0 ? 0 : months;
+                  };
+
+                  const ageInMonths = getAgeInMonths(data.paciente?.fNacimiento);
+                  const sex = data.paciente?.sexo?.toLowerCase();
+
+                  const currentSignosVitales = $consulta.signosVitales; // Obtener los signos vitales actuales del store
+                  const weight = currentSignosVitales?.peso; // Definir weight
+                  const length = currentSignosVitales?.talla; // Definir length
+
+                  // Helper para calcular el IMC (movido aquí)
+                  const calculateBMI = (weightKg, heightCm) => {
+                    if (weightKg <= 0 || heightCm <= 0) return null;
+                    const heightM = heightCm / 100;
+                    return weightKg / (heightM * heightM);
+                  };
+
+                  // Solo muestra los gráficos para pacientes pediátricos (0-24 meses) con sexo definido y fecha de nacimiento
+                  if (
+                    ageInMonths <= 24 &&
+                    (sex === 'masculino' || sex === 'femenino') &&
+                    data.paciente?.fNacimiento
+                  ) {
+                    return (
+                      <div className="flex flex-row gap-4 overflow-x-auto p-2">
+                        {/* Gráfico de Peso */}
+                        {weight && !isNaN(parseFloat(weight)) && (
+                          <div className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
+                            <GraficoPercentil
+                              measurementType="weight"
+                              sex={sex === 'masculino' ? 'boy' : 'girl'}
+                              patientAgeInMonths={ageInMonths}
+                              patientMeasurementValue={parseFloat(weight)}
+                            />
+                          </div>
+                        )}
+                        {/* Gráfico de Talla */}
+                        {length && !isNaN(parseFloat(length)) && (
+                          <div className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
+                            <GraficoPercentil
+                              measurementType="length"
+                              sex={sex === 'masculino' ? 'boy' : 'girl'}
+                              patientAgeInMonths={ageInMonths}
+                              patientMeasurementValue={parseFloat(length)}
+                            />
+                          </div>
+                        )}
+                        {/* Gráfico de IMC */}
+                        {weight &&
+                          length &&
+                          !isNaN(parseFloat(weight)) &&
+                          !isNaN(parseFloat(length)) && (
+                            <div className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
+                              <GraficoPercentil
+                                measurementType="bmi"
+                                sex={sex === 'masculino' ? 'boy' : 'girl'}
+                                patientAgeInMonths={ageInMonths}
+                                patientMeasurementValue={calculateBMI(
+                                  parseFloat(weight),
+                                  parseFloat(length)
+                                )}
+                              />
+                            </div>
+                          )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="text-center text-gray-400 p-4 bg-gray-50 rounded-lg">
+                      <p>
+                        Gráficos de percentiles disponibles solo para pacientes pediátricos (0-24
+                        meses) con datos completos.
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </details>
+          </div>
+          {/* --- Fin: Integración de Calculadora de Percentiles --- */}
+
+          <Section title="Síntomas (Anamnesis)">
+            <TextArea
+              name="sintomas"
+              value={$consulta.sintomas}
+              onChange={handleFormChange}
+              placeholder="Describe los síntomas que reporta el paciente..."
+            />
+          </Section>
+
+          {/* seccion de diagnostico */}
+          <SectionDiagnostico $consulta={consultaStore.get()} deletDiagnostico={deletDiagnostico} />
+
+          <SectionMedicamentos
+            $consulta={consultaStore.get()}
+            deletMedicamento={deletMedicamento}
           />
-        </Section>
-        {/* seccion de diagnostico */}
-        <SectionDiagnostico $consulta={consultaStore.get()} deletDiagnostico={deletDiagnostico} />
 
-        <SectionMedicamentos $consulta={consultaStore.get()} deletMedicamento={deletMedicamento} />
+          <Section title="Tratamiento no farmacologico">
+            <TextArea
+              name="tratamiento"
+              value={$consulta.tratamiento}
+              onChange={handleFormChange}
+              placeholder="Describe el plan o tratemiento, próximas citas, estudios, etc."
+            />
+          </Section>
 
-        <Section title="Tratamiento no farmacologico">
-          <TextArea
-            name="tratamiento"
-            value={$consulta.tratamiento}
-            onChange={handleFormChange}
-            placeholder="Describe el plan o tratemiento, próximas citas, estudios, etc."
-          />
-        </Section>
-
-        <Section title="Plan a Seguir">
-          <TextArea
-            name="planSeguir"
-            value={$consulta.planSeguir}
-            onChange={handleFormChange}
-            placeholder="Describe el plan de tratamiento, próximas citas, estudios, etc."
-          />
+          <Section title="Plan a Seguir">
+            <TextArea
+              name="planSeguir"
+              value={$consulta.planSeguir}
+              onChange={handleFormChange}
+              placeholder="Describe el plan de tratamiento, próximas citas, estudios, etc."
+            />
+          </Section>
         </Section>
 
         <SectionArchivosAtencion $consulta={$consulta} />
 
         {/* Notas Médicas */}
-
         <SectionNotasMedicas
           $consulta={$consulta}
           handleFormChange={handleFormChange}
-          pacienteId={$consulta.pacienteId}
+          pacienteId={data.pacienteId}
         />
       </fieldset>
     </div>

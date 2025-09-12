@@ -1,2 +1,11 @@
-
-export ButtonSidebar from'./ButtonSidebar.astro'
+export * from './BotonIndigo';
+export * from './CalculadoraPercentiles';
+export * from './CardAntecentes';
+export * from './CardMedicamentoV2';
+export * from './CardTurno';
+export * from './CardVisitaV2';
+export * from './GraficoPercentil';
+export * from './InfoCard';
+export * from './ModalReact';
+export * from './RichTextEditor';
+export * from './Section';

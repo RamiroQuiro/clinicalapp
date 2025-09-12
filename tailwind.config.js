@@ -9,12 +9,20 @@
 // 600: '#2B60E3',
 // paleta de colores numero 2
 //  100: '#1E1B4B',
-// 150: '#1E1B4B50',
+// 150: '#0F172A',
 // 200: '#9F976E',
 // 300: '#4A431B',
 // 400: '#FA6D5F',
 // 500: '#9F976E',
 // 600: '#2B60E3',
+// paleta de colores numero 3
+//  100: '#FFD8AB',
+// 150: '#87A0AA',
+// 200: '#9F976E',
+// 300: '#ABE6FF',
+// 400: '#FA6D5F',
+// 500: '#BFB5A8',
+// 600: '#806950',
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
   theme: {
