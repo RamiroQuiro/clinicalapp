@@ -12,14 +12,13 @@ import {
   Lock,
   Mail,
   MessageSquare,
-  MoreVertical,
   Printer,
   Save,
   Table2,
   TriangleAlert,
-  Wallet,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import MenuDropbox from './MenuDropbox';
 
 // Tipos de las props que el componente recibirá desde Astro
 type PacienteData = {
@@ -61,6 +60,48 @@ export default function NavAtencionMedicaV2({
 
   const { nombre, apellido, dni, fotoUrl } = pacienteData;
   const avatarDefault = '/avatarDefault.png'; // Ruta pública del avatar
+
+  const menuItems = [
+    {
+      label: 'Descargar Atencion',
+      icon: <FileDown className="w-4 h-4" />,
+      href: `/api/pacientes/${pacienteId}/atenciones/${atencionId}/reporteAten`,
+      target: '_blank',
+      title: 'Descargar PDF de la atención completa',
+    },
+    {
+      label: 'Enviar por Mail',
+      icon: <Mail className="w-4 h-4" />,
+      onClick: () => {
+        console.log('enviando por mail...');
+      },
+      title: 'Enviar PDF de la atención completa por mail',
+    },
+    {
+      label: 'Enviar por WhatsApp',
+      icon: <MessageSquare className="w-4 h-4" />,
+      onClick: () => {
+        console.log('enviando por whatsapp...');
+      },
+      title: 'Enviar PDF de la atención completa por whatsapp',
+    },
+    {
+      label: 'Imprimir Receta',
+      icon: <Printer className="w-4 h-4" />,
+      href: `/api/recetas/${atencionId}/pdf`,
+
+      target: '_blank',
+      title: 'Imprimir receta de la atención',
+    },
+    {
+      label: 'Facturar Consulta',
+      icon: <FileDown className="w-4 h-4" />,
+      onClick: () => {
+        console.log('facturando...');
+      },
+      title: 'Facturar la atención',
+    },
+  ];
 
   // Efecto para cerrar el dropdown al hacer clic fuera
   useEffect(() => {
@@ -236,68 +277,7 @@ export default function NavAtencionMedicaV2({
                 <Edit3 className="w-4 h-4" /> Enmienda
               </p>
             </Button>
-            <div className="relative" ref={dropdownRef}>
-              <Button
-                variant="blanco"
-                className="rounded-l-none text-primary-textoTitle border-x"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                title="Más acciones"
-              >
-                <MoreVertical className="w-5 h-5" />
-              </Button>
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-60 bg-primary-150/90 backdrop-blur-sm rounded-md shadow-lg z-20 border border-slate-700">
-                  <ul className="py-1 text-slate-200">
-                    <li className="px-4 py-2 text-sm font-semibold text-slate-400 border-b border-slate-700">
-                      Más Acciones
-                    </li>
-                    <li
-                      title="Descargar PDF de la atención completa"
-                      className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer"
-                    >
-                      <a
-                        href={`/api/pacientes/${pacienteId}/atenciones/${atencionId}/reporteAten`}
-                        target="_blank"
-                        className="inline-flex items-center w-full"
-                      >
-                        <FileDown className="w-4 h-4 mr-3" /> Descargar PDF
-                      </a>
-                    </li>
-                    <li
-                      title="Enviar resumen por Email"
-                      className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer"
-                    >
-                      <Mail className="w-4 h-4 mr-3" /> Enviar por Mail
-                    </li>
-                    <li
-                      title="Abrir chat de WhatsApp"
-                      className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-3" /> Enviar por WhatsApp
-                    </li>
-                    <li
-                      title="Generar PDF para imprimir"
-                      className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer"
-                    >
-                      <a
-                        href={`/api/recetas/${atencionId}/pdf`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center w-full"
-                      >
-                        <Printer className="w-4 h-4 mr-3" /> Imprimir Receta
-                      </a>
-                    </li>
-                    <li
-                      title="Crear registro de facturación"
-                      className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer"
-                    >
-                      <Wallet className="w-4 h-4 mr-3" /> Facturar Consulta
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
+            <MenuDropbox items={menuItems} />
           </div>
         ) : (
           <div className="flex md:flex-col flex-row w-full md:w-fit items-center gap-2">

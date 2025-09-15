@@ -13,7 +13,7 @@ export default function StatsCard({ id, title, value, icon: Icon, color, trend, 
   return (
     <div className="flex flex-col flex-1 0px] p-4 bg-gradient-to-tr from-primary-100/20 to-primary-400/20 hover:-translate-y-1 overflow-hi hover:-translate-x-0.5 rounded-lg border duration-300 border-gray-200 shadow-sm justify-between gap-2 relative group">
       <div className="absolute top-0 rounded-lg left-0 w-full h-full bg-white backdrop-blur-sm z-0 group-hover:bg-white/70 duration-200 group-hover:shadow-[0_0_20px_10px_#5FA5FA24]"></div>
-      <div className="z-20 flex flex-col w-full">
+      <div className="z-0 flex flex-col w-full">
         <div className="flex items-center justify-between gap-3 mb-2">
           <div className="text-primary-textoTitle w-full bg-primary- p-2  flex items-center gap-2">
             <Icon className="w-5" />
