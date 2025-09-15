@@ -2,15 +2,55 @@ import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { users } from './users';
 
+const defaultPreferencias = {
+  configuracionGeneral: {
+    tema: 'claro',
+    idioma: 'es',
+    mostrarHistorialCompleto: true,
+    notificaciones: {
+      recordatorios: true,
+      alertasCriticas: true,
+    },
+  },
+  signosVitales: {
+    mostrar: true,
+    campos: {
+      temperatura: true,
+      frecuenciaCardiaca: true,
+      frecuenciaRespiratoria: true,
+      tensionArterial: true,
+      saturacionOxigeno: true,
+      peso: true,
+      talla: true,
+      perimetroCefalico: false,
+    },
+  },
+  consulta: {
+    motivoInicial: true,
+    sintomas: true,
+    diagnostico: true,
+    tratamientoFarmacologico: true,
+    tratamientoNoFarmacologico: true,
+    planASeguir: true,
+    archivosAdjuntos: true,
+    notasPrivadas: false,
+  },
+  reportes: {
+    incluirDatosPaciente: true,
+    incluirDatosMedico: true,
+    incluirFirmaDigital: true,
+  },
+};
+
 export const preferenciaPerfilUser = sqliteTable('preferenciaPerfilUser', {
   id: text('id').primaryKey(),
   userId: text('userId')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   nombrePerfil: text('nombrePerfil'),
   especialidad: text('especialidad'),
   estado: text('estado'),
-  preferencias: text('preferencias', { mode: 'json' }).default(JSON.stringify({})),
+  preferencias: text('preferencias', { mode: 'json' }).default(JSON.stringify(defaultPreferencias)),
   created_at: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(strftime('%s','now'))`),

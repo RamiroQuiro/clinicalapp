@@ -23,17 +23,18 @@ export interface Consulta {
   estado: string; // AÑADIDO
   planSeguir: string;
   signosVitales: {
-    presionArterial: number;
-    frecuenciaCardiaca: number;
     frecuenciaRespiratoria: number;
     dolor: string | null;
     fechaRegistro: string | null;
     glucosa: number;
     imc: number;
     peso: number;
+    perimetroAbdominal: number;
+    perimetroCefalico: number;
     talla: number;
     saturacionOxigeno: number;
-    tensionArterial: number;
+    presionSistolica: number;
+    presionDiastolica: number;
     temperatura: number;
   };
   notas: {
@@ -74,9 +75,10 @@ const initialConsulta: Consulta = {
   historiaClinicaId: '',
   estado: '', // AÑADIDO
   signosVitales: {
-    presionArterial: 0,
-    frecuenciaCardiaca: 0,
-    tensionArterial: 0,
+    presionSistolica: 0,
+    presionDiastolica: 0,
+    perimetroAbdominal: 0,
+    perimetroCefalico: 0,
     saturacionOxigeno: 0,
     glucosa: 0,
     peso: 0,

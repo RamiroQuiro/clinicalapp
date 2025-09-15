@@ -1,89 +1,21 @@
 import Button from '@/components/atomos/Button';
 import DivReact from '@/components/atomos/DivReact';
 import { TextArea } from '@/components/atomos/TextArea';
-import { GraficoPercentil } from '@/components/moleculas/GraficoPercentil';
 import Section from '@/components/moleculas/Section';
 import ModalDictadoIA from '@/components/organismo/ModalDictadoIA';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { dataFormularioContexto } from '@/context/store'; // New import for AI integration
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { useStore } from '@nanostores/react';
-import {
-  Calculator,
-  Droplet,
-  HeartPulse,
-  Mic,
-  Percent,
-  Ruler,
-  Thermometer,
-  Weight,
-  Wind,
-} from 'lucide-react';
+import { Mic } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
+import PercentilesPantallaConsulta from './PercentilesPantallaConsulta';
 import SectionArchivosAtencion from './SectionArchivosAtencion';
 import SectionDiagnostico from './SectionDiagnostico';
 import SectionMedicamentos from './SectionMedicamentos';
 import SectionNotasMedicas from './SectionNotasMedicas';
 import SignosVitalesPantallaConsulta from './SignosVitalesPantallaConsulta';
-
-// --- Configuración de Signos Vitales ---
-const vitalSignsConfig = [
-  {
-    name: 'tensionArterial',
-    label: 'Tensión Arterial',
-    unit: 'mmHg',
-    icon: <HeartPulse size={18} />,
-  },
-  {
-    name: 'frecuenciaCardiaca',
-    label: 'Frec. Cardíaca',
-    unit: 'lpm',
-    icon: <HeartPulse size={18} />,
-  },
-  {
-    name: 'frecuenciaRespiratoria',
-    label: 'Frec. Resp.',
-    unit: 'rpm',
-    icon: <Wind size={18} />,
-  },
-  {
-    name: 'temperatura',
-    label: 'Temperatura',
-    unit: '°C',
-    icon: <Thermometer size={18} />,
-  },
-  {
-    name: 'saturacionOxigeno',
-    label: 'Sat. O₂',
-    unit: '%',
-    icon: <Percent size={18} />,
-  },
-  {
-    name: 'peso',
-    label: 'Peso',
-    unit: 'kg',
-    icon: <Weight size={18} />,
-  },
-  {
-    name: 'talla',
-    label: 'Talla',
-    unit: 'cm',
-    icon: <Ruler size={18} />,
-  },
-  {
-    name: 'imc',
-    label: 'IMC',
-    unit: 'kg/m²',
-    icon: <Calculator size={18} />,
-  },
-  {
-    name: 'glucosa',
-    label: 'Glucosa',
-    unit: 'mg/dL',
-    icon: <Droplet size={18} />,
-  },
-];
 
 interface ConsultaActualPantallaProps {
   data: any;
@@ -317,107 +249,11 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         <SignosVitalesPantallaConsulta
           signosVitalesHistorial={signosVitalesHistorial}
           handleSignosVitalesChange={handleSignosVitalesChange}
-          vitalSignsConfig={vitalSignsConfig}
           preferenciaPerdilProfesional={preferenciaPerdilProfesional}
         />
-        {/* --- Inicio: Integración de Calculadora de Percentiles (dentro de details) --- */}
 
-        <details className="w-full group bg-white rounded-lg border">
-          <summary className="px-4 py-3 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-            <span className="font-semibold text-gray-700">Percentiles de Crecimiento</span>
-            <span className="text-sm text-gray-500 group-open:hidden">Ver más</span>
-            <span className="text-sm text-gray-500 hidden group-open:inline">Ver menos</span>
-          </summary>
-          <div className="p-4">
-            {' '}
-            {/* Content wrapper for padding */}
-            {(() => {
-              const getAgeInMonths = birthDate => {
-                if (!birthDate) return Infinity;
-                const today = new Date();
-                const birth = new Date(birthDate);
-                let months = (today.getFullYear() - birth.getFullYear()) * 12;
-                months -= birth.getMonth();
-                months += today.getMonth();
-                return months <= 0 ? 0 : months;
-              };
-
-              const ageInMonths = getAgeInMonths(data.paciente?.fNacimiento);
-              const sex = data.paciente?.sexo?.toLowerCase();
-
-              const currentSignosVitales = $consulta.signosVitales; // Obtener los signos vitales actuales del store
-              const weight = currentSignosVitales?.peso; // Definir weight
-              const length = currentSignosVitales?.talla; // Definir length
-
-              // Helper para calcular el IMC (movido aquí)
-              const calculateBMI = (weightKg, heightCm) => {
-                if (weightKg <= 0 || heightCm <= 0) return null;
-                const heightM = heightCm / 100;
-                return weightKg / (heightM * heightM);
-              };
-
-              // Solo muestra los gráficos para pacientes pediátricos (0-24 meses) con sexo definido y fecha de nacimiento
-              if (
-                ageInMonths <= 24 &&
-                (sex === 'masculino' || sex === 'femenino') &&
-                data.paciente?.fNacimiento
-              ) {
-                return (
-                  <div className="flex flex-row gap-4 overflow-x-auto p-2">
-                    {/* Gráfico de Peso */}
-                    {weight && !isNaN(parseFloat(weight)) && (
-                      <div className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
-                        <GraficoPercentil
-                          measurementType="weight"
-                          sex={sex === 'masculino' ? 'boy' : 'girl'}
-                          patientAgeInMonths={ageInMonths}
-                          patientMeasurementValue={parseFloat(weight)}
-                        />
-                      </div>
-                    )}
-                    {/* Gráfico de Talla */}
-                    {length && !isNaN(parseFloat(length)) && (
-                      <div className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
-                        <GraficoPercentil
-                          measurementType="length"
-                          sex={sex === 'masculino' ? 'boy' : 'girl'}
-                          patientAgeInMonths={ageInMonths}
-                          patientMeasurementValue={parseFloat(length)}
-                        />
-                      </div>
-                    )}
-                    {/* Gráfico de IMC */}
-                    {weight &&
-                      length &&
-                      !isNaN(parseFloat(weight)) &&
-                      !isNaN(parseFloat(length)) && (
-                        <div className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3">
-                          <GraficoPercentil
-                            measurementType="bmi"
-                            sex={sex === 'masculino' ? 'boy' : 'girl'}
-                            patientAgeInMonths={ageInMonths}
-                            patientMeasurementValue={calculateBMI(
-                              parseFloat(weight),
-                              parseFloat(length)
-                            )}
-                          />
-                        </div>
-                      )}
-                  </div>
-                );
-              }
-              return (
-                <div className="text-center text-gray-400 p-4 bg-gray-50 rounded-lg">
-                  <p>
-                    Gráficos de percentiles disponibles solo para pacientes pediátricos (0-24 meses)
-                    con datos completos.
-                  </p>
-                </div>
-              );
-            })()}
-          </div>
-        </details>
-        {/* --- Fin: Integración de Calculadora de Percentiles --- */}
+        {/* percentiles */}
+        <PercentilesPantallaConsulta $consulta={consultaStore.get()} data={data} />
 
         <Section title="Síntomas (Anamnesis)">
           <TextArea

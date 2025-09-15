@@ -91,4 +91,3 @@ export async function POST({ request, cookies }: APIContext): Promise<Response> 
     return createResponse(500, 'Error interno del servidor');
   }
 }
-

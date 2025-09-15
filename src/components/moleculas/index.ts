@@ -1,5 +1,4 @@
 export * from './BotonIndigo';
-export * from './CalculadoraPercentiles';
 export * from './CardAntecentes';
 export * from './CardMedicamentoV2';
 export * from './CardTurno';

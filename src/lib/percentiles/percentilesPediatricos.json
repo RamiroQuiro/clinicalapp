@@ -1,0 +1,1576 @@
+{
+  "pesoEdadNino": [
+    {
+      "edadMeses": 0,
+      "percentil3": 2.5,
+      "percentil10": 2.8,
+      "percentil25": 3.1,
+      "percentil50": 3.4,
+      "percentil75": 3.8,
+      "percentil90": 4.1,
+      "percentil97": 4.5
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 3.2,
+      "percentil10": 3.6,
+      "percentil25": 4.0,
+      "percentil50": 4.5,
+      "percentil75": 5.0,
+      "percentil90": 5.4,
+      "percentil97": 5.9
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 4.0,
+      "percentil10": 4.4,
+      "percentil25": 4.9,
+      "percentil50": 5.5,
+      "percentil75": 6.1,
+      "percentil90": 6.6,
+      "percentil97": 7.2
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 4.8,
+      "percentil10": 5.2,
+      "percentil25": 5.7,
+      "percentil50": 6.2,
+      "percentil75": 6.8,
+      "percentil90": 7.3,
+      "percentil97": 8.0
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 5.5,
+      "percentil10": 5.9,
+      "percentil25": 6.4,
+      "percentil50": 7.0,
+      "percentil75": 7.7,
+      "percentil90": 8.3,
+      "percentil97": 8.8
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 6.0,
+      "percentil10": 6.5,
+      "percentil25": 7.0,
+      "percentil50": 7.6,
+      "percentil75": 8.4,
+      "percentil90": 9.1,
+      "percentil97": 9.6
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 6.4,
+      "percentil10": 7.0,
+      "percentil25": 7.6,
+      "percentil50": 8.3,
+      "percentil75": 9.0,
+      "percentil90": 9.7,
+      "percentil97": 10.5
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 6.8,
+      "percentil10": 7.4,
+      "percentil25": 8.0,
+      "percentil50": 8.6,
+      "percentil75": 9.5,
+      "percentil90": 10.2,
+      "percentil97": 11.0
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 7.1,
+      "percentil10": 7.7,
+      "percentil25": 8.3,
+      "percentil50": 9.0,
+      "percentil75": 9.9,
+      "percentil90": 10.7,
+      "percentil97": 11.4
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 7.4,
+      "percentil10": 8.0,
+      "percentil25": 8.6,
+      "percentil50": 9.3,
+      "percentil75": 10.3,
+      "percentil90": 11.1,
+      "percentil97": 11.9
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 7.6,
+      "percentil10": 8.3,
+      "percentil25": 8.9,
+      "percentil50": 9.6,
+      "percentil75": 10.6,
+      "percentil90": 11.4,
+      "percentil97": 12.3
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 7.9,
+      "percentil10": 8.5,
+      "percentil25": 9.2,
+      "percentil50": 9.9,
+      "percentil75": 10.9,
+      "percentil90": 11.7,
+      "percentil97": 12.6
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 8.1,
+      "percentil10": 8.8,
+      "percentil25": 9.4,
+      "percentil50": 10.2,
+      "percentil75": 11.2,
+      "percentil90": 12.0,
+      "percentil97": 12.8
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 9.2,
+      "percentil10": 9.9,
+      "percentil25": 10.7,
+      "percentil50": 11.6,
+      "percentil75": 12.7,
+      "percentil90": 13.6,
+      "percentil97": 14.7
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 10.5,
+      "percentil10": 11.3,
+      "percentil25": 12.2,
+      "percentil50": 13.2,
+      "percentil75": 14.3,
+      "percentil90": 15.4,
+      "percentil97": 16.7
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 12.3,
+      "percentil10": 13.2,
+      "percentil25": 14.3,
+      "percentil50": 15.5,
+      "percentil75": 16.9,
+      "percentil90": 18.2,
+      "percentil97": 19.8
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 14.0,
+      "percentil10": 15.0,
+      "percentil25": 16.2,
+      "percentil50": 17.6,
+      "percentil75": 19.2,
+      "percentil90": 20.8,
+      "percentil97": 22.6
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 15.5,
+      "percentil10": 16.6,
+      "percentil25": 18.0,
+      "percentil50": 19.6,
+      "percentil75": 21.4,
+      "percentil90": 23.2,
+      "percentil97": 25.2
+    }
+  ],
+
+  "pesoEdadNina": [
+    {
+      "edadMeses": 0,
+      "percentil3": 2.4,
+      "percentil10": 2.7,
+      "percentil25": 3.0,
+      "percentil50": 3.3,
+      "percentil75": 3.6,
+      "percentil90": 3.9,
+      "percentil97": 4.3
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 3.1,
+      "percentil10": 3.5,
+      "percentil25": 3.8,
+      "percentil50": 4.3,
+      "percentil75": 4.8,
+      "percentil90": 5.2,
+      "percentil97": 5.6
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 3.9,
+      "percentil10": 4.3,
+      "percentil25": 4.7,
+      "percentil50": 5.2,
+      "percentil75": 5.8,
+      "percentil90": 6.3,
+      "percentil97": 6.8
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 4.5,
+      "percentil10": 5.0,
+      "percentil25": 5.4,
+      "percentil50": 5.9,
+      "percentil75": 6.5,
+      "percentil90": 7.0,
+      "percentil97": 7.6
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 5.1,
+      "percentil10": 5.6,
+      "percentil25": 6.1,
+      "percentil50": 6.6,
+      "percentil75": 7.3,
+      "percentil90": 7.9,
+      "percentil97": 8.4
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 5.6,
+      "percentil10": 6.1,
+      "percentil25": 6.6,
+      "percentil50": 7.1,
+      "percentil75": 7.9,
+      "percentil90": 8.5,
+      "percentil97": 9.1
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 6.0,
+      "percentil10": 6.5,
+      "percentil25": 7.1,
+      "percentil50": 7.7,
+      "percentil75": 8.4,
+      "percentil90": 9.1,
+      "percentil97": 9.9
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 6.3,
+      "percentil10": 6.9,
+      "percentil25": 7.5,
+      "percentil50": 8.1,
+      "percentil75": 8.9,
+      "percentil90": 9.7,
+      "percentil97": 10.4
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 6.6,
+      "percentil10": 7.2,
+      "percentil25": 7.8,
+      "percentil50": 8.5,
+      "percentil75": 9.3,
+      "percentil90": 10.1,
+      "percentil97": 10.8
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 6.8,
+      "percentil10": 7.4,
+      "percentil25": 8.1,
+      "percentil50": 8.8,
+      "percentil75": 9.7,
+      "percentil90": 10.5,
+      "percentil97": 11.2
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 7.0,
+      "percentil10": 7.7,
+      "percentil25": 8.3,
+      "percentil50": 9.1,
+      "percentil75": 10.0,
+      "percentil90": 10.8,
+      "percentil97": 11.6
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 7.2,
+      "percentil10": 7.9,
+      "percentil25": 8.6,
+      "percentil50": 9.3,
+      "percentil75": 10.3,
+      "percentil90": 11.1,
+      "percentil97": 11.9
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 7.4,
+      "percentil10": 8.1,
+      "percentil25": 8.8,
+      "percentil50": 9.6,
+      "percentil75": 10.6,
+      "percentil90": 11.4,
+      "percentil97": 12.3
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 8.5,
+      "percentil10": 9.3,
+      "percentil25": 10.1,
+      "percentil50": 11.0,
+      "percentil75": 12.1,
+      "percentil90": 13.1,
+      "percentil97": 14.2
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 10.0,
+      "percentil10": 10.8,
+      "percentil25": 11.7,
+      "percentil50": 12.7,
+      "percentil75": 13.8,
+      "percentil90": 14.9,
+      "percentil97": 16.2
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 11.8,
+      "percentil10": 12.7,
+      "percentil25": 13.8,
+      "percentil50": 15.0,
+      "percentil75": 16.4,
+      "percentil90": 17.7,
+      "percentil97": 19.3
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 13.5,
+      "percentil10": 14.5,
+      "percentil25": 15.7,
+      "percentil50": 17.1,
+      "percentil75": 18.7,
+      "percentil90": 20.3,
+      "percentil97": 22.1
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 15.0,
+      "percentil10": 16.1,
+      "percentil25": 17.5,
+      "percentil50": 19.1,
+      "percentil75": 20.9,
+      "percentil90": 22.7,
+      "percentil97": 24.7
+    }
+  ],
+
+  "tallaEdadNino": [
+    {
+      "edadMeses": 0,
+      "percentil3": 46.5,
+      "percentil10": 48.0,
+      "percentil25": 49.5,
+      "percentil50": 50.5,
+      "percentil75": 52.0,
+      "percentil90": 53.0,
+      "percentil97": 54.5
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 51.0,
+      "percentil10": 52.5,
+      "percentil25": 54.0,
+      "percentil50": 55.5,
+      "percentil75": 57.0,
+      "percentil90": 58.5,
+      "percentil97": 60.0
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 54.5,
+      "percentil10": 56.5,
+      "percentil25": 58.0,
+      "percentil50": 59.5,
+      "percentil75": 61.5,
+      "percentil90": 63.0,
+      "percentil97": 64.5
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 56.0,
+      "percentil10": 58.0,
+      "percentil25": 59.5,
+      "percentil50": 61.0,
+      "percentil75": 63.0,
+      "percentil90": 64.5,
+      "percentil97": 65.5
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 58.0,
+      "percentil10": 60.0,
+      "percentil25": 61.5,
+      "percentil50": 63.0,
+      "percentil75": 65.0,
+      "percentil90": 66.5,
+      "percentil97": 68.0
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 60.0,
+      "percentil10": 62.0,
+      "percentil25": 63.5,
+      "percentil50": 65.0,
+      "percentil75": 67.0,
+      "percentil90": 68.5,
+      "percentil97": 70.0
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 62.0,
+      "percentil10": 64.0,
+      "percentil25": 65.5,
+      "percentil50": 67.5,
+      "percentil75": 69.5,
+      "percentil90": 71.0,
+      "percentil97": 73.0
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 63.5,
+      "percentil10": 65.5,
+      "percentil25": 67.0,
+      "percentil50": 69.0,
+      "percentil75": 71.0,
+      "percentil90": 72.5,
+      "percentil97": 74.5
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 65.0,
+      "percentil10": 67.0,
+      "percentil25": 68.5,
+      "percentil50": 70.5,
+      "percentil75": 72.5,
+      "percentil90": 74.0,
+      "percentil97": 76.0
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 66.5,
+      "percentil10": 68.5,
+      "percentil25": 70.0,
+      "percentil50": 72.0,
+      "percentil75": 74.0,
+      "percentil90": 75.5,
+      "percentil97": 77.5
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 67.5,
+      "percentil10": 69.5,
+      "percentil25": 71.0,
+      "percentil50": 73.0,
+      "percentil75": 75.0,
+      "percentil90": 76.5,
+      "percentil97": 79.0
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 69.0,
+      "percentil10": 71.0,
+      "percentil25": 72.5,
+      "percentil50": 74.5,
+      "percentil75": 76.5,
+      "percentil90": 78.0,
+      "percentil97": 80.5
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 70.0,
+      "percentil10": 72.0,
+      "percentil25": 73.5,
+      "percentil50": 76.0,
+      "percentil75": 78.0,
+      "percentil90": 80.0,
+      "percentil97": 82.0
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 76.0,
+      "percentil10": 78.0,
+      "percentil25": 80.0,
+      "percentil50": 82.5,
+      "percentil75": 85.0,
+      "percentil90": 87.0,
+      "percentil97": 89.0
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 81.0,
+      "percentil10": 84.0,
+      "percentil25": 86.0,
+      "percentil50": 88.0,
+      "percentil75": 90.0,
+      "percentil90": 92.0,
+      "percentil97": 95.0
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 88.0,
+      "percentil10": 91.0,
+      "percentil25": 94.0,
+      "percentil50": 97.0,
+      "percentil75": 100.0,
+      "percentil90": 103.0,
+      "percentil97": 106.0
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 94.0,
+      "percentil10": 97.0,
+      "percentil25": 100.0,
+      "percentil50": 103.0,
+      "percentil75": 106.0,
+      "percentil90": 109.0,
+      "percentil97": 112.0
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 99.0,
+      "percentil10": 102.0,
+      "percentil25": 105.0,
+      "percentil50": 108.0,
+      "percentil75": 111.0,
+      "percentil90": 114.0,
+      "percentil97": 117.0
+    }
+  ],
+
+  "tallaEdadNina": [
+    {
+      "edadMeses": 0,
+      "percentil3": 45.5,
+      "percentil10": 47.0,
+      "percentil25": 48.5,
+      "percentil50": 49.5,
+      "percentil75": 51.0,
+      "percentil90": 52.0,
+      "percentil97": 53.5
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 50.0,
+      "percentil10": 51.5,
+      "percentil25": 53.0,
+      "percentil50": 54.5,
+      "percentil75": 56.0,
+      "percentil90": 57.5,
+      "percentil97": 59.0
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 53.0,
+      "percentil10": 55.0,
+      "percentil25": 56.5,
+      "percentil50": 58.0,
+      "percentil75": 60.0,
+      "percentil90": 61.5,
+      "percentil97": 63.0
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 55.0,
+      "percentil10": 57.0,
+      "percentil25": 58.5,
+      "percentil50": 60.0,
+      "percentil75": 62.0,
+      "percentil90": 63.5,
+      "percentil97": 64.5
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 57.0,
+      "percentil10": 59.0,
+      "percentil25": 60.5,
+      "percentil50": 62.0,
+      "percentil75": 64.0,
+      "percentil90": 65.5,
+      "percentil97": 67.0
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 59.0,
+      "percentil10": 61.0,
+      "percentil25": 62.5,
+      "percentil50": 64.0,
+      "percentil75": 66.0,
+      "percentil90": 67.5,
+      "percentil97": 69.0
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 61.0,
+      "percentil10": 63.0,
+      "percentil25": 64.5,
+      "percentil50": 66.5,
+      "percentil75": 68.5,
+      "percentil90": 70.0,
+      "percentil97": 72.0
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 62.5,
+      "percentil10": 64.5,
+      "percentil25": 66.0,
+      "percentil50": 68.0,
+      "percentil75": 70.0,
+      "percentil90": 71.5,
+      "percentil97": 73.5
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 64.0,
+      "percentil10": 66.0,
+      "percentil25": 67.5,
+      "percentil50": 69.5,
+      "percentil75": 71.5,
+      "percentil90": 73.0,
+      "percentil97": 75.0
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 65.5,
+      "percentil10": 67.5,
+      "percentil25": 69.0,
+      "percentil50": 71.0,
+      "percentil75": 73.0,
+      "percentil90": 74.5,
+      "percentil97": 76.5
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 66.5,
+      "percentil10": 68.5,
+      "percentil25": 70.0,
+      "percentil50": 72.0,
+      "percentil75": 74.0,
+      "percentil90": 75.5,
+      "percentil97": 78.0
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 68.0,
+      "percentil10": 70.0,
+      "percentil25": 71.5,
+      "percentil50": 73.5,
+      "percentil75": 75.5,
+      "percentil90": 77.0,
+      "percentil97": 79.5
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 69.0,
+      "percentil10": 71.0,
+      "percentil25": 72.5,
+      "percentil50": 75.0,
+      "percentil75": 77.0,
+      "percentil90": 79.0,
+      "percentil97": 81.0
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 74.0,
+      "percentil10": 76.0,
+      "percentil25": 78.0,
+      "percentil50": 80.5,
+      "percentil75": 83.0,
+      "percentil90": 85.0,
+      "percentil97": 87.0
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 80.0,
+      "percentil10": 83.0,
+      "percentil25": 85.0,
+      "percentil50": 87.0,
+      "percentil75": 89.0,
+      "percentil90": 91.0,
+      "percentil97": 94.0
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 87.0,
+      "percentil10": 90.0,
+      "percentil25": 93.0,
+      "percentil50": 96.0,
+      "percentil75": 99.0,
+      "percentil90": 102.0,
+      "percentil97": 105.0
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 93.0,
+      "percentil10": 96.0,
+      "percentil25": 99.0,
+      "percentil50": 102.0,
+      "percentil75": 105.0,
+      "percentil90": 108.0,
+      "percentil97": 111.0
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 98.0,
+      "percentil10": 101.0,
+      "percentil25": 104.0,
+      "percentil50": 107.0,
+      "percentil75": 110.0,
+      "percentil90": 113.0,
+      "percentil97": 116.0
+    }
+  ],
+
+  "imcEdadNino": [
+    {
+      "edadMeses": 0,
+      "percentil3": 11.5,
+      "percentil10": 12.0,
+      "percentil25": 12.5,
+      "percentil50": 13.5,
+      "percentil75": 14.5,
+      "percentil90": 15.0,
+      "percentil97": 16.0
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 13.0,
+      "percentil10": 13.5,
+      "percentil25": 14.0,
+      "percentil50": 15.0,
+      "percentil75": 16.0,
+      "percentil90": 16.5,
+      "percentil97": 17.5
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 14.0,
+      "percentil10": 14.5,
+      "percentil25": 15.0,
+      "percentil50": 16.0,
+      "percentil75": 17.0,
+      "percentil90": 17.5,
+      "percentil97": 18.5
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 14.5,
+      "percentil10": 15.0,
+      "percentil25": 15.5,
+      "percentil50": 16.5,
+      "percentil75": 17.5,
+      "percentil90": 18.0,
+      "percentil97": 19.5
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 15.0,
+      "percentil10": 15.5,
+      "percentil25": 16.0,
+      "percentil50": 17.0,
+      "percentil75": 18.0,
+      "percentil90": 18.5,
+      "percentil97": 20.0
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 15.5,
+      "percentil10": 16.0,
+      "percentil25": 16.5,
+      "percentil50": 17.5,
+      "percentil75": 18.5,
+      "percentil90": 19.0,
+      "percentil97": 20.5
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 15.8,
+      "percentil10": 16.3,
+      "percentil25": 16.8,
+      "percentil50": 17.8,
+      "percentil75": 19.0,
+      "percentil90": 19.5,
+      "percentil97": 21.0
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 16.0,
+      "percentil10": 16.5,
+      "percentil25": 17.0,
+      "percentil50": 18.0,
+      "percentil75": 19.2,
+      "percentil90": 19.8,
+      "percentil97": 21.5
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 16.2,
+      "percentil10": 16.7,
+      "percentil25": 17.2,
+      "percentil50": 18.2,
+      "percentil75": 19.4,
+      "percentil90": 20.0,
+      "percentil97": 21.8
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 16.3,
+      "percentil10": 16.8,
+      "percentil25": 17.3,
+      "percentil50": 18.3,
+      "percentil75": 19.6,
+      "percentil90": 20.2,
+      "percentil97": 22.0
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 16.5,
+      "percentil10": 17.0,
+      "percentil25": 17.5,
+      "percentil50": 18.5,
+      "percentil75": 19.8,
+      "percentil90": 20.4,
+      "percentil97": 22.2
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 16.6,
+      "percentil10": 17.1,
+      "percentil25": 17.6,
+      "percentil50": 18.6,
+      "percentil75": 19.9,
+      "percentil90": 20.6,
+      "percentil97": 22.4
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 16.7,
+      "percentil10": 17.2,
+      "percentil25": 17.7,
+      "percentil50": 18.7,
+      "percentil75": 20.1,
+      "percentil90": 20.7,
+      "percentil97": 22.6
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 16.8,
+      "percentil10": 17.3,
+      "percentil25": 17.9,
+      "percentil50": 19.0,
+      "percentil75": 20.5,
+      "percentil90": 21.3,
+      "percentil97": 23.2
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 16.5,
+      "percentil10": 17.0,
+      "percentil25": 17.6,
+      "percentil50": 18.8,
+      "percentil75": 20.4,
+      "percentil90": 21.4,
+      "percentil97": 23.5
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 15.8,
+      "percentil10": 16.3,
+      "percentil25": 17.0,
+      "percentil50": 18.3,
+      "percentil75": 20.0,
+      "percentil90": 21.2,
+      "percentil97": 23.5
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 15.4,
+      "percentil10": 15.9,
+      "percentil25": 16.6,
+      "percentil50": 18.0,
+      "percentil75": 19.8,
+      "percentil90": 21.2,
+      "percentil97": 23.7
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 15.2,
+      "percentil10": 15.7,
+      "percentil25": 16.4,
+      "percentil50": 17.8,
+      "percentil75": 19.7,
+      "percentil90": 21.2,
+      "percentil97": 23.8
+    }
+  ],
+
+  "imcEdadNina": [
+    {
+      "edadMeses": 0,
+      "percentil3": 11.0,
+      "percentil10": 11.5,
+      "percentil25": 12.0,
+      "percentil50": 13.0,
+      "percentil75": 14.0,
+      "percentil90": 14.5,
+      "percentil97": 15.5
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 12.5,
+      "percentil10": 13.0,
+      "percentil25": 13.5,
+      "percentil50": 14.5,
+      "percentil75": 15.5,
+      "percentil90": 16.0,
+      "percentil97": 17.0
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 13.5,
+      "percentil10": 14.0,
+      "percentil25": 14.5,
+      "percentil50": 15.5,
+      "percentil75": 16.5,
+      "percentil90": 17.0,
+      "percentil97": 18.0
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 14.0,
+      "percentil10": 14.5,
+      "percentil25": 15.0,
+      "percentil50": 16.0,
+      "percentil75": 17.0,
+      "percentil90": 17.5,
+      "percentil97": 19.0
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 14.5,
+      "percentil10": 15.0,
+      "percentil25": 15.5,
+      "percentil50": 16.5,
+      "percentil75": 17.5,
+      "percentil90": 18.0,
+      "percentil97": 19.5
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 15.0,
+      "percentil10": 15.5,
+      "percentil25": 16.0,
+      "percentil50": 17.0,
+      "percentil75": 18.0,
+      "percentil90": 18.5,
+      "percentil97": 20.0
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 15.3,
+      "percentil10": 15.8,
+      "percentil25": 16.3,
+      "percentil50": 17.3,
+      "percentil75": 18.5,
+      "percentil90": 19.0,
+      "percentil97": 20.5
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 15.5,
+      "percentil10": 16.0,
+      "percentil25": 16.5,
+      "percentil50": 17.5,
+      "percentil75": 18.7,
+      "percentil90": 19.3,
+      "percentil97": 21.0
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 15.7,
+      "percentil10": 16.2,
+      "percentil25": 16.7,
+      "percentil50": 17.7,
+      "percentil75": 18.9,
+      "percentil90": 19.5,
+      "percentil97": 21.3
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 15.8,
+      "percentil10": 16.3,
+      "percentil25": 16.8,
+      "percentil50": 17.8,
+      "percentil75": 19.1,
+      "percentil90": 19.7,
+      "percentil97": 21.5
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 16.0,
+      "percentil10": 16.5,
+      "percentil25": 17.0,
+      "percentil50": 18.0,
+      "percentil75": 19.3,
+      "percentil90": 19.9,
+      "percentil97": 21.7
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 16.1,
+      "percentil10": 16.6,
+      "percentil25": 17.1,
+      "percentil50": 18.1,
+      "percentil75": 19.4,
+      "percentil90": 20.0,
+      "percentil97": 21.9
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 16.2,
+      "percentil10": 16.7,
+      "percentil25": 17.2,
+      "percentil50": 18.2,
+      "percentil75": 19.6,
+      "percentil90": 20.2,
+      "percentil97": 22.1
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 16.3,
+      "percentil10": 16.8,
+      "percentil25": 17.4,
+      "percentil50": 18.5,
+      "percentil75": 20.0,
+      "percentil90": 20.8,
+      "percentil97": 22.7
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 16.0,
+      "percentil10": 16.5,
+      "percentil25": 17.1,
+      "percentil50": 18.3,
+      "percentil75": 19.9,
+      "percentil90": 20.9,
+      "percentil97": 23.0
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 15.5,
+      "percentil10": 16.0,
+      "percentil25": 16.7,
+      "percentil50": 18.0,
+      "percentil75": 19.7,
+      "percentil90": 20.9,
+      "percentil97": 23.2
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 15.2,
+      "percentil10": 15.7,
+      "percentil25": 16.4,
+      "percentil50": 17.8,
+      "percentil75": 19.6,
+      "percentil90": 21.0,
+      "percentil97": 23.5
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 15.0,
+      "percentil10": 15.5,
+      "percentil25": 16.2,
+      "percentil50": 17.7,
+      "percentil75": 19.6,
+      "percentil90": 21.2,
+      "percentil97": 23.8
+    }
+  ],
+
+  "perimetroCefalicoEdadNino": [
+    {
+      "edadMeses": 0,
+      "percentil3": 33.0,
+      "percentil10": 33.5,
+      "percentil25": 34.0,
+      "percentil50": 35.0,
+      "percentil75": 36.0,
+      "percentil90": 36.5,
+      "percentil97": 37.5
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 35.5,
+      "percentil10": 36.0,
+      "percentil25": 36.5,
+      "percentil50": 37.5,
+      "percentil75": 38.5,
+      "percentil90": 39.0,
+      "percentil97": 40.0
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 37.0,
+      "percentil10": 37.5,
+      "percentil25": 38.0,
+      "percentil50": 39.0,
+      "percentil75": 40.0,
+      "percentil90": 40.5,
+      "percentil97": 41.5
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 38.0,
+      "percentil10": 39.0,
+      "percentil25": 39.5,
+      "percentil50": 40.5,
+      "percentil75": 41.5,
+      "percentil90": 42.0,
+      "percentil97": 43.0
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 39.0,
+      "percentil10": 40.0,
+      "percentil25": 40.5,
+      "percentil50": 41.5,
+      "percentil75": 42.5,
+      "percentil90": 43.0,
+      "percentil97": 44.0
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 40.0,
+      "percentil10": 41.0,
+      "percentil25": 41.5,
+      "percentil50": 42.5,
+      "percentil75": 43.5,
+      "percentil90": 44.0,
+      "percentil97": 45.0
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 41.0,
+      "percentil10": 42.0,
+      "percentil25": 42.5,
+      "percentil50": 43.5,
+      "percentil75": 44.5,
+      "percentil90": 45.0,
+      "percentil97": 46.0
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 41.5,
+      "percentil10": 42.5,
+      "percentil25": 43.0,
+      "percentil50": 44.0,
+      "percentil75": 45.0,
+      "percentil90": 45.5,
+      "percentil97": 46.5
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 42.0,
+      "percentil10": 43.0,
+      "percentil25": 43.5,
+      "percentil50": 44.5,
+      "percentil75": 45.5,
+      "percentil90": 46.0,
+      "percentil97": 47.0
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 42.5,
+      "percentil10": 43.5,
+      "percentil25": 44.0,
+      "percentil50": 45.0,
+      "percentil75": 46.0,
+      "percentil90": 46.5,
+      "percentil97": 47.5
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 43.0,
+      "percentil10": 44.0,
+      "percentil25": 44.5,
+      "percentil50": 45.5,
+      "percentil75": 46.5,
+      "percentil90": 47.0,
+      "percentil97": 48.0
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 43.5,
+      "percentil10": 44.5,
+      "percentil25": 45.0,
+      "percentil50": 46.0,
+      "percentil75": 47.0,
+      "percentil90": 47.5,
+      "percentil97": 48.5
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 44.0,
+      "percentil10": 45.0,
+      "percentil25": 45.5,
+      "percentil50": 46.5,
+      "percentil75": 47.5,
+      "percentil90": 48.0,
+      "percentil97": 49.0
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 45.5,
+      "percentil10": 46.5,
+      "percentil25": 47.0,
+      "percentil50": 48.0,
+      "percentil75": 49.0,
+      "percentil90": 49.5,
+      "percentil97": 50.5
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 47.0,
+      "percentil10": 48.0,
+      "percentil25": 48.5,
+      "percentil50": 49.5,
+      "percentil75": 50.5,
+      "percentil90": 51.0,
+      "percentil97": 52.0
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 48.5,
+      "percentil10": 49.5,
+      "percentil25": 50.0,
+      "percentil50": 51.0,
+      "percentil75": 52.0,
+      "percentil90": 52.5,
+      "percentil97": 53.5
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 49.5,
+      "percentil10": 50.5,
+      "percentil25": 51.0,
+      "percentil50": 52.0,
+      "percentil75": 53.0,
+      "percentil90": 53.5,
+      "percentil97": 54.5
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 50.5,
+      "percentil10": 51.5,
+      "percentil25": 52.0,
+      "percentil50": 53.0,
+      "percentil75": 54.0,
+      "percentil90": 54.5,
+      "percentil97": 55.5
+    }
+  ],
+
+  "perimetroCefalicoEdadNina": [
+    {
+      "edadMeses": 0,
+      "percentil3": 32.5,
+      "percentil10": 33.0,
+      "percentil25": 33.5,
+      "percentil50": 34.5,
+      "percentil75": 35.5,
+      "percentil90": 36.0,
+      "percentil97": 37.0
+    },
+    {
+      "edadMeses": 1,
+      "percentil3": 35.0,
+      "percentil10": 35.5,
+      "percentil25": 36.0,
+      "percentil50": 37.0,
+      "percentil75": 38.0,
+      "percentil90": 38.5,
+      "percentil97": 39.5
+    },
+    {
+      "edadMeses": 2,
+      "percentil3": 36.5,
+      "percentil10": 37.0,
+      "percentil25": 37.5,
+      "percentil50": 38.5,
+      "percentil75": 39.5,
+      "percentil90": 40.0,
+      "percentil97": 41.0
+    },
+    {
+      "edadMeses": 3,
+      "percentil3": 37.5,
+      "percentil10": 38.5,
+      "percentil25": 39.0,
+      "percentil50": 40.0,
+      "percentil75": 41.0,
+      "percentil90": 41.5,
+      "percentil97": 42.5
+    },
+    {
+      "edadMeses": 4,
+      "percentil3": 38.5,
+      "percentil10": 39.5,
+      "percentil25": 40.0,
+      "percentil50": 41.0,
+      "percentil75": 42.0,
+      "percentil90": 42.5,
+      "percentil97": 43.5
+    },
+    {
+      "edadMeses": 5,
+      "percentil3": 39.5,
+      "percentil10": 40.5,
+      "percentil25": 41.0,
+      "percentil50": 42.0,
+      "percentil75": 43.0,
+      "percentil90": 43.5,
+      "percentil97": 44.5
+    },
+    {
+      "edadMeses": 6,
+      "percentil3": 40.5,
+      "percentil10": 41.5,
+      "percentil25": 42.0,
+      "percentil50": 43.0,
+      "percentil75": 44.0,
+      "percentil90": 44.5,
+      "percentil97": 45.5
+    },
+    {
+      "edadMeses": 7,
+      "percentil3": 41.0,
+      "percentil10": 42.0,
+      "percentil25": 42.5,
+      "percentil50": 43.5,
+      "percentil75": 44.5,
+      "percentil90": 45.0,
+      "percentil97": 46.0
+    },
+    {
+      "edadMeses": 8,
+      "percentil3": 41.5,
+      "percentil10": 42.5,
+      "percentil25": 43.0,
+      "percentil50": 44.0,
+      "percentil75": 45.0,
+      "percentil90": 45.5,
+      "percentil97": 46.5
+    },
+    {
+      "edadMeses": 9,
+      "percentil3": 42.0,
+      "percentil10": 43.0,
+      "percentil25": 43.5,
+      "percentil50": 44.5,
+      "percentil75": 45.5,
+      "percentil90": 46.0,
+      "percentil97": 47.0
+    },
+    {
+      "edadMeses": 10,
+      "percentil3": 42.5,
+      "percentil10": 43.5,
+      "percentil25": 44.0,
+      "percentil50": 45.0,
+      "percentil75": 46.0,
+      "percentil90": 46.5,
+      "percentil97": 47.5
+    },
+    {
+      "edadMeses": 11,
+      "percentil3": 43.0,
+      "percentil10": 44.0,
+      "percentil25": 44.5,
+      "percentil50": 45.5,
+      "percentil75": 46.5,
+      "percentil90": 47.0,
+      "percentil97": 48.0
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 43.5,
+      "percentil10": 44.5,
+      "percentil25": 45.0,
+      "percentil50": 46.0,
+      "percentil75": 47.0,
+      "percentil90": 47.5,
+      "percentil97": 48.5
+    },
+    {
+      "edadMeses": 18,
+      "percentil3": 44.5,
+      "percentil10": 45.5,
+      "percentil25": 46.0,
+      "percentil50": 47.0,
+      "percentil75": 48.0,
+      "percentil90": 48.5,
+      "percentil97": 49.5
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 46.0,
+      "percentil10": 47.0,
+      "percentil25": 47.5,
+      "percentil50": 48.5,
+      "percentil75": 49.5,
+      "percentil90": 50.0,
+      "percentil97": 51.0
+    },
+    {
+      "edadMeses": 36,
+      "percentil3": 47.5,
+      "percentil10": 48.5,
+      "percentil25": 49.0,
+      "percentil50": 50.0,
+      "percentil75": 51.0,
+      "percentil90": 51.5,
+      "percentil97": 52.5
+    },
+    {
+      "edadMeses": 48,
+      "percentil3": 48.5,
+      "percentil10": 49.5,
+      "percentil25": 50.0,
+      "percentil50": 51.0,
+      "percentil75": 52.0,
+      "percentil90": 52.5,
+      "percentil97": 53.5
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 49.5,
+      "percentil10": 50.5,
+      "percentil25": 51.0,
+      "percentil50": 52.0,
+      "percentil75": 53.0,
+      "percentil90": 53.5,
+      "percentil97": 54.5
+    }
+  ],
+
+  "presionArterialEdad": [
+    {
+      "edadMeses": 0,
+      "sistolica_p50": 70,
+      "sistolica_p90": 80,
+      "sistolica_p95": 85,
+      "diastolica_p50": 45,
+      "diastolica_p90": 55,
+      "diastolica_p95": 60
+    },
+    {
+      "edadMeses": 1,
+      "sistolica_p50": 75,
+      "sistolica_p90": 85,
+      "sistolica_p95": 90,
+      "diastolica_p50": 50,
+      "diastolica_p90": 60,
+      "diastolica_p95": 65
+    },
+    {
+      "edadMeses": 2,
+      "sistolica_p50": 80,
+      "sistolica_p90": 90,
+      "sistolica_p95": 95,
+      "diastolica_p50": 55,
+      "diastolica_p90": 65,
+      "diastolica_p95": 70
+    },
+    {
+      "edadMeses": 3,
+      "sistolica_p50": 85,
+      "sistolica_p90": 95,
+      "sistolica_p95": 100,
+      "diastolica_p50": 60,
+      "diastolica_p90": 70,
+      "diastolica_p95": 75
+    },
+    {
+      "edadMeses": 4,
+      "sistolica_p50": 90,
+      "sistolica_p90": 100,
+      "sistolica_p95": 105,
+      "diastolica_p50": 65,
+      "diastolica_p90": 75,
+      "diastolica_p95": 80
+    },
+    {
+      "edadMeses": 5,
+      "sistolica_p50": 95,
+      "sistolica_p90": 105,
+      "sistolica_p95": 110,
+      "diastolica_p50": 70,
+      "diastolica_p90": 80,
+      "diastolica_p95": 85
+    },
+    {
+      "edadMeses": 6,
+      "sistolica_p50": 100,
+      "sistolica_p90": 110,
+      "sistolica_p95": 115,
+      "diastolica_p50": 75,
+      "diastolica_p90": 85,
+      "diastolica_p95": 90
+    },
+    {
+      "edadMeses": 12,
+      "sistolica_p50": 105,
+      "sistolica_p90": 115,
+      "sistolica_p95": 120,
+      "diastolica_p50": 70,
+      "diastolica_p90": 80,
+      "diastolica_p95": 85
+    },
+    {
+      "edadMeses": 24,
+      "sistolica_p50": 110,
+      "sistolica_p90": 120,
+      "sistolica_p95": 125,
+      "diastolica_p50": 75,
+      "diastolica_p90": 85,
+      "diastolica_p95": 90
+    },
+    {
+      "edadMeses": 36,
+      "sistolica_p50": 115,
+      "sistolica_p90": 125,
+      "sistolica_p95": 130,
+      "diastolica_p50": 80,
+      "diastolica_p90": 90,
+      "diastolica_p95": 95
+    },
+    {
+      "edadMeses": 48,
+      "sistolica_p50": 120,
+      "sistolica_p90": 130,
+      "sistolica_p95": 135,
+      "diastolica_p50": 85,
+      "diastolica_p90": 95,
+      "diastolica_p95": 100
+    },
+    {
+      "edadMeses": 60,
+      "sistolica_p50": 125,
+      "sistolica_p90": 135,
+      "sistolica_p95": 140,
+      "diastolica_p50": 90,
+      "diastolica_p90": 100,
+      "diastolica_p95": 105
+    }
+  ]
+}

@@ -1,5 +1,4 @@
 import Section from '@/components/moleculas/Section';
-import { CalculadoraPercentiles } from '@/components/moleculas/CalculadoraPercentiles';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -107,10 +106,12 @@ export const SignosVitalesPantalla = ({ signosVitalesHistorial, paciente }) => {
 
   const chartsToDisplay = historial.filter(vital => vital.historial && vital.historial.length >= 2);
 
-  const sexForCalculator: 'boy' | 'girl' | undefined = 
-    paciente?.sexo?.toLowerCase() === 'masculino' ? 'boy' : 
-    paciente?.sexo?.toLowerCase() === 'femenino' ? 'girl' : 
-    undefined;
+  const sexForCalculator: 'boy' | 'girl' | undefined =
+    paciente?.sexo?.toLowerCase() === 'masculino'
+      ? 'boy'
+      : paciente?.sexo?.toLowerCase() === 'femenino'
+        ? 'girl'
+        : undefined;
 
   return (
     <Section title="Evolución de Signos Vitales">
@@ -131,20 +132,6 @@ export const SignosVitalesPantalla = ({ signosVitalesHistorial, paciente }) => {
           <p>No hay suficiente historial para mostrar gráficos.</p>
         </div>
       )}
-
-      {/* Calculadora de Percentiles integrada */}
-      <div className="mt-8">
-        {sexForCalculator && paciente.fNacimiento ? (
-          <CalculadoraPercentiles 
-            sex={sexForCalculator} 
-            birthDate={paciente.fNacimiento} 
-          />
-        ) : (
-          <div className="text-center text-gray-400 p-4 bg-gray-50 rounded-lg mt-4">
-            <p>No se pueden calcular los percentiles sin el sexo y la fecha de nacimiento del paciente.</p>
-          </div>
-        )}
-      </div>
     </Section>
   );
 };

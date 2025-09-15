@@ -1,82 +1,118 @@
-import wfaData from '@/lib/percentiles/who-wfa-boys-0-24_lms.json';
-import lfaData from '@/lib/percentiles/lfa_boys_0_to_24_lms.json';
-import bmiData from '@/lib/percentiles/bmi_boys_0_to_24_lms';
+import percentiles from '@/lib/percentiles/percentilesPediatricos.json';
 
-// Interfaz para asegurar que los datos tienen la forma correcta
-interface LMS {
-  Month: number;
+export interface LMS {
   L: number;
   M: number;
   S: number;
 }
 
-// Mapeo de tipos de medida a sus respectivos datos LMS
-const growthData: { [key: string]: LMS[] } = {
-  'weight': wfaData,
-  'length': lfaData,
-  'bmi': bmiData,
+export type SexoPaciente = 'niño' | 'niña';
+export type TipoMedida = 'peso' | 'talla' | 'imc' | 'perimetroCefalico';
+
+const tipoMedidaMap: Record<TipoMedida, string> = {
+  peso: 'peso',
+  talla: 'talla',
+  imc: 'imc',
+  perimetroCefalico: 'perimetroCefalico',
 };
 
 /**
- * Encuentra los valores L, M, S para una edad específica y tipo de medida usando interpolación lineal.
- * @param ageInMonths La edad del niño en meses.
- * @param measurementType El tipo de medida ('weight', 'length' o 'bmi').
- * @returns Un objeto con los valores L, M, S interpolados.
+ * Calcula parámetros LMS reales a partir de los percentiles
  */
-const getLMSForAge = (ageInMonths: number, measurementType: 'weight' | 'length' | 'bmi'): { L: number; M: number; S: number } | null => {
-  const data = growthData[measurementType];
-  if (!data) {
-    console.error(`Tipo de medida no soportado: ${measurementType}`);
-    return null;
-  }
+const calcularLMSDesdePercentiles = (punto: any): LMS => {
+  const { percentil3, percentil50, percentil97 } = punto;
 
-  // Encuentra los dos puntos de datos entre los que se encuentra la edad
-  const lowerBound = data.filter(d => d.Month <= ageInMonths).pop();
-  const upperBound = data.find(d => d.Month > ageInMonths);
+  // Estimación de S usando la diferencia entre P97 y P50 (aproximación log-normal)
+  const S = (Math.log(percentil97) - Math.log(percentil50)) / 2.0;
 
-  // Si no se encuentran los límites (ej. edad fuera de rango), no se puede calcular
-  if (!lowerBound || !upperBound) {
-    // console.error("Edad fuera del rango de los datos disponibles para este tipo de medida.");
-    return null;
-  }
+  // Para medidas pediátricas, L suele ser cercano a 1
+  const L = 1.0;
 
-  // Si la edad coincide exactamente con un punto de datos, no se necesita interpolar
-  if (lowerBound.Month === ageInMonths) {
-    return { L: lowerBound.L, M: lowerBound.M, S: lowerBound.S };
-  }
-
-  // Cálculo de la interpolación lineal
-  const t = (ageInMonths - lowerBound.Month) / (upperBound.Month - lowerBound.Month);
-  
-  const L = lowerBound.L + t * (upperBound.L - lowerBound.L);
-  const M = lowerBound.M + t * (upperBound.M - lowerBound.M);
-  const S = lowerBound.S + t * (upperBound.S - lowerBound.S);
-
-  return { L, M, S };
+  return {
+    L,
+    M: percentil50,
+    S: Math.max(S, 0.05), // Evita valores demasiado pequeños
+  };
 };
 
 /**
- * Calcula el Z-Score para una medida dada, usando los parámetros LMS.
- * @param measurement El valor medido (ej. peso en kg).
- * @param lms Los parámetros L, M, S para la edad y sexo correspondientes.
- * @returns El Z-Score calculado.
+ * Interpolación lineal simple
  */
-const calculateZScore = (measurement: number, lms: { L: number; M: number; S: number }): number => {
+const interpolate = (a: number, b: number, t: number): number => {
+  return a + (b - a) * t;
+};
+
+/**
+ * Obtiene los parámetros LMS para una edad, medida y sexo específicos
+ */
+export const getLMSParaEdad = (
+  edadMeses: number,
+  tipoMedida: TipoMedida,
+  sexo: SexoPaciente
+): LMS | null => {
+  try {
+    const sexoKey = sexo === 'niño' ? 'Nino' : 'Nina';
+    const dataKey = `${tipoMedidaMap[tipoMedida]}Edad${sexoKey}` as keyof typeof percentiles;
+    const data = percentiles[dataKey];
+
+    if (!data || !Array.isArray(data)) {
+      console.warn(`No se encontraron datos para: ${dataKey}`);
+      return null;
+    }
+
+    // Filtra puntos válidos y ordena por edad
+    const puntosValidos = data
+      .filter(d => d.edadMeses !== undefined && d.percentil50 !== undefined)
+      .sort((a, b) => a.edadMeses - b.edadMeses);
+
+    if (puntosValidos.length === 0) return null;
+
+    // Encuentra el punto exacto o los puntos para interpolación
+    const puntoExacto = puntosValidos.find(d => d.edadMeses === edadMeses);
+    if (puntoExacto) {
+      return calcularLMSDesdePercentiles(puntoExacto);
+    }
+
+    // Encuentra puntos adyacentes para interpolación
+    const lower = puntosValidos.filter(d => d.edadMeses < edadMeses).pop();
+    const upper = puntosValidos.find(d => d.edadMeses > edadMeses);
+
+    if (!lower || !upper) return null;
+
+    // Interpolación lineal
+    const t = (edadMeses - lower.edadMeses) / (upper.edadMeses - lower.edadMeses);
+    const lmsLower = calcularLMSDesdePercentiles(lower);
+    const lmsUpper = calcularLMSDesdePercentiles(upper);
+
+    return {
+      L: interpolate(lmsLower.L, lmsUpper.L, t),
+      M: interpolate(lmsLower.M, lmsUpper.M, t),
+      S: interpolate(lmsLower.S, lmsUpper.S, t),
+    };
+  } catch (error) {
+    console.error('Error en getLMSParaEdad:', error);
+    return null;
+  }
+};
+
+/**
+ * Calcula el Z-score de un valor usando parámetros LMS
+ */
+export const calcularZScore = (valor: number, lms: LMS): number => {
   const { L, M, S } = lms;
-  
+
   if (L !== 0) {
-    return (Math.pow(measurement / M, L) - 1) / (L * S);
-  } else {
-    return Math.log(measurement / M) / S;
+    return (Math.pow(valor / M, L) - 1) / (L * S);
   }
+
+  return Math.log(valor / M) / S;
 };
 
 /**
- * Convierte un Z-Score a un percentil.
- * @param z El Z-Score.
- * @returns El percentil (0-100).
+ * Convierte Z-score a percentil (0-100)
  */
-const zScoreToPercentile = (z: number): number => {
+export const zScoreAPercentil = (z: number): number => {
+  // Función de distribución acumulativa normal
   const p = 0.3275911;
   const a1 = 0.254829592;
   const a2 = -0.284496736;
@@ -87,30 +123,24 @@ const zScoreToPercentile = (z: number): number => {
   const sign = z < 0 ? -1 : 1;
   const x = Math.abs(z) / Math.sqrt(2.0);
   const t = 1.0 / (1.0 + p * x);
-  const erf = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-  const percentile = 0.5 * (1.0 + sign * erf);
+  const erf = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
 
-  return percentile * 100;
+  return 0.5 * (1 + sign * erf) * 100;
 };
 
 /**
- * Convierte un percentil a un Z-Score.
- * Esta es la inversa de zScoreToPercentile.
- * @param percentile El percentil (0-100).
- * @returns El Z-Score correspondiente.
+ * Convierte percentil a Z-score
  */
-const percentileToZScore = (percentile: number): number => {
-  // Esta es una aproximación inversa de la CDF normal estándar.
-  // Para mayor precisión, se podría usar una librería estadística o una tabla de búsqueda.
-  // Implementación basada en la aproximación de Beasley y Springer (1977).
-  if (percentile === 50) return 0; // Percentil 50 es Z-score 0
-  if (percentile === 0) return -Infinity;
-  if (percentile === 100) return Infinity;
+export const percentilAZScore = (percentil: number): number => {
+  if (percentil === 50) return 0;
+  if (percentil <= 0) return -Infinity;
+  if (percentil >= 100) return Infinity;
 
-  const p = percentile / 100;
+  const p = percentil / 100;
   const sign = p < 0.5 ? -1 : 1;
-  const q = p < 0.5 ? p : 1 - p;
+  const q = Math.min(p, 1 - p);
 
+  // Aproximación de Abramowitz & Stegun
   const t = Math.sqrt(-2 * Math.log(q));
   const c0 = 2.515517;
   const c1 = 0.802853;
@@ -119,84 +149,268 @@ const percentileToZScore = (percentile: number): number => {
   const d2 = 0.189269;
   const d3 = 0.001308;
 
-  const z = sign * (t - ((c2 * t + c1) * t + c0) / (((d3 * t + d2) * t + d1) * t + 1.0));
-  return z;
+  return sign * (t - ((c2 * t + c1) * t + c0) / (((d3 * t + d2) * t + d1) * t + 1.0));
 };
 
 /**
- * Calcula la medida (peso, talla, IMC) correspondiente a un Z-Score dado y parámetros LMS.
- * Esta es la inversa de calculateZScore.
- * @param zScore El Z-Score.
- * @param lms Los parámetros L, M, S.
- * @returns La medida correspondiente.
+ * Obtiene el valor de la medida desde Z-score usando LMS
  */
-const getMeasurementForZScore = (zScore: number, lms: { L: number; M: number; S: number }): number => {
+export const obtenerMedidaDesdeZScore = (zScore: number, lms: LMS): number => {
   const { L, M, S } = lms;
 
   if (L !== 0) {
     return M * Math.pow(1 + L * S * zScore, 1 / L);
-  } else {
-    return M * Math.exp(S * zScore);
+  }
+
+  return M * Math.exp(S * zScore);
+};
+
+/**
+ * Calcula el percentil de un valor para una edad, sexo y medida específicos
+ */
+export const calcularPercentil = (
+  edadMeses: number,
+  valor: number,
+  sexo: SexoPaciente,
+  tipoMedida: TipoMedida
+): number | null => {
+  try {
+    if (!['niño', 'niña'].includes(sexo)) {
+      console.warn('Sexo debe ser "niño" o "niña"');
+      return null;
+    }
+
+    if (edadMeses < 0 || edadMeses > 240) {
+      console.warn('Edad fuera de rango (0-240 meses)');
+      return null;
+    }
+
+    const lms = getLMSParaEdad(edadMeses, tipoMedida, sexo);
+    if (!lms) {
+      console.warn('No se pudieron obtener parámetros LMS');
+      return null;
+    }
+
+    const zScore = calcularZScore(valor, lms);
+    const percentil = zScoreAPercentil(zScore);
+
+    return Math.max(0, Math.min(100, percentil)); // Asegura entre 0-100
+  } catch (error) {
+    console.error('Error en calcularPercentil:', error);
+    return null;
   }
 };
 
 /**
- * Función principal para calcular el percentil de crecimiento para cualquier medida.
- * @param ageInMonths Edad en meses.
- * @param measurement El valor medido (ej. peso en kg, talla en cm, IMC).
- * @param sex Sexo ('boy' o 'girl'). Por ahora solo 'boy' está implementado.
- * @param measurementType El tipo de medida ('weight', 'length' o 'bmi').
- * @returns El percentil calculado, o null si no se pudo calcular.
+ * Genera datos para graficar curvas de percentiles
  */
-export const calculatePercentile = (ageInMonths: number, measurement: number, sex: 'boy' | 'girl', measurementType: 'weight' | 'length' | 'bmi'): number | null => {
-  // Por ahora, solo tenemos datos para niños (boys)
-  if (sex !== 'boy') {
-    console.error("El cálculo para niñas aún no está implementado.");
-    return null;
-  }
+export const generarCurvasPercentiles = (
+  tipoMedida: TipoMedida,
+  sexo: SexoPaciente,
+  percentilesObjetivo: number[] = [3, 15, 50, 85, 97],
+  edadMaxMeses: number = 60,
+  pasoMeses: number = 0.5
+): { edad: number; valor: number; percentil: number }[] => {
+  const datosCurva: { edad: number; valor: number; percentil: number }[] = [];
 
-  const lms = getLMSForAge(ageInMonths, measurementType);
-  if (!lms) {
-    return null; // Error ya logueado en la función interna
-  }
+  try {
+    for (let edad = 0; edad <= edadMaxMeses; edad += pasoMeses) {
+      const lms = getLMSParaEdad(edad, tipoMedida, sexo);
+      if (!lms) continue;
 
-  const zScore = calculateZScore(measurement, lms);
-  const percentile = zScoreToPercentile(zScore);
+      percentilesObjetivo.forEach(p => {
+        const zScore = percentilAZScore(p);
+        const valor = obtenerMedidaDesdeZScore(zScore, lms);
 
-  return percentile;
-};
-
-/**
- * Genera los datos para dibujar las curvas de percentiles para un tipo de medida y sexo.
- * @param measurementType El tipo de medida ('weight', 'length' o 'bmi').
- * @param sex Sexo ('boy' o 'girl').
- * @param targetPercentiles Un array de percentiles objetivo (ej: [3, 15, 50, 85, 97]).
- * @returns Un array de objetos con { age: number, value: number, percentile: number } para cada punto de la curva.
- */
-export const getPercentileCurveData = (measurementType: 'weight' | 'length' | 'bmi', sex: 'boy' | 'girl', targetPercentiles: number[]): { age: number; value: number; percentile: number }[] | null => {
-  if (sex !== 'boy') {
-    console.error("La generación de curvas para niñas aún no está implementada.");
-    return null;
-  }
-
-  const curveData: { age: number; value: number; percentile: number }[] = [];
-  const data = growthData[measurementType];
-
-  if (!data) {
-    console.error(`Tipo de medida no soportado para curvas: ${measurementType}`);
-    return null;
-  }
-
-  // Iterar sobre un rango de edades (ej. de 0 a 24 meses, en incrementos de 0.5 meses)
-  for (let age = 0; age <= 24; age += 0.5) {
-    const lms = getLMSForAge(age, measurementType);
-    if (lms) {
-      targetPercentiles.forEach(p => {
-        const zScore = percentileToZScore(p);
-        const value = getMeasurementForZScore(zScore, lms);
-        curveData.push({ age: age, value: value, percentile: p });
+        if (isFinite(valor) && valor > 0) {
+          datosCurva.push({
+            edad: Math.round(edad * 10) / 10, // Redondea a 1 decimal
+            valor: Math.round(valor * 100) / 100, // Redondea a 2 decimales
+            percentil: p,
+          });
+        }
       });
     }
+  } catch (error) {
+    console.error('Error en generarCurvasPercentiles:', error);
   }
-  return curveData;
+
+  return datosCurva;
+};
+
+/**
+ * Obtiene percentiles exactos para una edad específica (sin interpolación)
+ */
+export const obtenerPercentilesExactos = (
+  edadMeses: number,
+  tipoMedida: TipoMedida,
+  sexo: SexoPaciente
+): Record<string, number> | null => {
+  try {
+    const sexoKey = sexo === 'niño' ? 'Nino' : 'Nina';
+    const dataKey = `${tipoMedidaMap[tipoMedida]}Edad${sexoKey}` as keyof typeof percentiles;
+    const data = percentiles[dataKey];
+
+    if (!data || !Array.isArray(data)) return null;
+
+    const puntoExacto = data.find(d => d.edadMeses === edadMeses);
+    if (!puntoExacto) return null;
+
+    // Filtra solo las propiedades de percentil
+    const resultado: Record<string, number> = {};
+    Object.entries(puntoExacto).forEach(([key, value]) => {
+      if (key.startsWith('percentil') && typeof value === 'number') {
+        resultado[key] = value;
+      }
+    });
+
+    return resultado;
+  } catch (error) {
+    console.error('Error en obtenerPercentilesExactos:', error);
+    return null;
+  }
+};
+
+/**
+ * Obtiene valores de presión arterial por edad
+ */
+export const obtenerPresionArterial = (
+  edadMeses: number
+): { sistolica: number; diastolica: number } | null => {
+  try {
+    const data = percentiles.presionArterialEdad;
+    if (!data || !Array.isArray(data)) return null;
+
+    const punto = data.find(d => d.edadMeses === edadMeses);
+    if (!punto) return null;
+
+    return {
+      sistolica: punto.sistolica_p50 || 0,
+      diastolica: punto.diastolica_p50 || 0,
+    };
+  } catch (error) {
+    console.error('Error en obtenerPresionArterial:', error);
+    return null;
+  }
+};
+// En percentiles.services.ts, agrega estas funciones:
+
+/**
+ * Calcula el percentil de perímetro cefálico
+ */
+export const calcularPercentilPC = (
+  edadMeses: number,
+  valor: number,
+  sexo: SexoPaciente
+): number | null => {
+  return calcularPercentil(edadMeses, valor, sexo, 'perimetroCefalico');
+};
+
+/**
+ * Obtiene los percentiles de presión arterial para una edad
+ */
+export const obtenerPercentilesPresionArterial = (
+  edadMeses: number
+): {
+  sistolica: { p50: number; p90: number; p95: number };
+  diastolica: { p50: number; p90: number; p95: number };
+} | null => {
+  try {
+    const data = percentiles.presionArterialEdad;
+    if (!data || !Array.isArray(data)) return null;
+
+    const punto = data.find(d => d.edadMeses === edadMeses);
+    if (!punto) return null;
+
+    return {
+      sistolica: {
+        p50: punto.sistolica_p50,
+        p90: punto.sistolica_p90,
+        p95: punto.sistolica_p95,
+      },
+      diastolica: {
+        p50: punto.diastolica_p50,
+        p90: punto.diastolica_p90,
+        p95: punto.diastolica_p95,
+      },
+    };
+  } catch (error) {
+    console.error('Error en obtenerPercentilesPresionArterial:', error);
+    return null;
+  }
+};
+
+/**
+ * Evalúa la presión arterial del paciente
+ */
+export const evaluarPresionArterial = (
+  edadMeses: number,
+  sistolica: number,
+  diastolica: number
+): {
+  categoria: string;
+  color: string;
+  percentilSistolica: number;
+  percentilDiastolica: number;
+} | null => {
+  const percentiles = obtenerPercentilesPresionArterial(edadMeses);
+  if (!percentiles) return null;
+
+  // Calcular en qué percentil está la presión del paciente
+  const percentilSistolica = calcularPercentilParaPresion(
+    sistolica,
+    percentiles.sistolica.p50,
+    percentiles.sistolica.p90,
+    percentiles.sistolica.p95
+  );
+
+  const percentilDiastolica = calcularPercentilParaPresion(
+    diastolica,
+    percentiles.diastolica.p50,
+    percentiles.diastolica.p90,
+    percentiles.diastolica.p95
+  );
+
+  // Determinar categoría
+  const categoria = determinarCategoriaPresion(percentilSistolica, percentilDiastolica);
+
+  return {
+    categoria,
+    color: obtenerColorCategoria(categoria),
+    percentilSistolica,
+    percentilDiastolica,
+  };
+};
+
+// Funciones auxiliares para presión arterial
+const calcularPercentilParaPresion = (
+  valor: number,
+  p50: number,
+  p90: number,
+  p95: number
+): number => {
+  if (valor <= p50) return 50;
+  if (valor <= p90) return 90;
+  if (valor <= p95) return 95;
+  return 97;
+};
+
+const determinarCategoriaPresion = (
+  percentilSistolica: number,
+  percentilDiastolica: number
+): string => {
+  if (percentilSistolica >= 95 || percentilDiastolica >= 95) return 'Hipertensión';
+  if (percentilSistolica >= 90 || percentilDiastolica >= 90) return 'Prehipertensión';
+  return 'Normal';
+};
+
+const obtenerColorCategoria = (categoria: string): string => {
+  switch (categoria) {
+    case 'Hipertensión':
+      return 'bg-red-500';
+    case 'Prehipertensión':
+      return 'bg-orange-400';
+    default:
+      return 'bg-green-500';
+  }
 };

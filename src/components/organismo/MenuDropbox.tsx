@@ -1,4 +1,4 @@
-import { MoreVertical } from 'lucide-react';
+import { Check, MoreVertical, X } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Button from '../atomos/Button';
 
@@ -43,6 +43,7 @@ type MenuDropboxProps = {
   triggerIcon?: ReactNode;
   triggerTitle?: string;
   items: MenuItem[];
+  triggerIconClassName?: string;
   buttonClassName?: string;
   closeOnSelect?: boolean; // Prop to control closing behavior
   footer?: ReactNode;
@@ -55,6 +56,7 @@ type MenuDropboxProps = {
 export default function MenuDropbox({
   items,
   triggerIcon,
+  triggerIconClassName,
   triggerTitle = 'Más acciones',
   buttonClassName = '',
   closeOnSelect = true, // Por defecto, el menú se cierra al seleccionar un item.
@@ -115,7 +117,7 @@ export default function MenuDropbox({
 
       {/* Contenido del menú, se muestra solo si isDropdownOpen es true */}
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-60 bg-primary-150/90 backdrop-blur-sm rounded-md shadow-lg z-20 border border-slate-700">
+        <div className="absolute right-0 mt-2 w-60 bg-primary-150/85 backdrop-blur-sm rounded-md shadow-lg z-20 border border-primary-100">
           <ul className="py-1 text-slate-200 max-h-60 overflow-y-auto">
             {/* Itera sobre el array de items para renderizar cada uno */}
             {items.map((item, index) => {
@@ -133,8 +135,14 @@ export default function MenuDropbox({
                     className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer select-none"
                     onClick={() => handleItemClick(item)}
                   >
+                    {item.isChecked ? (
+                      <Check className="mr-3 h-4 w-4 rounded border-gray-300 text-blue-600 bg-white p-0.5 focus:ring-blue-500 pointer-events-none" />
+                    ) : (
+                      <X className="mr-3 h-4 w-4 rounded border-gray-300 text-red-600 bg-white p-0.5 focus:ring-red-500 pointer-events-none" />
+                    )}
                     <input
                       type="checkbox"
+                      hidden
                       checked={item.isChecked}
                       readOnly // El input es de solo lectura, el clic se maneja en el `li` para mayor área de pulsación.
                       className="mr-3 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 pointer-events-none"

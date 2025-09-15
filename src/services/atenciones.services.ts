@@ -12,7 +12,8 @@ import {
   users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
-import { desc, eq } from 'drizzle-orm';
+import { preferenciaPerfilUser } from '@/db/schema/preferenciaPerfilUser';
+import { and, desc, eq } from 'drizzle-orm';
 
 export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
   // 1. Buscamos la atención para verificar su estado. Esta es la única consulta inicial.
@@ -96,7 +97,10 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       temperatura: signosVitales.temperatura,
       pulso: signosVitales.pulso,
       respiracion: signosVitales.respiracion,
-      presionArterial: signosVitales.presionArterial,
+      presionSiscolica: signosVitales.presionSiscolica,
+      presionDiastolica: signosVitales.presionDiastolica,
+      perimetroAbdominal: signosVitales.perimetroAbdominal,
+      perimetroCefalico: signosVitales.perimetroCefalico,
       saturacionOxigeno: signosVitales.saturacionOxigeno,
       glucosa: signosVitales.glucosa,
       peso: signosVitales.peso,
@@ -104,7 +108,6 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       imc: signosVitales.imc,
       frecuenciaCardiaca: signosVitales.frecuenciaCardiaca,
       frecuenciaRespiratoria: signosVitales.frecuenciaRespiratoria,
-      tensionArterial: signosVitales.tensionArterial || null,
       dolor: signosVitales.dolor,
       fechaRegistro: signosVitales.fechaRegistro,
     })
@@ -182,6 +185,18 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .orderBy(desc(signosVitales.created_at))
     .limit(4);
 
+  // buscamos la preferencias del medico para la atencion
+
+  const preferenciasPromise = db
+    .select()
+    .from(preferenciaPerfilUser)
+    .where(
+      and(
+        eq(preferenciaPerfilUser.userId, atencionData.userIdMedico),
+        eq(preferenciaPerfilUser.estado, 'activo')
+      )
+    );
+
   // 5. Ejecutamos TODAS las promesas juntas.
   const [
     pacienteResult,
@@ -192,6 +207,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     signosVitalesAtencion,
     antecedentesData,
     fecthSignosVitalesData,
+    preferenciasPerfilUserData,
   ] = await Promise.all([
     pacientePromise,
     diagnosticosPromise,
@@ -201,6 +217,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     signosVitalesPromise,
     antecedentesPromise,
     signosHistorialPromise,
+    preferenciasPromise,
   ]);
 
   const pacienteData = pacienteResult[0];
@@ -214,8 +231,10 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     'pulso',
     'frecuenciaCardiaca',
     'frecuenciaRespiratoria',
-    'tensionArterial',
-
+    'presiónArterial',
+    'presiónDiastolica',
+    'perimetroAbdominal',
+    'perimetroCefalico',
     'saturacionOxigeno',
     'glucosa',
     'peso',
@@ -245,6 +264,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       paciente: pacienteData,
       antecedentes: antecedentesData,
       signosVitalesHistorial: signosVitalesData,
+      preferenciasPerfilUser: preferenciasPerfilUserData,
     },
   };
 }

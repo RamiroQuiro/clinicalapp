@@ -1,0 +1,362 @@
+[
+  {
+    "edad": 1,
+    "sexo": "masculino",
+    "altura": 80,
+    "sistolica": {
+      "p50": 85,
+      "p90": 98,
+      "p95": 102
+    },
+    "diastolica": {
+      "p50": 50,
+      "p90": 55,
+      "p95": 58
+    }
+  },
+  {
+    "edad": 1,
+    "sexo": "femenino",
+    "altura": 80,
+    "sistolica": {
+      "p50": 84,
+      "p90": 97,
+      "p95": 101
+    },
+    "diastolica": {
+      "p50": 49,
+      "p90": 54,
+      "p95": 57
+    }
+  },
+  {
+    "edad": 2,
+    "sexo": "masculino",
+    "altura": 90,
+    "sistolica": {
+      "p50": 90,
+      "p90": 103,
+      "p95": 107
+    },
+    "diastolica": {
+      "p50": 55,
+      "p90": 60,
+      "p95": 63
+    }
+  },
+  {
+    "edad": 2,
+    "sexo": "femenino",
+    "altura": 90,
+    "sistolica": {
+      "p50": 89,
+      "p90": 102,
+      "p95": 106
+    },
+    "diastolica": {
+      "p50": 54,
+      "p90": 59,
+      "p95": 62
+    }
+  },
+  {
+    "edad": 3,
+    "sexo": "masculino",
+    "altura": 100,
+    "sistolica": {
+      "p50": 95,
+      "p90": 108,
+      "p95": 112
+    },
+    "diastolica": {
+      "p50": 60,
+      "p90": 65,
+      "p95": 68
+    }
+  },
+  {
+    "edad": 3,
+    "sexo": "femenino",
+    "altura": 100,
+    "sistolica": {
+      "p50": 94,
+      "p90": 107,
+      "p95": 111
+    },
+    "diastolica": {
+      "p50": 59,
+      "p90": 64,
+      "p95": 67
+    }
+  },
+  {
+    "edad": 4,
+    "sexo": "masculino",
+    "altura": 110,
+    "sistolica": {
+      "p50": 100,
+      "p90": 113,
+      "p95": 117
+    },
+    "diastolica": {
+      "p50": 65,
+      "p90": 70,
+      "p95": 73
+    }
+  },
+  {
+    "edad": 4,
+    "sexo": "femenino",
+    "altura": 110,
+    "sistolica": {
+      "p50": 99,
+      "p90": 112,
+      "p95": 116
+    },
+    "diastolica": {
+      "p50": 64,
+      "p90": 69,
+      "p95": 72
+    }
+  },
+  {
+    "edad": 5,
+    "sexo": "masculino",
+    "altura": 120,
+    "sistolica": {
+      "p50": 105,
+      "p90": 118,
+      "p95": 122
+    },
+    "diastolica": {
+      "p50": 70,
+      "p90": 75,
+      "p95": 78
+    }
+  },
+  {
+    "edad": 5,
+    "sexo": "femenino",
+    "altura": 120,
+    "sistolica": {
+      "p50": 104,
+      "p90": 117,
+      "p95": 121
+    },
+    "diastolica": {
+      "p50": 69,
+      "p90": 74,
+      "p95": 77
+    }
+  },
+  {
+    "edad": 6,
+    "sexo": "masculino",
+    "altura": 130,
+    "sistolica": {
+      "p50": 110,
+      "p90": 123,
+      "p95": 127
+    },
+    "diastolica": {
+      "p50": 75,
+      "p90": 80,
+      "p95": 83
+    }
+  },
+  {
+    "edad": 6,
+    "sexo": "femenino",
+    "altura": 130,
+    "sistolica": {
+      "p50": 109,
+      "p90": 122,
+      "p95": 126
+    },
+    "diastolica": {
+      "p50": 74,
+      "p90": 79,
+      "p95": 82
+    }
+  },
+  {
+    "edad": 7,
+    "sexo": "masculino",
+    "altura": 140,
+    "sistolica": {
+      "p50": 115,
+      "p90": 128,
+      "p95": 132
+    },
+    "diastolica": {
+      "p50": 80,
+      "p90": 85,
+      "p95": 88
+    }
+  },
+  {
+    "edad": 7,
+    "sexo": "femenino",
+    "altura": 140,
+    "sistolica": {
+      "p50": 114,
+      "p90": 127,
+      "p95": 131
+    },
+    "diastolica": {
+      "p50": 79,
+      "p90": 84,
+      "p95": 87
+    }
+  },
+  {
+    "edad": 8,
+    "sexo": "masculino",
+    "altura": 150,
+    "sistolica": {
+      "p50": 120,
+      "p90": 133,
+      "p95": 137
+    },
+    "diastolica": {
+      "p50": 85,
+      "p90": 90,
+      "p95": 93
+    }
+  },
+  {
+    "edad": 8,
+    "sexo": "femenino",
+    "altura": 150,
+    "sistolica": {
+      "p50": 119,
+      "p90": 132,
+      "p95": 136
+    },
+    "diastolica": {
+      "p50": 84,
+      "p90": 89,
+      "p95": 92
+    }
+  },
+  {
+    "edad": 9,
+    "sexo": "masculino",
+    "altura": 160,
+    "sistolica": {
+      "p50": 125,
+      "p90": 138,
+      "p95": 142
+    },
+    "diastolica": {
+      "p50": 90,
+      "p90": 95,
+      "p95": 98
+    }
+  },
+  {
+    "edad": 9,
+    "sexo": "femenino",
+    "altura": 160,
+    "sistolica": {
+      "p50": 124,
+      "p90": 137,
+      "p95": 141
+    },
+    "diastolica": {
+      "p50": 89,
+      "p90": 94,
+      "p95": 97
+    }
+  },
+  {
+    "edad": 10,
+    "sexo": "masculino",
+    "altura": 170,
+    "sistolica": {
+      "p50": 130,
+      "p90": 143,
+      "p95": 147
+    },
+    "diastolica": {
+      "p50": 95,
+      "p90": 100,
+      "p95": 103
+    }
+  },
+  {
+    "edad": 10,
+    "sexo": "femenino",
+    "altura": 170,
+    "sistolica": {
+      "p50": 129,
+      "p90": 142,
+      "p95": 146
+    },
+    "diastolica": {
+      "p50": 94,
+      "p90": 99,
+      "p95": 102
+    }
+  },
+  {
+    "edad": 11,
+    "sexo": "masculino",
+    "altura": 180,
+    "sistolica": {
+      "p50": 135,
+      "p90": 148,
+      "p95": 152
+    },
+    "diastolica": {
+      "p50": 100,
+      "p90": 105,
+      "p95": 108
+    }
+  },
+  {
+    "edad": 11,
+    "sexo": "femenino",
+    "altura": 180,
+    "sistolica": {
+      "p50": 134,
+      "p90": 147,
+      "p95": 151
+    },
+    "diastolica": {
+      "p50": 99,
+      "p90": 104,
+      "p95": 107
+    }
+  },
+  {
+    "edad": 12,
+    "sexo": "masculino",
+    "altura": 190,
+    "sistolica": {
+      "p50": 140,
+      "p90": 153,
+      "p95": 157
+    },
+    "diastolica": {
+      "p50": 105,
+      "p90": 110,
+      "p95": 113
+    }
+  },
+  {
+    "edad": 12,
+    "sexo": "femenino",
+    "altura": 190,
+    "sistolica": {
+      "p50": 139,
+      "p90": 152,
+      "p95": 156
+    },
+    "diastolica": {
+      "p50": 100,
+      "p90": 105,
+      "p95": 108
+    }
+  }
+]
