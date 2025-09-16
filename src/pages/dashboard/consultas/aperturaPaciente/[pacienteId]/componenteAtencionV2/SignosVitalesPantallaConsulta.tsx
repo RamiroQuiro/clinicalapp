@@ -53,8 +53,8 @@ const configuracionSignosVitales = [
     showPercentiles: true,
   },
   {
-    name: 'presionSiscolica',
-    label: 'presion Siscolica',
+    name: 'presionSistolica',
+    label: 'presion Sistolica',
     unit: 'mmHg',
     icon: <HeartPulse size={18} />,
   },
@@ -126,7 +126,49 @@ export default function SignosVitalesPantallaConsulta({
   const handleVitalSelect = (vitalKey: string) => {
     setSelectedVitals(prev => ({ ...prev, [vitalKey]: !prev[vitalKey] }));
   };
-
+  const defaultPreferencias = {
+    configuracionGeneral: {
+      tema: 'claro',
+      idioma: 'es',
+      mostrarHistorialCompleto: true,
+      notificaciones: {
+        recordatorios: true,
+        alertasCriticas: true,
+      },
+    },
+    signosVitales: {
+      mostrar: true,
+      campos: [
+        'peso',
+        'talla',
+        'temperatura',
+        'perimetroCefalico',
+        'presionSistolica',
+        'presionDiastolica',
+        'saturacionOxigeno',
+        'frecuenciaRespiratoria',
+        'perimetroAbdominal',
+        'imc',
+        'glucosa',
+        'dolor',
+      ],
+    },
+    consulta: {
+      motivoInicial: true,
+      sintomas: true,
+      diagnostico: true,
+      tratamientoFarmacologico: true,
+      tratamientoNoFarmacologico: true,
+      planASeguir: true,
+      archivosAdjuntos: true,
+      notasPrivadas: false,
+    },
+    reportes: {
+      incluirDatosPaciente: true,
+      incluirDatosMedico: true,
+      incluirFirmaDigital: true,
+    },
+  };
   // Función para guardar las preferencias actualizadas en la base de datos
   const handleGuardarPreferencias = useCallback(async () => {
     setIsSaving(true);

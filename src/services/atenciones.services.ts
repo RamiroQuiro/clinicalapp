@@ -264,7 +264,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       paciente: pacienteData,
       antecedentes: antecedentesData,
       signosVitalesHistorial: signosVitalesData,
-      preferenciasPerfilUser: preferenciasPerfilUserData,
+      preferenciasPerfilUser: preferenciasPerfilUserData[0].preferencias,
     },
   };
 }
