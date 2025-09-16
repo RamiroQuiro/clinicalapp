@@ -1,6 +1,8 @@
 import Button from '@/components/atomos/Button';
 import ModalReact from '@/components/moleculas/ModalReact';
 import { consultaStore } from '@/context/consultaAtencion.store';
+
+import { preferenciaPerfilUserStore } from '@/context/preferenciasPerfilUser.store';
 import FormularioEnmienda from '@/pages/dashboard/consultas/aperturaPaciente/[pacienteId]/componenteAtencionV2/FormularioEnmienda';
 import { getDurationInMinutes, getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { showToast } from '@/utils/toast/toastShow';
@@ -25,6 +27,7 @@ type PacienteData = {
   nombre: string;
   apellido: string;
   dni: string;
+
   fotoUrl?: string | null;
   sexo?: string;
   celular?: string;
@@ -35,6 +38,7 @@ type PacienteData = {
 };
 
 type Props = {
+  preferenciasPerfilUser: any;
   pacienteData: PacienteData;
   esFinalizada: boolean;
   pacienteId: string;
@@ -45,10 +49,21 @@ type Props = {
 export default function NavAtencionMedicaV2({
   pacienteData,
   esFinalizada,
+  preferenciasPerfilUser,
   pacienteId,
   atencionId,
 }: Props) {
   const $consulta = useStore(consultaStore);
+
+  useEffect(() => {
+    if (preferenciasPerfilUser) {
+      preferenciaPerfilUserStore.set({
+        ...preferenciasPerfilUser,
+        preferencias: preferenciasPerfilUser.preferencias,
+      });
+    }
+    console.log('preferenciasPerfilUser en el nav', preferenciasPerfilUser);
+  }, [preferenciasPerfilUser]);
 
   // Estados para manejar la UI dinámica
   const [isFinalized, setIsFinalized] = useState(esFinalizada);

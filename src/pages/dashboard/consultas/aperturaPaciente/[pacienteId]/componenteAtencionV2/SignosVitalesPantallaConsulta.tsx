@@ -1,7 +1,10 @@
-import Button from '@/components/atomos/Button'; // Importar Button
+import Button from '@/components/atomos/Button';
 import ContenedorSignosVitales from '@/components/moleculas/ContenedorSignosVitales';
 import Section from '@/components/moleculas/Section';
 import MenuDropbox, { type MenuItem } from '@/components/organismo/MenuDropbox';
+import { preferenciaPerfilUserStore } from '@/context/preferenciasPerfilUser.store';
+
+import { useStore } from '@nanostores/react';
 import {
   AlertCircle,
   Calculator,
@@ -15,285 +18,235 @@ import {
   Weight,
   Wind,
 } from 'lucide-react';
-import { useMemo, useState } from 'react'; // Importar hooks
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 type Props = {
   signosVitalesHistorial: any;
-  handleSignosVitalesChange: any;
-  userId: string;
-  preferenciaPerfilProfesional: any; // Este es el objeto completo del perfil
+  manejarCambioSignosVitales: any;
+  usuarioId: string;
 };
+
 // --- Configuración de Signos Vitales ---
 const configuracionSignosVitales = [
   {
-    name: 'peso',
-    label: 'Peso',
-    unit: 'kg',
-    icon: <Weight size={18} />,
-    showPercentiles: true,
+    nombre: 'peso',
+    etiqueta: 'Peso',
+    unidad: 'kg',
+    icono: <Weight size={18} />,
+    mostrarPercentiles: true,
   },
   {
-    name: 'talla',
-    label: 'Talla',
-    unit: 'cm',
-    icon: <Ruler size={18} />,
-    showPercentiles: true,
+    nombre: 'talla',
+    etiqueta: 'Talla',
+    unidad: 'cm',
+    icono: <Ruler size={18} />,
+    mostrarPercentiles: true,
   },
   {
-    name: 'temperatura',
-    label: 'Temperatura',
-    unit: '°C',
-    icon: <Thermometer size={18} />,
+    nombre: 'temperatura',
+    etiqueta: 'Temperatura',
+    unidad: '°C',
+    icono: <Thermometer size={18} />,
   },
   {
-    name: 'perimetroCefalico',
-    label: 'Perímetro Cefálico',
-    unit: 'cm',
-    icon: <Ruler size={18} />,
-    showPercentiles: true,
+    nombre: 'perimetroCefalico',
+    etiqueta: 'Perímetro Cefálico',
+    unidad: 'cm',
+    icono: <Ruler size={18} />,
+    mostrarPercentiles: true,
   },
   {
-    name: 'presionSistolica',
-    label: 'presion Sistolica',
-    unit: 'mmHg',
-    icon: <HeartPulse size={18} />,
+    nombre: 'presionSistolica',
+    etiqueta: 'Presión Sistólica',
+    unidad: 'mmHg',
+    icono: <HeartPulse size={18} />,
   },
   {
-    name: 'presionDiastolica',
-    label: 'presion Diastolica',
-    unit: 'mmHg',
-    icon: <HeartPulse size={18} />,
+    nombre: 'presionDiastolica',
+    etiqueta: 'Presión Diastólica',
+    unidad: 'mmHg',
+    icono: <HeartPulse size={18} />,
   },
   {
-    name: 'perimetroAbdominal',
-    label: 'Perímetro Abdominal',
-    unit: 'cm',
-    icon: <Ruler size={18} />,
+    nombre: 'perimetroAbdominal',
+    etiqueta: 'Perímetro Abdominal',
+    unidad: 'cm',
+    icono: <Ruler size={18} />,
   },
   {
-    name: 'frecuenciaRespiratoria',
-    label: 'Frec. Resp.',
-    unit: 'rpm',
-    icon: <Wind size={18} />,
-  },
-
-  {
-    name: 'saturacionOxigeno',
-    label: 'Sat. O₂',
-    unit: '%',
-    icon: <Percent size={18} />,
-  },
-
-  {
-    name: 'imc',
-    label: 'IMC',
-    unit: 'kg/m²',
-    icon: <Calculator size={18} />,
-    showPercentiles: true,
+    nombre: 'frecuenciaRespiratoria',
+    etiqueta: 'Frec. Resp.',
+    unidad: 'rpm',
+    icono: <Wind size={18} />,
   },
   {
-    name: 'glucosa',
-    label: 'Glucosa',
-    unit: 'mg/dL',
-    icon: <Droplet size={18} />,
+    nombre: 'saturacionOxigeno',
+    etiqueta: 'Sat. O₂',
+    unidad: '%',
+    icono: <Percent size={18} />,
   },
   {
-    name: 'dolor',
-    label: 'Dolor',
-    unit: 'EVA',
-    icon: <AlertCircle size={18} />,
+    nombre: 'imc',
+    etiqueta: 'IMC',
+    unidad: 'kg/m²',
+    icono: <Calculator size={18} />,
+    mostrarPercentiles: true,
+  },
+  {
+    nombre: 'glucosa',
+    etiqueta: 'Glucosa',
+    unidad: 'mg/dL',
+    icono: <Droplet size={18} />,
+  },
+  {
+    nombre: 'dolor',
+    etiqueta: 'Dolor',
+    unidad: 'EVA',
+    icono: <AlertCircle size={18} />,
   },
 ];
 
 export default function SignosVitalesPantallaConsulta({
   signosVitalesHistorial,
-  handleSignosVitalesChange,
-  userId,
-  preferenciaPerfilProfesional,
+  manejarCambioSignosVitales,
+  usuarioId,
 }: Props) {
-  // Inicializa el estado de los checkboxes a partir de las preferencias del perfil
-  const initialSelectedVitals = useMemo(() => {
-    const selected = {};
-    const preferenciasSignos = preferenciaPerfilProfesional?.preferencias?.signosVitales || [];
-    configuracionSignosVitales?.forEach(vital => {
-      selected[vital.name] = preferenciasSignos.includes(vital.name);
-    });
-    return selected;
-  }, [preferenciaPerfilProfesional]);
+  const $preferenciasPerfilUsuario = useStore(preferenciaPerfilUserStore);
+  const [signosSeleccionados, setSignosSeleccionados] = useState<Record<string, boolean>>({});
 
-  const [selectedVitals, setSelectedVitals] = useState(initialSelectedVitals);
-  const [isSaving, setIsSaving] = useState(false);
+  console.log('datos de la consulta, para ver las perferencias!', $preferenciasPerfilUsuario);
+  const [guardando, setGuardando] = useState(false);
 
-  const handleVitalSelect = (vitalKey: string) => {
-    setSelectedVitals(prev => ({ ...prev, [vitalKey]: !prev[vitalKey] }));
-  };
-  const defaultPreferencias = {
-    configuracionGeneral: {
-      tema: 'claro',
-      idioma: 'es',
-      mostrarHistorialCompleto: true,
-      notificaciones: {
-        recordatorios: true,
-        alertasCriticas: true,
-      },
-    },
-    signosVitales: {
-      mostrar: true,
-      campos: [
-        'peso',
-        'talla',
-        'temperatura',
-        'perimetroCefalico',
-        'presionSistolica',
-        'presionDiastolica',
-        'saturacionOxigeno',
-        'frecuenciaRespiratoria',
-        'perimetroAbdominal',
-        'imc',
-        'glucosa',
-        'dolor',
-      ],
-    },
-    consulta: {
-      motivoInicial: true,
-      sintomas: true,
-      diagnostico: true,
-      tratamientoFarmacologico: true,
-      tratamientoNoFarmacologico: true,
-      planASeguir: true,
-      archivosAdjuntos: true,
-      notasPrivadas: false,
-    },
-    reportes: {
-      incluirDatosPaciente: true,
-      incluirDatosMedico: true,
-      incluirFirmaDigital: true,
-    },
-  };
+  // 1. INICIALIZACIÓN DE SIGNOS SELECCIONADOS
+  useEffect(() => {
+    const inicializarSignosSeleccionados = () => {
+      const seleccionados: Record<string, boolean> = {};
+      const camposPreferidos = $preferenciasPerfilUsuario?.signosVitales?.campos || [];
 
-  const crearPreferencia = async (id: string, preferenciasPerfil: any) => {
-    try {
-      const response = await fetch(`/api/users/preferenciasPerfil/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombrePerfil: 'perfil por defecto',
-          especialidad: 'general',
-          estado: 'activo',
-          preferencias: preferenciasPerfil,
-        }),
+      configuracionSignosVitales.forEach(signo => {
+        seleccionados[signo.nombre] = camposPreferidos.includes(signo.nombre);
       });
-      const data = await response.json();
-      return data;
+
+      setSignosSeleccionados(seleccionados);
+    };
+
+    inicializarSignosSeleccionados();
+  }, [$preferenciasPerfilUsuario]);
+
+  // 2. MANEJO DE SELECCIÓN DE SIGNOS
+  const manejarSeleccionSigno = useCallback((claveSigno: string) => {
+    setSignosSeleccionados(prev => ({
+      ...prev,
+      [claveSigno]: !prev[claveSigno],
+    }));
+  }, []);
+
+  // 3. GUARDADO DE PREFERENCIAS
+  // Función para guardar las preferencias actualizadas
+  const manejarGuardarPreferencias = useCallback(async () => {
+    setGuardando(true);
+
+    try {
+      const camposSeleccionados = Object.keys(signosSeleccionados).filter(
+        clave => signosSeleccionados[clave]
+      );
+
+      // 1. Crear SOLO el objeto de preferencias (sin toda la metadata)
+      const preferenciasActualizadas = {
+        configuracionGeneral: $preferenciasPerfilUsuario?.configuracionGeneral,
+        signosVitales: {
+          mostrar: true,
+          campos: camposSeleccionados,
+        },
+        consulta: $preferenciasPerfilUsuario?.consulta,
+        reportes: $preferenciasPerfilUsuario?.reportes,
+      };
+
+      console.log('Preferencias a guardar:', preferenciasActualizadas);
+
+      // 2. Enviar SOLO las preferencias, no todo el objeto
+      const respuesta = await fetch(
+        `/api/users/preferenciasPerfil/perfiles/${$preferenciasPerfilUsuario?.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            preferencias: preferenciasActualizadas, // ← Solo enviar esto
+          }),
+        }
+      );
+
+      if (!respuesta.ok) {
+        throw new Error('Error al guardar las preferencias');
+      }
+
+      console.log('Preferencias guardadas con éxito!');
     } catch (error) {
-      console.error(error);
-      return error;
+      console.error('Error guardando preferencias:', error);
+    } finally {
+      setGuardando(false);
     }
-  };
-
-  const handleGuardarPreferencias = () => {
-    console.log('guardando preferencias', userId);
-    crearPreferencia(userId, defaultPreferencias);
-  };
-  // Función para guardar las preferencias actualizadas en la base de datos
-  // const handleGuardarPreferencias = useCallback(async () => {
-  //   setIsSaving(true);
-
-  //   const vitalesSeleccionadosArray = Object.keys(selectedVitals).filter(
-  //     key => selectedVitals[key]
-  //   );
-
-  //   const nuevasPreferencias = {
-  //     ...preferenciaPerfilProfesional.preferencias, // Mantiene las preferencias existentes
-  //     signosVitales: vitalesSeleccionadosArray, // Actualiza solo los signos vitales
-  //   };
-
-  //   try {
-  //     const response = await fetch(
-  //       `/api/users/preferenciasPerfil/${preferenciaPerfilProfesional.id}`,
-  //       {
-  //         method: 'PUT',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify({
-  //           ...preferenciaPerfilProfesional, // Envía el objeto completo para la actualización
-  //           preferencias: nuevasPreferencias,
-  //         }),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error('Error al guardar las preferencias');
-  //     }
-
-  //     console.log('Preferencias guardadas con éxito!');
-  //     // Aquí podrías mostrar un toast de éxito
-  //   } catch (error) {
-  //     console.error(error);
-  //     // Aquí podrías mostrar un toast de error
-  //   } finally {
-  //     setIsSaving(false);
-  //   }
-  // }, [selectedVitals, preferenciaPerfilProfesional]);
-
-  // Genera los items del menú (checkboxes)
-  const menuItems: MenuItem[] = useMemo(
+  }, [signosSeleccionados, $preferenciasPerfilUsuario, usuarioId]);
+  // 4. GENERACIÓN DE ITEMS DEL MENÚ
+  const itemsMenu: MenuItem[] = useMemo(
     () =>
-      configuracionSignosVitales?.map(({ name, label }) => ({
-        label: label,
+      configuracionSignosVitales.map(({ nombre, etiqueta }) => ({
+        label: etiqueta,
         type: 'checkbox',
-        isChecked: selectedVitals[name],
-        onClick: () => handleVitalSelect(name),
-      })) || [],
-    [configuracionSignosVitales, selectedVitals]
+        isChecked: signosSeleccionados[nombre],
+        onClick: () => manejarSeleccionSigno(nombre),
+      })),
+    [configuracionSignosVitales, signosSeleccionados, manejarSeleccionSigno]
   );
 
-  // Crea el botón de guardar para el pie del menú
-  const footerBotonGuardar = (
+  // 5. BOTÓN DE GUARDAR PARA EL PIE DEL MENÚ
+  const botonGuardarPie = (
     <Button
       variant="blanco"
-      onClick={handleGuardarPreferencias}
-      disabled={isSaving}
+      onClick={manejarGuardarPreferencias}
+      disabled={guardando}
       className="w-full"
     >
       <Save className="w-4 h-4 mr-2" />
-      {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+      {guardando ? 'Guardando...' : 'Guardar Cambios'}
     </Button>
   );
+
+  // 6. FILTRAR SIGNOS VISIBLES
+  const signosVisibles = useMemo(() => {
+    return configuracionSignosVitales.filter(signo => signosSeleccionados[signo.nombre] !== false);
+  }, [signosSeleccionados]);
 
   return (
     <Section
       title="Signos Vitales"
       rightContent={
         <MenuDropbox
-          items={menuItems}
+          items={itemsMenu}
           triggerIcon={<Settings className="w-5 h-5" />}
           triggerTitle="Seleccionar Signos Vitales"
-          closeOnSelect={false} // Mantiene el menú abierto al hacer clic en checkboxes
-          footer={footerBotonGuardar} // Añade el botón de guardar en el pie
+          closeOnSelect={false}
+          footer={botonGuardarPie}
         />
       }
     >
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {configuracionSignosVitales?.map((vital, _index) => {
-          const isActive = selectedVitals[vital.name];
-          const historyData =
-            signosVitalesHistorial.find(h => h.tipo === vital.name)?.historial || [];
-          if (!isActive) {
-            return null;
-          } else {
-            return (
-              <ContenedorSignosVitales
-                key={vital.name}
-                name={vital.name}
-                label={vital.label}
-                unit={vital.unit}
-                icon={vital.icon}
-                value={signosVitalesHistorial[vital?.name]}
-                onChange={handleSignosVitalesChange}
-                history={historyData}
-              />
-            );
-          }
+        {signosVisibles.map(signo => {
+          const datosHistorial =
+            signosVitalesHistorial.find((h: any) => h.tipo === signo.nombre)?.historial || [];
+
+          return (
+            <ContenedorSignosVitales
+              key={signo.nombre}
+              name={signo.nombre}
+              label={signo.etiqueta}
+              unit={signo.unidad}
+              icon={signo.icono}
+              value={signosVitalesHistorial[signo.nombre]}
+              onChange={manejarCambioSignosVitales}
+              history={datosHistorial}
+            />
+          );
         })}
       </div>
     </Section>
