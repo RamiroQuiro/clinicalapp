@@ -16,6 +16,72 @@ const tipoMedidaMap: Record<TipoMedida, string> = {
   perimetroCefalico: 'perimetroCefalico',
 };
 
+export const calcularPercentilAproximado = (
+  valorPaciente: number,
+  curvas: any[],
+  edadMeses: number,
+  percentilesObjetivo: number[]
+): number | null => {
+  try {
+    // Filtrar curvas para la edad actual del paciente
+    const curvasEdadActual = curvas.filter(
+      d => Math.abs(d.edad - edadMeses) <= 1 // Margen de ±1 mes
+    );
+
+    if (curvasEdadActual.length === 0) return null;
+
+    // Obtener valores de percentiles para esta edad
+    const valoresPercentiles = percentilesObjetivo
+      .map(p => {
+        const punto = curvasEdadActual.find(d => d.percentil === p);
+        return punto ? { percentil: p, valor: punto.valor } : null;
+      })
+      .filter(Boolean) as { percentil: number; valor: number }[];
+
+    if (valoresPercentiles.length < 2) return null;
+
+    // Ordenar por valor
+    valoresPercentiles.sort((a, b) => a.valor - b.valor);
+
+    // Caso: valor menor que el percentil mínimo
+    if (valorPaciente <= valoresPercentiles[0].valor) {
+      return valoresPercentiles[0].percentil;
+    }
+
+    // Caso: valor mayor que el percentil máximo
+    if (valorPaciente >= valoresPercentiles[valoresPercentiles.length - 1].valor) {
+      return valoresPercentiles[valoresPercentiles.length - 1].percentil;
+    }
+
+    // Interpolar entre percentiles
+    for (let i = 0; i < valoresPercentiles.length - 1; i++) {
+      const current = valoresPercentiles[i];
+      const next = valoresPercentiles[i + 1];
+
+      if (valorPaciente >= current.valor && valorPaciente <= next.valor) {
+        const proporcion = (valorPaciente - current.valor) / (next.valor - current.valor);
+        const percentilAprox =
+          current.percentil + proporcion * (next.percentil - current.percentil);
+        return Math.round(percentilAprox);
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error calculando percentil aproximado:', error);
+    return null;
+  }
+};
+
+// Función para interpretar el percentil
+export const interpretarPercentil = (percentil: number | null): string => {
+  if (percentil === null) return '';
+
+  if (percentil >= 85) return 'Por encima del promedio';
+  if (percentil <= 15) return 'Por debajo del promedio';
+  return 'Dentro del promedio';
+};
+
 /**
  * Calcula parámetros LMS reales a partir de los percentiles
  */

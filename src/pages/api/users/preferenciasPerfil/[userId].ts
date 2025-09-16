@@ -3,6 +3,7 @@ import { preferenciaPerfilUser } from '@/db/schema/preferenciaPerfilUser';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
 
 export const GET: APIRoute = async ({ params, locals }) => {
   const { userId } = params;
@@ -31,15 +32,14 @@ export const GET: APIRoute = async ({ params, locals }) => {
 export const POST: APIRoute = async ({ params, request, locals }) => {
   const { userId } = params;
   const { session } = locals;
-
   // --- SECURITY CHECK ---
-  if (session?.user?.userId !== userId) {
+  if (session?.userId !== userId) {
     return createResponse(403, 'No autorizado para crear un perfil para este usuario');
   }
 
   const data = await request.json();
   const { nombrePerfil, preferencias, especialidad, estado } = data;
-
+  console.log('data', data);
   try {
     // Valida si ya existe un perfil con el mismo nombre para este usuario
     const [preferenciaPerfilDB] = await db
@@ -60,7 +60,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     const [preferenciaPerfilDBInsert] = await db
       .insert(preferenciaPerfilUser)
       .values({
-        id: crypto.randomUUID(), // Es buena práctica generar el ID en el servidor
+        id: nanoid(), // Es buena práctica generar el ID en el servidor
         userId: userId,
         nombrePerfil: nombrePerfil,
         preferencias: preferencias,

@@ -21,8 +21,6 @@ export const RenderizacionPantalla = ({
     return <AtencionExistenteV2 data={data} onClose={() => {}} />;
   }
 
-  console.log('renderizaciond de la pantalla', data);
-
   // Lógica original para las demás pestañas o si la consulta no está finalizada
   switch (activeTab) {
     case 'consultaActual':
@@ -30,7 +28,12 @@ export const RenderizacionPantalla = ({
     case 'antecedentes':
       return <AntecedentesPantalla data={data.antecedentes} pacienteId={data.paciente.id} />;
     case 'signos':
-      return <SignosVitalesPantalla signosVitalesHistorial={data.signosVitalesHistorial} paciente={data.paciente} />;
+      return (
+        <SignosVitalesPantalla
+          signosVitalesHistorial={data.signosVitalesHistorial}
+          paciente={data.paciente}
+        />
+      );
     case 'diagnostico':
       return <DiagnosticosPantalla data={data} />;
     case 'medicamentos':

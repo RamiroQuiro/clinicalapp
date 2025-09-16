@@ -15,12 +15,12 @@ import {
   Weight,
   Wind,
 } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react'; // Importar hooks
+import { useMemo, useState } from 'react'; // Importar hooks
 
 type Props = {
   signosVitalesHistorial: any;
   handleSignosVitalesChange: any;
-
+  userId: string;
   preferenciaPerfilProfesional: any; // Este es el objeto completo del perfil
 };
 // --- Configuración de Signos Vitales ---
@@ -108,6 +108,7 @@ const configuracionSignosVitales = [
 export default function SignosVitalesPantallaConsulta({
   signosVitalesHistorial,
   handleSignosVitalesChange,
+  userId,
   preferenciaPerfilProfesional,
 }: Props) {
   // Inicializa el estado de los checkboxes a partir de las preferencias del perfil
@@ -169,45 +170,70 @@ export default function SignosVitalesPantallaConsulta({
       incluirFirmaDigital: true,
     },
   };
-  // Función para guardar las preferencias actualizadas en la base de datos
-  const handleGuardarPreferencias = useCallback(async () => {
-    setIsSaving(true);
 
-    const vitalesSeleccionadosArray = Object.keys(selectedVitals).filter(
-      key => selectedVitals[key]
-    );
-
-    const nuevasPreferencias = {
-      ...preferenciaPerfilProfesional.preferencias, // Mantiene las preferencias existentes
-      signosVitales: vitalesSeleccionadosArray, // Actualiza solo los signos vitales
-    };
-
+  const crearPreferencia = async (id: string, preferenciasPerfil: any) => {
     try {
-      const response = await fetch(
-        `/api/users/preferenciasPerfil/${preferenciaPerfilProfesional.id}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...preferenciaPerfilProfesional, // Envía el objeto completo para la actualización
-            preferencias: nuevasPreferencias,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Error al guardar las preferencias');
-      }
-
-      console.log('Preferencias guardadas con éxito!');
-      // Aquí podrías mostrar un toast de éxito
+      const response = await fetch(`/api/users/preferenciasPerfil/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombrePerfil: 'perfil por defecto',
+          especialidad: 'general',
+          estado: 'activo',
+          preferencias: preferenciasPerfil,
+        }),
+      });
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error(error);
-      // Aquí podrías mostrar un toast de error
-    } finally {
-      setIsSaving(false);
+      return error;
     }
-  }, [selectedVitals, preferenciaPerfilProfesional]);
+  };
+
+  const handleGuardarPreferencias = () => {
+    console.log('guardando preferencias', userId);
+    crearPreferencia(userId, defaultPreferencias);
+  };
+  // Función para guardar las preferencias actualizadas en la base de datos
+  // const handleGuardarPreferencias = useCallback(async () => {
+  //   setIsSaving(true);
+
+  //   const vitalesSeleccionadosArray = Object.keys(selectedVitals).filter(
+  //     key => selectedVitals[key]
+  //   );
+
+  //   const nuevasPreferencias = {
+  //     ...preferenciaPerfilProfesional.preferencias, // Mantiene las preferencias existentes
+  //     signosVitales: vitalesSeleccionadosArray, // Actualiza solo los signos vitales
+  //   };
+
+  //   try {
+  //     const response = await fetch(
+  //       `/api/users/preferenciasPerfil/${preferenciaPerfilProfesional.id}`,
+  //       {
+  //         method: 'PUT',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           ...preferenciaPerfilProfesional, // Envía el objeto completo para la actualización
+  //           preferencias: nuevasPreferencias,
+  //         }),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error('Error al guardar las preferencias');
+  //     }
+
+  //     console.log('Preferencias guardadas con éxito!');
+  //     // Aquí podrías mostrar un toast de éxito
+  //   } catch (error) {
+  //     console.error(error);
+  //     // Aquí podrías mostrar un toast de error
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // }, [selectedVitals, preferenciaPerfilProfesional]);
 
   // Genera los items del menú (checkboxes)
   const menuItems: MenuItem[] = useMemo(

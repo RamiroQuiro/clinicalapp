@@ -2,12 +2,52 @@ import db from '@/db';
 import { preferenciaPerfilUser } from '@/db/schema/preferenciaPerfilUser';
 import { eq } from 'drizzle-orm';
 
+const defaulPreferencias = {
+  configuracionGeneral: {
+    tema: 'claro',
+    idioma: 'es',
+    mostrarHistorialCompleto: true,
+    notificaciones: {
+      recordatorios: true,
+      alertasCriticas: true,
+    },
+  },
+  signosVitales: {
+    mostrar: true,
+    campos: [
+      'peso',
+      'talla',
+      'temperatura',
+      'perimetroCefalico',
+      'presionSistolica',
+      'presionDiastolica',
+      'saturacionOxigeno',
+      'frecuenciaRespiratoria',
+      'perimetroAbdominal',
+      'imc',
+      'glucosa',
+      'dolor',
+    ],
+  },
+  consulta: {
+    motivoInicial: true,
+    sintomas: true,
+    diagnostico: true,
+    tratamientoFarmacologico: true,
+    tratamientoNoFarmacologico: true,
+    planASeguir: true,
+    archivosAdjuntos: true,
+    notasPrivadas: false,
+  },
+  reportes: {
+    incluirDatosPaciente: true,
+    incluirDatosMedico: true,
+    incluirFirmaDigital: true,
+  },
+};
+
 /**
  * Actualiza las preferencias de un perfil de usuario específico en la base de datos.
- *
- * @param perfilId El ID del registro de preferencias a actualizar (no el userId).
- * @param nuevasPreferencias El objeto JavaScript completo con las nuevas preferencias.
- * @returns El resultado de la operación de actualización.
  */
 export const actualizarPreferenciasUsuario = async (
   perfilId: string,
