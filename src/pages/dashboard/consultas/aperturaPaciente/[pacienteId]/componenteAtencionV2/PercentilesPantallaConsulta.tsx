@@ -13,7 +13,6 @@ export default function PercentilesPantallaConsulta({ data, $consulta }: Props) 
   );
   const [tooltipsMejorados, setTooltipsMejorados] = useState(true);
 
-  console.log('$consulta', $consulta);
   return (
     <details className="w-full group bg-white rounded-lg border shadow-sm">
       <summary className="px-4 py-3 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
