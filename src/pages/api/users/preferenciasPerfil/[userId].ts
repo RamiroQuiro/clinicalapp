@@ -1,31 +1,99 @@
 import db from '@/db';
 import { preferenciaPerfilUser } from '@/db/schema/preferenciaPerfilUser';
 import { createResponse } from '@/utils/responseAPI';
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
-export const GET: APIRoute = async ({ params, locals }) => {
+const defaultPreferencias = {
+  configuracionGeneral: {
+    tema: 'claro',
+    idioma: 'es',
+    mostrarHistorialCompleto: true,
+    notificaciones: {
+      recordatorios: true,
+      alertasCriticas: true,
+    },
+  },
+  signosVitales: {
+    mostrar: true,
+    campos: [
+      'peso',
+      'talla',
+      'temperatura',
+      'perimetroCefalico',
+      'presionSistolica',
+      'presionDiastolica',
+      'saturacionOxigeno',
+      'frecuenciaRespiratoria',
+      'perimetroAbdominal',
+      'imc',
+      'glucosa',
+      'dolor',
+    ],
+  },
+  consulta: {
+    motivoInicial: true,
+    sintomas: true,
+    diagnostico: true,
+    tratamientoFarmacologico: true,
+    tratamientoNoFarmacologico: true,
+    planASeguir: true,
+    archivosAdjuntos: true,
+    notasPrivadas: false,
+  },
+  reportes: {
+    incluirDatosPaciente: true,
+    incluirDatosMedico: true,
+    incluirFirmaDigital: true,
+  },
+};
+// endpoints/preferenciasPerfil.ts (versión corregida)
+export const GET: APIRoute = async ({ params, request, locals }) => {
   const { userId } = params;
   const { session } = locals;
 
-  // --- SECURITY CHECK ---
-  if (session?.user?.userId !== userId) {
-    return createResponse(403, 'No autorizado para acceder a este recurso');
-  }
+  // Verificar si es un reset usando query parameters
+  const url = new URL(request.url);
+  const esReset = url.searchParams.get('reset') === 'true';
+  const perfilId = url.searchParams.get('perfilId');
 
   try {
-    // Devuelve TODOS los perfiles para el usuario, no solo el primero.
-    const perfiles = await db
+    if (esReset && perfilId) {
+      // --- SECURITY CHECK ---
+      if (session?.userId !== userId) {
+        return createResponse(403, 'No autorizado');
+      }
+
+      const [perfilReseteado] = await db
+        .update(preferenciaPerfilUser)
+        .set({
+          preferencias: defaultPreferencias,
+          updated_at: new Date(getFechaEnMilisegundos()),
+        })
+        .where(
+          and(eq(preferenciaPerfilUser.userId, userId), eq(preferenciaPerfilUser.id, perfilId))
+        )
+        .returning();
+
+      if (!perfilReseteado) {
+        return createResponse(404, 'Perfil no encontrado');
+      }
+
+      return createResponse(200, 'Preferencias reseteadas', perfilReseteado);
+    }
+
+    // Si no es reset, obtener todos los perfiles
+    const preferenciasPerfilUserDB = await db
       .select()
       .from(preferenciaPerfilUser)
       .where(eq(preferenciaPerfilUser.userId, userId));
 
-    console.log('Endpoint de preferenciasPerfil para la data', perfiles);
-    return createResponse(200, 'Éxito', perfiles);
+    return createResponse(200, 'Éxito', preferenciasPerfilUserDB);
   } catch (error) {
     console.error(error);
-    return createResponse(500, 'Error al obtener datos del perfil', error);
+    return createResponse(500, 'Error al procesar la solicitud', error);
   }
 };
 

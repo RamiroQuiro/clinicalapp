@@ -7,6 +7,7 @@ import { preferenciaPerfilUserStore } from '@/context/preferenciasPerfilUser.sto
 import { useStore } from '@nanostores/react';
 import {
   AlertCircle,
+  Backpack,
   Calculator,
   Droplet,
   HeartPulse,
@@ -22,8 +23,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 type Props = {
   signosVitalesHistorial: any;
-  manejarCambioSignosVitales: any;
-  usuarioId: string;
+  handleSignosVitalesChange: any;
+  userId: string;
 };
 
 // --- Configuración de Signos Vitales ---
@@ -108,20 +109,20 @@ const configuracionSignosVitales = [
 
 export default function SignosVitalesPantallaConsulta({
   signosVitalesHistorial,
-  manejarCambioSignosVitales,
-  usuarioId,
+  handleSignosVitalesChange,
+  userId,
 }: Props) {
   const $preferenciasPerfilUsuario = useStore(preferenciaPerfilUserStore);
   const [signosSeleccionados, setSignosSeleccionados] = useState<Record<string, boolean>>({});
 
-  console.log('datos de la consulta, para ver las perferencias!', $preferenciasPerfilUsuario);
   const [guardando, setGuardando] = useState(false);
 
   // 1. INICIALIZACIÓN DE SIGNOS SELECCIONADOS
   useEffect(() => {
     const inicializarSignosSeleccionados = () => {
       const seleccionados: Record<string, boolean> = {};
-      const camposPreferidos = $preferenciasPerfilUsuario?.signosVitales?.campos || [];
+      const camposPreferidos =
+        $preferenciasPerfilUsuario?.preferencias?.signosVitales?.campos || [];
 
       configuracionSignosVitales.forEach(signo => {
         seleccionados[signo.nombre] = camposPreferidos.includes(signo.nombre);
@@ -141,6 +142,21 @@ export default function SignosVitalesPantallaConsulta({
     }));
   }, []);
 
+  const handleResetPreferencias = async () => {
+    try {
+      const response = await fetch(
+        `/api/users/preferenciasPerfil/${userId}?reset=true&perfilId=${$preferenciasPerfilUsuario?.id}`,
+        { method: 'GET' }
+      );
+
+      if (response.ok) {
+        console.log('Preferencias reseteadas correctamente');
+      }
+    } catch (error) {
+      console.error('Error al resetear:', error);
+    }
+  };
+
   // 3. GUARDADO DE PREFERENCIAS
   // Función para guardar las preferencias actualizadas
   const manejarGuardarPreferencias = useCallback(async () => {
@@ -153,13 +169,13 @@ export default function SignosVitalesPantallaConsulta({
 
       // 1. Crear SOLO el objeto de preferencias (sin toda la metadata)
       const preferenciasActualizadas = {
-        configuracionGeneral: $preferenciasPerfilUsuario?.configuracionGeneral,
+        configuracionGeneral: $preferenciasPerfilUsuario?.preferencias?.configuracionGeneral,
         signosVitales: {
           mostrar: true,
           campos: camposSeleccionados,
         },
-        consulta: $preferenciasPerfilUsuario?.consulta,
-        reportes: $preferenciasPerfilUsuario?.reportes,
+        consulta: $preferenciasPerfilUsuario?.preferencias?.consulta,
+        reportes: $preferenciasPerfilUsuario?.preferencias?.reportes,
       };
 
       console.log('Preferencias a guardar:', preferenciasActualizadas);
@@ -186,7 +202,7 @@ export default function SignosVitalesPantallaConsulta({
     } finally {
       setGuardando(false);
     }
-  }, [signosSeleccionados, $preferenciasPerfilUsuario, usuarioId]);
+  }, [signosSeleccionados, $preferenciasPerfilUsuario, userId]);
   // 4. GENERACIÓN DE ITEMS DEL MENÚ
   const itemsMenu: MenuItem[] = useMemo(
     () =>
@@ -201,15 +217,26 @@ export default function SignosVitalesPantallaConsulta({
 
   // 5. BOTÓN DE GUARDAR PARA EL PIE DEL MENÚ
   const botonGuardarPie = (
-    <Button
-      variant="blanco"
-      onClick={manejarGuardarPreferencias}
-      disabled={guardando}
-      className="w-full"
-    >
-      <Save className="w-4 h-4 mr-2" />
-      {guardando ? 'Guardando...' : 'Guardar Cambios'}
-    </Button>
+    <div className="flex  gap-1">
+      <Button
+        className="w-fit"
+        variant="blanco"
+        onClick={handleResetPreferencias}
+        disabled={guardando}
+      >
+        <Backpack className="w-4 h-4 mr-1" />
+        reset
+      </Button>
+      <Button
+        variant="blanco"
+        onClick={manejarGuardarPreferencias}
+        disabled={guardando}
+        className="w-full"
+      >
+        <Save className="w-4 h-4 mr-1" />
+        {guardando ? 'Guardando...' : 'Guardar Cambios'}
+      </Button>
+    </div>
   );
 
   // 6. FILTRAR SIGNOS VISIBLES
@@ -243,7 +270,7 @@ export default function SignosVitalesPantallaConsulta({
               unit={signo.unidad}
               icon={signo.icono}
               value={signosVitalesHistorial[signo.nombre]}
-              onChange={manejarCambioSignosVitales}
+              onChange={handleSignosVitalesChange}
               history={datosHistorial}
             />
           );

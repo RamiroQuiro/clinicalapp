@@ -54,10 +54,19 @@ const { user } = Astro.locals;
             <span class="hidden md:inline">{user?.nombre}</span>
             <ChevronDown class="h-4 w-4 hidden md:inline" />
           </button>
+
           <div
             id="user-menu-dropdown"
             class="absolute hidden right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
           >
+            <div class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <button
+                type="button"
+                onclick={`()=>fetch(/api/user/preferenciaPerfil/reset/${user?.id})`}
+              >
+                resetear preferencias
+              </button>
+            </div>
             <a
               href="/dashboard/perfil"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</a
