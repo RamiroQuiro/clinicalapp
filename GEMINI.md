@@ -241,3 +241,11 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
         *   Debajo, una sección clara que lista **todas las enmiendas asociadas**, mostrando la fecha, el profesional y el texto de cada enmienda.
 
 *   **Próximos Pasos**: Implementar el flujo de finalización de consulta y gestión de enmiendas, comenzando por el modal de confirmación.
+
+---
+## Sesión 11: 2025-09-17
+
+*   **Objetivo**: Actualizar el estado del proyecto y definir los próximos pasos.
+*   **Actualización**: Se confirma que el flujo de finalización de consulta y gestión de enmiendas (modal de confirmación, sellado de consulta y sistema de adendas) ha sido implementado por el usuario.
+*   **Acción**: Se actualiza el `GEMINI.md` para reflejar este avance y se modifica el estado del roadmap.
+*   **Próximos Pasos**: Revisar el roadmap actualizado con el usuario para definir la siguiente tarea prioritaria.

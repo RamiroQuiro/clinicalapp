@@ -9,6 +9,7 @@ const tabs = [
   { id: 'signos', name: 'Signos Vitales' },
   { id: 'diagnostico', name: 'Diagnósticos' },
   { id: 'medicamentos', name: 'Medicamentos' },
+  { id: 'solicitudes', name: 'Solicitudes' },
   { id: 'historial', name: 'Historial de Visitas' },
 ];
 

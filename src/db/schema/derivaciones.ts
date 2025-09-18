@@ -3,6 +3,7 @@ import { atenciones } from './atenciones';
 import { users } from './users';
 
 import { sql } from 'drizzle-orm';
+import { pacientes } from './pacientes';
 
 export const derivaciones = sqliteTable('derivaciones', {
   id: text('id').primaryKey().unique(),
@@ -13,6 +14,7 @@ export const derivaciones = sqliteTable('derivaciones', {
     .notNull()
     .references(() => users.id),
   userIdDestino: text('userIdDestino').references(() => users.id),
+  pacienteId: text('pacienteId').references(() => pacientes.id),
   nombreProfesionalExterno: text('nombreProfesionalExterno'),
   especialidadDestino: text('especialidadDestino'),
   motivoDerivacion: text('motivoDerivacion'),

@@ -5,6 +5,7 @@ import { DiagnosticosPantalla } from './DiagnosticosPantalla';
 import { HistorialVisitasPantalla } from './HistorialVisitasPantalla';
 import { MedicamentosPantalla } from './MedicamentosPantalla';
 import { SignosVitalesPantalla } from './SignosVitalesPantalla';
+import { SolicitudesPantalla } from './SolicitudesPantalla';
 
 export const RenderizacionPantalla = ({
   activeTab,
@@ -38,6 +39,8 @@ export const RenderizacionPantalla = ({
       return <DiagnosticosPantalla data={data} />;
     case 'medicamentos':
       return <MedicamentosPantalla data={data} pacienteId={data.paciente.id} />;
+    case 'solicitudes':
+      return <SolicitudesPantalla data={data} />;
     case 'historial':
       return (
         <HistorialVisitasPantalla data={data.historialVisitas} pacienteId={data.paciente.id} />

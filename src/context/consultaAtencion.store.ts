@@ -1,6 +1,29 @@
 // src/stores/consulta.store.ts
 import { atom } from 'nanostores';
 
+// --- Tipos Nuevos ---
+export interface OrdenEstudio {
+  id: string;
+  atencionId: string;
+  pacienteId: string;
+  medicoId: string;
+  fechaCreacion: string;
+  diagnosticoPresuntivo: string;
+  estudiosSolicitados: string[];
+}
+
+export interface Derivacion {
+  id: string;
+  atencionId: string;
+  pacienteId: string;
+  userIdOrigen: string;
+  userIdDestino?: string | null;
+  nombreProfesionalExterno?: string | null;
+  especialidadDestino: string;
+  motivoDerivacion: string;
+  estado: string;
+}
+
 // Definimos el tipo para un archivo adjunto
 export interface ArchivoAdjunto {
   id: string;
@@ -61,6 +84,8 @@ export interface Consulta {
     id: string;
   }[];
   archivos: ArchivoAdjunto[]; // AÑADIDO PARA ARCHIVOS
+  ordenesEstudio: OrdenEstudio[]; // NUEVO
+  derivaciones: Derivacion[]; // NUEVO
   inicioAtencion: string | null; // AÑADIDO
   finAtencion: string | null; // AÑADIDO
   duracionAtencion: number | null; // AÑADIDO
@@ -93,6 +118,8 @@ const initialConsulta: Consulta = {
   observaciones: '',
   notas: [],
   archivos: [], // AÑADIDO PARA ARCHIVOS
+  ordenesEstudio: [], // NUEVO
+  derivaciones: [], // NUEVO
   pacienteId: '',
   tratamiento: '',
   medicamentos: [
@@ -206,6 +233,26 @@ export function removeArchivo(archivoId: string) {
   consultaStore.set({
     ...current,
     archivos: current.archivos.filter(a => a.id !== archivoId),
+  });
+}
+
+// --- NUEVAS FUNCIONES PARA SOLICITUDES ---
+
+// Agregar Orden de Estudio
+export function addOrdenEstudio(orden: OrdenEstudio) {
+  const current = consultaStore.get();
+  consultaStore.set({
+    ...current,
+    ordenesEstudio: [...current.ordenesEstudio, orden],
+  });
+}
+
+// Agregar Derivación
+export function addDerivacion(derivacion: Derivacion) {
+  const current = consultaStore.get();
+  consultaStore.set({
+    ...current,
+    derivaciones: [...current.derivaciones, derivacion],
   });
 }
 
