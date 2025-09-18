@@ -1,8 +1,9 @@
 import Button from '@/components/atomos/Button';
+import BotonIndigo from '@/components/moleculas/BotonIndigo';
 import ModalReact from '@/components/moleculas/ModalReact';
 import { addDerivacion, addOrdenEstudio } from '@/context/consultaAtencion.store';
 import { showToast } from '@/utils/toast/toastShow';
-import { Eye } from 'lucide-react';
+import { Eye, File } from 'lucide-react';
 import { useState } from 'react';
 import { FormularioDerivacion } from './FormularioDerivacion';
 import { FormularioOrdenEstudio } from './FormularioOrdenEstudio';
@@ -73,25 +74,27 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h3 className="font-semibold text-lg mb-2">Órdenes de Estudio Creadas</h3>
-          <div className="border rounded-lg p-4 min-h-[100px] bg-gray-50 space-y-2">
+          <div className="border rounded-lg p-4 min-h-[100px] bg-white space-y-2">
             {solicitudes.estudiosSolicitados?.length > 0 ? (
               solicitudes.estudiosSolicitados.map((estudio: any) => (
-                <div key={estudio.id} className="flex justify-between items-center p-2 border-b">
-                  <div>
+                <div className="flex items-center gap-4 p-2 border hover:border-primary-100/50 duration-300 border-gray-200/50 rounded-md bg-primary-bg-componentes">
+                  <div className=" rounded-full">
+                    <File className="w-6 h-6 stroke-primary-texto" />
+                  </div>
+                  <div className="flex flex-col flex-1">
                     <p className="font-bold">{estudio.diagnosticoPresuntivo}</p>
 
                     <p className="text-sm">{estudio.estudiosSolicitados.join(', ')}</p>
                   </div>
-
                   <a
                     href={`/api/ordenes-estudio/${estudio.id}/pdf`}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Imprimir/Descargar PDF"
                   >
-                    <Button variant="indigo" className="p-2 rounded-full">
+                    <BotonIndigo className="p-2 rounded-full">
                       <Eye className="w-6 h-6 stroke-indigo-600" />
-                    </Button>
+                    </BotonIndigo>
                   </a>
                 </div>
               ))
