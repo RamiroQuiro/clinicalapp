@@ -1,8 +1,7 @@
 import type { APIRoute } from 'astro';
 
-import db from '../../../../db';
-import { ordenesEstudio } from '../../../../db/schema/ordenesEstudio';
-
+import db from '@/db';
+import { ordenesEstudio } from '@/db/schema/ordenesEstudio';
 import { createResponse } from '@/utils/responseAPI';
 import { nanoid } from 'nanoid';
 
@@ -43,7 +42,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
         pacienteId: pacienteId,
         userMedicoId: userMedicoId,
         diagnosticoPresuntivo: diagnosticoPresuntivo,
-        estudiosSolicitados: JSON.stringify(estudiosSolicitados),
+        estudiosSolicitados: estudiosSolicitados,
       })
       .returning();
 

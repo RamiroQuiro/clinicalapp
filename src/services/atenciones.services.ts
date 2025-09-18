@@ -178,8 +178,10 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
           signosVitales: signosVitalesAtencion[0] || null,
           notas: notasAtencion,
           enmiendas: enmiendasAtencion,
-          estudiosSolicitados: estudiosSolicitadosAtencion,
-          derivaciones: derivacionesAtencion,
+          solicitudes: {
+            estudiosSolicitados: estudiosSolicitadosAtencion,
+            derivaciones: derivacionesAtencion,
+          },
         },
         paciente: pacienteData,
         antecedentes: [],
@@ -283,6 +285,10 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
         archivosAdjuntos: archivosAtencion,
         signosVitales: signosVitalesAtencion[0] || null,
         notas: notasAtencion,
+        solicitudes: {
+          estudiosSolicitados: estudiosSolicitadosAtencion,
+          derivaciones: derivacionesAtencion,
+        },
       },
       paciente: pacienteData,
       antecedentes: antecedentesData,

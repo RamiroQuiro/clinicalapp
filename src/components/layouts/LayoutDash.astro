@@ -47,18 +47,6 @@ const { user } = Astro.locals;
   });
 </script>
 
-{user&&
-<script type="application/json" id="user-data">
-{JSON.stringify(user)}
-</script>}
-
-<script >
-  const userData = document.getElementById('user-data');
-  console.log(userData);
-  const user = userData ? JSON.parse(userData.textContent || '{}') : {};
-  console.log(user);
-</script>
-
 <script>
   const btnResponsiveMenu = document.getElementById('btnResponsiveMenu');
   const aside = document.getElementById('aside');

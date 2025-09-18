@@ -1,27 +1,27 @@
 import Button from '@/components/atomos/Button';
 import ModalReact from '@/components/moleculas/ModalReact';
-import { addDerivacion, addOrdenEstudio, consultaStore } from '@/context/consultaAtencion.store';
+import { addDerivacion, addOrdenEstudio } from '@/context/consultaAtencion.store';
 import { showToast } from '@/utils/toast/toastShow';
-import { useStore } from '@nanostores/react';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 import { FormularioDerivacion } from './FormularioDerivacion';
 import { FormularioOrdenEstudio } from './FormularioOrdenEstudio';
 
 export const SolicitudesPantalla = ({ data }: { data: any }) => {
-  const consulta = useStore(consultaStore);
+  const [solicitudes, setSolicitudes] = useState(data?.atencion?.solicitudes);
   const [modalType, setModalType] = useState<'orden' | 'derivacion' | null>(null);
 
   const handleCloseModal = () => {
     setModalType(null);
   };
-  console.log('data', data);
-  console.log('consulta', consulta.id);
+
+  console.log('solicitudes', solicitudes.estudiosSolicitados);
   const handleSave = async (type: 'orden' | 'derivacion', formData: any) => {
-    const atencionId = data.atencion.id;
+    const atencionId = data?.atencion?.id;
     const url =
       type === 'orden'
-        ? `/api/atenciones/${atencionId}/ordenes`
-        : `/api/atenciones/${atencionId}/derivaciones`;
+        ? `/api/atencion/${atencionId}/ordenes`
+        : `/api/atencion/${atencionId}/derivaciones`;
 
     try {
       const response = await fetch(url, {
@@ -29,8 +29,8 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          pacienteId: data.atencion.pacienteId,
-          userMedicoId: data.atencion.userIdMedico,
+          pacienteId: data?.atencion?.pacienteId,
+          userMedicoId: data?.atencion?.userIdMedico,
         }),
       });
 
@@ -74,11 +74,25 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
         <div>
           <h3 className="font-semibold text-lg mb-2">Órdenes de Estudio Creadas</h3>
           <div className="border rounded-lg p-4 min-h-[100px] bg-gray-50 space-y-2">
-            {consulta.ordenesEstudio?.length > 0 ? (
-              consulta.ordenesEstudio.map(orden => (
-                <div key={orden.id} className="p-2 border-b">
-                  <p className="font-bold">{orden.diagnosticoPresuntivo}</p>
-                  <p className="text-sm">Estudios: {orden.estudiosSolicitados.join(', ')}</p>
+            {solicitudes.estudiosSolicitados?.length > 0 ? (
+              solicitudes.estudiosSolicitados.map((estudio: any) => (
+                <div key={estudio.id} className="flex justify-between items-center p-2 border-b">
+                  <div>
+                    <p className="font-bold">{estudio.diagnosticoPresuntivo}</p>
+
+                    <p className="text-sm">{estudio.estudiosSolicitados.join(', ')}</p>
+                  </div>
+
+                  <a
+                    href={`/api/ordenes-estudio/${estudio.id}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Imprimir/Descargar PDF"
+                  >
+                    <Button variant="indigo" className="p-2 rounded-full">
+                      <Eye className="w-6 h-6 stroke-indigo-600" />
+                    </Button>
+                  </a>
                 </div>
               ))
             ) : (
@@ -91,8 +105,8 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
         <div>
           <h3 className="font-semibold text-lg mb-2">Derivaciones Creadas</h3>
           <div className="border rounded-lg p-4 min-h-[100px] bg-gray-50 space-y-2">
-            {consulta.derivaciones?.length > 0 ? (
-              consulta.derivaciones.map(derivacion => (
+            {solicitudes.derivaciones?.length > 0 ? (
+              solicitudes.derivaciones.map((derivacion: any) => (
                 <div key={derivacion.id} className="p-2 border-b">
                   <p className="font-bold">Especialidad: {derivacion.especialidadDestino}</p>
                   <p className="text-sm">Motivo: {derivacion.motivoDerivacion}</p>
