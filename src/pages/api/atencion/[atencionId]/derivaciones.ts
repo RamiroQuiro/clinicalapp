@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
   // 4. Insertar en la base de datos
   try {
-    const derivacion = await db
+    const [derivacion] = await db
       .insert(derivaciones)
       .values({
         id: nanoid(),

@@ -84,8 +84,10 @@ export interface Consulta {
     id: string;
   }[];
   archivos: ArchivoAdjunto[]; // AÑADIDO PARA ARCHIVOS
-  ordenesEstudio: OrdenEstudio[]; // NUEVO
-  derivaciones: Derivacion[]; // NUEVO
+  solicitudes: {
+    estudiosSolicitados: OrdenEstudio[];
+    derivaciones: Derivacion[];
+  };
   inicioAtencion: string | null; // AÑADIDO
   finAtencion: string | null; // AÑADIDO
   duracionAtencion: number | null; // AÑADIDO
@@ -118,8 +120,10 @@ const initialConsulta: Consulta = {
   observaciones: '',
   notas: [],
   archivos: [], // AÑADIDO PARA ARCHIVOS
-  ordenesEstudio: [], // NUEVO
-  derivaciones: [], // NUEVO
+  solicitudes: {
+    estudiosSolicitados: [],
+    derivaciones: [],
+  },
   pacienteId: '',
   tratamiento: '',
   medicamentos: [
@@ -243,7 +247,10 @@ export function addOrdenEstudio(orden: OrdenEstudio) {
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
-    ordenesEstudio: [...current.ordenesEstudio, orden],
+    solicitudes: {
+      ...current.solicitudes,
+      estudiosSolicitados: [...current.solicitudes.estudiosSolicitados, orden],
+    },
   });
 }
 
@@ -252,7 +259,34 @@ export function addDerivacion(derivacion: Derivacion) {
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
-    derivaciones: [...current.derivaciones, derivacion],
+    solicitudes: {
+      ...current.solicitudes,
+      derivaciones: [...current.solicitudes.derivaciones, derivacion],
+    },
+  });
+}
+
+// Eliminar Orden de Estudio
+export function removeOrdenEstudio(ordenId: string) {
+  const current = consultaStore.get();
+  consultaStore.set({
+    ...current,
+    solicitudes: {
+      ...current.solicitudes,
+      estudiosSolicitados: current.solicitudes.estudiosSolicitados.filter(o => o.id !== ordenId),
+    },
+  });
+}
+
+// Eliminar Derivación
+export function removeDerivacion(derivacionId: string) {
+  const current = consultaStore.get();
+  consultaStore.set({
+    ...current,
+    solicitudes: {
+      ...current.solicitudes,
+      derivaciones: current.solicitudes.derivaciones.filter(d => d.id !== derivacionId),
+    },
   });
 }
 

@@ -1,9 +1,8 @@
 import Button from '@/components/atomos/Button';
 import BotonIndigo from '@/components/moleculas/BotonIndigo';
 import ModalReact from '@/components/moleculas/ModalReact';
-import { addDerivacion, addOrdenEstudio } from '@/context/consultaAtencion.store';
 import { showToast } from '@/utils/toast/toastShow';
-import { Eye, File } from 'lucide-react';
+import { Eye, File, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { FormularioDerivacion } from './FormularioDerivacion';
 import { FormularioOrdenEstudio } from './FormularioOrdenEstudio';
@@ -16,7 +15,49 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
     setModalType(null);
   };
 
-  console.log('solicitudes', solicitudes.estudiosSolicitados);
+  const [itemParaBorrar, setItemParaBorrar] = useState<{
+    id: string;
+    type: 'orden' | 'derivacion';
+  } | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (!itemParaBorrar) return;
+
+    const { id, type } = itemParaBorrar;
+    const url =
+      type === 'orden' ? `/api/ordenes-estudio/${id}/cancelar` : `/api/derivaciones/${id}/cancelar`;
+
+    try {
+      const response = await fetch(url, { method: 'POST' });
+      const result = await response.json();
+
+      if (response.ok) {
+        showToast('Solicitud cancelada exitosamente', { background: 'bg-green-500' });
+        // Actualizar el estado local
+        if (type === 'orden') {
+          setSolicitudes(prev => ({
+            ...prev,
+            estudiosSolicitados: prev.estudiosSolicitados.filter(o => o.id !== id),
+          }));
+        } else {
+          setSolicitudes(prev => ({
+            ...prev,
+            derivaciones: prev.derivaciones.filter(d => d.id !== id),
+          }));
+        }
+      } else {
+        showToast(`Error: ${result.message || 'No se pudo cancelar'}`, {
+          background: 'bg-red-500',
+        });
+      }
+    } catch (error: any) {
+      showToast(`Error de red: ${error.message}`, { background: 'bg-red-500' });
+    }
+
+    setItemParaBorrar(null); // Cerrar modal
+  };
+
+  console.log('solicitudes', solicitudes);
   const handleSave = async (type: 'orden' | 'derivacion', formData: any) => {
     const atencionId = data?.atencion?.id;
     const url =
@@ -36,16 +77,22 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
       });
 
       const result = await response.json();
-
+      console.log('result', result);
       if (response.ok) {
         showToast(`Solicitud creada con éxito`, { background: 'bg-green-500' });
 
         // Actualizar el store global con el objeto completo de la API
         const nuevoItem = result.data;
         if (type === 'orden') {
-          addOrdenEstudio(nuevoItem);
+          setSolicitudes(prev => ({
+            ...prev,
+            estudiosSolicitados: [...prev.estudiosSolicitados, nuevoItem],
+          }));
         } else {
-          addDerivacion(nuevoItem);
+          setSolicitudes(prev => ({
+            ...prev,
+            derivaciones: [...prev.derivaciones, nuevoItem],
+          }));
         }
       } else {
         showToast(`Error: ${result.message || 'No se pudo crear la solicitud'}`, {
@@ -96,6 +143,13 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
                       <Eye className="w-6 h-6 stroke-indigo-600" />
                     </BotonIndigo>
                   </a>
+                  <button
+                    onClick={() => setItemParaBorrar({ id: estudio.id, type: 'orden' })}
+                    title="Cancelar Orden"
+                    className="p-2 rounded-full hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="w-6 h-6 stroke-red-600" />
+                  </button>
                 </div>
               ))
             ) : (
@@ -131,6 +185,13 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
                       <Eye className="w-6 h-6 stroke-indigo-600" />
                     </BotonIndigo>
                   </a>
+                  <button
+                    onClick={() => setItemParaBorrar({ id: derivacion.id, type: 'derivacion' })}
+                    title="Cancelar DerivaciÃ³n"
+                    className="p-2 rounded-full hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="w-6 h-6 stroke-red-600" />
+                  </button>
                 </div>
               ))
             ) : (
@@ -161,6 +222,30 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
                 onCancel={handleCloseModal}
               />
             )}
+          </div>
+        </ModalReact>
+      )}
+
+      {/* Modal de confirmaciÃ³n para borrar */}
+      {itemParaBorrar && (
+        <ModalReact
+          title="Confirmar CancelaciÃ³n"
+          id="modal-confirmar-borrado"
+          onClose={() => setItemParaBorrar(null)}
+        >
+          <div className="p-4">
+            <p>
+              Â¿EstÃ¡s seguro de que deseas cancelar esta solicitud? Esta acciÃ³n no se puede
+              deshacer.
+            </p>
+            <div className="flex justify-end space-x-4 mt-6">
+              <Button variant="secondary" onClick={() => setItemParaBorrar(null)}>
+                Volver
+              </Button>
+              <Button variant="danger" onClick={handleConfirmDelete}>
+                SÃ­, Cancelar
+              </Button>
+            </div>
           </div>
         </ModalReact>
       )}
