@@ -3,6 +3,7 @@ import {
   archivosAdjuntos,
   atencionAmendments,
   atenciones,
+  derivaciones,
   diagnostico,
   historiaClinica,
   medicamento,
@@ -12,6 +13,7 @@ import {
   users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
+import { ordenesEstudio } from '@/db/schema/ordenesEstudio';
 import { preferenciaPerfilUser } from '@/db/schema/preferenciaPerfilUser';
 import { and, desc, eq } from 'drizzle-orm';
 
@@ -114,6 +116,17 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .from(signosVitales)
     .where(eq(signosVitales.atencionId, atencionId));
 
+  // buscamos las solicitdes
+  const estudiosSolicitadosPromise = db
+    .select()
+    .from(ordenesEstudio)
+    .where(eq(ordenesEstudio.atencionId, atencionId));
+
+  const derivacionesPromise = db
+    .select()
+    .from(derivaciones)
+    .where(eq(derivaciones.atencionId, atencionId));
+
   // Busca las enmiendas de la atención.
   const enmiendasPromise = db
     .select()
@@ -132,6 +145,8 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       signosVitalesAtencion,
       enmiendasAtencion,
       medicoAtencion,
+      estudiosSolicitadosAtencion,
+      derivacionesAtencion,
     ] = await Promise.all([
       pacientePromise,
       diagnosticosPromise,
@@ -141,6 +156,8 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       signosVitalesPromise,
       enmiendasPromise,
       medicoPromise,
+      estudiosSolicitadosPromise,
+      derivacionesPromise,
     ]);
 
     const pacienteData = pacienteResult[0];
@@ -161,6 +178,8 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
           signosVitales: signosVitalesAtencion[0] || null,
           notas: notasAtencion,
           enmiendas: enmiendasAtencion,
+          estudiosSolicitados: estudiosSolicitadosAtencion,
+          derivaciones: derivacionesAtencion,
         },
         paciente: pacienteData,
         antecedentes: [],
@@ -208,6 +227,8 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     antecedentesData,
     fecthSignosVitalesData,
     preferenciasPerfilUserData,
+    estudiosSolicitadosAtencion,
+    derivacionesAtencion,
   ] = await Promise.all([
     pacientePromise,
     diagnosticosPromise,
@@ -218,6 +239,8 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     antecedentesPromise,
     signosHistorialPromise,
     preferenciasPromise,
+    estudiosSolicitadosPromise,
+    derivacionesPromise,
   ]);
 
   const pacienteData = pacienteResult[0];
