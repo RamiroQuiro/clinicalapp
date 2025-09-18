@@ -1,10 +1,10 @@
-
 import type { APIRoute } from 'astro';
-import { responseAPI } from '../../../../utils/responseAPI';
-import { derivaciones } from '../../../../db/schema/derivaciones';
-import db from '../../../../db';
-import { createId } from '@paralleldrive/cuid2';
-import { eq } from 'drizzle-orm';
+
+import db from '@/db';
+import { derivaciones } from '@/db/schema';
+
+import { createResponse } from '@/utils/responseAPI';
+import { nanoid } from 'nanoid';
 
 // POST /api/atenciones/[atencionId]/derivaciones
 export const POST: APIRoute = async ({ params, request, locals }) => {
@@ -13,12 +13,12 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   // 1. Validar sesion
   const { user } = locals;
   if (!user) {
-    return responseAPI(401, 'No autorizado');
+    return createResponse(401, 'No autorizado');
   }
 
   // 2. Validar atencionId
   if (!atencionId) {
-    return responseAPI(400, 'El ID de la atención es requerido');
+    return createResponse(400, 'El ID de la atención es requerido');
   }
 
   // 3. Leer y validar el body
@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   try {
     body = await request.json();
   } catch (error) {
-    return responseAPI(400, 'El cuerpo de la solicitud no es un JSON válido');
+    return createResponse(400, 'El cuerpo de la solicitud no es un JSON válido');
   }
 
   const {
@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   } = body;
 
   if (!pacienteId || !especialidadDestino || !motivoDerivacion) {
-    return responseAPI(
+    return createResponse(
       400,
       'Faltan campos requeridos: pacienteId, especialidadDestino y motivoDerivacion son obligatorios'
     );
@@ -46,25 +46,23 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
   // 4. Insertar en la base de datos
   try {
-    const newDerivacionId = createId();
-    await db.insert(derivaciones).values({
-      id: newDerivacionId,
-      atencionId: atencionId,
-      pacienteId: pacienteId,
-      userIdOrigen: user.id,
-      especialidadDestino: especialidadDestino,
-      motivoDerivacion: motivoDerivacion,
-      userIdDestino: userIdDestino, // Puede ser null
-      nombreProfesionalExterno: nombreProfesionalExterno, // Puede ser null
-    });
+    const derivacion = await db
+      .insert(derivaciones)
+      .values({
+        id: nanoid(),
+        atencionId: atencionId,
+        pacienteId: pacienteId,
+        userIdOrigen: user.id,
+        especialidadDestino: especialidadDestino,
+        motivoDerivacion: motivoDerivacion,
+        userIdDestino: userIdDestino, // Puede ser null
+        nombreProfesionalExterno: nombreProfesionalExterno, // Puede ser null
+      })
+      .returning();
 
-    const nuevaDerivacion = await db.query.derivaciones.findFirst({
-        where: eq(derivaciones.id, newDerivacionId)
-    });
-
-    return responseAPI(201, 'Derivación creada exitosamente', nuevaDerivacion);
+    return createResponse(201, 'Derivación creada exitosamente', derivacion);
   } catch (error) {
     console.error('Error al crear la derivación:', error);
-    return responseAPI(500, 'Error interno del servidor');
+    return createResponse(500, 'Error interno del servidor');
   }
 };

@@ -107,12 +107,30 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
         </div>
         <div>
           <h3 className="font-semibold text-lg mb-2">Derivaciones Creadas</h3>
-          <div className="border rounded-lg p-4 min-h-[100px] bg-gray-50 space-y-2">
+          <div className="border rounded-lg p-4 min-h-[100px] bg-white space-y-2">
             {solicitudes.derivaciones?.length > 0 ? (
               solicitudes.derivaciones.map((derivacion: any) => (
-                <div key={derivacion.id} className="p-2 border-b">
-                  <p className="font-bold">Especialidad: {derivacion.especialidadDestino}</p>
-                  <p className="text-sm">Motivo: {derivacion.motivoDerivacion}</p>
+                <div
+                  key={derivacion.id}
+                  className="flex items-center gap-4 p-2 border hover:border-primary-100/50 duration-300 border-gray-200/50 rounded-md bg-primary-bg-componentes"
+                >
+                  <div className=" rounded-full">
+                    <File className="w-6 h-6 stroke-primary-texto" />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <p className="font-bold">Especialidad: {derivacion.especialidadDestino}</p>
+                    <p className="text-sm">Motivo: {derivacion.motivoDerivacion}</p>
+                  </div>
+                  <a
+                    href={`/api/derivaciones/${derivacion.id}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Imprimir/Descargar PDF"
+                  >
+                    <BotonIndigo className="p-2 rounded-full">
+                      <Eye className="w-6 h-6 stroke-indigo-600" />
+                    </BotonIndigo>
+                  </a>
                 </div>
               ))
             ) : (
