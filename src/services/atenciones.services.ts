@@ -120,12 +120,12 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
   const estudiosSolicitadosPromise = db
     .select()
     .from(ordenesEstudio)
-    .where(eq(ordenesEstudio.atencionId, atencionId));
+    .where(and(eq(ordenesEstudio.atencionId, atencionId), eq(ordenesEstudio.deleted_at, null)));
 
   const derivacionesPromise = db
     .select()
     .from(derivaciones)
-    .where(eq(derivaciones.atencionId, atencionId));
+    .where(and(eq(derivaciones.atencionId, atencionId), eq(derivaciones.deleted_at, null)));
 
   // Busca las enmiendas de la atención.
   const enmiendasPromise = db

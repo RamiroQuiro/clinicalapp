@@ -229,21 +229,18 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
       {/* Modal de confirmaciÃ³n para borrar */}
       {itemParaBorrar && (
         <ModalReact
-          title="Confirmar CancelaciÃ³n"
+          title="Confirmar Cancelación"
           id="modal-confirmar-borrado"
           onClose={() => setItemParaBorrar(null)}
         >
           <div className="p-4">
-            <p>
-              Â¿EstÃ¡s seguro de que deseas cancelar esta solicitud? Esta acciÃ³n no se puede
-              deshacer.
-            </p>
+            <p>¿Esta seguro que quiere cancelar esta solicitud?</p>
             <div className="flex justify-end space-x-4 mt-6">
-              <Button variant="secondary" onClick={() => setItemParaBorrar(null)}>
+              <Button variant="grisClaro" onClick={() => setItemParaBorrar(null)}>
                 Volver
               </Button>
-              <Button variant="danger" onClick={handleConfirmDelete}>
-                SÃ­, Cancelar
+              <Button variant="cancel" onClick={handleConfirmDelete}>
+                Si, Cancelar
               </Button>
             </div>
           </div>

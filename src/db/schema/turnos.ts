@@ -16,6 +16,7 @@ export const turnos = sqliteTable('turnos', {
     .references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' })
     .notNull(),
   fechaTurno: integer('fechaTurno', { mode: 'timestamp' }).notNull(),
+  duracion: integer('duracion', { mode: 'number' }),
   atencionId: text('atencionId').references(() => atenciones.id, {
     onDelete: 'cascade',
     onUpdate: 'cascade',

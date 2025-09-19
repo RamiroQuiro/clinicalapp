@@ -74,10 +74,10 @@ export const FormularioDerivacion: React.FC<Props> = ({ onSave, onCancel }) => {
         />
       </div>
       <div className="flex justify-end space-x-3 pt-4">
-        <Button variant="blanco" onClick={onCancel}>
+        <Button variant="grisClaro" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button variant="secondary" type="submit">
+        <Button variant="blue" type="submit">
           Guardar Derivación
         </Button>
       </div>

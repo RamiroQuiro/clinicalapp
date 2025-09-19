@@ -1,16 +1,14 @@
-
-import { db } from '@/db';
+import db from '@/db';
 import { ordenesEstudio } from '@/db/schema/ordenesEstudio';
+
 import { createResponse } from '@/utils/responseAPI';
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ params, locals }) => {
   const { ordenId } = params;
-  const session = await locals.auth.validate();
-  if (!session) {
-    return createResponse(401, 'No autorizado');
-  }
+  const { session } = locals;
 
   if (!ordenId) {
     return createResponse(400, 'El ID de la orden es requerido');
@@ -20,7 +18,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
     const [updatedOrden] = await db
       .update(ordenesEstudio)
       .set({
-        deleted_at: new Date(), // Soft delete
+        deleted_at: new Date(getFechaEnMilisegundos()), // Soft delete
       })
       .where(eq(ordenesEstudio.id, ordenId))
       .returning();

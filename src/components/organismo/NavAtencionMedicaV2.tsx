@@ -297,18 +297,22 @@ export default function NavAtencionMedicaV2({
         ) : (
           <div className="flex md:flex-col flex-row w-full md:w-fit items-center gap-2">
             <a href={`/dashboard/pacientes/${pacienteId}`} className="text-sm w-full">
-              <Button className="w-full ">
+              <Button variant="primary" className="w-full ">
                 <p className="inline-flex items-center gap-2">
                   <Table2 className="w-4 h-4" /> Ficha Paciente
                 </p>
               </Button>
             </a>
-            <Button id="guardarBorradorV2" onClick={() => handleGuardarBorrador('borrador')}>
+            <Button
+              variant="primary"
+              id="guardarBorradorV2"
+              onClick={() => handleGuardarBorrador('borrador')}
+            >
               <p className="inline-flex items-center gap-2">
                 <Save className="w-4 h-4" /> Guardar Borrador
               </p>
             </Button>
-            <Button id="finalizarConsultaV2" onClick={handleFinalizarClick}>
+            <Button variant="primary" id="finalizarConsultaV2" onClick={handleFinalizarClick}>
               <p className="inline-flex items-center gap-2">
                 <Lock className="w-4 h-4" /> Finalizar Consulta
               </p>

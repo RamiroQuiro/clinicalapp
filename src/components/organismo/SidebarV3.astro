@@ -24,8 +24,8 @@ const sections = [
     icon: Home,
   },
   {
-    name: 'Agenda',
-    href: '/dashboard/agenda',
+    name: 'Calendario',
+    href: '/dashboard/calendario',
     icon: CalendarDays,
   },
   {
@@ -71,12 +71,12 @@ const sections = [
   <!-- logo ramaCode -->
   <div id="logo" class="items-center justify-center h-20 hidden">
     <a href="/dashboard" class="transition-transform duration-300 group-hover:scale-110">
-      <img src="/ramaCodeBlanco.png" alt="Logo Completo" class="w-24 h-24 animate-aparecer" />
+      <img src="/ramaCodeBlanco.png" alt="Logo Completo" class="w-24 h-24 -aparecer" />
     </a>
   </div>
 
   <nav
-    class="flex-1 flex md:flex-col w-full duration-300 px-1 md:px-3 items-center md:justify-start justify-evenly md:items-start md:mt-10 animate-aparecer space-y-2"
+    class="flex-1 flex md:flex-col w-full duration-300 px-1 md:px-3 items-center md:justify-start justify-evenly md:items-start md:mt-10 -aparecer space-y-2"
   >
     {
       sections.map(section => {

@@ -1,0 +1,10 @@
+--- 
+import LayoutDash from "@/components/layouts/LayoutDash.astro";
+import Calendario from "@/components/organismo/agenda/Calendario.tsx";
+---
+
+<LayoutDash title="Agenda">
+    <div class="w-full h-full">
+        <Calendario client:load />
+    </div>
+</LayoutDash>
