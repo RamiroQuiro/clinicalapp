@@ -158,17 +158,17 @@ export async function getDashboardData(userId: string) {
       ),
   ]);
 
-  console.log('data dashboard', {
-    pacientesData,
-    atencionesMes,
-    atencionesMesPasado,
-    nuevosPacientesMes,
-    nuevosPacientesMesPasado,
-    atencionesUlt7d,
-    motivos,
-    promedioDuracion,
-    atencionesHoy,
-  });
+  // console.log('data dashboard', {
+  //   pacientesData,
+  //   atencionesMes,
+  //   atencionesMesPasado,
+  //   nuevosPacientesMes,
+  //   nuevosPacientesMesPasado,
+  //   atencionesUlt7d,
+  //   motivos,
+  //   promedioDuracion,
+  //   atencionesHoy,
+  // });
 
   // --- 3. PROCESAMIENTO Y RETORNO DE DATOS ---
   const ultimasAtencionesProcesadas = atencionesUlt7d

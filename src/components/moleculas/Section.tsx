@@ -1,4 +1,5 @@
 import React from 'react';
+import { twMerge } from 'tailwind-merge';
 import DivReact from '../atomos/DivReact';
 
 type Props = {
@@ -6,14 +7,20 @@ type Props = {
   children: React.ReactNode;
   rightContent?: React.ReactNode;
   className?: string;
+  classContent?: string;
 };
 
-const Section = ({ title, children, rightContent, className }: Props) => (
-  <DivReact className=" relative">
+const Section = ({ title, children, rightContent, className, classContent }: Props) => (
+  <DivReact className={classContent}>
     <div
-      className={` text-base font-semibold text-primary-textoTitle border-b  border-gray-200 pb-1 mb-2 flex items-center justify-between ${className}`}
+      className={twMerge(
+        'text-base font-semibold text-primary-textoTitle',
+        'pb-1 mb-2',
+        'flex items-center justify-between',
+        className
+      )}
     >
-      <h3>{title}</h3>
+      <h3 className="w-full border-b border-gray-200 mb-1">{title}</h3>
       {rightContent && <div>{rightContent}</div>}
     </div>
     {children}
