@@ -26,9 +26,10 @@ const { user } = Astro.locals;
         }
       </span>
     </div>
-
-    <!-- Buscador Global como Isla de React -->
-    <BuscadorGlobal client:load />
+    <div class="w-1/2">
+      <!-- Buscador Global como Isla de React -->
+      <BuscadorGlobal client:load />
+    </div>
     <div
       class="n flex items-center justify-between md:w-auto w-full mb-2 md:mb-0 md:justify-end gap-2"
     >

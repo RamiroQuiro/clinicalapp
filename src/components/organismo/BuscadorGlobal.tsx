@@ -9,7 +9,12 @@ interface PacienteResult {
   dni: string;
 }
 
-export default function BuscadorGlobal() {
+interface BuscadorGlobalProps {
+  onSelectPaciente?: (paciente: PacienteResult) => void;
+  hideActions?: boolean;
+}
+
+export default function BuscadorGlobal({ onSelectPaciente, hideActions }: BuscadorGlobalProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PacienteResult[]>([]);
   const [isFocused, setIsFocused] = useState(false);
@@ -29,8 +34,6 @@ export default function BuscadorGlobal() {
         const response = await fetch(`/api/pacientes/buscar?q=${encodeURIComponent(query)}`);
         if (!response.ok) throw new Error('Error en la respuesta de la API');
         const responseData = await response.json();
-        // Si la data viene en una propiedad (ej: { data: [...] }), la extraemos.
-        // Si no, usamos la respuesta directamente.
         const data = responseData.data || responseData;
         setResults(data);
       } catch (error) {
@@ -61,11 +64,16 @@ export default function BuscadorGlobal() {
     };
   }, [searchContainerRef]);
 
+  const handlePacienteClick = (paciente: PacienteResult) => {
+    if (onSelectPaciente) {
+      onSelectPaciente(paciente);
+      setIsFocused(false); // Cerrar resultados después de seleccionar
+      setQuery(`${paciente.nombre} ${paciente.apellido}`); // Mostrar nombre en el input
+    }
+  };
+
   return (
-    <div
-      className="relative md:flex md:w-1/2 w-full items-center md:justify-center"
-      ref={searchContainerRef}
-    >
+    <div className="relative w-full items-center" ref={searchContainerRef}>
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
       <input
         id="global-search-input" // ID para el foco global
@@ -88,35 +96,41 @@ export default function BuscadorGlobal() {
           {!loading && results.length > 0 && (
             <ul>
               {results.map(paciente => (
-                <li key={paciente.id} className="border-b border-gray-100 last:border-b-0">
+                <li
+                  key={paciente.id}
+                  className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handlePacienteClick(paciente)}
+                >
                   <div className="p-3">
                     <p className="font-semibold text-gray-800">
                       {paciente.nombre} {paciente.apellido}
                     </p>
                     <p className="text-sm text-gray-600">DNI: {paciente.dni}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <a
-                        href={`/dashboard/consultas/aperturaPaciente/${paciente.id}`}
-                        className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
-                      >
-                        <CalendarPlus size={14} />
-                        <span>Dar Turno</span>
-                      </a>
-                      <a
-                        href={`/api/atencion/nueva?pacienteId=${paciente.id}`}
-                        className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
-                      >
-                        <Stethoscope size={14} />
-                        <span>Atender</span>
-                      </a>
-                      <a
-                        href={`/dashboard/pacientes/${paciente.id}`}
-                        className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
-                      >
-                        <User size={14} />
-                        <span>Ficha</span>
-                      </a>
-                    </div>
+                    {!hideActions && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <a
+                          href={`/dashboard/consultas/aperturaPaciente/${paciente.id}`}
+                          className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+                        >
+                          <CalendarPlus size={14} />
+                          <span>Dar Turno</span>
+                        </a>
+                        <a
+                          href={`/api/atencion/nueva?pacienteId=${paciente.id}`}
+                          className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+                        >
+                          <Stethoscope size={14} />
+                          <span>Atender</span>
+                        </a>
+                        <a
+                          href={`/dashboard/pacientes/${paciente.id}`}
+                          className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
+                        >
+                          <User size={14} />
+                          <span>Ficha</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </li>
               ))}

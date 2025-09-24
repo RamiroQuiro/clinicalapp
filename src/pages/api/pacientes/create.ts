@@ -1,48 +1,90 @@
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
 import { normalize } from '@/utils/normalizadorInput';
-import { createResponse } from '@/utils/responseAPI';
-import { getFechaUnix } from '@/utils/timesUtils';
+import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
-import { nanoid } from 'nanoid';
 import db from '../../../db';
-import {
-  fichaPaciente,
-  historiaClinica,
-  pacienteProfesional,
-  pacientes,
-} from '../../../db/schema';
+import { fichaPaciente, historiaClinica, pacienteProfesional, pacientes } from '../../../db/schema';
 
 const pacienteSchema = {
-  nombre: 'string',
-  apellido: 'string',
-  email: 'string',
-  dni: 'number',
-  fNacimiento: 'date',
-  sexo: 'string',
-  direccion: 'string',
-  celular: 'string',
-  estatura: 'number',
-  peso: 'number',
-  pais: 'string',
-  provincia: 'string',
-  ciudad: 'string',
-  obraSocial: 'string',
-  nObraSocial: 'string',
-  grupoSanguineo: 'string',
+  nombre: {
+    type: 'string',
+    optional: false,
+  },
+  apellido: {
+    type: 'string',
+    optional: false,
+  },
+  email: {
+    type: 'string',
+    optional: false,
+  },
+  dni: {
+    type: 'number',
+    optional: false,
+  },
+  fNacimiento: {
+    type: 'date',
+    optional: false,
+  },
+  sexo: {
+    type: 'string',
+    optional: false,
+  },
+  direccion: {
+    type: 'string',
+    optional: true,
+  },
+  celular: {
+    type: 'string',
+    optional: true,
+  },
+  estatura: {
+    type: 'number',
+    optional: true,
+  },
+  peso: {
+    type: 'number',
+    optional: true,
+  },
+  pais: {
+    type: 'string',
+    optional: true,
+  },
+  provincia: {
+    type: 'string',
+    optional: true,
+  },
+  ciudad: {
+    type: 'string',
+    optional: true,
+  },
+  obraSocial: {
+    type: 'string',
+    optional: true,
+  },
+  nObraSocial: {
+    type: 'string',
+    optional: true,
+  },
+  grupoSanguineo: {
+    type: 'string',
+    optional: true,
+  },
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const data = await request.json();
 
+  console.log('data entrante en nuevo paciente', data);
   if (!data.nombre || !data.dni || !data.userId) {
     return createResponse(400, 'Datos incompletos requeridos');
   }
 
   const normalizedData = normalize(data, pacienteSchema);
-
+  console.log('data normalizada', normalizedData);
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
@@ -55,30 +97,39 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const result = await db.transaction(async trx => {
-      const isPacienteExistente = await trx
+      console.log('verificando existencia de pacientre');
+      let pacientenNuevo;
+      const [isPacienteExistente] = await trx
         .select()
         .from(pacientes)
-        .where(eq(pacientes.dni, normalizedData.dni));
+        .where(and(eq(pacientes.dni, normalizedData.dni), eq(pacientes.activo, true)));
 
+      console.log('operaciones de isPacienteExistnete', isPacienteExistente);
       let pacienteId;
 
-      if (isPacienteExistente[0]) {
-        pacienteId = isPacienteExistente[0].id;
+      if (isPacienteExistente) {
+        pacienteId = isPacienteExistente.id;
       } else {
-        pacienteId = nanoid(15);
-        await trx.insert(pacientes).values({
-          id: pacienteId,
-          nombre: normalizedData.nombre,
-          apellido: normalizedData.apellido,
-          email: normalizedData.email,
-          dni: normalizedData.dni,
-          fNacimiento: normalizedData.fNacimiento,
-          sexo: normalizedData.sexo,
-        });
+        console.log('el paciente no exite, insertando paciente');
+        pacienteId = nanoIDNormalizador('Pac_', 15);
+        pacientenNuevo = await trx
+          .insert(pacientes)
+          .values({
+            id: pacienteId,
+            nombre: normalizedData.nombre,
+            apellido: normalizedData.apellido,
+            email: normalizedData.email,
+            dni: normalizedData.dni,
+            fNacimiento: normalizedData.fNacimiento,
+
+            sexo: normalizedData.sexo,
+          })
+          .returning();
       }
 
+      console.log('insertando historiaClinica');
       await trx.insert(historiaClinica).values({
-        id: nanoid(12),
+        id: nanoIDNormalizador('Hist_', 15),
         pacienteId: pacienteId,
         userIdResponsable: data.userId,
         direccion: normalizedData.direccion || null,
@@ -94,6 +145,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         grupoSanguineo: normalizedData.grupoSanguineo || null,
       });
 
+      console.log('insertando pacienteProfesional');
       const isRelacionExistente = await trx
         .select()
         .from(pacienteProfesional)
@@ -105,9 +157,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         );
 
       if (isRelacionExistente[0]) {
-        throw new Error('El paciente ya está asociado a este usuario');
+        return createResponse(402, 'El paciente ya está asociado a este usuario');
       }
 
+      console.log('insertando pacienteProfesional');
       await trx.insert(pacienteProfesional).values({
         id: generateId(15),
         userId: data.userId,
@@ -115,21 +168,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         estado: 'activo',
       });
 
-      await logAuditEvent({
-        userId: user.id,
-        actionType: 'CREATE',
-        tableName: 'pacientes',
-        recordId: pacienteId,
-        newValue: normalizedData,
-        ipAddress: request.headers.get('x-forwarded-for') || undefined,
-        userAgent: request.headers.get('user-agent') || undefined,
-        description: `El usuario ${user.id} creó al paciente ${normalizedData.nombre} ${normalizedData.apellido}`,
-      });
-
-      return pacienteId;
+      return pacientenNuevo;
     });
 
-    return createResponse(200, 'Paciente creado y asociado con éxito', { id: result });
+    console.log('insertando pacienteProfesional', result, 'y creando log de auditoria');
+    await logAuditEvent({
+      userId: data.userId,
+      actionType: 'CREATE',
+      tableName: 'pacientes',
+      recordId: result.id,
+      newValue: normalizedData,
+      description: `El usuario ${data.userId} creó al paciente ${normalizedData.nombre} ${normalizedData.apellido}`,
+    });
+    return createResponse(200, 'Paciente creado y asociado con éxito', result);
   } catch (error: any) {
     return createResponse(500, error.message || 'Error interno del servidor');
   }

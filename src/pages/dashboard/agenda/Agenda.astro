@@ -6,15 +6,21 @@ import Section from '@/components/moleculas/Section';
 
 import AgendaLoader from '@/components/organismo/agenda/AgendaLoader.tsx';
 import Calendario from '@/components/organismo/agenda/Calendario.tsx';
+import { FormularioTurno } from '@/components/organismo/agenda/FormularioTurno.tsx';
 import HorariosDisponibles from '@/components/organismo/agenda/HorariosDisponibles.tsx';
 import TurnosDelDia from '@/components/organismo/agenda/TurnosDelDia.tsx';
-import { FormularioTurno } from '@/components/organismo/agenda/FormularioTurno.tsx';
+import { FormularioNuevoPaciente } from '@/components/organismo/pacientes/FormularioNuevoPaciente.tsx';
+
+const { user } = Astro.locals;
 ---
 
 <MainDashboard h1="Agenda de Turnos">
   <div slot="botonera">
     <Modal id="modalNuevoTurno" title="Nuevo Turno">
       <FormularioTurno client:load />
+    </Modal>
+    <Modal id="modalNuevoPaciente" title="Nuevo Paciente">
+      <FormularioNuevoPaciente client:load userId={user.id} />
     </Modal>
   </div>
   <div class="flex gap-4 w-full mb-8">

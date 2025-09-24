@@ -1,16 +1,25 @@
 import Button from '@/components/atomos/Button';
-import { datosNuevoTurno, resetNuevoTurno } from '@/context/agenda.store';
+import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
+import { datosNuevoTurno, resetNuevoTurno, setPaciente } from '@/context/agenda.store';
 import { useStore } from '@nanostores/react';
 import React, { useEffect, useState } from 'react';
+
+interface PacienteResult {
+  id: string;
+  nombre: string;
+  apellido: string;
+  dni: string;
+}
 
 export const FormularioTurno: React.FC = () => {
   const turnoDelStore = useStore(datosNuevoTurno);
   const [form, setForm] = useState(turnoDelStore);
+  const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
 
   // Sincronizar el estado interno del formulario con el store cuando este cambie
   useEffect(() => {
     setForm(turnoDelStore);
-  }, [turnoDelStore]);
+  }, [turnoDelStore, datosNuevoTurno]);
 
   // Efecto para limpiar el formulario cuando se desmonta
   useEffect(() => {
@@ -27,6 +36,22 @@ export const FormularioTurno: React.FC = () => {
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setForm(prevForm => ({ ...prevForm, [id]: parseInt(value, 10) || 0 }));
+  };
+
+  const handlePacienteSelect = (paciente: PacienteResult) => {
+    setForm(prevForm => ({
+      ...prevForm,
+      pacienteId: paciente.id,
+      pacienteNombre: `${paciente.nombre} ${paciente.apellido}`,
+    }));
+    setPaciente({ id: paciente.id, nombre: `${paciente.nombre} ${paciente.apellido}` }); // Actualizar store
+    setIsSearchingPaciente(false);
+  };
+
+  const handleClearPaciente = () => {
+    setForm(prevForm => ({ ...prevForm, pacienteId: undefined, pacienteNombre: '' }));
+    setPaciente({ id: '', nombre: '' }); // Limpiar store
+    setIsSearchingPaciente(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,6 +81,12 @@ export const FormularioTurno: React.FC = () => {
     resetNuevoTurno();
   };
 
+  const handleModalPaciente = () => {
+    const modal = document.getElementById('dialog-modal-modalNuevoPaciente') as HTMLDialogElement;
+    if (modal) {
+      modal.showModal();
+    }
+  };
   // Formatear la fecha y hora para el input datetime-local
   const formatDateTimeLocal = (date: Date | undefined, time: string | undefined) => {
     if (!date || !time) return '';
@@ -68,22 +99,35 @@ export const FormularioTurno: React.FC = () => {
     return localDate.toISOString().slice(0, 16);
   };
 
+  console.log('FormularioTurno', form);
   return (
     <form onSubmit={handleSubmit} className="p-4 space-y-4">
-      {/* --- Campo Paciente (simplificado, necesita un buscador) --- */}
+      {/* --- Campo Paciente --- */}
       <div>
-        <label htmlFor="pacienteId" className="block text-sm font-medium text-gray-700 mb-1">
-          Paciente
-        </label>
-        <input
-          type="text"
-          id="pacienteId"
-          value={form.pacienteNombre || ''}
-          onChange={handleInputChange}
-          placeholder="Buscar paciente..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          required
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
+        {form.pacienteId && form.pacienteNombre && !isSearchingPaciente ? (
+          <div className="flex items-center justify-between p-3 border border-gray-300 rounded-md shadow-sm bg-gray-50">
+            <p className="font-semibold text-gray-800">{form.pacienteNombre}</p>
+            <button
+              type="button"
+              onClick={handleClearPaciente}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Cambiar
+            </button>
+          </div>
+        ) : (
+          <BuscadorGlobal onSelectPaciente={handlePacienteSelect} hideActions={true} />
+        )}
+        {!form.pacienteId && !isSearchingPaciente && (
+          <button
+            type="button"
+            onClick={handleModalPaciente}
+            className="mt-2 w-full px-3 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-500 rounded-md transition-colors duration-200"
+          >
+            Crear Nuevo Paciente
+          </button>
+        )}
       </div>
 
       {/* --- Campo Fecha y Hora --- */}
