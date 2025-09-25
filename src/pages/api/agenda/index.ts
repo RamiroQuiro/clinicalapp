@@ -2,11 +2,9 @@ import db from '@/db';
 import { turnos } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
+import { and, gte, lte } from 'drizzle-orm';
 
 import { pacientes } from '@/db/schema';
-import { and, gte, lte } from 'drizzle-orm';
 
 // GET /api/agenda?fecha=YYYY-MM-DD
 export const GET: APIRoute = async ({ locals, request }) => {
