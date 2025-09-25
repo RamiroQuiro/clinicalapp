@@ -1,8 +1,13 @@
 import Button from '@/components/atomos/Button';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
 import { datosNuevoTurno, resetNuevoTurno, setPaciente } from '@/context/agenda.store';
+import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import React, { useEffect, useState } from 'react';
+
+const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
 
 interface PacienteResult {
   id: string;
@@ -15,13 +20,12 @@ export const FormularioTurno: React.FC = () => {
   const turnoDelStore = useStore(datosNuevoTurno);
   const [form, setForm] = useState(turnoDelStore);
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Sincronizar el estado interno del formulario con el store cuando este cambie
   useEffect(() => {
     setForm(turnoDelStore);
-  }, [turnoDelStore, datosNuevoTurno]);
+  }, [turnoDelStore]);
 
-  // Efecto para limpiar el formulario cuando se desmonta
   useEffect(() => {
     return () => {
       resetNuevoTurno();
@@ -44,33 +48,61 @@ export const FormularioTurno: React.FC = () => {
       pacienteId: paciente.id,
       pacienteNombre: `${paciente.nombre} ${paciente.apellido}`,
     }));
-    setPaciente({ id: paciente.id, nombre: `${paciente.nombre} ${paciente.apellido}` }); // Actualizar store
+    setPaciente({ id: paciente.id, nombre: `${paciente.nombre} ${paciente.apellido}` });
     setIsSearchingPaciente(false);
   };
 
   const handleClearPaciente = () => {
     setForm(prevForm => ({ ...prevForm, pacienteId: undefined, pacienteNombre: '' }));
-    setPaciente({ id: '', nombre: '' }); // Limpiar store
+    setPaciente({ id: '', nombre: '' });
     setIsSearchingPaciente(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.pacienteId || !form.fechaTurno || !form.duracion) {
-      alert('Por favor, complete los campos obligatorios.');
+      showToast('Por favor, complete los campos obligatorios.', { background: 'bg-red-600' });
       return;
     }
-    // Aquí iría la lógica para guardar en la DB
-    console.log('Guardando turno:', form);
-    // Puedes llamar a una API aquí, por ejemplo:
-    // fetch('/api/turnos', { method: 'POST', body: JSON.stringify(form) });
 
-    // Después de guardar, puedes cerrar el modal y resetear el store
-    const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
-    if (modal) {
-      modal.close();
+    setLoading(true);
+    try {
+      const fechaTurnoUtc = toZonedTime(
+        `${format(new Date(form.fechaTurno!), 'yyyy-MM-dd')}T${form.horaTurno}`,
+        APP_TIME_ZONE
+      );
+
+      const payload = {
+        ...form,
+        fechaTurno: fechaTurnoUtc.toISOString(),
+      };
+
+      const response = await fetch('/api/agenda/turnos/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al crear el turno');
+      }
+
+      showToast('Turno creado con éxito', { background: 'bg-green-600' });
+
+      const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
+      if (modal) {
+        modal.close();
+      }
+      resetNuevoTurno();
+    } catch (error: any) {
+      showToast(`Error: ${error.message}`, { background: 'bg-red-600' });
+      console.error('Error al crear el turno:', error);
+    } finally {
+      setLoading(false);
     }
-    resetNuevoTurno();
   };
 
   const handleCancel = () => {
@@ -87,22 +119,15 @@ export const FormularioTurno: React.FC = () => {
       modal.showModal();
     }
   };
-  // Formatear la fecha y hora para el input datetime-local
+
   const formatDateTimeLocal = (date: Date | undefined, time: string | undefined) => {
     if (!date || !time) return '';
-    const [hours, minutes] = time.split(':');
-    const newDate = new Date(date);
-    newDate.setHours(parseInt(hours), parseInt(minutes));
-    // Truco para ajustar a la zona horaria local para el input
-    const timezoneOffset = newDate.getTimezoneOffset() * 60000;
-    const localDate = new Date(newDate.getTime() - timezoneOffset);
-    return localDate.toISOString().slice(0, 16);
+    const dateString = format(new Date(date), 'yyyy-MM-dd');
+    return `${dateString}T${time}`;
   };
 
-  console.log('FormularioTurno', form);
   return (
     <form onSubmit={handleSubmit} className="p-4 space-y-4">
-      {/* --- Campo Paciente --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
         {form.pacienteId && form.pacienteNombre && !isSearchingPaciente ? (
@@ -130,7 +155,6 @@ export const FormularioTurno: React.FC = () => {
         )}
       </div>
 
-      {/* --- Campo Fecha y Hora --- */}
       <div>
         <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
           Fecha y Hora del Turno
@@ -140,11 +164,10 @@ export const FormularioTurno: React.FC = () => {
           id="fechaTurno"
           value={formatDateTimeLocal(form.fechaTurno, form.horaTurno)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
-          readOnly // El usuario no debería cambiar esto directamente
+          readOnly
         />
       </div>
 
-      {/* --- Campo Duración --- */}
       <div>
         <label htmlFor="duracion" className="block text-sm font-medium text-gray-700 mb-1">
           Duración (minutos)
@@ -159,7 +182,6 @@ export const FormularioTurno: React.FC = () => {
         />
       </div>
 
-      {/* --- Otros campos --- */}
       <div>
         <label htmlFor="motivoConsulta" className="block text-sm font-medium text-gray-700 mb-1">
           Motivo de Consulta
@@ -173,7 +195,6 @@ export const FormularioTurno: React.FC = () => {
         />
       </div>
 
-      {/* --- Botones de Acción --- */}
       <div className="flex justify-end space-x-3 pt-4">
         <Button type="button" variant="secondary" onClick={handleCancel}>
           Cancelar

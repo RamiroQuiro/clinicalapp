@@ -1,34 +1,23 @@
+import { agendaDelDia, fechaSeleccionada, setFechaYHora } from '@/context/agenda.store';
+import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { useStore } from '@nanostores/react';
-import {
-  agendaDelDia,
-  fechaSeleccionada,
-  setFechaYHora,
-} from '@/context/agenda.store';
 import { useMemo } from 'react';
-
-// Función para formatear la hora desde un string ISO (ej: '14:30')
-const formatHora = (isoString: string) => {
-  const fecha = new Date(isoString);
-  return fecha.toLocaleTimeString(navigator.language, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-};
 
 export default function HorariosDisponibles() {
   const agenda = useStore(agendaDelDia);
   const dia = useStore(fechaSeleccionada);
+  console.log('agenda del dia', agenda);
 
   const horariosDisponibles = useMemo(() => {
     return agenda.filter(slot => slot.disponible);
   }, [agenda]);
 
+  console.log('horarios disponibles', horariosDisponibles);
   const handleAgendarClick = (hora: string) => {
     if (!dia) return;
 
-    // 1. Actualizamos el store con la fecha y la hora seleccionadas
-    const horaFormateada = formatHora(hora);
+    // 1. Actualizamos el store con la fecha y la hora seleccionadas (ya en formato correcto)
+    const horaFormateada = formatUtcToAppTime(hora, 'HH:mm');
     setFechaYHora(dia, horaFormateada);
 
     // 2. Abrimos el modal usando el ID correcto que genera Modal.astro
@@ -51,7 +40,7 @@ export default function HorariosDisponibles() {
               onClick={() => handleAgendarClick(slot.hora)}
               className="w-full px-3 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-md transition-colors duration-200"
             >
-              {formatHora(slot.hora)}
+              {formatUtcToAppTime(slot.hora, 'HH:mm')}
             </button>
           </li>
         ))}

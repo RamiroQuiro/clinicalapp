@@ -6,7 +6,11 @@ import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 import { pacientes } from '@/db/schema';
+import { addMinutes } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { and, gte, lte } from 'drizzle-orm';
+
+const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
 
 // GET /api/agenda?fecha=YYYY-MM-DD
 export const GET: APIRoute = async ({ locals, request }) => {
@@ -26,14 +30,14 @@ export const GET: APIRoute = async ({ locals, request }) => {
   // 3. Definir la jornada laboral y la duración de los slots
   const JORNADA_LABORAL = [
     { inicio: 8, fin: 12 }, // Turno mañana (8:00 a 11:59)
-    { inicio: 15, fin: 18 }, // Turno tarde (15:00 a 17:59)
+    { inicio: 18, fin: 22 }, // Turno tarde (18:00 a 21:59)
   ];
   const DURACION_SLOT_MINUTOS = 30;
 
   try {
-    // 4. Obtener los turnos existentes para el día seleccionado
-    const inicioDelDia = new Date(`${fechaQuery}T00:00:00.000Z`);
-    const finDelDia = new Date(`${fechaQuery}T23:59:59.999Z`);
+    // 4. Obtener los turnos existentes para el día seleccionado (en UTC)
+    const inicioDelDia = toZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
+    const finDelDia = toZonedTime(`${fechaQuery}T23:59:59`, APP_TIME_ZONE);
 
     const turnosDelDia = await db
       .select({
@@ -42,6 +46,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         duracion: turnos.duracion,
         pacienteNombre: pacientes.nombre,
         pacienteApellido: pacientes.apellido,
+        horaTurno: turnos.fechaTurno,
       })
       .from(turnos)
       .leftJoin(pacientes, eq(turnos.pacienteId, pacientes.id))
@@ -53,15 +58,21 @@ export const GET: APIRoute = async ({ locals, request }) => {
         )
       );
 
-    // 5. Generar todos los slots posibles para la jornada laboral
+    // 5. Generar todos los slots posibles para la jornada laboral (en UTC)
     const slotsDelDia = [];
     JORNADA_LABORAL.forEach(rango => {
-      const fecha = new Date(`${fechaQuery}T00:00:00.000Z`);
-      fecha.setUTCHours(rango.inicio, 0, 0, 0);
+      let currentSlotUtc = toZonedTime(
+        `${fechaQuery}T${String(rango.inicio).padStart(2, '0')}:00:00`,
+        APP_TIME_ZONE
+      );
+      const endSlotUtc = toZonedTime(
+        `${fechaQuery}T${String(rango.fin).padStart(2, '0')}:00:00`,
+        APP_TIME_ZONE
+      );
 
-      while (fecha.getUTCHours() < rango.fin) {
-        slotsDelDia.push(new Date(fecha));
-        fecha.setUTCMinutes(fecha.getUTCMinutes() + DURACION_SLOT_MINUTOS);
+      while (currentSlotUtc < endSlotUtc) {
+        slotsDelDia.push(new Date(currentSlotUtc));
+        currentSlotUtc = addMinutes(currentSlotUtc, DURACION_SLOT_MINUTOS);
       }
     });
 
