@@ -1,50 +1,82 @@
 import { agendaDelDia, fechaSeleccionada, setFechaYHora } from '@/context/agenda.store';
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { useStore } from '@nanostores/react';
+import { Calendar, Clock, Moon, Sun } from 'lucide-react';
 import { useMemo } from 'react';
+import BotonHora from './BotonHora';
 
 export default function HorariosDisponibles() {
   const agenda = useStore(agendaDelDia);
   const dia = useStore(fechaSeleccionada);
-  console.log('agenda del dia', agenda);
 
-  const horariosDisponibles = useMemo(() => {
-    return agenda.filter(slot => slot.disponible);
-  }, [agenda]);
+  const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
 
-  console.log('horarios disponibles', horariosDisponibles);
+  const horariosAgrupados = useMemo(
+    () => ({
+      mañana: horariosDisponibles.filter(
+        slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) < 12
+      ),
+      tarde: horariosDisponibles.filter(
+        slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) >= 12
+      ),
+    }),
+    [horariosDisponibles]
+  );
+
   const handleAgendarClick = (hora: string) => {
     if (!dia) return;
-
-    // 1. Actualizamos el store con la fecha y la hora seleccionadas (ya en formato correcto)
-    const horaFormateada = formatUtcToAppTime(hora, 'HH:mm');
-    setFechaYHora(dia, horaFormateada);
-
-    // 2. Abrimos el modal usando el ID correcto que genera Modal.astro
-    const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
-    if (modal) {
-      modal.showModal();
-    }
+    setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm'));
+    document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
   };
 
+  if (agenda.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500 text-sm">Selecciona una fecha</p>
+      </div>
+    );
+  }
+
   if (horariosDisponibles.length === 0) {
-    return <p className="text-center text-sm text-gray-400">No hay horarios disponibles.</p>;
+    return (
+      <div className="text-center py-6">
+        <Clock className="w-10 h-10 text-orange-300 mx-auto mb-2" />
+        <p className="text-gray-600 font-medium mb-1">No hay horarios</p>
+        <p className="text-gray-400 text-sm">Prueba con otra fecha</p>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full">
-      <ul className="grid grid-cols-3 gap-2">
-        {horariosDisponibles.map(slot => (
-          <li key={slot.hora}>
-            <button
-              onClick={() => handleAgendarClick(slot.hora)}
-              className="w-full px-3 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-md transition-colors duration-200"
-            >
-              {formatUtcToAppTime(slot.hora, 'HH:mm')}
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className="w-full space-y-6">
+      {horariosAgrupados.mañana.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <Sun className="w-4 h-4 mr-2 text-yellow-500" />
+            Turno Mañana
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {horariosAgrupados.mañana.map(slot => (
+              <BotonHora key={slot.hora} slot={slot} onClick={handleAgendarClick} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {horariosAgrupados.tarde.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <Moon className="w-4 h-4 mr-2 text-blue-500" />
+            Turno Tarde
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {horariosAgrupados.tarde.map(slot => (
+              <BotonHora key={slot.hora} slot={slot} onClick={handleAgendarClick} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
