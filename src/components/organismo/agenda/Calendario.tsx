@@ -48,18 +48,7 @@ export default function Calendario() {
           day: {
             borderRadius: '5px',
             margin: '2px',
-
             border: '1px solid #cccccc50',
-          },
-
-          day_selected: {
-            backgroundColor: '#3B82F6',
-            color: 'white',
-            borderRadius: '10px',
-          },
-          day_today: {
-            fontWeight: 'bold',
-            color: '#3B82F6',
           },
         }}
       />
