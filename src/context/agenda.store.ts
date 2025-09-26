@@ -6,8 +6,16 @@ export interface AgendaSlot {
   disponible: boolean;
   turnoInfo: {
     id: string;
-    paciente: string;
+    pacienteId: string;
+    pacienteCelular: string;
+    pacienteNombre: string;
+    pacienteApellido: string;
+    profesionalNombre: string;
+    profesionalApellido: string;
+    motivoConsulta: string;
+    horaTurno: string;
     duracion: number;
+    estado: 'confirmado' | 'pendiente' | 'cancelado';
   } | null;
 }
 

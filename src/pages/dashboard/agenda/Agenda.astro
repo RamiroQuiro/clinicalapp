@@ -1,11 +1,11 @@
 ---
-import DivBox1 from '@/components/atomos/DivBox1.astro';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import Modal from '@/components/moleculas/Modal.astro';
 import Section from '@/components/moleculas/Section';
 
 import AgendaLoader from '@/components/organismo/agenda/AgendaLoader.tsx';
 import Calendario from '@/components/organismo/agenda/Calendario.tsx';
+import ConstendorStats from '@/components/organismo/agenda/ConstendorStats';
 import { FormularioTurno } from '@/components/organismo/agenda/FormularioTurno.tsx';
 import HorariosDisponibles from '@/components/organismo/agenda/HorariosDisponibles.tsx';
 import TurnosDelDia from '@/components/organismo/agenda/TurnosDelDia.tsx';
@@ -23,20 +23,7 @@ const { user } = Astro.locals;
       <FormularioNuevoPaciente client:load userId={user.id} />
     </Modal>
   </div>
-  <div class="flex gap-4 w-full mb-8">
-    <DivBox1>
-      <p>Turnos Hoy</p>
-    </DivBox1>
-    <DivBox1>
-      <p>Confimados</p>
-    </DivBox1>
-    <DivBox1>
-      <p>Turnos Pendientes</p>
-    </DivBox1>
-    <DivBox1>
-      <p>Turnos Cancelados</p>
-    </DivBox1>
-  </div>
+  <ConstendorStats client:load />
 
   <div class="w-full flex gap-2 items-start justify-between h-full">
     <!-- Columna 1: Calendario -->

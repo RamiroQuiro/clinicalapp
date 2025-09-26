@@ -1,6 +1,6 @@
 import { Activity, Clock, Users, Workflow } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import StatsCard from './StatsCard';
+import { StatsCardV2 } from './StatsCard';
 
 type Props = {
   data: dataDash | null; // Now receives data as a prop
@@ -21,6 +21,7 @@ export default function ContentedorStatsDash({ data }: Props) {
       value: 0,
       icon: Workflow,
       subtitle: 'consultas',
+      color: 'blue',
     },
     {
       id: 'totalPacientes',
@@ -28,6 +29,7 @@ export default function ContentedorStatsDash({ data }: Props) {
       value: 0,
       icon: Users,
       subtitle: 'pacientes',
+      color: 'green',
     },
     {
       id: 'atencionesMes',
@@ -35,6 +37,7 @@ export default function ContentedorStatsDash({ data }: Props) {
       value: 0,
       icon: Activity,
       subtitle: 'este mes',
+      color: 'orange',
     },
 
     {
@@ -43,6 +46,7 @@ export default function ContentedorStatsDash({ data }: Props) {
       value: 0,
       icon: Clock,
       subtitle: 'minutos por consulta',
+      color: 'purple',
     },
   ]);
 
@@ -104,6 +108,7 @@ export default function ContentedorStatsDash({ data }: Props) {
           title: 'Consultas Hoy',
           value: totalHoy,
           icon: Users,
+          color: 'blue',
           subtitle: '',
         },
         {
@@ -111,6 +116,7 @@ export default function ContentedorStatsDash({ data }: Props) {
           title: 'Pacientes',
           value: pacientesMesActual,
           icon: Users,
+          color: 'green',
           subtitle: tendenciaPacientes,
         },
         {
@@ -118,6 +124,7 @@ export default function ContentedorStatsDash({ data }: Props) {
           title: 'Atenciones del Mes',
           value: atencionesMesActual,
           icon: Activity,
+          color: 'orange',
           subtitle: tendenciaAtenciones,
         },
 
@@ -126,6 +133,7 @@ export default function ContentedorStatsDash({ data }: Props) {
           title: 'Tiempo Promedio',
           value: promedioMesActual,
           icon: Clock,
+          color: 'purple',
           subtitle: tendenciaPromedio,
         },
       ]);
@@ -141,7 +149,8 @@ export default function ContentedorStatsDash({ data }: Props) {
       {/* Pacientes Totales - Large */}
       {statsDash?.map((stat, index) => (
         <div key={stat.id}>
-          <StatsCard
+          <StatsCardV2
+            color={stat.color}
             title={stat.title}
             value={stat.value}
             icon={stat.icon}
