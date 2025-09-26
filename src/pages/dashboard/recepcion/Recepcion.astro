@@ -1,0 +1,20 @@
+---
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import Section from '@/components/moleculas/Section';
+import ConstendorStatsRec from '@/components/organismo/recepcion/ContenedorStatsRec';
+import MenuPestaña from '@/components/organismo/recepcion/MenuPestaña';
+import RecepcionPacientes from '@/components/organismo/recepcion/RecepcionPacientes';
+const { user } = Astro.locals;
+---
+
+<MainDashboard h1="Recepción">
+  <ConstendorStatsRec userId={user.id} />
+  <div class="mt-4 w-full flex">
+    <MenuPestaña client:load />
+  </div>
+  <div class="w-full flex gap-2 items-start justify-between pt-4 h-full">
+    <RecepcionPacientes client:load userId={user.id} />
+
+    <Section title="Sala de Espera" classContent="w-2/3" />
+  </div>
+</MainDashboard>

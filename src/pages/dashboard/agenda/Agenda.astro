@@ -23,7 +23,7 @@ const { user } = Astro.locals;
       <FormularioNuevoPaciente client:load userId={user.id} />
     </Modal>
   </div>
-  <ConstendorStats client:load />
+  <ConstendorStats client:load userId={user.id} />
 
   <div class="w-full flex gap-2 items-start justify-between h-full">
     <!-- Columna 1: Calendario -->

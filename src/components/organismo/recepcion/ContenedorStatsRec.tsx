@@ -1,7 +1,6 @@
-import { resetNuevoTurno } from '@/context/agenda.store';
 import { StatsCardV2 } from '@/pages/dashboard/dashboard/componente/StatsCard';
 import { Check, Clock, Users, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type Props = {
   userId: string;
@@ -18,33 +17,13 @@ export default function ConstendorStats({ userId }: Props) {
     return `${year}-${month}-${day}`;
   };
 
-  useEffect(() => {
-    const fechaFormateada = toYYYYMMDD(diaSeleccionado);
-    const fetchAgenda = async () => {
-      try {
-        const response = await fetch(
-          `/api/agenda?fecha=${fechaFormateada}&profesionalId=${userId}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setAgenda(data.data);
-      } catch (error) {
-        console.error('Error al obtener la agenda:', error);
-      }
-    };
-
-    fetchAgenda();
-  }, [resetNuevoTurno]);
-
   const turnoDisponibles = agenda.filter(slot => slot.disponible).length;
   const turnosConfirmados = agenda.filter(slot => slot.turnoInfo?.estado == 'confirmado').length;
   const turnosPendientes = agenda.filter(slot => slot.turnoInfo?.estado == 'pendiente').length;
   const turnosCancelados = agenda.filter(slot => slot.turnoInfo?.estado == 'cancelado').length;
   console.log('agenda ->', agenda);
   return (
-    <div className="flex gap-2 w-full items-center justify-between mb-4">
+    <div className="flex gap-2 w-full items-center justify-between mb">
       <StatsCardV2
         title="Turnos Disponibles"
         value={turnoDisponibles}

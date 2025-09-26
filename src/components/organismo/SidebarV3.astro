@@ -11,6 +11,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  ClipboardCheck,
 } from 'lucide-react';
 // 2. Obtenemos los datos del usuario y la ruta actual
 const { session, user } = Astro.locals;
@@ -27,6 +28,11 @@ const sections = [
     name: 'Agenda',
     href: '/dashboard/agenda',
     icon: CalendarDays,
+  },
+  {
+    name: 'Recepción',
+    href: '/dashboard/recepcion',
+    icon: ClipboardCheck,
   },
   {
     name: 'Pacientes',
@@ -63,6 +69,7 @@ const sections = [
       className="cursor-pointer stroke-white hover:bg-primary-200 p-1 rounded-full duration-300"
     />
     <PanelLeftClose
+    
       id="closeMenu"
       size={35}
       className="cursor-pointer hidden stroke-white hover:bg-primary-200 p-1 rounded-full duration-300"

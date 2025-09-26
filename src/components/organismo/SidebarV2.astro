@@ -1,6 +1,15 @@
 ---
 // 1. Importamos los iconos de lucide-react como si fueran componentes
-import { Home, CalendarDays, Users, CreditCard, BarChart3, Settings, LogOut } from 'lucide-react';
+import {
+  Home,
+  CalendarDays,
+  Users,
+  CreditCard,
+  BarChart3,
+  Settings,
+  LogOut,
+  ClipboardCheck,
+} from 'lucide-react';
 
 // 2. Definimos las secciones y asignamos el componente del icono directamente
 const sections = [
@@ -13,6 +22,11 @@ const sections = [
     name: 'Agenda',
     href: '/dashboard/agenda',
     icon: CalendarDays,
+  },
+  {
+    name: 'Recepción',
+    href: '/dashboard/recepcion',
+    icon: ClipboardCheck,
   },
   {
     name: 'Pacientes',
