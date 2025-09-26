@@ -1,11 +1,20 @@
 import Button from '@/components/atomos/Button';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
-import { datosNuevoTurno, resetNuevoTurno, setPaciente } from '@/context/agenda.store';
+import {
+  agendaDelDia,
+  datosNuevoTurno,
+  fechaSeleccionada,
+  resetNuevoTurno,
+  setPaciente,
+} from '@/context/agenda.store';
+import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import React, { useEffect, useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import BotonHora from './BotonHora';
 
 const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
 
@@ -21,6 +30,23 @@ export const FormularioTurno: React.FC = () => {
   const [form, setForm] = useState(turnoDelStore);
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
+  const agenda = useStore(agendaDelDia);
+
+  const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
+
+  const horariosAgrupados = useMemo(
+    () => ({
+      mañana: horariosDisponibles.filter(
+        slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) < 12
+      ),
+      tarde: horariosDisponibles.filter(
+        slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) >= 12
+      ),
+    }),
+    [horariosDisponibles]
+  );
+
+  console.log('horariosAgrupados ->', horariosAgrupados);
 
   useEffect(() => {
     setForm(turnoDelStore);
@@ -126,6 +152,9 @@ export const FormularioTurno: React.FC = () => {
     return `${dateString}T${time}`;
   };
 
+  const handleSelect = (date: Date | undefined) => {
+    fechaSeleccionada.set(date);
+  };
   return (
     <form onSubmit={handleSubmit} className="p-4 space-y-4">
       <div>
@@ -154,20 +183,66 @@ export const FormularioTurno: React.FC = () => {
           </button>
         )}
       </div>
+      {/* para reagendar */}
+      {!datosNuevoTurno.get().fechaTurno && !datosNuevoTurno.get().horaTurno ? (
+        <div>
+          <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
+            Fecha y Hora del Turno
+          </label>
+          <input
+            type="date"
+            id="fechaTurno"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
+            onChange={e => handleSelect(new Date(e.target.value))}
+          />
+        </div>
+      ) : (
+        <div>
+          <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
+            Fecha y Hora del Turno
+          </label>
+          <input
+            type="datetime-local"
+            id="fechaTurno"
+            value={formatDateTimeLocal(form.fechaTurno, form.horaTurno)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
+            readOnly
+          />
+        </div>
+      )}
+      {horariosAgrupados.mañana.length > 0 &&
+      !datosNuevoTurno.get().fechaTurno &&
+      !datosNuevoTurno.get().horaTurno ? (
+        <div className="w-full space-y-6">
+          {horariosAgrupados.mañana.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                <Sun className="w-4 h-4 mr-2 text-yellow-500" />
+                Turno Mañana
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                {horariosAgrupados.mañana.map(slot => (
+                  <BotonHora key={slot.hora} slot={slot} />
+                ))}
+              </div>
+            </div>
+          )}
 
-      <div>
-        <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
-          Fecha y Hora del Turno
-        </label>
-        <input
-          type="datetime-local"
-          id="fechaTurno"
-          value={formatDateTimeLocal(form.fechaTurno, form.horaTurno)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
-          readOnly
-        />
-      </div>
-
+          {horariosAgrupados.tarde.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                <Moon className="w-4 h-4 mr-2 text-blue-500" />
+                Turno Tarde
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                {horariosAgrupados.tarde.map(slot => (
+                  <BotonHora key={slot.hora} slot={slot} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
       <div>
         <label htmlFor="duracion" className="block text-sm font-medium text-gray-700 mb-1">
           Duración (minutos)

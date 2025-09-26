@@ -1,8 +1,8 @@
 import db from '@/db';
-import { turnos } from '@/db/schema';
+import { turnos, users } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, gte, lte } from 'drizzle-orm';
+import { and, eq, gte, lte } from 'drizzle-orm';
 
 import { pacientes } from '@/db/schema';
 import { addMinutes } from 'date-fns';
@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
   // 2. Obtener y validar la fecha de la consulta
   const url = new URL(request.url);
   const fechaQuery = url.searchParams.get('fecha'); // ej: '2025-09-22'
-
+  const profesionalId = url.searchParams.get('profesionalId');
   if (!fechaQuery || !/^\d{4}-\d{2}-\d{2}$/.test(fechaQuery)) {
     return createResponse(400, 'Fecha no proporcionada o en formato incorrecto. Use YYYY-MM-DD.');
   }
@@ -44,15 +44,21 @@ export const GET: APIRoute = async ({ locals, request }) => {
         duracion: turnos.duracion,
         pacienteNombre: pacientes.nombre,
         pacienteApellido: pacientes.apellido,
+        pacienteCelular: pacientes.celular,
+        profesionalNombre: users.nombre,
+        profesionalApellido: users.apellido,
+        estado: turnos.estado,
         horaTurno: turnos.fechaTurno,
+        motivoConsulta: turnos.motivoConsulta,
       })
       .from(turnos)
       .leftJoin(pacientes, eq(turnos.pacienteId, pacientes.id))
+      .leftJoin(users, eq(turnos.userMedicoId, users.id))
       .where(
         and(
           gte(turnos.fechaTurno, inicioDelDia),
-          lte(turnos.fechaTurno, finDelDia)
-          // Opcional: and(eq(turnos.userMedicoId, locals.user.id))
+          lte(turnos.fechaTurno, finDelDia),
+          eq(turnos.userMedicoId, profesionalId)
         )
       );
 
@@ -85,7 +91,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
           turnoInicio.getTime() + (turno.duracion || DURACION_SLOT_MINUTOS) * 60000
         );
         // Lógica de superposición de intervalos: (InicioA < FinB) y (FinA > InicioB)
-        return slotInicio < turnoFin && slotFin > turnoInicio;
+        return slotInicio < turnoFin && slotFin > turnoInicio && turno.estado !== 'cancelado';
       });
 
       if (turnoOcupante) {
@@ -94,8 +100,15 @@ export const GET: APIRoute = async ({ locals, request }) => {
           disponible: false,
           turnoInfo: {
             id: turnoOcupante.id,
-            paciente: `${turnoOcupante.pacienteNombre} ${turnoOcupante.pacienteApellido}`,
+            pacienteCelular: turnoOcupante.pacienteCelular,
+            pacienteNombre: turnoOcupante.pacienteNombre,
+            pacienteApellido: turnoOcupante.pacienteApellido,
+            profesionalNombre: turnoOcupante.profesionalNombre,
+            profesionalApellido: turnoOcupante.profesionalApellido,
+            motivoConsulta: turnoOcupante.motivoConsulta,
+            horaTurno: turnoOcupante.horaTurno,
             duracion: turnoOcupante.duracion,
+            estado: turnoOcupante.estado,
           },
         };
       } else {

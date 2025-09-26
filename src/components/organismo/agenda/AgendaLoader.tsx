@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { agendaDelDia, fechaSeleccionada } from '@/context/agenda.store';
 import { useStore } from '@nanostores/react';
-import { fechaSeleccionada, agendaDelDia } from '@/context/agenda.store';
+import { useEffect } from 'react';
 
 // Función para formatear la fecha a YYYY-MM-DD
 const toYYYYMMDD = (date: Date) => {
@@ -15,7 +15,7 @@ const toYYYYMMDD = (date: Date) => {
  * Escucha los cambios en la fecha seleccionada, llama a la API
  * y actualiza el store global de la agenda del día.
  */
-export default function AgendaLoader() {
+export default function AgendaLoader({ userId }: { userId: string }) {
   const diaSeleccionado = useStore(fechaSeleccionada);
 
   useEffect(() => {
@@ -27,7 +27,9 @@ export default function AgendaLoader() {
 
       const fetchAgenda = async () => {
         try {
-          const response = await fetch(`/api/agenda?fecha=${fechaFormateada}`);
+          const response = await fetch(
+            `/api/agenda?fecha=${fechaFormateada}&profesionalId=${userId}`
+          );
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }

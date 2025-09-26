@@ -56,5 +56,5 @@ const { user } = Astro.locals;
   </div>
 
   <!-- Este componente es invisible. Se encarga de cargar los datos en el store -->
-  <AgendaLoader client:load />
+  <AgendaLoader client:load userId={user.id} />
 </MainDashboard>
