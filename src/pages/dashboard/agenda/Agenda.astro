@@ -40,17 +40,17 @@ const { user } = Astro.locals;
 
   <div class="w-full flex gap-2 items-start justify-between h-full">
     <!-- Columna 1: Calendario -->
-    <Section title="Seleccionar Fecha" classContent="px-8 py-4 w-fit">
+    <Section title="Seleccionar Fecha" classContent="px- py-4 w-fit">
       <Calendario client:load />
     </Section>
 
     <!-- Columna 2: Turnos Agendados -->
-    <Section title="Turnos del Día" classContent="px-8 py-4 md:w-[35vw]">
+    <Section title="Turnos del Día" classContent="px- py-4 md:w-[40vw]">
       <TurnosDelDia client:load />
     </Section>
 
     <!-- Columna 3: Horarios Disponibles -->
-    <Section title="Horarios Disponibles" classContent="px-8 py-4 md:w-[30vw]">
+    <Section title="Horarios Disponibles" classContent="px- py-4 md:w-[30vw]">
       <HorariosDisponibles client:load />
     </Section>
   </div>

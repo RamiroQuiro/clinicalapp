@@ -46,9 +46,8 @@ export const FormularioTurno: React.FC = () => {
     [horariosDisponibles]
   );
 
-  console.log('horariosAgrupados ->', horariosAgrupados);
-
   useEffect(() => {
+    console.log('turnoDelStore', turnoDelStore);
     setForm(turnoDelStore);
   }, [turnoDelStore]);
 
@@ -110,12 +109,16 @@ export const FormularioTurno: React.FC = () => {
         },
         body: JSON.stringify(payload),
       });
+      const data = await response.json();
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al crear el turno');
+        throw new Error(data.msg || 'Error al crear el turno');
       }
-
+      console.log('respuest turno nuevo->', data.data);
+      agendaDelDia.set([
+        ...agendaDelDia.get(),
+        { disponible: false, hora: fechaTurnoUtc.toISOString(), turnoInfo: data.data.turnoInfo },
+      ]);
       showToast('Turno creado con éxito', { background: 'bg-green-600' });
 
       const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
@@ -213,14 +216,14 @@ export const FormularioTurno: React.FC = () => {
       {horariosAgrupados.mañana.length > 0 &&
       !datosNuevoTurno.get().fechaTurno &&
       !datosNuevoTurno.get().horaTurno ? (
-        <div className="w-full space-y-6">
+        <div className="w-full space-y-2">
           {horariosAgrupados.mañana.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                 <Sun className="w-4 h-4 mr-2 text-yellow-500" />
                 Turno Mañana
               </h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {horariosAgrupados.mañana.map(slot => (
                   <BotonHora key={slot.hora} slot={slot} />
                 ))}
@@ -234,7 +237,7 @@ export const FormularioTurno: React.FC = () => {
                 <Moon className="w-4 h-4 mr-2 text-blue-500" />
                 Turno Tarde
               </h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {horariosAgrupados.tarde.map(slot => (
                   <BotonHora key={slot.hora} slot={slot} />
                 ))}

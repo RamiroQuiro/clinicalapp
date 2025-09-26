@@ -1,4 +1,9 @@
-import { agendaDelDia, fechaSeleccionada, setFechaYHora } from '@/context/agenda.store';
+import {
+  agendaDelDia,
+  fechaSeleccionada,
+  setFechaYHora,
+  setPaciente,
+} from '@/context/agenda.store';
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { useStore } from '@nanostores/react';
 import { Calendar, Clock, Moon, Sun } from 'lucide-react';
@@ -25,6 +30,7 @@ export default function HorariosDisponibles() {
 
   const handleAgendarClick = (hora: string) => {
     if (!dia) return;
+    setPaciente({ id: '', nombre: '' });
     setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm'));
     document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
   };
@@ -56,7 +62,7 @@ export default function HorariosDisponibles() {
             <Sun className="w-4 h-4 mr-2 text-yellow-500" />
             Turno Mañana
           </h3>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-wrap gap-2">
             {horariosAgrupados.mañana.map(slot => (
               <BotonHora key={slot.hora} slot={slot} onClick={handleAgendarClick} />
             ))}
@@ -70,7 +76,7 @@ export default function HorariosDisponibles() {
             <Moon className="w-4 h-4 mr-2 text-blue-500" />
             Turno Tarde
           </h3>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-wrap gap-2">
             {horariosAgrupados.tarde.map(slot => (
               <BotonHora key={slot.hora} slot={slot} onClick={handleAgendarClick} />
             ))}

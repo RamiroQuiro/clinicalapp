@@ -1,9 +1,10 @@
 import db from '@/db';
-import { turnos } from '@/db/schema';
+import { pacientes, turnos } from '@/db/schema';
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const data = await request.json();
@@ -20,6 +21,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const { session, user } = await lucia.validateSession(sessionId);
   if (!session) {
     return createResponse(401, 'No autorizado');
+  }
+
+  const isPaciente = await db.select().from(pacientes).where(eq(pacientes.id, data.pacienteId));
+  if (!isPaciente.length) {
+    return createResponse(404, 'Paciente no encontrado');
   }
 
   try {
@@ -49,7 +55,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       description: `Se creó un nuevo turno para el paciente ${data.pacienteNombre}`,
     });
 
-    return createResponse(200, 'Turno creado con éxito', newTurno);
+    const creandoResponse = {
+      hora: newTurno.horaAtencion,
+      disponible: false,
+      turnoInfo: {
+        id: newTurno.id,
+        pacienteId: newTurno.pacienteId,
+        pacienteCelular: isPaciente[0].celular,
+        pacienteNombre: isPaciente[0].nombre,
+        pacienteApellido: isPaciente[0].apellido,
+        profesionalNombre: user.nombre,
+        profesionalApellido: user.apellido,
+        motivoConsulta: data.motivoConsulta,
+        horaTurno: newTurno.horaAtencion,
+        duracion: newTurno.duracion,
+        estado: newTurno.estado,
+      },
+    };
+
+    return createResponse(200, 'Turno creado con éxito', creandoResponse);
   } catch (error: any) {
     console.error('Error al crear el turno:', error);
     return createResponse(500, 'Error interno del servidor al crear el turno.');

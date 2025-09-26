@@ -42,12 +42,14 @@ export const GET: APIRoute = async ({ locals, request }) => {
         id: turnos.id,
         fechaTurno: turnos.fechaTurno,
         duracion: turnos.duracion,
+        pacienteId: pacientes.id,
         pacienteNombre: pacientes.nombre,
         pacienteApellido: pacientes.apellido,
         pacienteCelular: pacientes.celular,
         profesionalNombre: users.nombre,
         profesionalApellido: users.apellido,
         estado: turnos.estado,
+
         horaTurno: turnos.fechaTurno,
         motivoConsulta: turnos.motivoConsulta,
       })
@@ -100,6 +102,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
           disponible: false,
           turnoInfo: {
             id: turnoOcupante.id,
+            pacienteId: turnoOcupante.pacienteId,
             pacienteCelular: turnoOcupante.pacienteCelular,
             pacienteNombre: turnoOcupante.pacienteNombre,
             pacienteApellido: turnoOcupante.pacienteApellido,

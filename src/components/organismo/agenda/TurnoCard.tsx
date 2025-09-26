@@ -11,6 +11,18 @@ interface TurnoCardProps {
   onLlamar: (slot: any) => void;
   onWhatsApp: (slot: any) => void;
 }
+const getStatusInfo = (estado: string) => {
+  switch (estado?.toLowerCase()) {
+    case 'confirmado':
+      return { text: 'Confirmado', colorClass: 'bg-green-100 text-green-800' };
+    case 'pendiente':
+      return { text: 'Pendiente', colorClass: 'bg-yellow-100 text-yellow-800' };
+    case 'cancelado':
+      return { text: 'Cancelado', colorClass: 'bg-red-100 text-red-800' };
+    default:
+      return { text: estado, colorClass: 'bg-gray-100 text-gray-800' };
+  }
+};
 
 function TurnoCard({
   slot,
@@ -52,7 +64,7 @@ function TurnoCard({
 
   return (
     <div className="group relative">
-      <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-200/50 bg-white/5 hover:bg-white/10 transition-all duration-300 hover:border-primary-300/30 hover:shadow-lg">
+      <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-200/50 bg-primary-bg-componentes hover:bg-white/10 transition-all duration-300 hover:border-primary-100/30 hover:shadow-lg">
         {/* Indicador de tiempo */}
         <div className="flex-shrink-0">
           <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-100 to-primary-600 flex flex-col items-center justify-center text-white">
@@ -74,7 +86,7 @@ function TurnoCard({
               items={itemsMenuTurno}
               triggerIcon={<MoreVertical className="w-4 h-4" />}
               triggerTitle="Acciones del turno"
-              buttonClassName="!p-1 !min-h-0 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+              buttonClassName="!p-1 border-0 rounded-full !min-h-0 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
               closeOnSelect={true}
             />
           </div>

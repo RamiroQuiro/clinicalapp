@@ -1,4 +1,9 @@
-import { agendaDelDia, fechaSeleccionada, setFechaYHora } from '@/context/agenda.store';
+import {
+  agendaDelDia,
+  fechaSeleccionada,
+  setFechaYHora,
+  setPaciente,
+} from '@/context/agenda.store';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Calendar, Clock } from 'lucide-react';
@@ -14,16 +19,19 @@ export default function TurnosDelDia() {
     return agenda.filter(slot => !slot.disponible).sort((a, b) => a.hora.localeCompare(b.hora));
   }, [agenda]);
 
-  console.log('turnoOcupados', turnosOcupados);
   // Handlers para las acciones del menú
   const handleVerDetalles = (slot: any) => {
     setTurnoSeleccionado(slot);
-    console.log('Ver detalles:', slot);
+
     // Aquí podrías abrir un modal de detalles
   };
 
   const handleReagendar = (slot: any) => {
     if (!diaSeleccionado) return;
+    setPaciente({
+      id: slot.turnoInfo.pacienteId,
+      nombre: `${slot.turnoInfo.pacienteNombre} ${slot.turnoInfo.pacienteApellido}`,
+    });
     setFechaYHora();
     document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
   };
@@ -41,6 +49,7 @@ export default function TurnosDelDia() {
 
       const data = await responseFetch.json();
       console.log('Turno cancelado exitosamente:', data);
+      agendaDelDia.set([...agendaDelDia.get().filter(slot => slot.turnoInfo?.id !== data.data.id)]);
       showToast('Turno cancelado exitosamente', { background: 'bg-green-500' });
     } catch (error) {
       console.error('Error al cancelar el turno:', error);

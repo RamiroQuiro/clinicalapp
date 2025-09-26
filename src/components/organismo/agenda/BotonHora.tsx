@@ -17,7 +17,7 @@ function BotonHora({ slot, onClick }: BotonHoraProps) {
         setTimeout(() => setPulsado(false), 300);
       }}
       className={`
-          w-full px-2 py-2 text-sm font-semibold rounded-md transition-all duration-200
+          w-fit px-2 py-2 text-sm font-semibold rounded-md transition-all duration-200
           border-2 relative overflow-hidden
           ${pulsado ? 'scale-95' : 'scale-100'}
           ${
