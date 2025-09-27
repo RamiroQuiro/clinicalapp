@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useStore } from '@nanostores/react';
+import { recepcionStore, setPestanaActiva } from '../../../context/recepcion.store';
 
 type Props = {};
-// --- Definición de Pestañas ---
+// --- Definición de Pestañas (IDs ajustados al store) ---
 const tabs = [
-  { id: 'recepcion', name: 'Recepsión' },
+  { id: 'recepcion', name: 'Recepción' },
   { id: 'salaEspera', name: 'Sala de Espera' },
   { id: 'pacientes', name: 'Pacientes' },
 ];
 
 export default function MenuPestaña({}: Props) {
-  const [activeTab, setActiveTab] = useState('recepcion');
+  const { pestanaActiva: activeTab } = useStore(recepcionStore);
+
+  console.log('activeTab ->', activeTab);
   return (
     <div className="border-b border-gray-200 w-full flex-1">
       <nav
@@ -19,7 +22,7 @@ export default function MenuPestaña({}: Props) {
         {tabs.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setPestanaActiva(tab.id as any)} // Se usa 'as any' por la definición del store
             className={`${
               activeTab === tab.id
                 ? 'border-primary-100 text-primary-100'
