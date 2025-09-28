@@ -1,5 +1,4 @@
 ---
-import DivBox1 from '@/components/atomos/DivBox1.astro';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import ContenedorRenderizdoPantalla from '@/components/organismo/recepcion/ContenedorRenderizdoPantalla.tsx';
 import ConstendorStatsRec from '@/components/organismo/recepcion/ContenedorStatsRec';
@@ -13,8 +12,6 @@ const { user } = Astro.locals;
     <MenuPestaña client:load />
   </div>
   <div class="w-full pt-4 h-full">
-    <DivBox1>
-      <ContenedorRenderizdoPantalla client:load userId={user.id} />
-    </DivBox1>
+    <ContenedorRenderizdoPantalla client:load userId={user.id} />
   </div>
 </MainDashboard>

@@ -67,7 +67,7 @@ function TurnoCard({
       <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-200/50 bg-primary-bg-componentes hover:bg-white/10 transition-all duration-300 hover:border-primary-100/30 hover:shadow-lg">
         {/* Indicador de tiempo */}
         <div className="flex-shrink-0">
-          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-100 to-primary-600 flex flex-col items-center justify-center text-white">
+          <div className="w-12 h-12 rounded-lg bg-white border-primary-100/30 font-bold shadow-sm  border br flex flex-col items-center justify-center text-wite">
             <Clock className="w-3 h-3 mb-1" />
             <span className="text-xs font-bold leading-none">
               {formatUtcToAppTime(slot.hora, 'HH:mm')}
@@ -102,7 +102,7 @@ function TurnoCard({
             </span>
           </div>
           <div
-            className={`text-xs text-primary-texto font-medium absolute bottom-2 rounded-full px-2 py-0.5 bg-primary-200/10 right-2 ${slot.turnoInfo?.estado === 'cancelado' ? 'text-red-500' : slot.turnoInfo?.estado === 'confirmado' ? 'text-green-500' : 'text-yellow-500'}`}
+            className={`text-xs text-primary-texto border font-medium absolute bottom-2 rounded-full px-2 py-0.5 bg-white right-2 ${slot.turnoInfo?.estado === 'cancelado' ? 'text-red-500' : slot.turnoInfo?.estado === 'confirmado' ? 'text-green-500' : 'text-yellow-500'}`}
           >
             {slot.turnoInfo?.estado}
           </div>

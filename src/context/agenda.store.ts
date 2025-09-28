@@ -10,6 +10,8 @@ export interface AgendaSlot {
     pacienteCelular: string;
     pacienteNombre: string;
     pacienteApellido: string;
+    pacienteDocumento: string;
+    profesionalId: string;
     profesionalNombre: string;
     profesionalApellido: string;
     motivoConsulta: string;

@@ -12,7 +12,8 @@ const buttonVariants = {
       blanco:
         'bg-white text-primary-800 hover:bg-primary-150 hover:text-white focus:ring-primary-150 border-primary-150/50',
       cancel: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-600',
-      outline: 'bg-transparent text-gray-800 hover:bg-gray-200 focus:ring-gray-400',
+      outline:
+        'bg-transparent border border-gray-300/50 text-gray-800 hover:bg-gray-200 focus:ring-gray-400',
       downloadPDF: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-600',
       grisOscuro: 'bg-gray-800 text-white hover:bg-gray-900 focus:ring-gray-700',
       grisClaro:

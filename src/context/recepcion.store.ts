@@ -16,6 +16,9 @@ export const recepcionStore = map<RecepcionStore>({
   error: null,
 });
 
+export function setPacientesEnEspera(pacientes: any[]) {
+  recepcionStore.setKey('pacientesEnEspera', pacientes);
+}
 export function setPestanaActiva(pestana: 'recepcion' | 'salaEspera' | 'pacientes') {
   recepcionStore.setKey('pestanaActiva', pestana);
 }
