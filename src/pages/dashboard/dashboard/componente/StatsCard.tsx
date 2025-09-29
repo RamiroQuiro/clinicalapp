@@ -56,7 +56,7 @@ type PropsStatsCard = {
   title: string;
   value: number | string;
   icon: React.ReactNode;
-  color?: 'blue' | 'green' | 'orange' | 'purple' | 'red';
+  color?: 'blue' | 'green' | 'orange' | 'purple' | 'red' | 'primary100';
   trend?: 'up' | 'down' | 'neutral';
   subtitle?: string;
   percentage?: number;
@@ -70,6 +70,15 @@ const colorSchemes = {
     iconBg: 'bg-blue-100',
     iconColor: 'text-blue-600',
     text: 'text-blue-900',
+    trendUp: 'text-green-600',
+    trendDown: 'text-red-600',
+  },
+  primary100: {
+    gradient: 'from-primary-100 to-primary-150',
+    border: 'border-primary-100/20',
+    iconBg: 'bg-primary-100',
+    iconColor: 'text-white',
+    text: 'text-primary-texto',
     trendUp: 'text-green-600',
     trendDown: 'text-red-600',
   },

@@ -1,3 +1,4 @@
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { atom, map } from 'nanostores';
 
 // El tipo de dato que devuelve nuestra API para cada slot
@@ -22,7 +23,7 @@ export interface AgendaSlot {
 }
 
 // Atom para la fecha actualmente seleccionada en el calendario
-export const fechaSeleccionada = atom<Date | undefined>(new Date());
+export const fechaSeleccionada = atom<Date | undefined>(new Date(getFechaEnMilisegundos()));
 
 // Atom para almacenar la agenda completa del día seleccionado
 export const agendaDelDia = atom<AgendaSlot[]>([]);

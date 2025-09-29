@@ -150,7 +150,7 @@ export default function ContentedorStatsDash({ data }: Props) {
       {statsDash?.map((stat, index) => (
         <div key={stat.id}>
           <StatsCardV2
-            color={stat.color}
+            color={'primary100'}
             title={stat.title}
             value={stat.value}
             icon={stat.icon}

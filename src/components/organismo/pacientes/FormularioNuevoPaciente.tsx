@@ -2,6 +2,7 @@ import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
 import { setPaciente } from '@/context/agenda.store';
 import { showToast } from '@/utils/toast/toastShow';
+
 import React, { useState } from 'react';
 
 interface FormularioNuevoPacienteProps {
@@ -64,8 +65,6 @@ export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = (
 
       const result = await response.json();
       const [nuevoPaciente] = result.data;
-
-      console.log('nuevo panietne -', nuevoPaciente);
 
       if (isStoreAgenda) {
         setPaciente({

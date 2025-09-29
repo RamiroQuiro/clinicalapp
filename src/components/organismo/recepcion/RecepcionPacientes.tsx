@@ -2,6 +2,7 @@ import Input from '@/components/atomos/Input';
 import CardTurnoRecepcion from '@/components/moleculas/CardTurnoRecepcion';
 import Section from '@/components/moleculas/Section';
 import extraerHora from '@/utils/extraerHora';
+import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Clock } from 'lucide-react';
 import { recepcionStore } from '../../../context/recepcion.store';
@@ -16,6 +17,11 @@ export default function RecepcionPacientes({ userId }: Props) {
 
   // 2. La lógica de filtrado se mantiene, pero usando los datos del store
   const handleRecepcion = (slot: any) => {
+    const isTurno = pacientesEnEspera.find((turno: any) => turno.id === slot.id);
+    if (isTurno) {
+      showToast('Turno ya recibido', { background: 'red' });
+      return;
+    }
     recepcionStore.setKey('pacientesEnEspera', [...pacientesEnEspera, slot]);
   };
 
@@ -42,29 +48,22 @@ export default function RecepcionPacientes({ userId }: Props) {
       <Section title="🚀 Proximos turnos" classContent="flex  flex-col w-1/2">
         <div className="flex flex-col gap-2  w-full">
           {pacientesEnEspera.map((turno, i) => (
-            <div
-              key={turno.id}
-              className="border flex items-center justify-between rounded-lg px-4 py-2 "
-            >
-              <div className="w- h- rounded-lg bg-white flex-col font-medium shadow-sm  border br flex  gap-2 items-center justify-center text-wite p-2">
-                <Clock className="w-5 h-5 " />
-                <span className="text-sm font-medium leading-none">
-                  {extraerHora(turno.turnoInfo?.horaTurno)}
-                </span>
+            <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+              <div className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                {i + 1}
               </div>
-              <div className="w- h-  font-medium flex flex-col text-primary-textoTitle items-start  g flex-1 justify-center text-wite px-2">
-                <p className="font-medium capitalize">
+
+              <div className="flex-1">
+                <p className="font-medium text-sm capitalize">
                   {turno.turnoInfo?.pacienteNombre} {turno.turnoInfo?.pacienteApellido}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  DNI: {turno.turnoInfo?.pacienteDocumento}
+                <p className="text-xs text-gray-500">
+                  {extraerHora(turno.turnoInfo?.horaTurno)} • DNI:{' '}
+                  {turno.turnoInfo?.pacienteDocumento}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className={`p-2 px-4 rounded-full uppercase  border`}>
-                  <p className="font-medium text-xl capitalize">{i + 1}</p>
-                </div>
-              </div>
+
+              <Clock className="w-4 h-4 text-gray-400" />
             </div>
           ))}
         </div>
