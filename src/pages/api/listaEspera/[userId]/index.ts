@@ -1,14 +1,15 @@
 import db from '@/db';
-import { listaDeEspera } from '@/db/schema';
-import { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
+import { salaDeEspera } from '@/db/schema';
+import type { APIRoute } from 'astro';
+
+import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 export const GET: APIRoute = async ({ request, params }) => {
   const listaEsperaDB = await db
     .select()
-    .from(listaDeEspera)
-    .where(eq(listaDeEspera.userId, params.userId));
+    .from(salaDeEspera)
+    .where(eq(salaDeEspera.userMedicoId, params.userId));
   return new Response(JSON.stringify(listaEsperaDB), {
     status: 200,
   });
@@ -41,7 +42,7 @@ export const POST: APIRoute = async ({ params, request }) => {
     const horaHoy = fechaHoy.getHours();
 
     const insertarPaciente = await db
-      .insert(listaDeEspera)
+      .insert(salaDeEspera)
       .values({
         id: nanoid(10),
         pacienteId: body.id,
@@ -51,7 +52,7 @@ export const POST: APIRoute = async ({ params, request }) => {
         motivoConsulta: body.motivoConsulta,
         fecha: fechaHoy.toISOString(),
         hora: horaHoy,
-        userId: userId,
+        userMedicoId: userId,
         isExist: true,
       })
       .returning();
@@ -80,8 +81,8 @@ export const DELETE: APIRoute = async ({ request, params }) => {
   console.log('paceinte a agregar -> e', data);
   try {
     const deletPacienteEnEspera = await db
-      .delete(listaDeEspera)
-      .where(eq(listaDeEspera.id, data))
+      .delete(salaDeEspera)
+      .where(and(eq(salaDeEspera.id, data), eq(salaDeEspera.userMedicoId, userId)))
       .returning();
     return new Response(
       JSON.stringify({

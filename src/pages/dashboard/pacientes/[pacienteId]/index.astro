@@ -30,7 +30,7 @@ let perfilPaciente = {
 };
 
 try {
-  perfilPaciente = await getPacienteData(pacienteId as string, user.id as string);
+  perfilPaciente = await getPacienteData(pacienteId as string, user?.id as string);
   console.log('pacienteData', perfilPaciente);
 } catch (error) {
   console.error('Error fetching paciente data:', error);

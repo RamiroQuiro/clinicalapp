@@ -1,23 +1,25 @@
 import db from '@/db';
-import { atenciones } from '@/db/schema';
+import { atenciones, turnos } from '@/db/schema';
+import { nanoIDNormalizador } from '@/utils/responseAPI';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
-import { nanoid } from 'nanoid';
+import { eq } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ request, locals, redirect }) => {
   try {
     const newUrl = request.url;
     const urlParams = new URL(newUrl);
     const pacienteId = urlParams.searchParams.get('pacienteId');
+    const turnoId = urlParams.searchParams.get('turnoId');
     const { session } = locals;
 
     if (!pacienteId || !session?.userId) {
       return new Response(JSON.stringify({ error: 'Faltan datos requeridos' }), { status: 400 });
     }
-
+    let modificarTablaTurno;
     const horaInicio = new Date(getFechaEnMilisegundos());
     // 1. Crear la nueva atención
-    const idAtencion = 'aten_' + nanoid(15);
+    const idAtencion = nanoIDNormalizador('aten_');
     const atencionNueva = await db
       .insert(atenciones)
       .values({
@@ -28,8 +30,15 @@ export const GET: APIRoute = async ({ request, locals, redirect }) => {
         fechaInicio: horaInicio,
       })
       .returning();
+    if (turnoId) {
+      modificarTablaTurno = await db
+        .update(turnos)
+        .set({ atencionId: idAtencion, estado: 'en_consulta' })
+        .where(eq(turnos.id, turnoId))
+        .returning();
+    }
 
-    console.log('atencion creada nueva', atencionNueva);
+    console.log('atencion creada nueva', atencionNueva, 'turno modificado', modificarTablaTurno);
 
     // 2. Redirigir directo al dashboard del paciente con la atención activa
     return redirect(`/dashboard/consultas/aperturaPaciente/${pacienteId}/${idAtencion}`);

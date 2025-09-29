@@ -17,8 +17,15 @@ export interface AgendaSlot {
     profesionalApellido: string;
     motivoConsulta: string;
     horaTurno: string;
+    horaLlegadaPaciente: string;
     duracion: number;
-    estado: 'confirmado' | 'pendiente' | 'cancelado';
+    estado:
+      | 'confirmado'
+      | 'pendiente'
+      | 'cancelado'
+      | 'sala_de_espera'
+      | 'en_consulta'
+      | 'finalizado';
   } | null;
 }
 

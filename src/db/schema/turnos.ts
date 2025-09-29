@@ -23,11 +23,21 @@ export const turnos = sqliteTable('turnos', {
   }),
   tipoConsulta: text('tipoConsulta'),
   fechaAtencion: integer('fechaAtencion', { mode: 'timestamp' }),
-  horaAtencion: text('horaAtencion').notNull(),
+  horaLlegadaPaciente: integer('horaLlegadaPaciente', { mode: 'timestamp' }),
+  horaAtencion: text('horaAtencion', { mode: 'text' }).notNull(),
   motivoConsulta: text('motivoConsulta'),
   motivoInicial: text('motivoInicial'),
   estado: text('estado', {
-    enum: ['pendiente', 'en_proceso', 'finalizado', 'confimado', 'cancelado'],
+    enum: [
+      'pendiente',
+      'en_consulta',
+      'sala_de_espera',
+      'finalizado',
+      'confirmado',
+      'cancelado',
+      'ausente',
+      'demorado',
+    ],
   }).default('pendiente'),
 
   created_at: integer('created_at', { mode: 'timestamp' })

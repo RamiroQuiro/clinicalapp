@@ -47,11 +47,11 @@ export const GET: APIRoute = async ({ locals, request }) => {
         pacienteApellido: pacientes.apellido,
         pacienteDocumento: pacientes.dni,
         pacienteCelular: pacientes.celular,
+        horaLlegadaPaciente: turnos.horaLlegadaPaciente,
         profesionalId: users.id,
         profesionalNombre: users.nombre,
         profesionalApellido: users.apellido,
         estado: turnos.estado,
-
         horaTurno: turnos.fechaTurno,
         motivoConsulta: turnos.motivoConsulta,
       })
@@ -107,6 +107,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             pacienteId: turnoOcupante.pacienteId,
             pacienteCelular: turnoOcupante.pacienteCelular,
             pacienteNombre: turnoOcupante.pacienteNombre,
+            horaLlegadaPaciente: turnoOcupante.horaLlegadaPaciente,
             pacienteApellido: turnoOcupante.pacienteApellido,
             pacienteDocumento: turnoOcupante.pacienteDocumento,
             profesionalId: turnoOcupante.profesionalId,

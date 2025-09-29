@@ -1,6 +1,5 @@
 ---
 import DivBox1 from '../atomos/DivBox1.astro';
-import { CardTurno } from '../moleculas/CardTurnoRecepcion';
 
 const { turnos, currentUserId, pacienteId } = Astro.props;
 ---
@@ -31,14 +30,7 @@ const { turnos, currentUserId, pacienteId } = Astro.props;
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {
           turnos && turnos.length > 0 ? (
-            turnos.map(turno => (
-              <CardTurno
-                turno={turno}
-                currentUserId={currentUserId}
-                pacienteId={pacienteId}
-                client:load
-              />
-            ))
+            turnos.map(turno => <div>{turno.id}</div>)
           ) : (
             <p class="text-sm text-gray-500 text-center col-span-full py-4">
               No hay próximos turnos registrados.

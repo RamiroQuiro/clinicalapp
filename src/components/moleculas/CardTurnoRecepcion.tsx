@@ -6,22 +6,28 @@ import Button from '../atomos/Button';
 
 interface TurnoCardProps {
   slot: AgendaSlot;
-  onVerDetalles: (slot: any) => void;
-  onReagendar: (slot: any) => void;
-  onCancelar: (slot: any) => void;
-  onLlamar: (slot: any) => void;
-  onRecibirPaciente: (slot: any) => void;
+  onVerDetalles: (slot: AgendaSlot) => void;
+  onReagendar: (slot: AgendaSlot) => void;
+  onCancelar: (slot: AgendaSlot) => void;
+  onLlamar: (slot: AgendaSlot) => void;
+  onRecibirPaciente: (slot: AgendaSlot) => void;
 }
 
 // Helper function to get status info (similar to CardMedicamentoV2)
-const getStatusInfo = estado => {
+const getStatusInfo = (estado: string) => {
   switch (estado?.toLowerCase()) {
+    case 'finalizado':
+      return { text: 'Finalizado', colorClass: 'bg-green-100  text-green-800' };
+    case 'en_consulta':
+      return { text: 'En Consulta', colorClass: 'bg-blue-100/70 text-blue-800' };
+    case 'sala_de_espera':
+      return { text: 'Sala de Espera', colorClass: 'bg-yellow-100/70 text-yellow-800' };
     case 'confirmado':
-      return { text: 'Confirmado', colorClass: 'bg-green-100 text-green-800' };
+      return { text: 'Confirmado', colorClass: 'bg-green-100/70 text-green-800' };
     case 'pendiente':
-      return { text: 'Pendiente', colorClass: 'bg-yellow-100 text-yellow-800' };
+      return { text: 'Pendiente', colorClass: 'bg-orange-300/40 text-orange-800' };
     case 'cancelado':
-      return { text: 'Cancelado', colorClass: 'bg-red-100 text-red-800' };
+      return { text: 'Cancelado', colorClass: 'bg-red-100/70 text-red-800' };
     default:
       return { text: estado, colorClass: 'bg-gray-100 text-gray-800' };
   }
@@ -31,7 +37,6 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
   const attentionLink = `/dashboard/consultas/aperturaPaciente/${slot.turnoInfo?.pacienteId}/new`;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const statusInfo = getStatusInfo(slot.turnoInfo?.estado);
 
   const handleStatusChange = (nuevoEstado: string) => {
     console.log(`Cambiando estado del turno ${slot.turnoInfo?.id} a ${nuevoEstado}`);
@@ -74,9 +79,9 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
           </div>
         </div>
         <div
-          className={`text-xs text-primary-texto font-medium border  bottom-2 rounded-full px-2 py-2 bg-white right-2 ${slot.turnoInfo?.estado === 'cancelado' ? 'text-red-500' : slot.turnoInfo?.estado === 'confirmado' ? 'text-green-500' : 'text-yellow-500'}`}
+          className={`text-xs text-primary-texto font-medium border  bottom-2 rounded-full px-2 py-1 bg-white right-2 ${getStatusInfo(slot.turnoInfo?.estado ?? '')?.colorClass}`}
         >
-          {slot.turnoInfo?.estado}
+          {getStatusInfo(slot.turnoInfo?.estado ?? '')?.text}
         </div>
       </div>
 
@@ -93,10 +98,14 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
         </div>
         <div>
           <span className="text-muted-foreground">Llegada:</span>
-          <p className="font-medium">{extraerHora(slot.turnoInfo?.horaTurno)}</p>
+          <p className="font-medium">
+            {slot.turnoInfo?.horaLlegadaPaciente
+              ? extraerHora(slot.turnoInfo?.horaLlegadaPaciente)
+              : 'Pendiente'}
+          </p>
         </div>
         <div>
-          <span className="text-muted-foreground">Motivo de Consutla:</span>
+          <span className="text-muted-foreground">Motivo de Consulta:</span>
           <p className="font-medium">{slot.turnoInfo?.motivoConsulta}</p>
         </div>
       </div>

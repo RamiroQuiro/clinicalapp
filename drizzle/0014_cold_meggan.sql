@@ -1,0 +1,1 @@
+ALTER TABLE `turnos` RENAME COLUMN "horaLlegada" TO "horaLlegadaPaciente";
