@@ -12,69 +12,30 @@ const io = new Server(httpServer, {
 // Configuración de eventos de Socket.IO
 io.on('connection', socket => {
   console.log('Cliente conectado:', socket.id);
-  // agregar paciente
-  socket.on('agregar-paciente', async paciente => {
-    console.log('Paciente agregado:', paciente);
+
+  // --- EVENTO PARA ACTUALIZAR ESTADO DE TURNOS ---
+  socket.on('cambiar-estado-turno', async data => {
+    const { turnoId, ...body } = data;
+    console.log(`Recibido cambio de estado para turno ${turnoId}:`, body);
     try {
-      const response = await fetch(`http://localhost:4321/api/listaEspera/${paciente.userId}`, {
+      const response = await fetch(`http://localhost:4321/api/turno/${turnoId}/changeState`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Origin: 'http://localhost:4321', // Añade manualmente el encabezado Origin
         },
-        body: JSON.stringify(paciente),
-        credentials: 'include', // Importante si estás usando cookies de sesión
+        body: JSON.stringify(body),
       });
 
-      const data = await response.json();
-      if (response.status === 200) {
-        io.emit('lista-actualizada', data.data);
+      const responseData = await response.json();
+      if (response.ok) {
+        // Emitir a TODOS los clientes que un turno fue actualizado
+        console.log('Emitiendo evento: turno-actualizado');
+        io.emit('turno-actualizado', responseData.data);
+      } else {
+        console.error('Error en la API al cambiar estado:', responseData);
       }
     } catch (error) {
-      console.log(error);
-    }
-  });
-
-  // atender paciente
-  socket.on('atender-paciente', async paciente => {
-    console.log('Paciente atendido:', paciente);
-    try {
-      const response = await fetch(`http://localhost:4321/api/listaEspera/${paciente.userId}`, {
-        method: 'DELETE',
-        body: JSON.stringify(paciente),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-      if (response.status === 200) {
-        io.emit('paciente-eliminado', data.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  });
-
-  // eliminar paciente
-  socket.on('eliminar-paciente', async paciente => {
-    console.log('Paciente eliminado:', paciente);
-    try {
-      const response = await fetch(`http://localhost:4321/api/listaEspera/${paciente.userId}`, {
-        method: 'DELETE',
-        body: JSON.stringify(paciente),
-        headers: {
-          'Content-Type': 'application/json',
-          Origin: 'http://localhost:4321', // Añade manualmente el encabezado Origin
-        },
-      });
-
-      const data = await response.json();
-      if (response.status === 200) {
-        io.emit('paciente-eliminado', data.data);
-      }
-    } catch (error) {
-      console.log(error);
+      console.error('Error en fetch a changeState:', error);
     }
   });
 
@@ -83,7 +44,7 @@ io.on('connection', socket => {
   });
 });
 
-console.log('Socket.IO inicializado');
+console.log('Socket.IO inicializado y limpio.');
 
 httpServer.listen(5000, () => {
   console.log('server escuchando por el puerto 5000');

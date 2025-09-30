@@ -1,7 +1,6 @@
 import type { AgendaSlot } from '@/context/agenda.store';
 import extraerHora from '@/utils/extraerHora';
-import { Clock, View } from 'lucide-react';
-import Button from '../atomos/Button';
+import { Clock, Menu, View } from 'lucide-react';
 
 type Props = {
   turno: AgendaSlot;
@@ -14,6 +13,7 @@ export default function CardSalaEspera({ turno, index }: Props) {
   };
   return (
     <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+      <Menu className="w-6 h-6 active:cursor-grabbing text-primary-texto/50 -ml-2 cursor-grab" />
       <div className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">
         {index + 1}
       </div>
@@ -27,10 +27,11 @@ export default function CardSalaEspera({ turno, index }: Props) {
         </p>
       </div>
 
-      <Button className="px-2 rounded-full" onClick={() => handleAtender(turno)} variant="indigo">
-        <View className="" />
-      </Button>
-      <Clock className="w-4 h-4 text-gray-400" />
+      <View
+        onClick={() => handleAtender(turno)}
+        className="w-6 h-6 cursor-pointer text-primary-texto"
+      />
+      <Clock className="w-6 h-6 text-primary-texto cursor-pointer" />
     </div>
   );
 }

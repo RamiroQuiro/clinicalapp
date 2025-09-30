@@ -3,14 +3,9 @@ import CardSalaEspera from '@/components/moleculas/CardSalaEspera';
 import CardTurnoRecepcion from '@/components/moleculas/CardTurnoRecepcion';
 import Section from '@/components/moleculas/Section';
 import type { AgendaSlot } from '@/context/agenda.store';
-import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
-import {
-  fetchSalaDeEspera,
-  recepcionStore,
-  setPacientesEnEspera,
-} from '../../../context/recepcion.store';
+import { recepcionStore, updateTurnoStatus } from '../../../context/recepcion.store';
 
 type Props = {
   userId: string;
@@ -18,12 +13,11 @@ type Props = {
 
 export default function RecepcionPacientes({ userId }: Props) {
   const [pacientesEnEsperaDB, setPacientesEnEsperaDB] = useState([]);
-  const { turnosDelDia, isLoading, pacientesEnEspera } = useStore(recepcionStore);
+  const { turnosDelDia, isLoading } = useStore(recepcionStore);
 
   useEffect(() => {
     const getData = async () => {
       recepcionStore.setKey('isLoading', true);
-      const data = await fetchSalaDeEspera(userId);
       recepcionStore.setKey('isLoading', false);
     };
     getData();
@@ -31,14 +25,7 @@ export default function RecepcionPacientes({ userId }: Props) {
   }, [userId]);
 
   const handleRecepcion = (slot: AgendaSlot) => {
-    const isTurno = pacientesEnEspera.find(
-      (turno: AgendaSlot) => turno.turnoInfo?.id === slot.turnoInfo?.id
-    );
-    if (isTurno) {
-      showToast('Turno ya recibido', { background: 'bg-green-600' });
-      return;
-    }
-    setPacientesEnEspera(slot);
+    updateTurnoStatus(slot.turnoInfo?.id ?? '', 'sala_de_espera');
   };
 
   const handleAtender = (slot: AgendaSlot) => {

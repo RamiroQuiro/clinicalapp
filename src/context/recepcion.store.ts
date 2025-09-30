@@ -1,69 +1,98 @@
-import { getFechaEnMilisegundos } from '@/utils/timesUtils';
-import { map } from 'nanostores';
-import type { AgendaSlot } from './agenda.store';
+import { computed, map } from 'nanostores';
+import { io } from 'socket.io-client';
 
-export type RecepcionStore = {
-  pestanaActiva: 'recepcion' | 'salaEspera' | 'pacientes';
-  turnosDelDia: AgendaSlot[]; // Se tipará correctamente más adelante
-  pacientesEnEspera: AgendaSlot[]; // Se tipará correctamente más adelante
+// Asumo que tienes un tipo 'Turno' o similar. Usaré 'any' por ahora.
+type Turno = any;
+
+// --- 1. CONEXIÓN AL SERVIDOR DE SOCKETS ---
+// Se crea una única instancia del socket para toda la aplicación.
+const socket = io('http://localhost:5000');
+
+// --- 2. DEFINICIÓN DEL STORE ---
+export const recepcionStore = map<{
+  turnosDelDia: Turno[];
   isLoading: boolean;
+  pestanaActiva: 'pacientes' | 'recepcion' | 'salaDeEspera';
   error: string | null;
-};
-
-export const recepcionStore = map<RecepcionStore>({
-  pestanaActiva: 'recepcion',
+}>({
   turnosDelDia: [],
-  pacientesEnEspera: [],
   isLoading: true,
+  pestanaActiva: 'recepcion',
   error: null,
 });
 
-export async function setPacientesEnEspera(slot: AgendaSlot) {
+// --- 3. STORES COMPUTADOS (VISTAS FILTRADAS AUTOMÁTICAS) ---
+// Estos stores se actualizan solos cada vez que 'turnosDelDia' cambia.
+
+export const pacientesEnEspera = computed(recepcionStore, $store =>
+  $store.turnosDelDia.filter(t => t.estado === 'sala_de_espera')
+);
+
+export const turnosPendientes = computed(recepcionStore, $store =>
+  $store.turnosDelDia.filter(t => t.estado === 'pendiente' || t.estado === 'confirmado')
+);
+
+export const turnosEnConsulta = computed(recepcionStore, $store =>
+  $store.turnosDelDia.filter(t => t.estado === 'en_consulta')
+);
+
+// --- 4. ACCIONES (LÓGICA DE NEGOCIO) ---
+
+export async function fetchTurnosDelDia(fecha: string) {
+  recepcionStore.setKey('isLoading', true);
   try {
-    const response = await fetch(`/api/turno/${slot.turnoInfo?.id}/changeState`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...slot.turnoInfo,
-        horaLlegadaPaciente: new Date(getFechaEnMilisegundos()),
-        estado: 'sala_de_espera',
-      }),
-    });
+    // Usamos el endpoint que ya tienes para obtener los turnos del día
+    const response = await fetch(`/api/agenda?fecha=${fecha}`);
+    if (!response.ok) throw new Error('Respuesta de red no fue ok');
     const data = await response.json();
 
-    if (response.ok) {
-      recepcionStore.setKey('pacientesEnEspera', [...recepcionStore.get().pacientesEnEspera, slot]);
-      const updateTurnos = recepcionStore.get().turnosDelDia.map(t =>
-        t.turnoInfo?.id === data.data.id
-          ? {
-              ...t,
-              turnoInfo: {
-                ...t.turnoInfo,
-                estado: data.data.estado,
-                horaLlegadaPaciente: data.data.horaLlegadaPaciente,
-              },
-            }
-          : t
-      );
-
-      recepcionStore.setKey('turnosDelDia', updateTurnos);
-    }
-  } catch (error) {
-    console.log('error al cambiar el estado del turno', error);
+    // Guardamos la lista completa en nuestro único store de verdad.
+    recepcionStore.setKey('turnosDelDia', data);
+  } catch (error: any) {
+    recepcionStore.setKey('error', error.message);
+  } finally {
+    recepcionStore.setKey('isLoading', false);
   }
 }
 
-export function setPestanaActiva(pestana: 'recepcion' | 'salaEspera' | 'pacientes') {
-  recepcionStore.setKey('pestanaActiva', pestana);
-}
+/**
+ * Cambia el estado de un turno.
+ * ESTA FUNCIÓN AHORA USA WEBSOCKETS en lugar de fetch.
+ * @param turnoId - El ID del turno a modificar.
+ * @param nuevoEstado - El nuevo estado a asignar.
+ */
+export function updateTurnoStatus(turnoId: string, nuevoEstado: string) {
+  const payload: { turnoId: string; estado: string; horaLlegadaPaciente?: string } = {
+    turnoId: turnoId,
+    estado: nuevoEstado,
+  };
 
-export async function fetchSalaDeEspera(userId: string) {
-  try {
-    const response = await fetch(`/api/turno/salaDeEspera?userId=${userId}`);
-    const data = await response.json();
-
-    recepcionStore.setKey('pacientesEnEspera', data.data);
-  } catch (error) {
-    console.log('error al obtener los pacientes en espera', error);
+  // Si el nuevo estado es 'sala_de_espera', añadimos la hora de llegada.
+  if (nuevoEstado === 'sala_de_espera') {
+    payload.horaLlegadaPaciente = new Date().toISOString();
   }
+
+  // Emitimos el evento al servidor de sockets, que se encargará de llamar a la API.
+  socket.emit('cambiar-estado-turno', payload);
 }
+
+// --- 5. OYENTE DE WEBSOCKETS (LA MAGIA DEL TIEMPO REAL) ---
+// Este código se configura una vez y mantiene el store sincronizado.
+
+socket.on('connect', () => {
+  console.log('✅ Conectado al servidor de sockets desde el store.');
+});
+
+socket.on('turno-actualizado', turnoActualizado => {
+  console.log('EVENTO RECIBIDO: turno-actualizado', turnoActualizado);
+
+  // Al recibir la notificación de que un turno cambió, la forma más
+  // simple y robusta de actualizar la UI es volver a pedir la lista completa.
+  // Así nos aseguramos de que el estado del frontend es un reflejo fiel de la DB.
+  const hoy = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+  fetchTurnosDelDia(hoy);
+});
+
+socket.on('disconnect', () => {
+  console.log('❌ Desconectado del servidor de sockets.');
+});
