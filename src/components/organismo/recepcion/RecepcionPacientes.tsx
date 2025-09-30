@@ -1,12 +1,10 @@
-import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
+import CardSalaEspera from '@/components/moleculas/CardSalaEspera';
 import CardTurnoRecepcion from '@/components/moleculas/CardTurnoRecepcion';
 import Section from '@/components/moleculas/Section';
 import type { AgendaSlot } from '@/context/agenda.store';
-import extraerHora from '@/utils/extraerHora';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
-import { Clock, View } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   fetchSalaDeEspera,
@@ -71,26 +69,7 @@ export default function RecepcionPacientes({ userId }: Props) {
           {turnosDelDia
             .filter((turno): AgendaSlot => turno.turnoInfo?.estado === 'sala_de_espera')
             .map((turno, i) => (
-              <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
-                <div className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">
-                  {i + 1}
-                </div>
-
-                <div className="flex-1">
-                  <p className="font-medium text-sm capitalize">
-                    {turno.turnoInfo?.pacienteNombre} {turno.turnoInfo?.pacienteApellido}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {extraerHora(turno.turnoInfo?.horaTurno)} • DNI:{' '}
-                    {turno.turnoInfo?.pacienteDocumento}
-                  </p>
-                </div>
-
-                <Button onClick={() => handleAtender(turno)} variant="indigo">
-                  <View className="w-" />
-                </Button>
-                <Clock className="w-4 h-4 text-gray-400" />
-              </div>
+              <CardSalaEspera key={i} turno={turno} index={i} />
             ))}
         </div>
       </Section>

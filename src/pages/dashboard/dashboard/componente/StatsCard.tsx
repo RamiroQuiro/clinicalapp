@@ -76,7 +76,7 @@ const colorSchemes = {
   primary100: {
     gradient: 'from-primary-100 to-primary-150',
     border: 'border-primary-100/20',
-    iconBg: 'bg-primary-100',
+    iconBg: 'bg-primary-100/90',
     iconColor: 'text-white',
     text: 'text-primary-texto',
     trendUp: 'text-green-600',
