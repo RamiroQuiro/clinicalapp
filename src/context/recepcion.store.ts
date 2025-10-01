@@ -65,6 +65,7 @@ export async function fetchTurnosDelDia(fecha: string) {
 
 /**
  * Cambia el estado de un turno y envía la actualización al backend.
+ * También aplica una actualización optimista al store local.
  */
 export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['estado']) {
   const payload = {
@@ -75,6 +76,21 @@ export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['esta
         ? new Date(getFechaEnMilisegundos()).toISOString()
         : undefined,
   };
+  const turnosActuales = recepcionStore.get().turnosDelDia;
+  const turnosActualizados = turnosActuales.map(t => {
+    if (t.turnoInfo?.id === turno.turnoInfo?.id) {
+      const turnoInfoActualizado = {
+        ...t.turnoInfo,
+        estado: nuevoEstado,
+        horaLlegadaPaciente: payload.horaLlegadaPaciente,
+      };
+      // Retorna un nuevo objeto para el AgendaSlot
+      return { ...t, turnoInfo: turnoInfoActualizado };
+    }
+    return t;
+  });
+
+  recepcionStore.setKey('turnosDelDia', turnosActualizados);
 
   try {
     const response = await fetch(`/api/turno/${turno.turnoInfo?.id}/changeState`, {
@@ -84,12 +100,13 @@ export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['esta
     });
 
     const data = await response.json();
-    console.log(`Turno ${turno.turnoInfo.id} actualizado a ${nuevoEstado}`, data);
+    console.log(`Turno ${turno.turnoInfo.id} actualizado a ${nuevoEstado} en el backend`, data);
 
-    // La emisión del evento ahora la hace el backend.
-    // socket.emit('turno-actualizado', data);
+    // Nota: Cuando el socket funcione, esta actualización optimista puede que no sea necesaria,
+    // o puede servir como un fallback.
   } catch (error) {
     console.error('Error al cambiar estado del turno:', error);
+    // Aquí podrías implementar una lógica para revertir la actualización optimista si el backend falla.
   }
 }
 

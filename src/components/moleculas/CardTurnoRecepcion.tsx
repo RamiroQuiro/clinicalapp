@@ -113,9 +113,9 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
       <div className="flex gap-2 pt-2">
         <Button
           size="sm"
-          variant="primary"
+          variant={slot.turnoInfo?.estado === 'sala_de_espera' ? 'outline' : 'primary'}
+          disabled={slot.turnoInfo?.estado === 'sala_de_espera'}
           onClick={() => handleRecibirPaciente(slot)}
-          disabled={slot.turnoInfo?.estado === 'confirmado'}
         >
           <UserCheck className="h-4 w-4 mr-2" />
           Recibir

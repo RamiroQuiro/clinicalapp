@@ -1,3 +1,4 @@
+import type { AgendaSlot } from '@/context/agenda.store';
 import db from '@/db';
 import { turnos } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
@@ -11,7 +12,6 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
     const data = await request.json();
     const isTurno = await db.select().from(turnos).where(eq(turnos.id, turnoId));
 
-    console.log('data ingresando -> ', data);
     if (!isTurno.length) {
       return createResponse(404, 'Turno no encontrado');
     }
@@ -33,8 +33,26 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       io.emit('turno-actualizado', updatedTurno);
     }
 
-    console.log('turnoUpdate', updatedTurno);
-    return createResponse(200, 'Turno actualizado exitosamente', updatedTurno);
+    const armarTurno: AgendaSlot = {
+      disponible: false,
+      horaTurno: data.horaTurno,
+      turnoInfo: {
+        duracion: updatedTurno.duracion,
+        estado: updatedTurno.estado,
+        fechaTurno: updatedTurno.fechaTurno,
+        id: updatedTurno.id,
+        pacienteApellido: updatedTurno.apellidoPaciente,
+        pacienteDocumento: updatedTurno.documentoPaciente,
+        pacienteId: updatedTurno.pacienteId,
+        pacienteNombre: updatedTurno.nombrePaciente,
+        profesionalApellido: updatedTurno.apellidoProfesional,
+        profesionalId: updatedTurno.profesionalId,
+        profesionalNombre: updatedTurno.profesionalNombre,
+        motivoConsulta: updatedTurno.motivoConsulta,
+      },
+    };
+
+    return createResponse(200, 'Turno actualizado exitosamente', armarTurno);
   } catch (error) {
     console.error('Error al actualizar el turno:', error);
     return createResponse(500, 'Error interno del servidor', error);
