@@ -7,7 +7,6 @@ import { io } from 'socket/socket';
 
 export const POST: APIRoute = async ({ params, locals, request }) => {
   const { turnoId } = params;
-  console.log('enpoint changeStarte ->', turnoId);
   try {
     const data = await request.json();
     const isTurno = await db.select().from(turnos).where(eq(turnos.id, turnoId));
@@ -26,11 +25,18 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       })
       .where(eq(turnos.id, turnoId))
       .returning();
-    io.emit('turno-actualizado', { id: turnoId, estado: data.estado });
-    console.log('turnoUpdate', turnoUpdate);
-    return createResponse(200, 'Turno actualizado exitosamente', turnoUpdate[0]);
+
+    const updatedTurno = turnoUpdate[0];
+
+    // Emitir el evento con el objeto del turno completo y actualizado
+    if (io && updatedTurno) {
+      io.emit('turno-actualizado', updatedTurno);
+    }
+
+    console.log('turnoUpdate', updatedTurno);
+    return createResponse(200, 'Turno actualizado exitosamente', updatedTurno);
   } catch (error) {
-    console.log(error);
-    return createResponse(200, 'Turno actualizado exitosamente', error);
+    console.error('Error al actualizar el turno:', error);
+    return createResponse(500, 'Error interno del servidor', error);
   }
 };

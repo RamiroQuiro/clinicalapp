@@ -18,12 +18,6 @@ export default function socketIntegration(): AstroIntegration {
         io.on('connection', socket => {
           console.log('Cliente conectado:', socket.id);
 
-          socket.on('cambiar-estado-turno', async ({ turnoId, nuevoEstado }) => {
-            console.log('Cambio de estado', turnoId, nuevoEstado);
-            // 👇 Acá ya podés usar servicios de Astro o directamente DB
-            io.emit('turno-actualizado', { id: turnoId, estado: nuevoEstado });
-          });
-
           socket.on('disconnect', () => {
             console.log('Cliente desconectado:', socket.id);
           });

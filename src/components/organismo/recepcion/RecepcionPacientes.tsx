@@ -5,7 +5,7 @@ import Section from '@/components/moleculas/Section';
 import type { AgendaSlot } from '@/context/agenda.store';
 import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
-import { recepcionStore, updateTurnoStatus } from '../../../context/recepcion.store';
+import { recepcionStore, setTurnoEstado } from '../../../context/recepcion.store';
 
 type Props = {
   userId: string;
@@ -25,7 +25,7 @@ export default function RecepcionPacientes({ userId }: Props) {
   }, [userId]);
 
   const handleRecepcion = (slot: AgendaSlot) => {
-    updateTurnoStatus(slot.turnoInfo?.id ?? '', 'sala_de_espera');
+    setTurnoEstado(slot, 'sala_de_espera');
   };
 
   const handleAtender = (slot: AgendaSlot) => {
@@ -37,7 +37,7 @@ export default function RecepcionPacientes({ userId }: Props) {
         <Input type="search" placeholder="Buscar paciente" />
         <div className="flex flex-col mt-4 gap-2">
           {turnosDelDia
-            .filter((turno): AgendaSlot => turno.disponible == false)
+            .filter((turno): AgendaSlot => turno.disponible === false)
             .map((turno: AgendaSlot) => (
               <CardTurnoRecepcion
                 key={turno.id}

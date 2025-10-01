@@ -1,5 +1,7 @@
+import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { computed, map } from 'nanostores';
 import { io } from 'socket.io-client';
+import type { AgendaSlot } from './agenda.store';
 
 // --- TIPOS ---
 type Turno = {
@@ -16,17 +18,17 @@ type Turno = {
   horaLlegadaPaciente?: string;
   [key: string]: any;
 };
-
-// --- SOCKET ---
-const socket = io(); // Se conecta automáticamente al mismo host/puerto que el frontend
-
-// --- STORE PRINCIPAL ---
-export const recepcionStore = map<{
+interface RecepcionStore {
   turnosDelDia: Turno[];
   isLoading: boolean;
   pestanaActiva: 'pacientes' | 'recepcion' | 'salaDeEspera';
   error: string | null;
-}>({
+}
+// --- SOCKET ---
+const socket = io(); // Se conecta automáticamente al mismo host/puerto que el frontend
+
+// --- STORE PRINCIPAL ---
+export const recepcionStore = map<RecepcionStore>({
   turnosDelDia: [],
   isLoading: true,
   pestanaActiva: 'recepcion',
@@ -64,25 +66,28 @@ export async function fetchTurnosDelDia(fecha: string) {
 /**
  * Cambia el estado de un turno y envía la actualización al backend.
  */
-export async function setTurnoEstado(turno: Turno, nuevoEstado: Turno['estado']) {
+export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['estado']) {
   const payload = {
     ...turno,
     estado: nuevoEstado,
-    horaLlegadaPaciente: nuevoEstado === 'sala_de_espera' ? new Date().toISOString() : undefined,
+    horaLlegadaPaciente:
+      nuevoEstado === 'sala_de_espera'
+        ? new Date(getFechaEnMilisegundos()).toISOString()
+        : undefined,
   };
 
   try {
-    const response = await fetch(`/api/turno/${turno.id}/changeState`, {
+    const response = await fetch(`/api/turno/${turno.turnoInfo?.id}/changeState`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
     const data = await response.json();
-    console.log(`Turno ${turno.id} actualizado a ${nuevoEstado}`, data);
+    console.log(`Turno ${turno.turnoInfo.id} actualizado a ${nuevoEstado}`, data);
 
-    // Emitimos evento para notificar al resto de clientes conectados
-    socket.emit('turno-actualizado', data);
+    // La emisión del evento ahora la hace el backend.
+    // socket.emit('turno-actualizado', data);
   } catch (error) {
     console.error('Error al cambiar estado del turno:', error);
   }
@@ -94,8 +99,12 @@ socket.on('connect', () => console.log('✅ Conectado al servidor de sockets des
 
 socket.on('turno-actualizado', (turnoActualizado: Turno) => {
   console.log('EVENTO RECIBIDO: turno-actualizado', turnoActualizado);
-  recepcionStore.setKey('turnosDelDia', $store =>
-    $store.turnosDelDia.map(t => (t.id === turnoActualizado.id ? { ...t, ...turnoActualizado } : t))
+  recepcionStore.setKey('turnosDelDia', store =>
+    store.turnosDelDia.map(t =>
+      t.turnoInfo && t.turnoInfo.id === turnoActualizado.id
+        ? { ...t, turnoInfo: { ...t.turnoInfo, ...turnoActualizado } }
+        : t
+    )
   );
 });
 
