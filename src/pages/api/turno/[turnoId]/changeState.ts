@@ -1,20 +1,30 @@
+// pages/api/turnos/[turnoId]/changeState.ts
 import type { AgendaSlot } from '@/context/agenda.store';
 import db from '@/db';
 import { turnos } from '@/db/schema';
+import { emitEvent } from '@/lib/sse/sse';
+
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
-import { io } from 'socket/socket';
 
-export const POST: APIRoute = async ({ params, locals, request }) => {
+export const POST: APIRoute = async ({ params, request }) => {
   const { turnoId } = params;
+
+  console.log('🎯 ENDPOINT CALLED with turnoId:', turnoId);
+
   try {
     const data = await request.json();
+    console.log('📥 Data received:', data);
+
+    // 1. Validación en BD
     const isTurno = await db.select().from(turnos).where(eq(turnos.id, turnoId));
 
     if (!isTurno.length) {
       return createResponse(404, 'Turno no encontrado');
     }
+
+    // 2. Update en BD
     const turnoUpdate = await db
       .update(turnos)
       .set({
@@ -27,34 +37,27 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       .returning();
 
     const updatedTurno = turnoUpdate[0];
+    console.log('✅ Database updated:', updatedTurno.id, updatedTurno.estado);
 
-    // Emitir el evento con el objeto del turno completo y actualizado
-    if (io && updatedTurno) {
-      io.emit('turno-actualizado', updatedTurno);
-    }
-
+    // 3. Armado de respuesta normalizada
     const armarTurno: AgendaSlot = {
       disponible: false,
-      horaTurno: data.horaTurno,
+      hora: updatedTurno.fechaTurno.toISOString(),
       turnoInfo: {
-        duracion: updatedTurno.duracion,
-        estado: updatedTurno.estado,
-        fechaTurno: updatedTurno.fechaTurno,
         id: updatedTurno.id,
-        pacienteApellido: updatedTurno.apellidoPaciente,
-        pacienteDocumento: updatedTurno.documentoPaciente,
-        pacienteId: updatedTurno.pacienteId,
-        pacienteNombre: updatedTurno.nombrePaciente,
-        profesionalApellido: updatedTurno.apellidoProfesional,
-        profesionalId: updatedTurno.profesionalId,
-        profesionalNombre: updatedTurno.profesionalNombre,
-        motivoConsulta: updatedTurno.motivoConsulta,
+        estado: updatedTurno.estado,
+        horaLlegadaPaciente: updatedTurno.horaLlegadaPaciente,
+        // ... resto de campos que necesites
       },
     };
 
-    return createResponse(200, 'Turno actualizado exitosamente', armarTurno);
+    // 4. Emitir el evento SSE a TODOS los clientes suscritos
+    emitEvent('turno-actualizado', armarTurno);
+
+    // 5. Respuesta al cliente que hizo el fetch
+    return createResponse(200, 'Turno actualizado', armarTurno);
   } catch (error) {
-    console.error('Error al actualizar el turno:', error);
-    return createResponse(500, 'Error interno del servidor', error);
+    console.error('❌ Endpoint error:', error);
+    return createResponse(500, 'Error interno', error);
   }
 };

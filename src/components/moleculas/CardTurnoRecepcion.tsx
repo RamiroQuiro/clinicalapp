@@ -60,11 +60,11 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
           <div className="p-3 rounded-full uppercase bg-primary-bg-componentes border">
             <div>
               {slot.turnoInfo?.pacienteNombre
-                .split(' ')
+                ?.split(' ')
                 .map(n => n[0])
                 .join('')}
               {slot.turnoInfo?.pacienteApellido
-                .split(' ')
+                ?.split(' ')
                 .map(n => n[0])
                 .join('')}
             </div>

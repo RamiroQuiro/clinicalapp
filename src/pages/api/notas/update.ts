@@ -3,7 +3,7 @@ import { notasMedicas } from '@/db/schema';
 import { logAuditEvent } from '@/lib/audit';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const { session, user } = locals;
@@ -20,9 +20,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     // 1. Obtener el valor antiguo para la auditoría
-    const oldNote = await db.query.notasMedicas.findFirst({
-      where: and(eq(notasMedicas.id, id), eq(notasMedicas.userMedicoId, user.id)),
-    });
+    const oldNote = await db.select().from(notasMedicas).where(eq(notasMedicas.id, id));
 
     if (!oldNote) {
       return createResponse(404, 'Nota no encontrada o sin permisos para editar');
@@ -47,7 +45,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       actionType: 'UPDATE',
       tableName: 'notasMedicas',
       recordId: id,
-      oldValue: oldNote,
+      oldValue: oldNote[0],
       newValue: updatedResult[0],
       description: `El usuario ${user.name} actualizó una nota médica.`,
       ipAddress: request.headers.get('x-forwarded-for') || undefined,
