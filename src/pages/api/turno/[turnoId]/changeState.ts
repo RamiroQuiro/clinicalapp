@@ -4,7 +4,7 @@ import { turnos } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
-import { io } from 'socket/socket';
+import { getSocketIO } from 'socket/socket';
 
 export const POST: APIRoute = async ({ params, locals, request }) => {
   const { turnoId } = params;
@@ -27,6 +27,9 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       .returning();
 
     const updatedTurno = turnoUpdate[0];
+
+    const io = getSocketIO();
+    console.log('io ->', io);
 
     // Emitir el evento con el objeto del turno completo y actualizado
     if (io && updatedTurno) {
