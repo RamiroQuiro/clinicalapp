@@ -64,15 +64,24 @@ export function manejarEventoSSE(evento: any) {
   if (evento.type === 'turno-actualizado') {
     const turnoActualizado = evento.data;
 
-    const updateArrayTurnoDia = recepcionStore.get().turnosDelDia.map(turno => {
-      if (turno.id === turnoActualizado.id) {
-        turno.estado = turnoActualizado.estado;
-        turno.horaLlegadaPaciente = turnoActualizado.horaLlegadaPaciente;
-        return turno;
+    const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
+
+    const agendaSlotsNuevos = agendaSlotsActuales.map(slot => {
+      // Comparamos el ID que está dentro del objeto turnoInfo
+      if (slot.turnoInfo?.id === turnoActualizado.id) {
+        // Creamos un objeto turnoInfo nuevo e inmutable
+        const turnoInfoNuevo = {
+          ...slot.turnoInfo,
+          estado: turnoActualizado.estado,
+          horaLlegadaPaciente: turnoActualizado.horaLlegadaPaciente,
+        };
+        // Creamos un AgendaSlot nuevo que contiene el turnoInfo actualizado
+        return { ...slot, turnoInfo: turnoInfoNuevo };
       }
-      return turno;
+      return slot; // Devolvemos el slot sin cambios si no coincide
     });
-    recepcionStore.setKey('turnosDelDia', updateArrayTurnoDia);
+
+    recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
     console.log(`🔄 Store actualizado via SSE: ${turnoActualizado.id}`);
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }

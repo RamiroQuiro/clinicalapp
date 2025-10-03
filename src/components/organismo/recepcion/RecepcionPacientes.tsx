@@ -42,12 +42,12 @@ export default function RecepcionPacientes({ userId }: Props) {
     <div className="flex flex-  gap-2 items-start justify-between">
       <Section title="🤒 Recepcion de Pacientes" className="flex  flex-1 flex-col">
         <Input type="search" placeholder="Buscar paciente" />
-        <div className="flex flex-col mt-4 gap-2">
+        <div key={1} className="flex flex-col mt-4 gap-2">
           {turnosDelDia
             .filter((turno): AgendaSlot => turno.disponible === false)
             .map((turno: AgendaSlot) => (
               <CardTurnoRecepcion
-                key={turno.id}
+                key={turno.turnoInfo.id}
                 slot={turno}
                 onVerDetalles={() => {}}
                 onReagendar={() => {}}
@@ -59,7 +59,7 @@ export default function RecepcionPacientes({ userId }: Props) {
         </div>
       </Section>
       <Section title="🚀 Proximos turnos" classContent="flex  flex-col w-1/2">
-        <div className="flex flex-col gap-2  w-full">
+        <div key={2} className="flex flex-col gap-2  w-full">
           {turnosDelDia
             .filter((turno): AgendaSlot => turno.turnoInfo?.estado === 'sala_de_espera')
             .map((turno, i) => (
