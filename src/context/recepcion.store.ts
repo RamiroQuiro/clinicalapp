@@ -64,16 +64,15 @@ export function manejarEventoSSE(evento: any) {
   if (evento.type === 'turno-actualizado') {
     const turnoActualizado = evento.data;
 
-    const turnosActuales = recepcionStore.get().turnosDelDia;
-    const turnosNuevos = turnosActuales.map(turno => {
+    const updateArrayTurnoDia = recepcionStore.get().turnosDelDia.map(turno => {
       if (turno.id === turnoActualizado.id) {
-        // Reemplazar con datos actualizados del servidor
-        return turnoActualizado;
+        turno.estado = turnoActualizado.estado;
+        turno.horaLlegadaPaciente = turnoActualizado.horaLlegadaPaciente;
+        return turno;
       }
       return turno;
     });
-
-    recepcionStore.setKey('turnosDelDia', turnosNuevos);
+    recepcionStore.setKey('turnosDelDia', updateArrayTurnoDia);
     console.log(`🔄 Store actualizado via SSE: ${turnoActualizado.id}`);
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
