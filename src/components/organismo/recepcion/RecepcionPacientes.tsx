@@ -3,9 +3,9 @@ import CardSalaEspera from '@/components/moleculas/CardSalaEspera';
 import CardTurnoRecepcion from '@/components/moleculas/CardTurnoRecepcion';
 import Section from '@/components/moleculas/Section';
 import type { AgendaSlot } from '@/context/agenda.store';
+import { useSSE } from '@/hook/useSSE';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
-import { useEffect, useState } from 'react';
 import { recepcionStore, setTurnoEstado } from '../../../context/recepcion.store';
 
 type Props = {
@@ -13,19 +13,13 @@ type Props = {
 };
 
 export default function RecepcionPacientes({ userId }: Props) {
-  const [pacientesEnEsperaDB, setPacientesEnEsperaDB] = useState([]);
-  const { turnosDelDia, isLoading } = useStore(recepcionStore);
+  const { turnosDelDia, isLoading, ultimaActualizacion } = useStore(recepcionStore);
+  const { sseConectado } = useSSE(userId);
+
+  console.log('🔌 Estado SSE:', sseConectado ? '🟢 Conectado' : '🔴 Desconectado');
 
   console.log('turnosDelDia ->', turnosDelDia);
-
-  useEffect(() => {
-    const getData = async () => {
-      recepcionStore.setKey('isLoading', true);
-      recepcionStore.setKey('isLoading', false);
-    };
-    getData();
-    return () => {};
-  }, [userId]);
+  console.log('Ultima actualizacion ->', ultimaActualizacion);
 
   const handleRecepcion = (slot: AgendaSlot) => {
     if (slot.turnoInfo?.estado === 'confirmado') return;

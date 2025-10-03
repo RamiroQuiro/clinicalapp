@@ -1,6 +1,8 @@
+// context/recepcion.store.ts
+import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { computed, map } from 'nanostores';
-import { io } from 'socket.io-client';
+
 import type { AgendaSlot } from './agenda.store';
 
 // --- TIPOS ---
@@ -18,14 +20,15 @@ type Turno = {
   horaLlegadaPaciente?: string;
   [key: string]: any;
 };
+
 interface RecepcionStore {
   turnosDelDia: Turno[];
   isLoading: boolean;
   pestanaActiva: 'pacientes' | 'recepcion' | 'salaDeEspera';
   error: string | null;
+  sseConectado: boolean;
+  ultimaActualizacion: string | null;
 }
-// --- SOCKET ---
-const socket = io(); // Se conecta automáticamente al mismo host/puerto que el frontend
 
 // --- STORE PRINCIPAL ---
 export const recepcionStore = map<RecepcionStore>({
@@ -33,6 +36,8 @@ export const recepcionStore = map<RecepcionStore>({
   isLoading: true,
   pestanaActiva: 'recepcion',
   error: null,
+  sseConectado: false,
+  ultimaActualizacion: null,
 });
 
 // --- STORES COMPUTADOS ---
@@ -48,7 +53,60 @@ export const turnosEnConsulta = computed(recepcionStore, $store =>
   $store.turnosDelDia.filter(t => t.estado === 'en_consulta')
 );
 
-// --- ACCIONES ---
+// --- MANEJADOR DE EVENTOS SSE ---
+/**
+ * Esta función se llama cuando llegan eventos SSE del servidor
+ * Actualiza el store con los datos frescos del servidor
+ */
+export function manejarEventoSSE(evento: any) {
+  console.log('📥 Evento SSE recibido:', evento);
+
+  if (evento.type === 'turno-actualizado') {
+    const turnoActualizado = evento.data;
+
+    const turnosActuales = recepcionStore.get().turnosDelDia;
+    const turnosNuevos = turnosActuales.map(turno => {
+      if (turno.id === turnoActualizado.id) {
+        // Reemplazar con datos actualizados del servidor
+        return turnoActualizado;
+      }
+      return turno;
+    });
+
+    recepcionStore.setKey('turnosDelDia', turnosNuevos);
+    console.log(`🔄 Store actualizado via SSE: ${turnoActualizado.id}`);
+    recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
+  }
+
+  // Manejar otros tipos de eventos si es necesario
+  else if (evento.type === 'turno-eliminado') {
+    const turnoId = evento.data.id;
+    const turnosActuales = recepcionStore.get().turnosDelDia;
+    const turnosNuevos = turnosActuales.filter(t => t.id !== turnoId);
+
+    recepcionStore.setKey('turnosDelDia', turnosNuevos);
+    console.log(`🗑️ Turno eliminado via SSE: ${turnoId}`);
+    recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
+  }
+}
+
+// --- GESTIÓN DE CONEXIÓN SSE ---
+export function iniciarConexionSSE(userId?: string) {
+  if (userId) {
+    sseService.setUserId(userId);
+  }
+  sseService.connect();
+}
+
+export function detenerConexionSSE() {
+  sseService.disconnect();
+}
+
+export function getEstadoSSE() {
+  return recepcionStore.get().sseConectado;
+}
+
+// --- ACCIONES PRINCIPALES ---
 export async function fetchTurnosDelDia(fecha: string) {
   recepcionStore.setKey('isLoading', true);
   try {
@@ -56,6 +114,9 @@ export async function fetchTurnosDelDia(fecha: string) {
     if (!response.ok) throw new Error('Respuesta de red no fue ok');
     const data = await response.json();
     recepcionStore.setKey('turnosDelDia', data);
+
+    // ✅ INICIAR SSE después de cargar los turnos
+    iniciarConexionSSE();
   } catch (error: any) {
     recepcionStore.setKey('error', error.message);
   } finally {
@@ -66,6 +127,7 @@ export async function fetchTurnosDelDia(fecha: string) {
 /**
  * Cambia el estado de un turno y envía la actualización al backend.
  * También aplica una actualización optimista al store local.
+ * El SSE se encargará de sincronizar con otros clientes.
  */
 export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['estado']) {
   const payload = {
@@ -76,6 +138,8 @@ export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['esta
         ? new Date(getFechaEnMilisegundos()).toISOString()
         : undefined,
   };
+
+  // ✅ ACTUALIZACIÓN OPTIMISTA ORIGINAL (la que tenías)
   const turnosActuales = recepcionStore.get().turnosDelDia;
   const turnosActualizados = turnosActuales.map(t => {
     if (t.turnoInfo?.id === turno.turnoInfo?.id) {
@@ -102,27 +166,19 @@ export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['esta
     const data = await response.json();
     console.log(`Turno ${turno.turnoInfo.id} actualizado a ${nuevoEstado} en el backend`, data);
 
-    // Nota: Cuando el socket funcione, esta actualización optimista puede que no sea necesaria,
-    // o puede servir como un fallback.
+    // ✅ NO actualizamos el store aquí - SSE lo hará automáticamente para todos los clientes
   } catch (error) {
     console.error('Error al cambiar estado del turno:', error);
-    // Aquí podrías implementar una lógica para revertir la actualización optimista si el backend falla.
+    // ✅ REVERTIR ACTUALIZACIÓN OPTIMISTA si falla (manteniendo tu lógica original)
+    recepcionStore.setKey('turnosDelDia', turnosActuales);
+    recepcionStore.setKey('error', 'Error al guardar cambios en el servidor');
   }
 }
 
-// --- OYENTES DEL SOCKET ---
-// Actualiza el store automáticamente cuando llega un cambio de estado
-socket.on('connect', () => console.log('✅ Conectado al servidor de sockets desde el store.'));
-
-socket.on('turno-actualizado', (turnoActualizado: Turno) => {
-  console.log('EVENTO RECIBIDO: turno-actualizado', turnoActualizado);
-  recepcionStore.setKey('turnosDelDia', store =>
-    store.turnosDelDia.map(t =>
-      t.turnoInfo && t.turnoInfo.id === turnoActualizado.id
-        ? { ...t, turnoInfo: { ...t.turnoInfo, ...turnoActualizado } }
-        : t
-    )
-  );
-});
-
-socket.on('disconnect', () => console.log('❌ Desconectado del servidor de sockets.'));
+// --- ACCIONES DE CONVENIENCIA ---
+export const recepcionActions = {
+  recibirPaciente: (turno: AgendaSlot) => setTurnoEstado(turno, 'sala_de_espera'),
+  comenzarConsulta: (turno: AgendaSlot) => setTurnoEstado(turno, 'en_consulta'),
+  finalizarTurno: (turno: AgendaSlot) => setTurnoEstado(turno, 'finalizado'),
+  cancelarTurno: (turno: AgendaSlot) => setTurnoEstado(turno, 'cancelado'),
+};

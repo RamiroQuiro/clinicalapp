@@ -2,7 +2,6 @@ import node from '@astrojs/node';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import { defineConfig } from 'astro/config';
-import socketIntegration from './socket/socket';
 
 export default defineConfig({
   server: {
@@ -13,7 +12,7 @@ export default defineConfig({
   devToolbar: {
     enabled: false,
   },
-  integrations: [react(), tailwind(), socketIntegration()],
+  integrations: [react(), tailwind()],
   output: 'server',
   adapter: node({
     mode: 'standalone',
