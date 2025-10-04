@@ -3,8 +3,10 @@ import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { computed, map } from 'nanostores';
 
+import { toZonedTime } from 'date-fns-tz';
 import type { AgendaSlot } from './agenda.store';
 
+const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
 // --- TIPOS ---
 type Turno = {
   id: string;
@@ -22,7 +24,7 @@ type Turno = {
 };
 
 interface RecepcionStore {
-  turnosDelDia: Turno[];
+  turnosDelDia: AgendaSlot[];
   isLoading: boolean;
   pestanaActiva: 'pacientes' | 'recepcion' | 'salaDeEspera';
   error: string | null;
@@ -84,6 +86,30 @@ export function manejarEventoSSE(evento: any) {
     recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
     console.log(`🔄 Store actualizado via SSE: ${turnoActualizado.id}`);
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
+  }
+
+  // manejar turnos agendados recientes
+  else if (evento.type === 'turno-agendado') {
+    const turnoAgendado: AgendaSlot = evento.data;
+
+    const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
+    console.log('turnoAgendado', turnoAgendado);
+    const splitFechaTurno = turnoAgendado.turnoInfo?.fechaTurno.split('T');
+    let horaFormateada = toZonedTime(
+      `${splitFechaTurno[0]}T${turnoAgendado.turnoInfo?.horaTurno}:00.000`,
+      APP_TIME_ZONE
+    );
+
+    console.log('horaFormateada', horaFormateada);
+
+    const agendaSlotsNuevos = [
+      ...agendaSlotsActuales,
+      { ...turnoAgendado, hora: horaFormateada.toISOString() },
+    ];
+
+    recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
+    console.log(`🔄 Store actualizado via SSE: ${turnoAgendado.id}`);
+    recepcionStore.setKey('ultimaActualizacion', new Date(getFechaEnMilisegundos()).toISOString());
   }
 
   // Manejar otros tipos de eventos si es necesario

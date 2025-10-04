@@ -88,7 +88,8 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
         <div>
           <span className="text-muted-foreground">Turno:</span>
-          <p className="font-medium">{extraerHora(slot.turnoInfo?.horaTurno)}</p>
+          {/* FIX: Usar slot.hora que es el string ISO completo y corregido por el store */}
+          <p className="font-medium">{extraerHora(slot.hora)}</p>
         </div>
         <div>
           <span className="text-muted-foreground">Doctor:</span>

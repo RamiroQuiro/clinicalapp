@@ -47,6 +47,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         pacienteApellido: pacientes.apellido,
         pacienteDocumento: pacientes.dni,
         pacienteCelular: pacientes.celular,
+        especialidadProfesional: users.especialidad,
         horaLlegadaPaciente: turnos.horaLlegadaPaciente,
         profesionalId: users.id,
         profesionalNombre: users.nombre,
@@ -73,6 +74,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         `${fechaQuery}T${String(rango.inicio).padStart(2, '0')}:00:00`,
         APP_TIME_ZONE
       );
+
       const endSlotUtc = toZonedTime(
         `${fechaQuery}T${String(rango.fin).padStart(2, '0')}:00:00`,
         APP_TIME_ZONE
@@ -97,7 +99,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
         // Lógica de superposición de intervalos: (InicioA < FinB) y (FinA > InicioB)
         return slotInicio < turnoFin && slotFin > turnoInicio && turno.estado !== 'cancelado';
       });
-
       if (turnoOcupante) {
         return {
           hora: slotInicio.toISOString(),
@@ -112,6 +113,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             pacienteDocumento: turnoOcupante.pacienteDocumento,
             profesionalId: turnoOcupante.profesionalId,
             profesionalNombre: turnoOcupante.profesionalNombre,
+            especialidadProfesional: turnoOcupante.especialidadProfesional,
             profesionalApellido: turnoOcupante.profesionalApellido,
             motivoConsulta: turnoOcupante.motivoConsulta,
             horaTurno: turnoOcupante.horaTurno,

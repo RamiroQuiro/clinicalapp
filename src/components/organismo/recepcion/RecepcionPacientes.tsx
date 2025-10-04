@@ -6,6 +6,8 @@ import type { AgendaSlot } from '@/context/agenda.store';
 import { useSSE } from '@/hook/useSSE';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
+import { CheckCheck, Clock } from 'lucide-react';
+import { useMemo } from 'react';
 import { recepcionStore, setTurnoEstado } from '../../../context/recepcion.store';
 
 type Props = {
@@ -16,9 +18,21 @@ export default function RecepcionPacientes({ userId }: Props) {
   const { turnosDelDia, isLoading, ultimaActualizacion } = useStore(recepcionStore);
   const { sseConectado } = useSSE(userId);
 
-  console.log('🔌 Estado SSE:', sseConectado ? '🟢 Conectado' : '🔴 Desconectado');
+  // ✅ USAREMOS useMemo para derivar el estado de forma eficiente
+  const turnosAgendadosDia = useMemo(() => {
+    return turnosDelDia
+      .filter(turno => !turno.disponible)
+      .sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
+  }, [turnosDelDia]);
 
-  console.log('turnosDelDia ->', turnosDelDia);
+  const colaDeEspera = useMemo(() => {
+    return turnosDelDia
+      .filter(turno => turno.turnoInfo?.estado === 'sala_de_espera')
+      // Opcional: ordenar la cola de espera también, por ejemplo por hora de llegada
+      .sort((a, b) => new Date(a.turnoInfo.horaLlegadaPaciente).getTime() - new Date(b.turnoInfo.horaLlegadaPaciente).getTime());
+  }, [turnosDelDia]);
+
+  console.log('🔌 Estado SSE:', sseConectado ? '🟢 Conectado' : '🔴 Desconectado');
   console.log('Ultima actualizacion ->', ultimaActualizacion);
 
   const handleRecepcion = (slot: AgendaSlot) => {
@@ -43,9 +57,20 @@ export default function RecepcionPacientes({ userId }: Props) {
       <Section title="🤒 Recepcion de Pacientes" className="flex  flex-1 flex-col">
         <Input type="search" placeholder="Buscar paciente" />
         <div key={1} className="flex flex-col mt-4 gap-2">
-          {turnosDelDia
-            .filter((turno): AgendaSlot => turno.disponible === false)
-            .map((turno: AgendaSlot) => (
+          {turnosAgendadosDia.length === 0 ? (
+            <div className="w-full">
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-700/50 flex items-center justify-center">
+                  <Clock className="w-8 h-8 text-gray-500" />
+                </div>
+                <p className="text-gray-400 font-medium mb-1">No hay turnos agendados</p>
+                <p className="text-gray-500 text-sm">
+                  Los turnos aparecerán aquí cuando se agenden
+                </p>
+              </div>
+            </div>
+          ) : (
+            turnosAgendadosDia.map((turno: AgendaSlot) => (
               <CardTurnoRecepcion
                 key={turno.turnoInfo.id}
                 slot={turno}
@@ -55,16 +80,27 @@ export default function RecepcionPacientes({ userId }: Props) {
                 onLlamar={() => {}}
                 onRecibirPaciente={handleRecepcion}
               />
-            ))}
+            ))
+          )}
         </div>
       </Section>
       <Section title="🚀 Proximos turnos" classContent="flex  flex-col w-1/2">
         <div key={2} className="flex flex-col gap-2  w-full">
-          {turnosDelDia
-            .filter((turno): AgendaSlot => turno.turnoInfo?.estado === 'sala_de_espera')
-            .map((turno, i) => (
+          {colaDeEspera.length === 0 ? (
+            <div className="w-full">
+              <div className="text-center py-5">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-700/50 flex items-center justify-center">
+                  <CheckCheck className="w-8 h-8 text-gray-500" />
+                </div>
+                <p className="text-gray-400 font-medium mb-1">No hay turnos Recepcionados</p>
+                <p className="text-gray-500 text-sm">Los turnos recepcionados aparecerán aquí</p>
+              </div>
+            </div>
+          ) : (
+            colaDeEspera.map((turno: AgendaSlot, i: number) => (
               <CardSalaEspera key={i} turno={turno} index={i} />
-            ))}
+            ))
+          )}
         </div>
       </Section>
     </div>

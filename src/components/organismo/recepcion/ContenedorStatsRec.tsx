@@ -17,8 +17,6 @@ export default function ContendorStats({ userId }: Props) {
     turnosCancelados: 0,
   });
 
-  console.log('turnosDelDia en el contenedor de stats->', turnosDelDia);
-
   // Calculamos las estadísticas a partir de los datos del store
   useEffect(() => {
     const turnoDisponibles = turnosDelDia.filter(slot => slot.disponible === true).length;

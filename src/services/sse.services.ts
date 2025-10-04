@@ -39,6 +39,18 @@ class SSEService {
         }
       });
 
+      this.eventSource.addEventListener('turno-agendado', (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          manejarEventoSSE({
+            type: 'turno-agendado',
+            data: data,
+          });
+        } catch (error) {
+          console.error('❌ Error parsing turno-actualizado:', error);
+        }
+      });
+
       this.eventSource.addEventListener('turno-eliminado', (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);

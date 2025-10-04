@@ -1,7 +1,8 @@
 import db from '@/db';
-import { pacientes, turnos } from '@/db/schema';
+import { pacientes, turnos, users } from '@/db/schema';
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
+import { emitEvent } from '@/lib/sse/sse';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
@@ -37,7 +38,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         id: turnoId,
         pacienteId: data.pacienteId,
         otorgaUserId: user.id, // El usuario que crea el turno
-        userMedicoId: user.id, // El médico para el que es el turno (asumimos que es el mismo)
+        userMedicoId: user.id, // El médico para el que es el turno
         fechaTurno: new Date(data.fechaTurno),
         horaAtencion: data.horaTurno,
         duracion: data.duracion,
@@ -46,6 +47,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       })
       .returning();
 
+    const [dataProfesional] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, newTurno.userMedicoId));
     await logAuditEvent({
       userId: user.id,
       actionType: 'CREATE',
@@ -60,12 +65,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       disponible: false,
       turnoInfo: {
         id: newTurno.id,
+        pacienteDocumento: isPaciente[0].dni,
         pacienteId: newTurno.pacienteId,
         pacienteCelular: isPaciente[0].celular,
         pacienteNombre: isPaciente[0].nombre,
         pacienteApellido: isPaciente[0].apellido,
-        profesionalNombre: user.nombre,
-        profesionalApellido: user.apellido,
+        fechaTurno: newTurno.fechaTurno,
+        profesionalNombre: dataProfesional.nombre,
+        profesionalApellido: dataProfesional.apellido,
+        especialidadProfesional: dataProfesional.especialidad,
         motivoConsulta: data.motivoConsulta,
         horaTurno: newTurno.horaAtencion,
         duracion: newTurno.duracion,
@@ -73,6 +81,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       },
     };
 
+    emitEvent('turno-agendado', creandoResponse);
     return createResponse(200, 'Turno creado con éxito', creandoResponse);
   } catch (error: any) {
     console.error('Error al crear el turno:', error);

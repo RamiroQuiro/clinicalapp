@@ -47,7 +47,6 @@ export const FormularioTurno: React.FC = () => {
   );
 
   useEffect(() => {
-    console.log('turnoDelStore', turnoDelStore);
     setForm(turnoDelStore);
   }, [turnoDelStore]);
 
@@ -114,7 +113,6 @@ export const FormularioTurno: React.FC = () => {
       if (!response.ok) {
         throw new Error(data.msg || 'Error al crear el turno');
       }
-      console.log('respuest turno nuevo->', data.data);
       agendaDelDia.set([
         ...agendaDelDia.get(),
         { disponible: false, hora: fechaTurnoUtc.toISOString(), turnoInfo: data.data.turnoInfo },

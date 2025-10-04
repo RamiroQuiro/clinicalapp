@@ -9,6 +9,7 @@ export interface AgendaSlot {
     id: string;
     pacienteId: string;
     pacienteCelular: string;
+    fechaTurno: string;
     pacienteNombre: string;
     pacienteApellido: string;
     pacienteDocumento: string;
