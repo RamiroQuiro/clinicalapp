@@ -33,15 +33,10 @@ export default function AutoCheckInForm() {
         throw new Error(data.message || 'Ocurrió un error en el servidor.');
       }
 
-      console.log('[DEBUG] Respuesta exitosa de la API:', data);
-      console.log('[DEBUG] Token recibido:', data.token);
-
       setSuccessMessage(data.message + ' Será redirigido en 3 segundos...');
 
       // Redirigir al portal del paciente después de un momento
-      console.log('[DEBUG] Programando redirección...');
       setTimeout(() => {
-        console.log(`[DEBUG] ¡Redirigiendo ahora a /portal/${data.token}!`);
         window.location.href = `/portal/${data.token}`;
       }, 3000);
 

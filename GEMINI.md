@@ -195,6 +195,7 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
     #### 5. Mejoras de Usabilidad y Experiencia (UX)
     *   Dashboard más interactivo con estadísticas y alertas.
     *   Sistema de notificaciones dentro de la app.
+    *   **Notificaciones Push (Futuro)**: Implementar un sistema de Notificaciones Push web para enviar avisos importantes al profesional (ej: "Nuevo paciente en sala de espera") incluso si la app está en segundo plano.
 
 *   **Próximos Pasos**: Iniciar la implementación del módulo de auditoría, comenzando por el análisis del schema `auditLog.ts`.
 

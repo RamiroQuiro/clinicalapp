@@ -46,6 +46,17 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     eventSource.addEventListener('paciente-llamado', (event) => {
       const data = JSON.parse(event.data);
       setAhoraLlamando({ nombre: data.nombrePaciente, consultorio: data.consultorio });
+
+      // --- LÓGICA DE SÍNTESIS DE VOZ ---
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(
+          `Llamando a ${data.nombrePaciente}, consultorio ${data.consultorio}`
+        );
+        utterance.lang = 'es-AR'; // Establecer el idioma para la pronunciación correcta
+        window.speechSynthesis.speak(utterance);
+      } else {
+        console.warn('La síntesis de voz no es soportada en este navegador.');
+      }
     });
 
     eventSource.onerror = () => {
