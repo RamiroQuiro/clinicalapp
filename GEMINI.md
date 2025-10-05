@@ -162,8 +162,16 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 
     ### Roadmap de Desarrollo
 
+    #### 0. Flujo de Auto Check-in (Prioridad Inmediata)
+    *   **Objetivo**: Permitir que los pacientes hagan el check-in ellos mismos al llegar al consultorio sin necesidad de una recepcionista.
+    *   **Componentes**:
+        *   Página pública `/autocheckin` con campo para DNI.
+        *   Endpoint de API `POST /api/autocheckin` para validar el DNI, cambiar el estado del turno a "sala_de_espera" y emitir el evento SSE `turno-actualizado`.
+        *   Generación de un token de sesión temporal para el paciente.
+        *   Redirección a un portal de paciente (`/portal/[token]`) donde puede ver su estado.
+
     #### 1. Consolidar y Mejorar lo Existente
-    *   **Auditoría de Acciones Críticas (Prioridad Actual)**: Implementar un sistema de logs para registrar eventos importantes (ej: modificar consulta finalizada, eliminar registros, etc.).
+    *   **Auditoría de Acciones Críticas**: Implementar un sistema de logs para registrar eventos importantes (ej: modificar consulta finalizada, eliminar registros, etc.).
     *   **Flujo de Finalización de Consulta (En progreso)**: Implementar el flujo de feedback (toast) y botones dinámicos (Generar PDF, etc.) tras finalizar una consulta.
     *   Revisar y finalizar la edición de pacientes.
     *   Generación y Exportación de Documentos:
@@ -249,3 +257,29 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Actualización**: Se confirma que el flujo de finalización de consulta y gestión de enmiendas (modal de confirmación, sellado de consulta y sistema de adendas) ha sido implementado por el usuario.
 *   **Acción**: Se actualiza el `GEMINI.md` para reflejar este avance y se modifica el estado del roadmap.
 *   **Próximos Pasos**: Revisar el roadmap actualizado con el usuario para definir la siguiente tarea prioritaria.
+
+---
+## Sesión 12: 2025-10-03
+
+*   **Objetivo**: Implementar la vista de "Sala de Espera" y definir el flujo de trabajo de la recepcionista.
+*   **Decisión de Arquitectura**: A petición del usuario, se decidió no modificar la tarjeta minimalista `CardSalaEspera.tsx`. En su lugar, se creó un nuevo componente `CardSalaEsperaDetallada.tsx` para la nueva vista.
+*   **Implementación - "Sala de Espera"**:
+    *   **Hook `useElapsedTime.ts`**: Se creó un hook reutilizable para calcular y mostrar en tiempo real el tiempo transcurrido.
+    *   **Componente `CardSalaEsperaDetallada.tsx`**: Se creó una nueva tarjeta que incluye el temporizador de espera, botones de prioridad ("Subir", "Bajar") y botones de acción ("Llamar ahora", "Notificar").
+    *   **Componente `SalaDeEspera.tsx`**: Se creó la vista principal que consume los datos del store y renderiza la lista de pacientes en espera usando la nueva tarjeta detallada.
+*   **Bug Fix en Navegación**: Se solucionó un problema que impedía cambiar de pestañas. La causa era una inconsistencia en el `id` de la pestaña (`'salaEspera'` vs `'salaDeEspera'`). Se estandarizó a `'salaDeEspera'` en todos los archivos (`MenuPestaña.tsx`, `ContenedorRenderizdoPantalla.tsx`) y se añadió la función `setPestanaActiva` que faltaba en el store `recepcion.store.ts`.
+*   **Definición de Flujo**: Se clarificó el propósito de los botones de acción: "Llamar" se asocia a un turnero público y "Notificar" a un aviso privado (SMS/WhatsApp). Se eliminó el botón "Atender" de la vista de la recepcionista por no corresponder a su rol.
+*   **Próximos Pasos**: Se definió el flujo para una nueva funcionalidad de "Auto Check-in" para pacientes.
+
+---
+## Sesión 12: 2025-10-03
+
+*   **Objetivo**: Implementar la vista de "Sala de Espera" y definir el flujo de trabajo de la recepcionista.
+*   **Decisión de Arquitectura**: A petición del usuario, se decidió no modificar la tarjeta minimalista `CardSalaEspera.tsx`. En su lugar, se creó un nuevo componente `CardSalaEsperaDetallada.tsx` para la nueva vista.
+*   **Implementación - "Sala de Espera"**:
+    *   **Hook `useElapsedTime.ts`**: Se creó un hook reutilizable para calcular y mostrar en tiempo real el tiempo transcurrido.
+    *   **Componente `CardSalaEsperaDetallada.tsx`**: Se creó una nueva tarjeta que incluye el temporizador de espera, botones de prioridad ("Subir", "Bajar") y botones de acción ("Llamar ahora", "Notificar").
+    *   **Componente `SalaDeEspera.tsx`**: Se creó la vista principal que consume los datos del store y renderiza la lista de pacientes en espera usando la nueva tarjeta detallada.
+*   **Bug Fix en Navegación**: Se solucionó un problema que impedía cambiar de pestañas. La causa era una inconsistencia en el `id` de la pestaña (`'salaEspera'` vs `'salaDeEspera'`). Se estandarizó a `'salaDeEspera'` en todos los archivos (`MenuPestaña.tsx`, `ContenedorRenderizdoPantalla.tsx`) y se añadió la función `setPestanaActiva` que faltaba en el store `recepcion.store.ts`.
+*   **Definición de Flujo**: Se clarificó el propósito de los botones de acción: "Llamar" se asocia a un turnero público y "Notificar" a un aviso privado (SMS/WhatsApp). Se eliminó el botón "Atender" de la vista de la recepcionista por no corresponder a su rol.
+*   **Próximos Pasos**: Se definió el flujo para una nueva funcionalidad de "Auto Check-in" para pacientes.

@@ -5,7 +5,7 @@ type Props = {};
 // --- Definición de Pestañas (IDs ajustados al store) ---
 const tabs = [
   { id: 'recepcion', name: 'Recepción' },
-  { id: 'salaEspera', name: 'Sala de Espera' },
+  { id: 'salaDeEspera', name: 'Sala de Espera' },
   { id: 'pacientes', name: 'Pacientes' },
 ];
 

@@ -31,11 +31,10 @@ export default function ContenedorRenderizdoPantalla({ userId }: Props) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        
+
         // 2. Guardamos los datos en el store global
         recepcionStore.setKey('turnosDelDia', data.data);
         recepcionStore.setKey('isLoading', false);
-
       } catch (error) {
         console.error('Error al obtener la agenda:', error);
         recepcionStore.setKey('error', error.message);
@@ -50,7 +49,7 @@ export default function ContenedorRenderizdoPantalla({ userId }: Props) {
     switch (pestanaActiva) {
       case 'recepcion':
         return <RecepcionPacientes userId={userId} />;
-      case 'salaEspera':
+      case 'salaDeEspera':
         return <SalaDeEspera />;
       case 'pacientes':
         return <PacientesRecepcion />;

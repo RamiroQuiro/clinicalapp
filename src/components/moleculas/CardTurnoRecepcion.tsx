@@ -3,6 +3,7 @@ import extraerHora from '@/utils/extraerHora';
 import { AlertCircle, CalendarPlus2, MessageSquare, Phone, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../atomos/Button';
+import InicialesPac from './InicialesPac';
 
 interface TurnoCardProps {
   slot: AgendaSlot;
@@ -57,18 +58,10 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
     <div key={slot.turnoInfo?.id} className="border rounded-lg p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-full uppercase bg-primary-bg-componentes border">
-            <div>
-              {slot.turnoInfo?.pacienteNombre
-                ?.split(' ')
-                .map(n => n[0])
-                .join('')}
-              {slot.turnoInfo?.pacienteApellido
-                ?.split(' ')
-                .map(n => n[0])
-                .join('')}
-            </div>
-          </div>
+          <InicialesPac
+            nombre={slot.turnoInfo?.pacienteNombre}
+            apellido={slot.turnoInfo?.pacienteApellido}
+          />
           <div>
             <p className="font-medium capitalize">
               {slot.turnoInfo?.pacienteNombre} {slot.turnoInfo?.pacienteApellido}

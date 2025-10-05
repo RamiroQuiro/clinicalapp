@@ -42,6 +42,11 @@ export const recepcionStore = map<RecepcionStore>({
   ultimaActualizacion: null,
 });
 
+// --- ACCIÓN PARA CAMBIAR PESTAÑA ---
+export function setPestanaActiva(pestana: RecepcionStore['pestanaActiva']) {
+  recepcionStore.setKey('pestanaActiva', pestana);
+}
+
 // --- STORES COMPUTADOS ---
 export const pacientesEnEspera = computed(recepcionStore, $store =>
   $store.turnosDelDia.filter(t => t.estado === 'sala_de_espera')

@@ -1,0 +1,78 @@
+---
+import db from '@/db';
+import { pacientes, turnos, users } from '@/db/schema';
+import { portalSessions } from '@/db/schema/portalSessions';
+import Layout from '@/layouts/Layout.astro';
+import { and, eq, gte } from 'drizzle-orm';
+
+import PatientPortal from '@/components/organismo/portal/PatientPortal.tsx';
+
+// --- Validación del Token en el Servidor ---
+const { token } = Astro.params;
+let isValid = false;
+let initialPortalData: any = null;
+
+if (token) {
+  const session = await db
+    .select()
+    .from(portalSessions)
+    .where(and(eq(portalSessions.token, token), gte(portalSessions.expiresAt, new Date())));
+
+  if (session.length > 0) {
+    const validSession = session[0];
+
+    // Si la sesión es válida, buscamos todos los datos del turno
+    const turnoData = await db
+      .select()
+      .from(turnos)
+      .leftJoin(pacientes, eq(turnos.pacienteId, pacientes.id))
+      .leftJoin(users, eq(turnos.userMedicoId, users.id))
+      .where(eq(turnos.id, validSession.turnoId));
+
+    if (turnoData.length > 0) {
+      isValid = true;
+      const data = turnoData[0];
+
+      // Preparamos los datos iniciales para el portal
+      initialPortalData = {
+        paciente: {
+          nombre: data.pacientes?.nombre,
+          apellido: data.pacientes?.apellido,
+        },
+        medico: {
+          nombre: data.users?.nombre,
+          apellido: data.users?.apellido,
+        },
+        turno: {
+          id: data.turnos.id,
+          estado: data.turnos.estado,
+          horaTurno: data.turnos.horaAtencion,
+        },
+      };
+    }
+  }
+}
+---
+
+<Layout title="Portal del Paciente">
+  <main class="container mx-auto py-8 px-4">
+    {
+      isValid && initialPortalData ? (
+        <PatientPortal client:load initialData={initialPortalData} />
+      ) : (
+        <div class="text-center py-20">
+          <h1 class="text-2xl font-bold text-red-600">Acceso Inválido o Expirado</h1>
+          <p class="text-gray-500 mt-2">
+            El link para acceder al portal no es correcto o su tiempo de validez ha terminado.
+          </p>
+          <a
+            href="/autocheckin"
+            class="mt-6 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Volver a intentar Check-in
+          </a>
+        </div>
+      )
+    }
+  </main>
+</Layout>

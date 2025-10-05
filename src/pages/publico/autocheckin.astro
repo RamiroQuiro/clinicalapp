@@ -1,0 +1,14 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import AutoCheckInForm from '@/components/organismo/autocheckin/AutoCheckInForm.tsx';
+---
+
+<Layout title="Auto Check-in">
+  <main class="container mx-auto flex justify-center items-center min-h-screen">
+    <div class="max-w-md w-full">
+      <h1 class="text-3xl font-bold text-center mb-2 text-gray-800">Bienvenido</h1>
+      <p class="text-center text-gray-500 mb-8">Por favor, ingrese su DNI para registrar su llegada.</p>
+      <AutoCheckInForm client:load />
+    </div>
+  </main>
+</Layout>
