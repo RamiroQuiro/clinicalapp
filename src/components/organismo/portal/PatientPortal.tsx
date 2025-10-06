@@ -47,16 +47,24 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       const data = JSON.parse(event.data);
       setAhoraLlamando({ nombre: data.nombrePaciente, consultorio: data.consultorio });
 
-      // --- LÓGICA DE SÍNTESIS DE VOZ ---
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(
-          `Llamando a ${data.nombrePaciente}, consultorio ${data.consultorio}`
-        );
-        utterance.lang = 'es-AR'; // Establecer el idioma para la pronunciación correcta
-        window.speechSynthesis.speak(utterance);
-      } else {
-        console.warn('La síntesis de voz no es soportada en este navegador.');
-      }
+      // --- LÓGICA DE SONIDO Y VOZ ---
+      const audio = new Audio('/sonido-alerta.mp3');
+      
+      // Cuando el sonido termine, se dispara la voz
+      audio.onended = () => {
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(
+            `Llamando a ${data.nombrePaciente}, consultorio ${data.consultorio}`
+          );
+          utterance.lang = 'es-AR';
+          window.speechSynthesis.speak(utterance);
+        } else {
+          console.warn('La síntesis de voz no es soportada en este navegador.');
+        }
+      };
+
+      // Reproducir el sonido de alerta
+      audio.play().catch(error => console.error("Error al reproducir audio:", error));
     });
 
     eventSource.onerror = () => {
