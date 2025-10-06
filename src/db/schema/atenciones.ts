@@ -1,7 +1,9 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { centrosMedicos } from './centrosMedicos';
 import { historiaClinica } from './historiaClinica';
 import { pacientes } from './pacientes';
+import { turnos } from './turnos';
 import { users } from './users';
 
 export const atenciones = sqliteTable('atenciones', {
@@ -22,6 +24,16 @@ export const atenciones = sqliteTable('atenciones', {
   tratamientoId: text('tratamientoId'),
   tratamiento: text('tratamiento'),
   planSeguir: text('planSeguir'),
+  turnoId: text('turnoId').references(() => turnos.id, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }),
+  centroMedicoId: integer('centroMedicoId')
+    .references(() => centrosMedicos.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    })
+    .notNull(),
   motivoInicial: text('motivoInicial'),
   observaciones: text('observaciones'),
   estado: text('estado', { enum: ['pendiente', 'en_curso', 'enAtencion', 'finalizada'] }).default(

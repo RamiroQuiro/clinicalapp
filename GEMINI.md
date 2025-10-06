@@ -273,14 +273,20 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Próximos Pasos**: Se definió el flujo para una nueva funcionalidad de "Auto Check-in" para pacientes.
 
 ---
-## Sesión 12: 2025-10-03
+## Sesión 13: 2025-10-06
 
-*   **Objetivo**: Implementar la vista de "Sala de Espera" y definir el flujo de trabajo de la recepcionista.
-*   **Decisión de Arquitectura**: A petición del usuario, se decidió no modificar la tarjeta minimalista `CardSalaEspera.tsx`. En su lugar, se creó un nuevo componente `CardSalaEsperaDetallada.tsx` para la nueva vista.
-*   **Implementación - "Sala de Espera"**:
-    *   **Hook `useElapsedTime.ts`**: Se creó un hook reutilizable para calcular y mostrar en tiempo real el tiempo transcurrido.
-    *   **Componente `CardSalaEsperaDetallada.tsx`**: Se creó una nueva tarjeta que incluye el temporizador de espera, botones de prioridad ("Subir", "Bajar") y botones de acción ("Llamar ahora", "Notificar").
-    *   **Componente `SalaDeEspera.tsx`**: Se creó la vista principal que consume los datos del store y renderiza la lista de pacientes en espera usando la nueva tarjeta detallada.
-*   **Bug Fix en Navegación**: Se solucionó un problema que impedía cambiar de pestañas. La causa era una inconsistencia en el `id` de la pestaña (`'salaEspera'` vs `'salaDeEspera'`). Se estandarizó a `'salaDeEspera'` en todos los archivos (`MenuPestaña.tsx`, `ContenedorRenderizdoPantalla.tsx`) y se añadió la función `setPestanaActiva` que faltaba en el store `recepcion.store.ts`.
-*   **Definición de Flujo**: Se clarificó el propósito de los botones de acción: "Llamar" se asocia a un turnero público y "Notificar" a un aviso privado (SMS/WhatsApp). Se eliminó el botón "Atender" de la vista de la recepcionista por no corresponder a su rol.
-*   **Próximos Pasos**: Se definió el flujo para una nueva funcionalidad de "Auto Check-in" para pacientes.
+*   **Objetivo**: Implementar una arquitectura multi-tenant para soportar múltiples centros médicos y definir el modelo de negocio SaaS.
+*   **Decisión de Arquitectura Clave**: Se migró de un sistema de ID único a un modelo de datos multi-tenant para permitir que la aplicación sea utilizada por múltiples consultorios o clínicas de forma independiente y segura.
+*   **Implementación del Schema**:
+    *   **`centrosMedicos.ts`**: Se creó una nueva tabla para definir cada entidad de negocio (clínica, consultorio).
+    *   **`usersCentrosMedicos.ts`**: Se creó una tabla pivote para vincular a los usuarios con los centros médicos, estableciendo un rol específico para cada usuario dentro de cada centro (`rolEnCentro`).
+    *   **`users.ts`**: Se añadió un `rol` global para cada usuario, definiendo su función principal en el sistema.
+    *   **`turnos.ts`**: Se añadió la columna `centroMedicoId` para vincular cada turno a un centro específico. Se mejoró la performance con índices y se corrigió la restricción `unique` para prevenir el doble bukeo de médicos a una misma hora (`unique().on(t.userMedicoId, t.fechaTurno)`).
+*   **Definición del Modelo de Negocio (SaaS)**:
+    *   Se discutieron los modelos de precios estándar (Por Usuario, Por Niveles, Por Uso).
+    *   Se recomendó un **Modelo por Niveles (Paquetes)** como el más flexible para empezar.
+    *   Se propuso la creación futura de una tabla `subscriptions` para gestionar el plan y el estado de pago de cada `centroMedico`.
+*   **Próximos Pasos / Flujo de Desarrollo**:
+    1.  **(Prioridad 1) Flujo de Registro del Administrador**: Implementar la página de registro donde el primer usuario (el "dueño") crea su cuenta y los datos de su nuevo centro médico en un solo paso.
+    2.  **(Prioridad 2) Flujo de Invitación de Usuarios**: Implementar la funcionalidad dentro de la app para que un administrador pueda invitar a nuevos miembros (médicos, recepcionistas) a su centro médico a través de un enlace seguro enviado por correo electrónico.
+    3.  **(Futuro) Implementación de Suscripciones**: Conectar la lógica de negocio a la tabla `subscriptions` para restringir funcionalidades o límites según el plan contratado por cada centro.
