@@ -1,0 +1,22 @@
+---
+import DivBox1 from '@/components/atomos/DivBox1.astro';
+import RegisterForm from '@/components/organismo/registro/RegisterForm.tsx';
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout title="Crear Nueva Cuenta">
+  <main class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <DivBox1 className=" w-fit p-16 shadow-xl">
+      <div>
+        <img class="mx-auto h-12 w-auto" src="/ramaCodeBlanco.png" alt="Logo" />
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Crea tu cuenta profesional
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+          Y empieza a gestionar tu consultorio hoy mismo.
+        </p>
+      </div>
+      <RegisterForm client:load />
+    </DivBox1>
+  </main>
+</Layout>

@@ -99,12 +99,23 @@ export default {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(150%)' },
         },
+        'fade-in-right': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateX(-20px)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateX(0)',
+          },
+        },
       },
       animation: {
         'waving-hand': 'abrirCat 2s linear infinite',
         aparecer: 'aparecer .75s ease-out ',
         apDeArriba: 'aparecerDeArriba .5s ease-in ',
         desaparecerCostado: 'desaparecerCote .3s ease-in ',
+        'fade-in-right': 'fade-in-right 0.5s ease-out',
       },
       boxShadow: {
         shadowCaja1: '10px 10px 25px -7px rgba(66,66,66,0.7)',

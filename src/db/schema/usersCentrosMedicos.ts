@@ -4,7 +4,7 @@ import { centrosMedicos } from './centrosMedicos';
 import { users } from './users';
 
 export const usersCentrosMedicos = sqliteTable('usersCentrosMedicos', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  id: integer('id').primaryKey(),
   userId: text('userId')
     .references(() => users.id)
     .notNull(),
