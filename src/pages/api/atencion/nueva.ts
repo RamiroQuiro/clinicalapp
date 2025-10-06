@@ -11,7 +11,7 @@ export const GET: APIRoute = async ({ request, locals, redirect }) => {
     const urlParams = new URL(newUrl);
     const pacienteId = urlParams.searchParams.get('pacienteId');
     const turnoId = urlParams.searchParams.get('turnoId');
-    const { session } = locals;
+    const { session, user } = locals;
 
     if (!pacienteId || !session?.userId) {
       return new Response(JSON.stringify({ error: 'Faltan datos requeridos' }), { status: 400 });
@@ -26,6 +26,7 @@ export const GET: APIRoute = async ({ request, locals, redirect }) => {
         id: idAtencion,
         pacienteId,
         userIdMedico: session.userId,
+        centroMedicoId: user?.centroMedicoId || 1,
         estado: 'en_curso',
         fechaInicio: horaInicio,
       })

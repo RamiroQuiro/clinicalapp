@@ -11,6 +11,7 @@ export const usersCentrosMedicos = sqliteTable('usersCentrosMedicos', {
   centroMedicoId: integer('centroMedicoId')
     .references(() => centrosMedicos.id)
     .notNull(),
+  nombreCentroMedico: text('nombreCentroMedico').notNull(),
   rolEnCentro: text('rolEnCentro', {
     enum: ['profesional', 'recepcion', 'adminLocal'],
   }).notNull(),

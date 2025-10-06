@@ -1,5 +1,5 @@
 import db from '@/db';
-import { users } from '@/db/schema';
+import { users, usersCentrosMedicos } from '@/db/schema';
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
@@ -47,6 +47,10 @@ export async function POST({ request, cookies }: APIContext): Promise<Response> 
     return createResponse(400, 'Email o contraseña incorrecta');
   }
 
+  const centroMedico = (
+    await db.select().from(usersCentrosMedicos).where(eq(usersCentrosMedicos.userId, user.id))
+  ).at(0);
+
   const session = await lucia.createSession(user.id, {});
   const sessionCookie = lucia.createSessionCookie(session.id);
   cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
@@ -56,7 +60,10 @@ export async function POST({ request, cookies }: APIContext): Promise<Response> 
     nombre: user.nombre,
     apellido: user.apellido,
     email: user.email,
+    centroMedicoId: centroMedico?.centroMedicoId,
+    centroMedico: centroMedico?.nombreCentroMedico,
     rol: user.rol,
+    rolEnCentro: centroMedico?.rolEnCentro,
   };
 
   const token = jwt.sign(userData, import.meta.env.SECRET_KEY_CREATECOOKIE, { expiresIn: '14d' });
@@ -80,4 +87,3 @@ export async function POST({ request, cookies }: APIContext): Promise<Response> 
 
   return createResponse(200, 'Inicio de sesión exitoso');
 }
-
