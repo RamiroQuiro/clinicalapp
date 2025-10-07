@@ -12,7 +12,7 @@ export default function CardSalaEspera({ turno, index }: Props) {
     window.location.href = `/api/atencion/nueva?pacienteId=${turno.turnoInfo?.pacienteId}&turnoId=${turno.turnoInfo?.id}`;
   };
   return (
-    <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+    <div className="flex items-center gap-3 p-3 w-full bg-white border border-gray-200 rounded-lg">
       <Menu className="w-6 h-6 active:cursor-grabbing text-primary-texto/50 -ml-2 cursor-grab" />
       <div className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">
         {index + 1}

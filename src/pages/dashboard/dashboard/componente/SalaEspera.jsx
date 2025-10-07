@@ -1,14 +1,13 @@
-import CardTurnoRecepcion from '@/components/moleculas/CardTurnoRecepcion';
-import { ClipboardCopy } from 'lucide-react';
-import { nanoid } from 'nanoid';
+import CardSalaEspera from '@/components/moleculas/CardSalaEspera';
+import { recepcionStore } from '@/context/recepcion.store';
+import { useStore } from '@nanostores/react';
+import { CheckCheck, ClipboardCopy } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
 import { showToast } from '../../../../utils/toast/toastShow';
-
-const socket = io('localhost:5000'); // Cambia el puerto si usas otro
 
 const SalaEspera = ({ user }) => {
   const [pacientes, setPacientes] = useState([]);
+  const { turnosDelDia } = useStore(recepcionStore);
   const [nuevoPaciente, setNuevoPaciente] = useState({
     nombre: '',
     apellido: '',
@@ -16,8 +15,6 @@ const SalaEspera = ({ user }) => {
     dni: '',
     userId: user?.id,
   });
-  const [loading, setLoading] = useState(false);
-
   const handleChange = e => {
     const { name, value } = e.target;
     setNuevoPaciente(state => ({
@@ -25,47 +22,39 @@ const SalaEspera = ({ user }) => {
       [name]: value,
     }));
   };
-  useEffect(() => {
-    // traer la data de la base de datos de los pacientes en espéra
 
-    const fetchPacientes = async () => {
-      setLoading(true);
+  console.log('turnosDelDia -->', turnosDelDia);
+  useEffect(() => {
+    const toYYYYMMDD = date => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0'); // Corregido: no restar 1
+      return `${year}-${month}-${day}`;
+    };
+
+    const fechaFormateada = toYYYYMMDD(new Date());
+    const fetchAgenda = async () => {
       try {
-        const response = await fetch(`/api/listaEspera/${user?.id}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json', // Especifica el tipo de contenido
-          },
-        });
+        const response = await fetch(
+          `/api/agenda?fecha=${fechaFormateada}&profesionalId=${user.id}`
+        );
         if (!response.ok) {
-          throw new Error('Error al obtener los datos de la atención');
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
-        setPacientes(data);
-        setLoading(false);
-      } catch (err) {
-        showToast(err.message, {
-          background: 'bg-primaryu-400',
-        });
-        setLoading(false);
-        console.log(err);
+
+        // 2. Guardamos los datos en el store global
+        recepcionStore.setKey('turnosDelDia', data.data);
+        recepcionStore.setKey('isLoading', false);
+      } catch (error) {
+        console.error('Error al obtener la agenda:', error);
+        recepcionStore.setKey('error', error.message);
+        recepcionStore.setKey('isLoading', false);
       }
     };
-    fetchPacientes();
-    // Escucha los cambios en la lista
-    socket.on('lista-actualizada', aregarALista => {
-      setPacientes(prevPacientes => [...prevPacientes, aregarALista[0]]);
-    });
-    socket.on('paciente-eliminado', paciente => {
-      setPacientes(prevPacientes => prevPacientes.filter(p => p.id !== paciente[0].id));
-    });
 
-    return () => {
-      socket.off('lista-actualizada');
-      socket.off('paciente-eliminado');
-    };
-  }, []);
+    fetchAgenda();
+  }, [user]);
 
   const agregarPaciente = () => {
     if (
@@ -79,48 +68,7 @@ const SalaEspera = ({ user }) => {
       });
       return;
     }
-    socket.emit('agregar-paciente', nuevoPaciente);
     setNuevoPaciente({ nombre: '', apellido: '', motivoConsulta: '', dni: '', userId: user?.id }); // Limpia el input
-  };
-
-  const handleDelete = id => {
-    console.log('eliminando paciente oooo', id);
-    socket.emit('eliminar-paciente', id);
-  };
-  const handleAtender = async paciente => {
-    socket.emit('atender-paciente', paciente.id);
-
-    if (paciente.pacienteId) {
-      let idAtencion = nanoid(13);
-      document.location.href = `dashboard/consultas/aperturaPaciente/${paciente.pacienteId}/${idAtencion}`;
-    } else {
-      try {
-        const response = await fetch('/api/pacientes/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paciente),
-        });
-
-        const result = await response.json(); // Leer respuesta JSON
-        if (result.code == 400) {
-          showToast(result.msg, {
-            background: 'bg-primary-400',
-          });
-          return;
-        } else if (result.code == 200) {
-          let idAtencion = nanoid(13);
-          document.location.href = `dashboard/consultas/aperturaPaciente/${result.data.id}/${idAtencion}`;
-        } else {
-          // Manejo explícito de errores por status
-          erroresShow.textContent = result.message || 'Error al crear el paciente.';
-        }
-      } catch (error) {
-        console.error('Error al enviar los datos:', error);
-        erroresShow.textContent = 'Error de conexión al servidor.';
-      }
-    }
   };
 
   const handleCopy = () => {
@@ -133,8 +81,8 @@ const SalaEspera = ({ user }) => {
       });
   };
   return (
-    <>
-      <div className="flex border-b pb-2 justify-between items-center text-primary-textoTitle w-full mb-2">
+    <div className="w-full">
+      <div className="flex border-b w-full pb-2 justify-between items-center text-primary-textoTitle  mb-2">
         <h2 className="text-lg font-semibold ">Lista de Espera</h2>
         <span className="md:text-2xl">{pacientes.length}</span>
         <div className="relative group cursor-pointer" onClick={handleCopy}>
@@ -148,35 +96,26 @@ const SalaEspera = ({ user }) => {
         {/* formulario */}
 
         <div className="flex flex-col w-full  items-start 500 justify-between gap-2 bg-primary-bg-componentes p-2 ">
-          <div className="flex w-full pri items-start justify-between gap-2 text-sm text-primary-textoTitle">
-            <p className="w-2/4 text-left">Datos Paciente</p>
-            <p className="w-1/5">N° Turno</p>
-            <p className="w-1/5">accion</p>
-          </div>
-
           <ul className="flex w-full items-start justify-normal gap-2 flex-col">
-            {loading ? (
-              <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
-                <p className="animate-pulse">Esperado datos...</p>
-              </li>
-            ) : pacientes.length === 0 ? (
-              <li className="h-24 rounded-lg w-full border-y items-center shadow-sm justify-center border border-primary-100 bg-white animate-pulse flex">
-                <p>No hay pacientes en espera</p>
-              </li>
+            {turnosDelDia?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')?.length === 0 ? (
+              <div className="w-full">
+                <div className="text-center py-5">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-700/50 flex items-center justify-center">
+                    <CheckCheck className="w-8 h-8 text-gray-500" />
+                  </div>
+                  <p className="text-gray-400 font-medium mb-1">No hay turnos Recepcionados</p>
+                  <p className="text-gray-500 text-sm">Los turnos recepcionados aparecerán aquí</p>
+                </div>
+              </div>
             ) : (
-              pacientes?.map((paciente, index) => (
-                <CardTurnoRecepcion
-                  handleAtender={handleAtender}
-                  handleDelete={handleDelete}
-                  paciente={paciente}
-                  index={index}
-                />
-              ))
+              turnosDelDia
+                ?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')
+                .map((turno, i) => <CardSalaEspera key={i} turno={turno} index={i} />)
             )}
           </ul>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
