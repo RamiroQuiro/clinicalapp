@@ -158,7 +158,15 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="mt-8">
+    <div className=" mx-auto h-full flex flex-col items-stretch justify-normal ">
+      <div className="w-full mx-auto mb-4  h-full">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-primary-textoTitle">
+          Crea tu cuenta profesional
+        </h2>
+        <p className="mt-2 text-center text-sm text-primary-texto">
+          Y empieza a gestionar tu consultorio hoy mismo.
+        </p>
+      </div>
       {step === 1 && (
         <Step1
           key="step1"

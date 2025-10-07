@@ -95,7 +95,7 @@ const SalaEspera = ({ user }) => {
       <div className="w-full flex flex-col items-start justify-normal gap-3">
         {/* formulario */}
 
-        <div className="flex flex-col w-full  items-start 500 justify-between gap-2 bg-primary-bg-componentes p-2 ">
+        <div className="flex flex-col w-full  items-start 500 justify-between gap-2  p-2 ">
           <ul className="flex w-full items-start justify-normal gap-2 flex-col">
             {turnosDelDia?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')?.length === 0 ? (
               <div className="w-full">

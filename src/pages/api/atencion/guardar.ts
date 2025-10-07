@@ -1,13 +1,20 @@
-import { atenciones, diagnostico, medicamento, notasMedicas, signosVitales } from '@/db/schema'; // Importa las tablas necesarias
+import {
+  atenciones,
+  diagnostico,
+  medicamento,
+  notasMedicas,
+  signosVitales,
+  turnos,
+} from '@/db/schema'; // Importa las tablas necesarias
 import type { APIRoute } from 'astro';
 
 import db from '@/db';
 import { logAuditEvent } from '@/lib/audit';
-import { createResponse } from '@/utils/responseAPI';
+import { emitEvent } from '@/lib/sse/sse';
+import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; // Para generar IDs únicos
-
 // Helper para parsear números de forma segura
 const safeParseFloat = (value: any) => {
   const num = parseFloat(value);
@@ -27,8 +34,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
   try {
     const consultaData: Consulta & { status: string; atencionId?: string } = await request.json();
-    console.log('ingresando los datos emepezando con la atencion', consultaData);
+    console.log(
+      'ingresando los datos de atencion para guardar, emepezando con la atencion',
+      consultaData
+    );
     const {
+      turnoId,
       motivoInicial,
       pacienteId,
       historiaClinicaId,
@@ -42,9 +53,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       notas,
       tratamiento: tratamientoData,
       status,
-      inicioAtencion, // ADDED
-      finAtencion, // ADDED
-      duracionAtencion, // ADDED
+      inicioAtencion,
+      finAtencion,
+      duracionAtencion,
     } = consultaData;
 
     // Validaciones básicas
@@ -67,11 +78,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     console.log('ingresando los datos emepezando con la atencion', isConsultaFinalizada);
 
-    let currentAtencionId = consultaData.id || nanoid(); // Genera un ID si no existe
+    let currentAtencionId = consultaData.id || nanoIDNormalizador('Aten'); // Genera un ID si no existe
 
     await db.transaction(async tx => {
       const fechaHoy = new Date(getFechaEnMilisegundos());
-      console.log('fechaHoy', fechaHoy);
+      let turnoActualizado;
       // 1. Guardar/Actualizar Atención principal
       // Aquí deberías decidir si es una inserción o una actualización.
       // Por simplicidad, asumiremos inserción por ahora, o que el id se maneja en el frontend.
@@ -86,14 +97,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
             sintomas,
             observaciones,
             motivoInicial,
-            inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null, // ADDED
-            finAtencion: finAtencion ? new Date(finAtencion) : null, // ADDED
-            duracionAtencion: safeParseFloat(duracionAtencion), // ADDED
+            inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null,
+            finAtencion: finAtencion ? new Date(finAtencion) : null,
+            duracionAtencion: safeParseFloat(duracionAtencion),
             updated_at: fechaHoy,
+            turnoId: turnoId ? turnoId : null,
             estado: status,
-            ultimaModificacionPorId: user.id, // ADDED
+            ultimaModificacionPorId: user.id, //
           })
           .where(eq(atenciones.id, consultaData.id));
+
+        [turnoActualizado] = await tx
+          .update(turnos)
+          .set({
+            estado: status,
+          })
+          .where(eq(turnos.id, consultaData.turnoId))
+          .returning();
       } else {
         // Insertar nueva atención
         await tx.insert(atenciones).values({
@@ -106,12 +126,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
           observaciones,
           tratamiento: tratamientoData,
           planSeguir,
+          turnoId: turnoId ? turnoId : null,
           historiaClinicaId,
           estado: status,
           userIdMedico: user.id,
-          inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null, // ADDED
-          finAtencion: finAtencion ? new Date(finAtencion) : null, // ADDED
-          duracionAtencion: safeParseFloat(duracionAtencion), // ADDED
+          inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null,
+          finAtencion: finAtencion ? new Date(finAtencion) : null,
+          duracionAtencion: safeParseFloat(duracionAtencion),
           created_at: fechaHoy,
           updated_at: fechaHoy,
         });
@@ -177,30 +198,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
           }))
         );
       }
-      // console.log('Datos de la consulta: trtamiento data', tratamientoData);
-      // // 4. Guardar/Actualizar Tratamientos
-      // if (tratamientoData.tratamiento) {
-      //   // Eliminamos los tratamientos existentes para esta atención
-      //   await tx.delete(tratamiento).where(eq(tratamiento.atencionesId, currentAtencionId));
-
-      //   // Insertamos los nuevos tratamientos
-      //   await tx.insert(tratamiento).values({
-      //     id: nanoid(),
-      //     atencionesId: currentAtencionId,
-      //     pacienteId,
-      //     userMedicoId: user.id,
-      //     tratamiento: tratamientoData.tratamiento,
-      //   });
-      // } else {
-      //   // Insertamos los nuevos tratamientos
-      //   await tx.insert(tratamiento).values({
-      //     id: nanoid(),
-      //     atencionesId: currentAtencionId,
-      //     pacienteId,
-      //     userMedicoId: user.id,
-      //     tratamiento: tratamientoData.tratamiento,
-      //   });
-      // }
 
       // 5. Guardar Medicamentos (asumiendo que se insertan nuevos cada vez)
       // Tu interfaz Consulta tiene 'medicamentos: string[]', pero tu componente
@@ -213,7 +210,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (medicamentos && medicamentos.length > 0) {
         await tx.insert(medicamento).values(
           medicamentos.map(m => ({
-            id: nanoid(),
+            id: nanoIDNormalizador('Med'),
             historiaClinicaId: historiaClinicaId,
             nombreGenerico: m.nombreGenerico,
             nombreComercial: m.nombreComercial,
@@ -241,6 +238,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
           }))
         );
       }
+
+      // emitir evento de atencion guardada
+      emitEvent('turno-actualizado', turnoActualizado);
     });
     const action: 'CREATE' | 'UPDATE' = consultaData.id ? 'UPDATE' : 'CREATE';
     // Auditoría

@@ -1,5 +1,6 @@
 import db from '@/db';
 import { atenciones, turnos } from '@/db/schema';
+import { emitEvent } from '@/lib/sse/sse';
 import { nanoIDNormalizador } from '@/utils/responseAPI';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
@@ -25,6 +26,7 @@ export const GET: APIRoute = async ({ request, locals, redirect }) => {
       .values({
         id: idAtencion,
         pacienteId,
+        turnoId: turnoId || null,
         userIdMedico: session.userId,
         centroMedicoId: user?.centroMedicoId || 1,
         estado: 'en_curso',
@@ -32,11 +34,13 @@ export const GET: APIRoute = async ({ request, locals, redirect }) => {
       })
       .returning();
     if (turnoId) {
-      modificarTablaTurno = await db
+      [modificarTablaTurno] = await db
         .update(turnos)
         .set({ atencionId: idAtencion, estado: 'en_consulta' })
         .where(eq(turnos.id, turnoId))
         .returning();
+
+      emitEvent('turno-actualizado', modificarTablaTurno);
     }
 
     console.log('atencion creada nueva', atencionNueva, 'turno modificado', modificarTablaTurno);

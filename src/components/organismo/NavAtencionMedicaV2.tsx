@@ -43,6 +43,7 @@ type Props = {
   esFinalizada: boolean;
   pacienteId: string;
   atencionId: string;
+  turnoId: string;
 };
 
 // El nuevo componente de React que contiene toda la lógica del header
@@ -52,6 +53,7 @@ export default function NavAtencionMedicaV2({
   preferenciasPerfilUser,
   pacienteId,
   atencionId,
+  turnoId,
 }: Props) {
   const $consulta = useStore(consultaStore);
 
@@ -156,7 +158,14 @@ export default function NavAtencionMedicaV2({
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Error en el servidor');
-      consultaStore.set(dataToSave);
+
+      // LA SOLUCIÓN: Actualizamos el store con los datos que guardamos, pero añadiendo el ID que nos devolvió el servidor.
+      const finalData = {
+        ...dataToSave,
+        id: result.atencionId, // Usamos el ID de la respuesta de la API
+        turnoId: result.turnoId,
+      };
+      consultaStore.set(finalData);
       const successMessage =
         modoFetch === 'finalizada'
           ? 'Consulta finalizada y guardada'

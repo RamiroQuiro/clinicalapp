@@ -143,6 +143,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       notasAtencion,
       archivosAtencion,
       signosVitalesAtencion,
+
       enmiendasAtencion,
       medicoAtencion,
       estudiosSolicitadosAtencion,

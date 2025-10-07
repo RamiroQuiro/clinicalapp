@@ -10,7 +10,6 @@ const { user, session } = Astro.locals;
 let esFinalizada = false;
 let data, error, message;
 
-// 1. Seguridad: Validar sesión y obtener datos UNA SOLA VEZ
 if (session && user) {
   const result = await getDatosNuevaAtencion(pacienteId as string, atencionId as string);
   data = result.data;

@@ -100,7 +100,7 @@ const initialConsulta: Consulta = {
   motivoConsulta: '',
   sintomas: '',
   historiaClinicaId: '',
-  estado: '', // AÑADIDO
+  estado: '',
   signosVitales: {
     presionSistolica: 0,
     presionDiastolica: 0,
@@ -144,9 +144,9 @@ const initialConsulta: Consulta = {
       estado: '',
     },
   ],
-  inicioAtencion: null, // AÑADIDO
-  finAtencion: null, // AÑADIDO
-  duracionAtencion: null, // AÑADIDO
+  inicioAtencion: null,
+  finAtencion: null,
+  duracionAtencion: null,
 };
 
 // Creamos el store
