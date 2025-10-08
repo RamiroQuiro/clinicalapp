@@ -3,7 +3,6 @@ import { useElapsedTime } from '@/hook/useElapsedTime';
 import extraerHora from '@/utils/extraerHora';
 import { ArrowDown, ArrowUp, Bell, Clock, Megaphone } from 'lucide-react';
 import BotonIndigo from './BotonIndigo';
-import InicialesPac from './InicialesPac';
 
 // Props para la nueva tarjeta detallada
 type Props = {
@@ -29,16 +28,13 @@ export default function CardSalaEsperaDetallada({
   const tiempoEnEspera = useElapsedTime(turno.turnoInfo?.horaLlegadaPaciente);
 
   return (
-    <div key={turno.turnoInfo?.id} className="border bg-white rounded-lg p-4 space-y-4">
+    <div key={turno.turnoInfo?.id} className="border bg-white rounded-lg p-4 space-y-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">
             {index + 1}
           </div>
-          <InicialesPac
-            nombre={turno.turnoInfo?.pacienteNombre || ''}
-            apellido={turno.turnoInfo?.pacienteApellido || ''}
-          />
+
           <div>
             <p className="font-bold text-lg capitalize text-gray-800">
               {turno.turnoInfo?.pacienteNombre || ''} {turno.turnoInfo?.pacienteApellido || ''}
@@ -54,7 +50,7 @@ export default function CardSalaEsperaDetallada({
       </div>
 
       {/* Sección de Tiempos */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-gray-50 p-3 rounded-lg">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-50 p-3 rounded-lg">
         <div>
           <p className="text-xs text-gray-500">Turno</p>
           <p className="font-semibold text-gray-800">{extraerHora(turno.hora)}</p>

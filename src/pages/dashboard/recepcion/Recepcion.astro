@@ -1,16 +1,22 @@
 ---
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import { FormularioTurnoRecepcion } from '@/components/organismo/recepcion/FormularioTurnoRecepcion';
+import ContenedeorModal from '@/components/organismo/ContenedeorModal.astro';
 import ContenedorRenderizdoPantalla from '@/components/organismo/recepcion/ContenedorRenderizdoPantalla.tsx';
 import ConstendorStatsRec from '@/components/organismo/recepcion/ContenedorStatsRec';
-import MenuPestaña from '@/components/organismo/recepcion/MenuPestaña';
 const { user } = Astro.locals;
 ---
 
 <MainDashboard h1="Recepción">
-  <ConstendorStatsRec client:load userId={user.id} />
-  <div class="mt-4 w-full flex">
-    <MenuPestaña client:load />
+  <div slot="botonera">
+    <ContenedeorModal label="➕ Turno Rápido" title="Crear Turno Rápido" id="modal-agregar">
+      <FormularioTurnoRecepcion client:load />
+    </ContenedeorModal>
   </div>
+  <ConstendorStatsRec client:load userId={user.id} />
+  <!-- <div class="mt-4 w-full flex">
+    <MenuPestaña client:load />
+  </div> -->
   <div class="w-full pt-4 h-full">
     <ContenedorRenderizdoPantalla client:load userId={user.id} />
   </div>

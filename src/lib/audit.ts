@@ -15,6 +15,7 @@ interface LogEventParams {
   recordId?: string;
   oldValue?: any;
   newValue?: any;
+  centroMedicoId?: string;
   description?: string;
   ipAddress?: string;
   userAgent?: string;
@@ -27,6 +28,7 @@ export const logAuditEvent = async (params: LogEventParams) => {
     tableName,
     recordId,
     oldValue,
+    centroMedicoId,
     newValue,
     description,
     ipAddress,
@@ -37,6 +39,7 @@ export const logAuditEvent = async (params: LogEventParams) => {
     await db.insert(auditLog).values({
       userId,
       actionType,
+      centroMedicoId,
       tableName,
       recordId,
       oldValue: oldValue ? JSON.stringify(oldValue) : null,

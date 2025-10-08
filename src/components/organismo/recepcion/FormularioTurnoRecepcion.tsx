@@ -1,22 +1,17 @@
 import Button from '@/components/atomos/Button';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
-import {
-  agendaDelDia,
-  datosNuevoTurno,
-  fechaSeleccionada,
-  resetNuevoTurno,
-  setPaciente,
-} from '@/context/agenda.store';
-import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { showToast } from '@/utils/toast/toastShow';
-import { useStore } from '@nanostores/react';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { Moon, Sun } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
-import BotonHora from './BotonHora';
+import React, { useState } from 'react';
 
 const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+
+// TODO: Reemplazar con la lista de médicos del centro médico obtenida de la API
+const medicosDeEjemplo = [
+  { id: 'sqss31m17w99rkj', nombre: 'Dr. Ramiro' },
+  { id: 'sqss31m17w99rkj', nombre: 'Dra. Lucia' },
+];
 
 interface PacienteResult {
   id: string;
@@ -25,38 +20,25 @@ interface PacienteResult {
   dni: string;
 }
 
-export const FormularioTurno: React.FC = () => {
-  const turnoDelStore = useStore(datosNuevoTurno);
-  const [form, setForm] = useState(turnoDelStore);
+const initialState = {
+  pacienteId: undefined,
+  pacienteNombre: '',
+  fechaTurno: format(new Date(), 'yyyy-MM-dd'),
+  horaTurno: format(new Date(), 'HH:mm'),
+  duracion: 15,
+  motivoConsulta: '',
+  tipoDeTurno: 'espontaneo',
+  medicoId: medicosDeEjemplo[0].id, // Default al primer médico
+};
+
+export const FormularioTurnoRecepcion: React.FC = () => {
+  const [form, setForm] = useState(initialState);
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
-  const agenda = useStore(agendaDelDia);
 
-  const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
-
-  const horariosAgrupados = useMemo(
-    () => ({
-      mañana: horariosDisponibles.filter(
-        slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) < 12
-      ),
-      tarde: horariosDisponibles.filter(
-        slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) >= 12
-      ),
-    }),
-    [horariosDisponibles]
-  );
-
-  useEffect(() => {
-    setForm(turnoDelStore);
-  }, [turnoDelStore]);
-
-  useEffect(() => {
-    return () => {
-      resetNuevoTurno();
-    };
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { id, value } = e.target;
     setForm(prevForm => ({ ...prevForm, [id]: value }));
   };
@@ -72,19 +54,17 @@ export const FormularioTurno: React.FC = () => {
       pacienteId: paciente.id,
       pacienteNombre: `${paciente.nombre} ${paciente.apellido}`,
     }));
-    setPaciente({ id: paciente.id, nombre: `${paciente.nombre} ${paciente.apellido}` });
     setIsSearchingPaciente(false);
   };
 
   const handleClearPaciente = () => {
     setForm(prevForm => ({ ...prevForm, pacienteId: undefined, pacienteNombre: '' }));
-    setPaciente({ id: '', nombre: '' });
     setIsSearchingPaciente(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.pacienteId || !form.fechaTurno || !form.duracion) {
+    if (!form.pacienteId || !form.fechaTurno || !form.horaTurno || !form.duracion) {
       showToast('Por favor, complete los campos obligatorios.', { background: 'bg-red-600' });
       return;
     }
@@ -99,9 +79,11 @@ export const FormularioTurno: React.FC = () => {
       const payload = {
         ...form,
         fechaTurno: fechaTurnoUtc.toISOString(),
+        horaLlegadaPaciente: fechaTurnoUtc.toISOString(),
+        estado: 'sala_de_espera',
       };
 
-      const response = await fetch('/api/agenda/turnos/create', {
+      const response = await fetch('/api/recepcion/turnos/createEspontanea', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,17 +95,18 @@ export const FormularioTurno: React.FC = () => {
       if (!response.ok) {
         throw new Error(data.msg || 'Error al crear el turno');
       }
-      agendaDelDia.set([
-        ...agendaDelDia.get(),
-        { disponible: false, hora: fechaTurnoUtc.toISOString(), turnoInfo: data.data.turnoInfo },
-      ]);
-      showToast('Turno creado con éxito', { background: 'bg-green-600' });
 
-      const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
+      showToast('Turno creado con éxito y paciente en sala de espera.', {
+        background: 'bg-green-600',
+      });
+
+      // TODO: Emitir evento SSE para actualizar la sala de espera en tiempo real
+
+      const modal = document.getElementById('dialog-modal-modal-agregar') as HTMLDialogElement;
       if (modal) {
         modal.close();
       }
-      resetNuevoTurno();
+      setForm(initialState); // Resetear formulario
     } catch (error: any) {
       showToast(`Error: ${error.message}`, { background: 'bg-red-600' });
       console.error('Error al crear el turno:', error);
@@ -133,31 +116,22 @@ export const FormularioTurno: React.FC = () => {
   };
 
   const handleCancel = () => {
-    const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
+    const modal = document.getElementById('dialog-modal-modal-agregar') as HTMLDialogElement;
     if (modal) {
       modal.close();
     }
-    resetNuevoTurno();
+    setForm(initialState);
   };
 
   const handleModalPaciente = () => {
-    const modal = document.getElementById('dialog-modal-modalNuevoPaciente') as HTMLDialogElement;
-    if (modal) {
-      modal.showModal();
-    }
+    // TODO: Implementar la lógica para abrir un modal de creación de paciente
+    showToast('Funcionalidad "Crear Nuevo Paciente" pendiente de conexión.', {
+      background: 'bg-blue-600',
+    });
   };
 
-  const formatDateTimeLocal = (date: Date | undefined, time: string | undefined) => {
-    if (!date || !time) return '';
-    const dateString = format(new Date(date), 'yyyy-MM-dd');
-    return `${dateString}T${time}`;
-  };
-
-  const handleSelect = (date: Date | undefined) => {
-    fechaSeleccionada.set(date);
-  };
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4">
+    <form onSubmit={handleSubmit} className="p-1 space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
         {form.pacienteId && form.pacienteNombre && !isSearchingPaciente ? (
@@ -184,66 +158,68 @@ export const FormularioTurno: React.FC = () => {
           </button>
         )}
       </div>
-      {/* para reagendar */}
-      {!datosNuevoTurno.get().fechaTurno && !datosNuevoTurno.get().horaTurno ? (
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="medicoId" className="block text-sm font-medium text-gray-700 mb-1">
+            Asignar a Profesional
+          </label>
+          <select
+            id="medicoId"
+            value={form.medicoId}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            {medicosDeEjemplo.map(medico => (
+              <option key={medico.id} value={medico.id}>
+                {medico.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="tipoDeTurno" className="block text-sm font-medium text-gray-700 mb-1">
+            Tipo de Turno
+          </label>
+          <select
+            id="tipoDeTurno"
+            value={form.tipoDeTurno}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="espontaneo">Turno Espontáneo</option>
+            <option value="sobreturno">Sobreturno</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha y Hora del Turno
+            Fecha
           </label>
           <input
             type="date"
             id="fechaTurno"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
-            onChange={e => handleSelect(new Date(e.target.value))}
+            value={form.fechaTurno}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
           />
         </div>
-      ) : (
         <div>
-          <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha y Hora del Turno
+          <label htmlFor="horaTurno" className="block text-sm font-medium text-gray-700 mb-1">
+            Hora
           </label>
           <input
-            type="datetime-local"
-            id="fechaTurno"
-            value={formatDateTimeLocal(form.fechaTurno, form.horaTurno)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
-            readOnly
+            type="time"
+            id="horaTurno"
+            value={form.horaTurno}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
           />
         </div>
-      )}
-      {horariosAgrupados.mañana.length > 0 &&
-      !datosNuevoTurno.get().fechaTurno &&
-      !datosNuevoTurno.get().horaTurno ? (
-        <div className="w-full space-y-2">
-          {horariosAgrupados.mañana.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                <Sun className="w-4 h-4 mr-2 text-yellow-500" />
-                Turno Mañana
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {horariosAgrupados.mañana.map(slot => (
-                  <BotonHora key={slot.hora} slot={slot} />
-                ))}
-              </div>
-            </div>
-          )}
+      </div>
 
-          {horariosAgrupados.tarde.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                <Moon className="w-4 h-4 mr-2 text-blue-500" />
-                Turno Tarde
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {horariosAgrupados.tarde.map(slot => (
-                  <BotonHora key={slot.hora} slot={slot} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : null}
       <div>
         <label htmlFor="duracion" className="block text-sm font-medium text-gray-700 mb-1">
           Duración (minutos)
@@ -267,7 +243,7 @@ export const FormularioTurno: React.FC = () => {
           value={form.motivoConsulta}
           onChange={handleInputChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          rows={3}
+          rows={2}
         />
       </div>
 
@@ -276,7 +252,7 @@ export const FormularioTurno: React.FC = () => {
           Cancelar
         </Button>
         <Button disabled={loading} type="submit" variant="primary">
-          Guardar Turno
+          Crear y Poner en Espera
         </Button>
       </div>
     </form>

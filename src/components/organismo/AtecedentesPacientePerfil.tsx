@@ -33,7 +33,7 @@ export default function AtecedentesPacientePerfil({
     <div className="space-y-4 w-full">
       <div>
         <div className="flex border-b pb-2 justify-between items-center text-primary-texto w-full mb-2">
-          <h3 className="text-xl font-semibold text-primary-textoTitle mb-1.5">
+          <h3 className="text-lg font-semibold text-primary-textoTitle mb-1.5">
             Antecedentes Personales
           </h3>
           <Button onClick={() => handleAgregar()}>agregar</Button>
@@ -53,7 +53,7 @@ export default function AtecedentesPacientePerfil({
         </div>
       </div>
       <div>
-        <h3 className="text-xl font-semibold text-primary-textoTitle mb-1.5">
+        <h3 className="text-lg font-semibold text-primary-textoTitle mb-1.5">
           Antecedentes Familiares
         </h3>
         <div className="space-y-3">
