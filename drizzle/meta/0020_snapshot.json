@@ -840,6 +840,7 @@
           "notNull": true,
           "autoincrement": false
         },
+<<<<<<< HEAD
         "centroMedicoId": {
           "name": "centroMedicoId",
           "type": "text",
@@ -847,6 +848,8 @@
           "notNull": false,
           "autoincrement": false
         },
+=======
+>>>>>>> 88cfbb13fa6b1f5494235dd92dc31a25f3e0de8e
         "tableName": {
           "name": "tableName",
           "type": "text",
@@ -913,6 +916,7 @@
           ],
           "isUnique": false
         },
+<<<<<<< HEAD
         "centroMedicoId_idx": {
           "name": "centroMedicoId_idx",
           "columns": [
@@ -920,6 +924,8 @@
           ],
           "isUnique": false
         },
+=======
+>>>>>>> 88cfbb13fa6b1f5494235dd92dc31a25f3e0de8e
         "timestamp_idx": {
           "name": "timestamp_idx",
           "columns": [
@@ -966,7 +972,11 @@
       "columns": {
         "id": {
           "name": "id",
+<<<<<<< HEAD
           "type": "text",
+=======
+          "type": "integer",
+>>>>>>> 88cfbb13fa6b1f5494235dd92dc31a25f3e0de8e
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
