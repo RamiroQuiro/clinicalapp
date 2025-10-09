@@ -1,7 +1,6 @@
-import { resetNuevoTurno } from '@/context/agenda.store';
 import { StatsCardV2 } from '@/pages/dashboard/dashboard/componente/StatsCard';
 import { Check, Clock, Users, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type Props = {
   userId: string;
@@ -9,34 +8,6 @@ type Props = {
 
 export default function ConstendorStats({ userId }: Props) {
   const [agenda, setAgenda] = useState([]);
-  const diaSeleccionado = new Date();
-
-  const toYYYYMMDD = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  useEffect(() => {
-    const fechaFormateada = toYYYYMMDD(diaSeleccionado);
-    const fetchAgenda = async () => {
-      try {
-        const response = await fetch(
-          `/api/agenda?fecha=${fechaFormateada}&profesionalId=${userId}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setAgenda(data.data);
-      } catch (error) {
-        console.error('Error al obtener la agenda:', error);
-      }
-    };
-
-    fetchAgenda();
-  }, [resetNuevoTurno]);
 
   const turnoDisponibles = agenda.filter(slot => slot.disponible).length;
   const turnosConfirmados = agenda.filter(slot => slot.turnoInfo?.estado == 'confirmado').length;

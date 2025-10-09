@@ -1,6 +1,7 @@
 import {
   agendaDelDia,
   fechaSeleccionada,
+  profesionalSeleccionado,
   setFechaYHora,
   setPaciente,
 } from '@/context/agenda.store';
@@ -13,7 +14,8 @@ import BotonHora from './BotonHora';
 export default function HorariosDisponibles() {
   const agenda = useStore(agendaDelDia);
   const dia = useStore(fechaSeleccionada);
-
+  const profesional = useStore(profesionalSeleccionado);
+  console.log('profesional', profesional);
   const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
 
   const horariosAgrupados = useMemo(
@@ -31,7 +33,8 @@ export default function HorariosDisponibles() {
   const handleAgendarClick = (hora: string) => {
     if (!dia) return;
     setPaciente({ id: '', nombre: '' });
-    setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm'));
+
+    setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm', profesional?.id));
     document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
   };
 

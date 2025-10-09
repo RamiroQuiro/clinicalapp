@@ -17,18 +17,18 @@ interface TurnoCardProps {
 // Helper function to get status info (similar to CardMedicamentoV2)
 const getStatusInfo = (estado: string) => {
   switch (estado?.toLowerCase()) {
-    case 'finalizado':
-      return { text: 'Finalizado', colorClass: 'bg-green-100  text-green-800' };
+    case 'finalizada':
+      return { text: 'Finalizada', colorClass: 'bg-green-200  text-green-800' };
     case 'en_consulta':
-      return { text: 'En Consulta', colorClass: 'bg-blue-100/70 text-blue-800' };
+      return { text: 'En Consulta', colorClass: 'bg-blue-200/70 text-blue-800' };
     case 'sala_de_espera':
-      return { text: 'Sala de Espera', colorClass: 'bg-yellow-100/70 text-yellow-800' };
+      return { text: 'Sala de Espera', colorClass: 'bg-yellow-200/70 text-yellow-800' };
     case 'confirmado':
-      return { text: 'Confirmado', colorClass: 'bg-green-100/70 text-green-800' };
+      return { text: 'Confirmado', colorClass: 'bg-green-200/70 text-green-800' };
     case 'pendiente':
       return { text: 'Pendiente', colorClass: 'bg-orange-300/40 text-orange-800' };
     case 'cancelado':
-      return { text: 'Cancelado', colorClass: 'bg-red-100/70 text-red-800' };
+      return { text: 'Cancelado', colorClass: 'bg-red-200/70 text-red-800' };
     default:
       return { text: estado, colorClass: 'bg-gray-100 text-gray-800' };
   }
@@ -108,7 +108,7 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
         <Button
           size="sm"
           variant={slot.turnoInfo?.estado === 'sala_de_espera' ? 'outline' : 'primary'}
-          disabled={slot.turnoInfo?.estado === 'sala_de_espera'}
+          disabled={slot.turnoInfo?.estado !== 'pendiente'}
           onClick={() => handleRecibirPaciente(slot)}
         >
           <UserCheck className="h-4 w-4 mr-2" />

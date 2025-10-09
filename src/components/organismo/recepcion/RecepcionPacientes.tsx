@@ -1,5 +1,5 @@
 import Input from '@/components/atomos/Input';
-import CardSalaEspera from '@/components/moleculas/CardSalaEspera';
+import CardSalaEsperaDetallada from '@/components/moleculas/CardSalaEsperaDetallada';
 import CardTurnoRecepcion from '@/components/moleculas/CardTurnoRecepcion';
 import Section from '@/components/moleculas/Section';
 import type { AgendaSlot } from '@/context/agenda.store';
@@ -26,10 +26,16 @@ export default function RecepcionPacientes({ userId }: Props) {
   }, [turnosDelDia]);
 
   const colaDeEspera = useMemo(() => {
-    return turnosDelDia
-      .filter(turno => turno.turnoInfo?.estado === 'sala_de_espera')
-      // Opcional: ordenar la cola de espera también, por ejemplo por hora de llegada
-      .sort((a, b) => new Date(a.turnoInfo.horaLlegadaPaciente).getTime() - new Date(b.turnoInfo.horaLlegadaPaciente).getTime());
+    return (
+      turnosDelDia
+        .filter(turno => turno.turnoInfo?.estado === 'sala_de_espera')
+        // Opcional: ordenar la cola de espera también, por ejemplo por hora de llegada
+        .sort(
+          (a, b) =>
+            new Date(a.turnoInfo.horaLlegadaPaciente).getTime() -
+            new Date(b.turnoInfo.horaLlegadaPaciente).getTime()
+        )
+    );
   }, [turnosDelDia]);
 
   console.log('🔌 Estado SSE:', sseConectado ? '🟢 Conectado' : '🔴 Desconectado');
@@ -54,7 +60,7 @@ export default function RecepcionPacientes({ userId }: Props) {
   };
   return (
     <div className="flex flex-  gap-2 items-start justify-between">
-      <Section title="🤒 Recepcion de Pacientes" className="flex  flex-1 flex-col">
+      <Section title="🤒 Recepcion de Pacientes" className="flex  flex-1 min-w-[50%]  flex-col">
         <Input type="search" placeholder="Buscar paciente" />
         <div key={1} className="flex flex-col mt-4 gap-2">
           {turnosAgendadosDia.length === 0 ? (
@@ -70,21 +76,25 @@ export default function RecepcionPacientes({ userId }: Props) {
               </div>
             </div>
           ) : (
-            turnosAgendadosDia.map((turno: AgendaSlot) => (
-              <CardTurnoRecepcion
-                key={turno.turnoInfo.id}
-                slot={turno}
-                onVerDetalles={() => {}}
-                onReagendar={() => {}}
-                onCancelar={() => {}}
-                onLlamar={() => {}}
-                onRecibirPaciente={handleRecepcion}
-              />
-            ))
+            turnosAgendadosDia
+              .sort((a, b) => {
+                return a.turnoInfo?.estado === 'sala_de_espera' ? 1 : -1;
+              })
+              .map((turno: AgendaSlot) => (
+                <CardTurnoRecepcion
+                  key={turno.turnoInfo.id}
+                  slot={turno}
+                  onVerDetalles={() => {}}
+                  onReagendar={() => {}}
+                  onCancelar={() => {}}
+                  onLlamar={() => {}}
+                  onRecibirPaciente={handleRecepcion}
+                />
+              ))
           )}
         </div>
       </Section>
-      <Section title="🚀 Proximos turnos" classContent="flex  flex-col w-1/2">
+      <Section title="🚀 Proximos turnos" classContent="flex flex-1 min-w-[50%]  flex-col ">
         <div key={2} className="flex flex-col gap-2  w-full">
           {colaDeEspera.length === 0 ? (
             <div className="w-full">
@@ -98,7 +108,16 @@ export default function RecepcionPacientes({ userId }: Props) {
             </div>
           ) : (
             colaDeEspera.map((turno: AgendaSlot, i: number) => (
-              <CardSalaEspera key={i} turno={turno} index={i} />
+              <CardSalaEsperaDetallada
+                key={i}
+                turno={turno}
+                index={i}
+                onAtender={() => {}}
+                onSubir={() => {}}
+                onBajar={() => {}}
+                onNotificar={() => {}}
+                onLlamar={() => {}}
+              />
             ))
           )}
         </div>

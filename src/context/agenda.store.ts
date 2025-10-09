@@ -1,10 +1,17 @@
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { atom, map } from 'nanostores';
 
-// El tipo de dato que devuelve nuestra API para cada slot
+// --- INTERFACES Y TIPOS ---
+export interface Profesional {
+  id: string;
+  nombre: string;
+  apellido: string;
+}
+
 export interface AgendaSlot {
   hora: string; // ISO string
   disponible: boolean;
+  userMedicoId: string;
   turnoInfo: {
     id: string;
     pacienteId: string;
@@ -13,7 +20,7 @@ export interface AgendaSlot {
     pacienteNombre: string;
     pacienteApellido: string;
     pacienteDocumento: string;
-    profesionalId: string;
+    userMedicoId: string;
     profesionalNombre: string;
     profesionalApellido: string;
     motivoConsulta: string;
@@ -30,11 +37,16 @@ export interface AgendaSlot {
   } | null;
 }
 
+// --- STORES ---
+
 // Atom para la fecha actualmente seleccionada en el calendario
 export const fechaSeleccionada = atom<Date | undefined>(new Date(getFechaEnMilisegundos()));
 
 // Atom para almacenar la agenda completa del día seleccionado
 export const agendaDelDia = atom<AgendaSlot[]>([]);
+
+// Atom para el profesional actualmente seleccionado en la agenda
+export const profesionalSeleccionado = atom<Profesional | undefined>();
 
 // Mapa para almacenar los datos del formulario de un nuevo turno
 export const datosNuevoTurno = map({
@@ -48,18 +60,26 @@ export const datosNuevoTurno = map({
   motivoConsulta: '' as string,
 });
 
-// Acciones para manipular el store de nuevo turno
+// --- ACCIONES (SETTERS) ---
+
+export const setProfesionalSeleccionado = (profesional: Profesional) => {
+  profesionalSeleccionado.set(profesional);
+};
+
 export const setPaciente = (paciente: { id: string; nombre: string }) => {
   datosNuevoTurno.setKey('pacienteId', paciente.id);
   datosNuevoTurno.setKey('pacienteNombre', paciente.nombre);
 };
 
-export const setFechaYHora = (fecha: Date, hora: string) => {
+// MODIFICADO: Ahora también acepta y guarda el medicoId
+export const setFechaYHora = (fecha: Date, hora: string, medicoId: string) => {
   datosNuevoTurno.setKey('fechaTurno', fecha);
   datosNuevoTurno.setKey('horaTurno', hora);
+  datosNuevoTurno.setKey('userMedicoId', medicoId);
 };
 
 export const setDatosTurno = (datos: Partial<typeof datosNuevoTurno.get>) => {
+  console.log('datos en el store ->', datos);
   datosNuevoTurno.set(datos);
 };
 
@@ -67,7 +87,7 @@ export const resetNuevoTurno = () => {
   datosNuevoTurno.set({
     pacienteId: undefined,
     pacienteNombre: '',
-    userMedicoId: undefined,
+    userMedicoId: profesionalSeleccionado.get()?.id, // Mantiene el médico seleccionado
     fechaTurno: undefined,
     horaTurno: '',
     duracion: 30,

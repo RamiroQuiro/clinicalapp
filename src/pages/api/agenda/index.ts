@@ -20,11 +20,16 @@ export const GET: APIRoute = async ({ locals, request }) => {
   // 2. Obtener y validar la fecha de la consulta
   const url = new URL(request.url);
   const fechaQuery = url.searchParams.get('fecha'); // ej: '2025-09-22'
-  const profesionalId = url.searchParams.get('profesionalId');
+  const userMedicoId = url.searchParams.get('userMedicoId');
   if (!fechaQuery || !/^\d{4}-\d{2}-\d{2}$/.test(fechaQuery)) {
     return createResponse(400, 'Fecha no proporcionada o en formato incorrecto. Use YYYY-MM-DD.');
   }
 
+  console.log('userMedicoId', userMedicoId);
+
+  if (!userMedicoId) {
+    return createResponse(400, 'userMedicoId no proporcionado');
+  }
   // 3. Definir la jornada laboral y la duración de los slots
   const JORNADA_LABORAL = [
     { inicio: 8, fin: 12 }, // Turno mañana (8:00 a 11:59)
@@ -49,7 +54,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         pacienteCelular: pacientes.celular,
         especialidadProfesional: users.especialidad,
         horaLlegadaPaciente: turnos.horaLlegadaPaciente,
-        profesionalId: users.id,
+        userMedicoId: users.id,
         profesionalNombre: users.nombre,
         profesionalApellido: users.apellido,
         estado: turnos.estado,
@@ -63,7 +68,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         and(
           gte(turnos.fechaTurno, inicioDelDia),
           lte(turnos.fechaTurno, finDelDia),
-          eq(turnos.userMedicoId, profesionalId)
+          eq(turnos.userMedicoId, userMedicoId)
         )
       );
 
@@ -103,6 +108,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         return {
           hora: slotInicio.toISOString(),
           disponible: false,
+          userMedicoId: userMedicoId,
           turnoInfo: {
             id: turnoOcupante.id,
             pacienteId: turnoOcupante.pacienteId,
@@ -111,7 +117,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             horaLlegadaPaciente: turnoOcupante.horaLlegadaPaciente,
             pacienteApellido: turnoOcupante.pacienteApellido,
             pacienteDocumento: turnoOcupante.pacienteDocumento,
-            profesionalId: turnoOcupante.profesionalId,
+            userMedicoId: turnoOcupante.userMedicoId,
             profesionalNombre: turnoOcupante.profesionalNombre,
             especialidadProfesional: turnoOcupante.especialidadProfesional,
             profesionalApellido: turnoOcupante.profesionalApellido,
@@ -124,6 +130,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       } else {
         return {
           hora: slotInicio.toISOString(),
+          userMedicoId: userMedicoId,
           disponible: true,
           turnoInfo: null,
         };
@@ -158,6 +165,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     fechaTurno, // timestamp
     duracion,
     tipoConsulta,
+
     motivoConsulta,
     motivoInicial,
   } = body;

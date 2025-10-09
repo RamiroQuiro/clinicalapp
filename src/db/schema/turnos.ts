@@ -28,6 +28,9 @@ export const turnos = sqliteTable(
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),
+    tipoDeTurno: text('tipoDeTurno', { enum: ['programado', 'espontaneo', 'sobreturno'] }).default(
+      'programado'
+    ),
     tipoConsulta: text('tipoConsulta'),
     fechaAtencion: integer('fechaAtencion', { mode: 'timestamp' }),
     horaLlegadaPaciente: integer('horaLlegadaPaciente', { mode: 'timestamp' }),

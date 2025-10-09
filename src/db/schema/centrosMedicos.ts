@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const centrosMedicos = sqliteTable('centrosMedicos', {
-  id: integer('id').primaryKey(),
+  id: text('id').primaryKey(),
   nombre: text('nombre').notNull(),
   creadoPorId: text('creadoPorId').notNull(),
   modificadoUltimoPorId: text('modificadoUltimoPorId').notNull(),

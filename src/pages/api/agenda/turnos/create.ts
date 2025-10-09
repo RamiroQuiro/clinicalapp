@@ -1,25 +1,20 @@
 import db from '@/db';
 import { pacientes, turnos, users } from '@/db/schema';
 import { logAuditEvent } from '@/lib/audit';
-import { lucia } from '@/lib/auth';
 import { emitEvent } from '@/lib/sse/sse';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const data = await request.json();
 
   if (!data.pacienteId || !data.fechaTurno || !data.duracion || !data.horaTurno) {
     return createResponse(400, 'Faltan campos obligatorios para crear el turno.');
   }
 
-  const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
-  if (!sessionId) {
-    return createResponse(401, 'No autorizado');
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
+  const { user, session } = locals;
+  console.log('iseruser locals  ', user);
   if (!session) {
     return createResponse(401, 'No autorizado');
   }
@@ -30,15 +25,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   try {
-    const turnoId = nanoIDNormalizador('Turno_', 15);
+    const turnoId = nanoIDNormalizador('Turno', 15);
 
     const [newTurno] = await db
       .insert(turnos)
       .values({
         id: turnoId,
+        tipoDeTurno: 'programado',
+        centroMedicoId: user?.centroMedicoId,
         pacienteId: data.pacienteId,
-        otorgaUserId: user.id, // El usuario que crea el turno
-        userMedicoId: user.id, // El médico para el que es el turno
+        otorgaUserId: user?.id,
+        userMedicoId: data.userMedicoId,
         fechaTurno: new Date(data.fechaTurno),
         horaAtencion: data.horaTurno,
         duracion: data.duracion,
@@ -55,6 +52,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       userId: user.id,
       actionType: 'CREATE',
       tableName: 'turnos',
+      centroMedicoId: user?.centroMedicoId,
       recordId: newTurno.id,
       newValue: newTurno,
       description: `Se creó un nuevo turno para el paciente ${data.pacienteNombre}`,
