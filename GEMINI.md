@@ -290,3 +290,16 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
     1.  **(Prioridad 1) Flujo de Registro del Administrador**: Implementar la página de registro donde el primer usuario (el "dueño") crea su cuenta y los datos de su nuevo centro médico en un solo paso.
     2.  **(Prioridad 2) Flujo de Invitación de Usuarios**: Implementar la funcionalidad dentro de la app para que un administrador pueda invitar a nuevos miembros (médicos, recepcionistas) a su centro médico a través de un enlace seguro enviado por correo electrónico.
     3.  **(Futuro) Implementación de Suscripciones**: Conectar la lógica de negocio a la tabla `subscriptions` para restringir funcionalidades o límites según el plan contratado por cada centro.
+---
+## Sesión 14: 2025-10-10
+
+*   **Objetivo**: Integrar actualizaciones en tiempo real en la vista de Agenda y en la Sala de Espera del Dashboard.
+*   **Acciones Realizadas**:
+    *   **Integración de SSE en la Agenda:**
+        *   Se modificó `src/context/agenda.store.ts` para incluir la lógica de manejo de eventos SSE (`manejarEventoSSEAgenda`, `iniciarConexionSSEAgenda`, `detenerConexionSSEAgenda`).
+        *   Se modificó `src/services/sse.services.ts` para que los eventos SSE (`turno-actualizado`, `turno-agendado`, `turno-eliminado`) también se envíen a `agenda.store.ts`.
+        *   Se modificó `src/components/organismo/agenda/TurnosDelDia.tsx` para iniciar y detener la conexión SSE al montarse/desmontarse y para eliminar la actualización manual del store al cancelar un turno, confiando en los eventos SSE.
+    *   **Actualizaciones en tiempo real en la Sala de Espera del Dashboard:**
+        *   Se modificó `src/pages/dashboard/dashboard/componente/SalaEspera.jsx` para iniciar y detener la conexión SSE y realizar una carga inicial de los turnos del día al montarse/desmontarse, asegurando que la lista de pacientes recepcionados se actualice en tiempo real.
+*   **Problema Pendiente**: El usuario reporta que los eventos SSE de "turno-agendado" no se reflejan correctamente en la vista de Agenda (`TurnosDelDia.tsx`). Se sospecha un problema en la lógica de `manejarEventoSSEAgenda` al procesar este tipo de evento, específicamente en la comparación de horas y la actualización del `agendaDelDia` atom.
+*   **Próximos Pasos**: Investigar y corregir la lógica de `manejarEventoSSEAgenda` en `src/context/agenda.store.ts` para el evento `turno-agendado`.

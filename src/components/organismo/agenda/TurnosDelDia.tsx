@@ -5,16 +5,25 @@ import {
   setPaciente,
 } from '@/context/agenda.store';
 
+import { detenerConexionSSE, iniciarConexionSSE } from '@/context/recepcion.store';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Calendar, Clock } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TurnoCard from './TurnoCard';
 
-export default function TurnosDelDia() {
+export default function TurnosDelDia(user: any) {
   const agenda = useStore(agendaDelDia);
   const diaSeleccionado = useStore(fechaSeleccionada);
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<any>(null);
+
+  // Iniciar y detener la conexión SSE
+  useEffect(() => {
+    iniciarConexionSSE(user.id);
+    return () => {
+      detenerConexionSSE();
+    };
+  }, []);
 
   const turnosOcupados = useMemo(() => {
     return agenda.filter(slot => !slot.disponible).sort((a, b) => a.hora.localeCompare(b.hora));
@@ -48,9 +57,7 @@ export default function TurnosDelDia() {
         throw new Error('Error al cancelar el turno');
       }
 
-      const data = await responseFetch.json();
-      console.log('Turno cancelado exitosamente:', data);
-      agendaDelDia.set([...agendaDelDia.get().filter(slot => slot.turnoInfo?.id !== data.data.id)]);
+      // La actualización del store agendaDelDia ahora se maneja a través de SSE
       showToast('Turno cancelado exitosamente', { background: 'bg-green-500' });
     } catch (error) {
       console.error('Error al cancelar el turno:', error);
@@ -154,26 +161,6 @@ export default function TurnosDelDia() {
           />
         ))}
       </div>
-      {/* Resumen del día
-      <div className="mt-4 p-3 bg-primary-bg-componentes text-primary-textoTitle rounded-lg border ">
-        <div className="flex justify-between text-sm border-b border-primary-200">
-          <span>Total de horas:</span>
-          <span className="font-medium">
-            {turnosOcupados.reduce((total, slot) => total + (slot.turnoInfo?.duracion || 30), 0)}{' '}
-            min
-          </span>
-        </div>
-        <div className="flex justify-between text-sm border-b border-primary-200 mt-1">
-          <span>Promedio por turno:</span>
-          <span className="font-medium">
-            {Math.round(
-              turnosOcupados.reduce((total, slot) => total + (slot.turnoInfo?.duracion || 30), 0) /
-                turnosOcupados.length
-            )}{' '}
-            min
-          </span>
-        </div>
-      </div> */}
     </div>
   );
 }

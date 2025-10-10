@@ -1,44 +1,100 @@
 import db from '@/db';
-import { turnos, users } from '@/db/schema';
+import { pacientes, relacionesProfesionales, turnos, users } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, eq, gte, lte } from 'drizzle-orm';
-
-import { pacientes } from '@/db/schema';
 import { addMinutes } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
 
-// GET /api/agenda?fecha=YYYY-MM-DD
 export const GET: APIRoute = async ({ locals, request }) => {
-  // 1. Validar sesion
   if (!locals.session) {
     return createResponse(401, 'No autorizado');
   }
 
-  // 2. Obtener y validar la fecha de la consulta
+  const { user } = locals;
+
   const url = new URL(request.url);
-  const fechaQuery = url.searchParams.get('fecha'); // ej: '2025-09-22'
-  const userMedicoId = url.searchParams.get('userMedicoId');
+  const fechaQuery = url.searchParams.get('fecha');
+  const userId = url.searchParams.get('userId');
+  const centroMedicoId = url.searchParams.get('centroMedicoId');
+
   if (!fechaQuery || !/^\d{4}-\d{2}-\d{2}$/.test(fechaQuery)) {
     return createResponse(400, 'Fecha no proporcionada o en formato incorrecto. Use YYYY-MM-DD.');
   }
 
-  console.log('userMedicoId', userMedicoId);
-
-  if (!userMedicoId) {
-    return createResponse(400, 'userMedicoId no proporcionado');
+  if (!centroMedicoId) {
+    return createResponse(400, 'centroMedicoId no proporcionado');
   }
-  // 3. Definir la jornada laboral y la duración de los slots
+
   const JORNADA_LABORAL = [
-    { inicio: 8, fin: 12 }, // Turno mañana (8:00 a 11:59)
-    { inicio: 18, fin: 22 }, // Turno tarde (18:00 a 21:59)
+    { inicio: 8, fin: 12 },
+    { inicio: 18, fin: 22 },
   ];
   const DURACION_SLOT_MINUTOS = 30;
 
   try {
-    // 4. Obtener los turnos existentes para el día seleccionado (en UTC)
+    const isRecepcionista = user.rolEnCentro === 'recepcion';
+    let profesionalesIds: string[] = [];
+
+    if (isRecepcionista) {
+      // Recepción: intentar obtener profesionales del centro médico
+      const relaciones = await db
+        .select()
+        .from(relacionesProfesionales)
+        .where(eq(relacionesProfesionales.centroMedicoId, centroMedicoId));
+
+      // Si no hay relaciones, no es error - simplemente no hay profesionales asignados
+      if (relaciones.length > 0) {
+        profesionalesIds = relaciones.map(relacion => relacion.profesionalId);
+
+        // Si se proporciona un userId específico, validar que pertenezca al centro
+        if (userId) {
+          if (!profesionalesIds.includes(userId)) {
+            return createResponse(403, 'No tiene permisos para ver la agenda de este profesional');
+          }
+          profesionalesIds = [userId];
+        }
+      } else {
+        // No hay relaciones en la tabla - el recepcionista solo puede ver agendas si se especifica un userId válido
+        if (userId) {
+          // Verificar que el usuario existe y es un profesional
+          const profesional = await db
+            .select()
+            .from(users)
+            .where(and(eq(users.id, userId), eq(users.rol, 'profesional')))
+            .limit(1);
+
+          if (profesional.length === 0) {
+            return createResponse(404, 'Profesional no encontrado');
+          }
+          profesionalesIds = [userId];
+        } else {
+          // No hay relaciones y no se especificó userId - devolver agenda vacía o error
+          return createResponse(200, 'No hay profesionales asignados a este centro médico', {
+            agenda: [],
+          });
+        }
+      }
+    } else {
+      // No es recepción: solo puede ver su propia agenda
+      if (!userId || userId !== user.id) {
+        return createResponse(403, 'Solo puede ver su propia agenda');
+      }
+      profesionalesIds = [userId];
+    }
+
+    // Si no hay profesionales IDs después de toda la lógica, retornar agenda vacía
+    if (profesionalesIds.length === 0) {
+      return createResponse(200, 'No hay agendas para mostrar', {
+        agenda: [],
+        profesionalesIds: [],
+        esRecepcion: isRecepcionista,
+      });
+    }
+
+    // Continuar con la obtención de turnos y generación de agenda...
     const inicioDelDia = toZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
     const finDelDia = toZonedTime(`${fechaQuery}T23:59:59`, APP_TIME_ZONE);
 
@@ -68,11 +124,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
         and(
           gte(turnos.fechaTurno, inicioDelDia),
           lte(turnos.fechaTurno, finDelDia),
-          eq(turnos.userMedicoId, userMedicoId)
+          inArray(turnos.userMedicoId, profesionalesIds),
+          eq(turnos.centroMedicoId, centroMedicoId)
         )
       );
 
-    // 5. Generar todos los slots posibles para la jornada laboral (en UTC)
+    // Generar slots y construir agenda...
     const slotsDelDia = [];
     JORNADA_LABORAL.forEach(rango => {
       let currentSlotUtc = toZonedTime(
@@ -91,24 +148,22 @@ export const GET: APIRoute = async ({ locals, request }) => {
       }
     });
 
-    // 6. Fusionar turnos y slots para crear la agenda completa
     const agendaCompleta = slotsDelDia.map(slotInicio => {
       const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MINUTOS * 60000);
 
-      // Buscar si algún turno existente se superpone con este slot
       const turnoOcupante = turnosDelDia.find(turno => {
         const turnoInicio = new Date(turno.fechaTurno);
         const turnoFin = new Date(
           turnoInicio.getTime() + (turno.duracion || DURACION_SLOT_MINUTOS) * 60000
         );
-        // Lógica de superposición de intervalos: (InicioA < FinB) y (FinA > InicioB)
         return slotInicio < turnoFin && slotFin > turnoInicio && turno.estado !== 'cancelado';
       });
+
       if (turnoOcupante) {
         return {
           hora: slotInicio.toISOString(),
           disponible: false,
-          userMedicoId: userMedicoId,
+          userMedicoId: turnoOcupante.userMedicoId,
           turnoInfo: {
             id: turnoOcupante.id,
             pacienteId: turnoOcupante.pacienteId,
@@ -130,7 +185,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       } else {
         return {
           hora: slotInicio.toISOString(),
-          userMedicoId: userMedicoId,
+          userMedicoId: isRecepcionista && userId ? userId : profesionalesIds[0],
           disponible: true,
           turnoInfo: null,
         };
@@ -140,64 +195,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
     return createResponse(200, 'Agenda del día obtenida exitosamente', agendaCompleta);
   } catch (error) {
     console.error('Error al obtener la agenda del día:', error);
-    return createResponse(500, 'Error interno del servidor');
-  }
-};
-
-// POST /api/turnos
-export const POST: APIRoute = async ({ request, locals }) => {
-  // 1. Validar sesion
-  const { user } = locals;
-  if (!user) {
-    return createResponse(401, 'No autorizado');
-  }
-
-  // 2. Leer y validar el body
-  let body;
-  try {
-    body = await request.json();
-  } catch (error) {
-    return createResponse(400, 'El cuerpo de la solicitud no es un JSON válido');
-  }
-
-  const {
-    pacienteId,
-    fechaTurno, // timestamp
-    duracion,
-    tipoConsulta,
-
-    motivoConsulta,
-    motivoInicial,
-  } = body;
-
-  if (!pacienteId || !fechaTurno || !duracion) {
-    return createResponse(
-      400,
-      'Faltan campos requeridos: pacienteId, fechaTurno y duracion son obligatorios'
-    );
-  }
-
-  try {
-    const newTurnoId = nanoid();
-    const nuevoTurno = await db
-      .insert(turnos)
-      .values({
-        id: newTurnoId,
-        pacienteId: pacienteId,
-        otorgaUserId: user.id, // Quien otorga el turno (el medico logueado)
-        userMedicoId: user.id, // El medico que atendera (por defecto el logueado)
-        fechaTurno: fechaTurno,
-        duracion: duracion,
-        tipoConsulta: tipoConsulta,
-        motivoConsulta: motivoConsulta,
-        motivoInicial: motivoInicial,
-        estado: 'pendiente', // Estado inicial del turno
-      })
-      .returning();
-
-    return createResponse(201, 'Turno creado exitosamente', nuevoTurno);
-  } catch (error) {
-    console.error('Error al crear el turno:', error);
     return createResponse(500, 'Error interno del servidor');
   }
 };

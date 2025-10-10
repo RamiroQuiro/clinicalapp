@@ -3,6 +3,7 @@ import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 type Props = {
   profesionales: [{ id: string; nombre: string; apellido: string }];
+  centroMedicoId;
 };
 const toYYYYMMDD = (date: Date) => {
   const year = date.getFullYear();
@@ -11,7 +12,7 @@ const toYYYYMMDD = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-export default function ContenedorSeleccionProfesionales({ profesionales }: Props) {
+export default function ContenedorSeleccionProfesionales({ profesionales, centroMedicoId }: Props) {
   const diaSeleccionado = useStore(fechaSeleccionada);
   const [userSeleccionado, setUserSeleccionado] = useState<{
     id: string;
@@ -31,7 +32,7 @@ export default function ContenedorSeleccionProfesionales({ profesionales }: Prop
       const fetchAgenda = async () => {
         try {
           const response = await fetch(
-            `/api/agenda?fecha=${fechaFormateada}&userMedicoId=${userSeleccionado.id}`
+            `/api/agenda?fecha=${fechaFormateada}&userId=${userSeleccionado.id}&centroMedicoId=${centroMedicoId}`
           );
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

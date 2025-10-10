@@ -146,13 +146,15 @@ export function getEstadoSSE() {
 }
 
 // --- ACCIONES PRINCIPALES ---
-export async function fetchTurnosDelDia(fecha: string) {
+export async function fetchTurnosDelDia(fecha: string, userId?: string, centroMedicoId?: string) {
   recepcionStore.setKey('isLoading', true);
   try {
-    const response = await fetch(`/api/agenda?fecha=${fecha}`);
+    const response = await fetch(
+      `/api/agenda?fecha=${fecha}&userId=${userId}&centroMedicoId=${centroMedicoId}`
+    );
     if (!response.ok) throw new Error('Respuesta de red no fue ok');
     const data = await response.json();
-    recepcionStore.setKey('turnosDelDia', data);
+    recepcionStore.setKey('turnosDelDia', data.data);
 
     // ✅ INICIAR SSE después de cargar los turnos
     iniciarConexionSSE();

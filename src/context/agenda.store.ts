@@ -1,3 +1,4 @@
+import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { atom, map } from 'nanostores';
 
@@ -37,6 +38,11 @@ export interface AgendaSlot {
   } | null;
 }
 
+interface AgendaStore {
+  sseConectado: boolean;
+  ultimaActualizacion: string | null;
+}
+
 // --- STORES ---
 
 // Atom para la fecha actualmente seleccionada en el calendario
@@ -59,6 +65,77 @@ export const datosNuevoTurno = map({
   tipoConsulta: 'presencial' as string,
   motivoConsulta: '' as string,
 });
+
+export const agendaStore = map<AgendaStore>({
+  sseConectado: false,
+  ultimaActualizacion: null,
+});
+
+// --- MANEJADOR DE EVENTOS SSE PARA AGENDA ---
+export function manejarEventoSSEAgenda(evento: any) {
+  console.log('📥 Evento SSE recibido en Agenda:', evento);
+
+  if (evento.type === 'turno-actualizado') {
+    const turnoActualizado = evento.data;
+    const agendaActual = agendaDelDia.get();
+
+    const nuevaAgenda = agendaActual.map(slot => {
+      if (slot.turnoInfo?.id === turnoActualizado.id) {
+        const turnoInfoNuevo = {
+          ...slot.turnoInfo,
+          estado: turnoActualizado.estado,
+          horaLlegadaPaciente: turnoActualizado.horaLlegadaPaciente,
+        };
+        return { ...slot, turnoInfo: turnoInfoNuevo };
+      }
+      return slot;
+    });
+    agendaDelDia.set(nuevaAgenda);
+    console.log(`🔄 Agenda actualizada via SSE: ${turnoActualizado.id}`);
+    agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
+  } else if (evento.type === 'turno-agendado') {
+    const turnoAgendado: AgendaSlot['turnoInfo'] = evento.data.turnoInfo;
+    const agendaActual = agendaDelDia.get();
+
+    // Encontrar el slot correspondiente y actualizarlo
+    const nuevaAgenda = agendaActual.map(slot => {
+      if (slot.hora === turnoAgendado?.horaTurno && slot.userMedicoId === turnoAgendado?.userMedicoId) {
+        return { ...slot, disponible: false, turnoInfo: turnoAgendado };
+      }
+      return slot;
+    });
+    agendaDelDia.set(nuevaAgenda);
+    console.log(`🔄 Agenda actualizada via SSE: ${turnoAgendado?.id}`);
+    agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
+  } else if (evento.type === 'turno-eliminado') {
+    const turnoId = evento.data.id;
+    const agendaActual = agendaDelDia.get();
+
+    const nuevaAgenda = agendaActual.map(slot => {
+      if (slot.turnoInfo?.id === turnoId) {
+        return { ...slot, disponible: true, turnoInfo: null };
+      }
+      return slot;
+    });
+    agendaDelDia.set(nuevaAgenda);
+    console.log(`🗑️ Turno eliminado via SSE: ${turnoId}`);
+    agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
+  }
+}
+
+// --- GESTIÓN DE CONEXIÓN SSE ---
+export function iniciarConexionSSEAgenda(userId?: string) {
+  if (userId) {
+    sseService.setUserId(userId);
+  }
+  sseService.connect();
+  agendaStore.setKey('sseConectado', true); // Asumimos que la conexión se intentará
+}
+
+export function detenerConexionSSEAgenda() {
+  sseService.disconnect();
+  agendaStore.setKey('sseConectado', false);
+}
 
 // --- ACCIONES (SETTERS) ---
 
@@ -95,3 +172,4 @@ export const resetNuevoTurno = () => {
     motivoConsulta: '',
   });
 };
+

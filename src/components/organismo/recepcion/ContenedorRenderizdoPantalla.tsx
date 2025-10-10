@@ -1,15 +1,16 @@
 import { useStore } from '@nanostores/react';
+import type { User } from 'lucia';
 import { useEffect } from 'react';
-import { recepcionStore } from '../../../context/recepcion.store';
+import { fetchTurnosDelDia, recepcionStore } from '../../../context/recepcion.store';
 import PacientesRecepcion from './PacientesRecepcion';
 import RecepcionPacientes from './RecepcionPacientes';
 import SalaDeEspera from './SalaDeEspera';
 
 type Props = {
-  userId: string;
+  user: User;
 };
 
-export default function ContenedorRenderizdoPantalla({ userId }: Props) {
+export default function ContenedorRenderizdoPantalla({ user }: Props) {
   const { pestanaActiva } = useStore(recepcionStore);
 
   // 1. La lógica de fetch ahora vive en el contenedor principal
@@ -22,39 +23,20 @@ export default function ContenedorRenderizdoPantalla({ userId }: Props) {
     };
 
     const fechaFormateada = toYYYYMMDD(new Date());
-    const fetchAgenda = async () => {
-      try {
-        const response = await fetch(
-          `/api/agenda?fecha=${fechaFormateada}&profesionalId=${userId}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-
-        // 2. Guardamos los datos en el store global
-        recepcionStore.setKey('turnosDelDia', data.data);
-        recepcionStore.setKey('isLoading', false);
-      } catch (error) {
-        console.error('Error al obtener la agenda:', error);
-        recepcionStore.setKey('error', error.message);
-        recepcionStore.setKey('isLoading', false);
-      }
-    };
-
-    fetchAgenda();
-  }, [userId]);
+    console.log('user de locals', user);
+    fetchTurnosDelDia(fechaFormateada, user.id, user.centroMedicoId);
+  }, [user]);
 
   const renderContent = () => {
     switch (pestanaActiva) {
       case 'recepcion':
-        return <RecepcionPacientes userId={userId} />;
+        return <RecepcionPacientes userId={user.id} />;
       case 'salaDeEspera':
         return <SalaDeEspera />;
       case 'pacientes':
         return <PacientesRecepcion />;
       default:
-        return <RecepcionPacientes userId={userId} />;
+        return <RecepcionPacientes userId={user.id} />;
     }
   };
 
