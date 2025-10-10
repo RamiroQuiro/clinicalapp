@@ -134,33 +134,34 @@ export default function TurnosDelDia(user: any) {
       </div>
     );
   }
-
-  return (
-    <div className="w-full">
-      {/* Header con contador */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary-300" />
-          <h4 className="text-lg font-semibold text-primary-100 capitalize">{formattedDate}</h4>
+  if (turnosOcupados.length > 0) {
+    return (
+      <div className="w-full">
+        {/* Header con contador */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary-300" />
+            <h4 className="text-lg font-semibold text-primary-100 capitalize">{formattedDate}</h4>
+          </div>
+          <span className="px-2 py-1 bg-primary-500/20 text-primary-300 text-xs font-medium rounded-full">
+            {turnosOcupados.length} turno{turnosOcupados.length !== 1 ? 's' : ''}
+          </span>
         </div>
-        <span className="px-2 py-1 bg-primary-500/20 text-primary-300 text-xs font-medium rounded-full">
-          {turnosOcupados.length} turno{turnosOcupados.length !== 1 ? 's' : ''}
-        </span>
+        {/* Lista de turnos */}
+        <div className="space-y-2">
+          {turnosOcupados.map((slot, index) => (
+            <TurnoCard
+              key={`${slot.hora}-${index}`}
+              slot={slot}
+              onVerDetalles={handleVerDetalles}
+              onReagendar={handleReagendar}
+              onCancelar={handleCancelar}
+              onLlamar={handleLlamar}
+              onWhatsApp={handleWhatsApp}
+            />
+          ))}
+        </div>
       </div>
-      {/* Lista de turnos */}
-      <div className="space-y-2">
-        {turnosOcupados.map((slot, index) => (
-          <TurnoCard
-            key={`${slot.hora}-${index}`}
-            slot={slot}
-            onVerDetalles={handleVerDetalles}
-            onReagendar={handleReagendar}
-            onCancelar={handleCancelar}
-            onLlamar={handleLlamar}
-            onWhatsApp={handleWhatsApp}
-          />
-        ))}
-      </div>
-    </div>
-  );
+    );
+  }
 }

@@ -23,7 +23,6 @@ export default function ContenedorRenderizdoPantalla({ user }: Props) {
     };
 
     const fechaFormateada = toYYYYMMDD(new Date());
-    console.log('user de locals', user);
     fetchTurnosDelDia(fechaFormateada, user.id, user.centroMedicoId);
   }, [user]);
 

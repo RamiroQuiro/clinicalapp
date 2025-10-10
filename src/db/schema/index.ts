@@ -18,9 +18,9 @@ export { notasMedicas } from './notasMedicas';
 export { pacienteProfesional } from './pacienteProfesional';
 export { pacientes } from './pacientes';
 export { pagos } from './pagos';
-export { recetaMedica } from './recetaMedica';
-
+export { preferenciaPerfilUser } from './preferenciaPerfilUser';
 export { recepcionistaProfesional } from './recepcionistaProfesional';
+export { recetaMedica } from './recetaMedica';
 export { salaDeEspera } from './salaDeEspera';
 export { sessions } from './sessions';
 export { signosVitales } from './signosVitales';

@@ -6,7 +6,8 @@ import { computed, map } from 'nanostores';
 import { toZonedTime } from 'date-fns-tz';
 import type { AgendaSlot } from './agenda.store';
 
-const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+import APP_TIME_ZONE from '@/lib/timeZone';
+
 // --- TIPOS ---
 type Turno = {
   id: string;

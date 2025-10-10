@@ -1,6 +1,9 @@
+import APP_TIME_ZONE from '@/lib/timeZone';
 import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
+import { toZonedTime } from 'date-fns-tz';
 import { atom, map } from 'nanostores';
+import { recepcionStore } from './recepcion.store';
 
 // --- INTERFACES Y TIPOS ---
 export interface Profesional {
@@ -94,19 +97,27 @@ export function manejarEventoSSEAgenda(evento: any) {
     console.log(`🔄 Agenda actualizada via SSE: ${turnoActualizado.id}`);
     agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   } else if (evento.type === 'turno-agendado') {
-    const turnoAgendado: AgendaSlot['turnoInfo'] = evento.data.turnoInfo;
-    const agendaActual = agendaDelDia.get();
+    const turnoAgendado: AgendaSlot = evento.data;
 
-    // Encontrar el slot correspondiente y actualizarlo
-    const nuevaAgenda = agendaActual.map(slot => {
-      if (slot.hora === turnoAgendado?.horaTurno && slot.userMedicoId === turnoAgendado?.userMedicoId) {
-        return { ...slot, disponible: false, turnoInfo: turnoAgendado };
-      }
-      return slot;
-    });
-    agendaDelDia.set(nuevaAgenda);
-    console.log(`🔄 Agenda actualizada via SSE: ${turnoAgendado?.id}`);
-    agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
+    const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
+    console.log('turnoAgendado', turnoAgendado);
+    const splitFechaTurno = turnoAgendado.turnoInfo?.fechaTurno.split('T');
+    let horaFormateada = toZonedTime(
+      `${splitFechaTurno[0]}T${turnoAgendado.turnoInfo?.horaTurno}:00.000`,
+      APP_TIME_ZONE
+    );
+
+    console.log('horaFormateada', horaFormateada);
+
+    const agendaSlotsNuevos = [
+      ...agendaSlotsActuales,
+      { ...turnoAgendado, hora: horaFormateada.toISOString() },
+    ];
+
+    recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
+    console.log(`nueva agenda ->`, agendaSlotsNuevos);
+    console.log(`🔄 Store actualizado via SSE: ${turnoAgendado.turnoInfo.id}`);
+    recepcionStore.setKey('ultimaActualizacion', new Date(getFechaEnMilisegundos()).toISOString());
   } else if (evento.type === 'turno-eliminado') {
     const turnoId = evento.data.id;
     const agendaActual = agendaDelDia.get();
@@ -172,4 +183,3 @@ export const resetNuevoTurno = () => {
     motivoConsulta: '',
   });
 };
-
