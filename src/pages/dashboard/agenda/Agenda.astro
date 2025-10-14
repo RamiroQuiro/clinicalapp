@@ -51,7 +51,7 @@ try {
 
     <!-- Columna 2: Turnos Agendados -->
     <Section title="Turnos del Día" classContent="px- py-4 md:w-[40vw]">
-      <TurnosDelDia client:load />
+      <TurnosDelDia client:load userId={user.id} />
     </Section>
 
     <!-- Columna 3: Horarios Disponibles -->
