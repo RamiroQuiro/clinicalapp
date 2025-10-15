@@ -4,7 +4,7 @@ export default function InputDate({ name, id, onChange, children }) {
     <label
       id={id}
       htmlFor={name}
-      className={` px-3 py-1 rounded-lg font-semibold capitalize border-primary-100 duration-300 text-xs border-dashed border bg-transparent hover:bg-primary-100/80 hover:text-white cursor-pointer hover:border-primary-resaltado`}
+      className={` px-3 py-1 rounded-lg font- capitalize border-primary-100 duration-300 text-sm border-dashed border bg-transparent hover:bg-primary-100/80 hover:text-white cursor-pointer hover:border-primary-resaltado`}
     >
       {children}
       <input

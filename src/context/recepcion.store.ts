@@ -6,7 +6,8 @@ import { computed, map } from 'nanostores';
 import { toZonedTime } from 'date-fns-tz';
 import type { AgendaSlot } from './agenda.store';
 
-const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+import APP_TIME_ZONE from '@/lib/timeZone';
+
 // --- TIPOS ---
 type Turno = {
   id: string;
@@ -146,13 +147,15 @@ export function getEstadoSSE() {
 }
 
 // --- ACCIONES PRINCIPALES ---
-export async function fetchTurnosDelDia(fecha: string) {
+export async function fetchTurnosDelDia(fecha: string, userId?: string, centroMedicoId?: string) {
   recepcionStore.setKey('isLoading', true);
   try {
-    const response = await fetch(`/api/agenda?fecha=${fecha}`);
+    const response = await fetch(
+      `/api/agenda?fecha=${fecha}&userId=${userId}&centroMedicoId=${centroMedicoId}`
+    );
     if (!response.ok) throw new Error('Respuesta de red no fue ok');
     const data = await response.json();
-    recepcionStore.setKey('turnosDelDia', data);
+    recepcionStore.setKey('turnosDelDia', data.data);
 
     // ✅ INICIAR SSE después de cargar los turnos
     iniciarConexionSSE();

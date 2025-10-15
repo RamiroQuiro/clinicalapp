@@ -13,11 +13,11 @@ const { user } = Astro.locals;
       <FormularioTurnoRecepcion client:load />
     </ContenedeorModal>
   </div>
-  <ConstendorStatsRec client:load userId={user.id} />
+  <ConstendorStatsRec client:load />
   <!-- <div class="mt-4 w-full flex">
     <MenuPestaña client:load />
   </div> -->
   <div class="w-full pt-4 h-full">
-    <ContenedorRenderizdoPantalla client:load userId={user.id} />
+    <ContenedorRenderizdoPantalla client:load user={user} />
   </div>
 </MainDashboard>

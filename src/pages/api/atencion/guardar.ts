@@ -213,6 +213,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             id: nanoIDNormalizador('Med'),
             historiaClinicaId: historiaClinicaId,
             nombreGenerico: m.nombreGenerico,
+            presentacion: m.presentacion,
             nombreComercial: m.nombreComercial,
             dosis: safeParseFloat(m.dosis),
             frecuencia: safeParseFloat(m.frecuencia),

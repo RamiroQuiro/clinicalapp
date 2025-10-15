@@ -1,5 +1,6 @@
 // services/sse.service.ts
 import { manejarEventoSSE, recepcionStore } from '@/context/recepcion.store';
+import { agendaStore, manejarEventoSSEAgenda } from '@/context/agenda.store';
 
 class SSEService {
   private eventSource: EventSource | null = null;
@@ -24,6 +25,7 @@ class SSEService {
       this.eventSource.onopen = () => {
         console.log('✅ Conexión SSE establecida');
         recepcionStore.setKey('sseConectado', true);
+        agendaStore.setKey('sseConectado', true);
         this.reconnectAttempts = 0;
       };
 
@@ -31,6 +33,10 @@ class SSEService {
         try {
           const data = JSON.parse(event.data);
           manejarEventoSSE({
+            type: 'turno-actualizado',
+            data: data,
+          });
+          manejarEventoSSEAgenda({
             type: 'turno-actualizado',
             data: data,
           });
@@ -46,6 +52,10 @@ class SSEService {
             type: 'turno-agendado',
             data: data,
           });
+          manejarEventoSSEAgenda({
+            type: 'turno-agendado',
+            data: data,
+          });
         } catch (error) {
           console.error('❌ Error parsing turno-actualizado:', error);
         }
@@ -58,6 +68,10 @@ class SSEService {
             type: 'turno-eliminado',
             data: data,
           });
+          manejarEventoSSEAgenda({
+            type: 'turno-eliminado',
+            data: data,
+          });
         } catch (error) {
           console.error('❌ Error parsing turno-eliminado:', error);
         }
@@ -66,11 +80,13 @@ class SSEService {
       this.eventSource.onerror = error => {
         console.error('❌ Error en conexión SSE:', error);
         recepcionStore.setKey('sseConectado', false);
+        agendaStore.setKey('sseConectado', false);
         this.handleReconnection();
       };
     } catch (error) {
       console.error('❌ Error al inicializar SSE:', error);
       recepcionStore.setKey('sseConectado', false);
+      agendaStore.setKey('sseConectado', false);
     }
   }
 
@@ -86,6 +102,7 @@ class SSEService {
       this.eventSource.close();
       this.eventSource = null;
       recepcionStore.setKey('sseConectado', false);
+      agendaStore.setKey('sseConectado', false);
     }
   }
 

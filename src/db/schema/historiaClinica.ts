@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { centrosMedicos } from './centrosMedicos';
 import { pacientes } from './pacientes';
 import { users } from './users';
 
@@ -13,6 +14,10 @@ export const historiaClinica = sqliteTable('historiaClinica', {
   userIdResponsable: text('userIdResponsable') // quién abrió/atiende la HC
     .notNull()
     .references(() => users.id),
+  centroMedicoId: text('centroMedicoId')
+    .notNull()
+    .references(() => centrosMedicos.id)
+    .notNull(),
 
   numeroHC: text('numeroHC'), // número interno de historia clínica
 
@@ -25,7 +30,7 @@ export const historiaClinica = sqliteTable('historiaClinica', {
   // Datos complementarios del paciente (no tan básicos como en `pacientes`)
   email: text('email'),
   celular: text('celular'),
-  direccion: text('direccion'),
+  domicilio: text('domicilio'),
   ciudad: text('ciudad'),
   provincia: text('provincia'),
   pais: text('pais'),

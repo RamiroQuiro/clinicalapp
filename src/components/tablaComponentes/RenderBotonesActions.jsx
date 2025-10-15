@@ -14,11 +14,11 @@ export const RenderActionsPacientes = data => (
       <span>Ficha</span>
     </a>
     <a
-      href={`/dashboard/consultas/aperturaPaciente/${data.id}`}
+      href={`/dashboard/agenda`}
       className="flex items-center gap-1 text-xs p-1 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
     >
       <CalendarPlus size={14} />
-      <span>Dar Turno</span>
+      <span>Agendar</span>
     </a>
     <a
       href={`/api/atencion/nueva?pacienteId=${data.id}`}

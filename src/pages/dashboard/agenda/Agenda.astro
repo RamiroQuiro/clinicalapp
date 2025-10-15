@@ -39,7 +39,11 @@ try {
       <FormularioNuevoPaciente client:load userId={user.id} />
     </Modal>
 
-    <ContenedorSeleccionProfesionales client:load profesionales={dataProfesionales} />
+    <ContenedorSeleccionProfesionales
+      client:load
+      profesionales={dataProfesionales}
+      centroMedicoId={user.centroMedicoId}
+    />
   </div>
   <ConstendorStats client:load userId={user.id} />
 
@@ -51,7 +55,7 @@ try {
 
     <!-- Columna 2: Turnos Agendados -->
     <Section title="Turnos del Día" classContent="px- py-4 md:w-[40vw]">
-      <TurnosDelDia client:load userId={user.id} />
+      <TurnosDelDia client:load user={user} />
     </Section>
 
     <!-- Columna 3: Horarios Disponibles -->
@@ -59,6 +63,4 @@ try {
       <HorariosDisponibles client:load />
     </Section>
   </div>
-
-  <!-- Este componente es invisible. Se encarga de cargar los datos en el store -->
 </MainDashboard>

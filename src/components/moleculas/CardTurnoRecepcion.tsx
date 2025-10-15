@@ -18,17 +18,17 @@ interface TurnoCardProps {
 const getStatusInfo = (estado: string) => {
   switch (estado?.toLowerCase()) {
     case 'finalizada':
-      return { text: 'Finalizada', colorClass: 'bg-green-200  text-green-800' };
+      return { text: 'Finalizada', colorClass: 'bg-green-400  text-green-100' };
     case 'en_consulta':
-      return { text: 'En Consulta', colorClass: 'bg-blue-200/70 text-blue-800' };
+      return { text: 'En Consulta', colorClass: 'bg-blue-400/70 text-blue-100' };
     case 'sala_de_espera':
-      return { text: 'Sala de Espera', colorClass: 'bg-yellow-200/70 text-yellow-800' };
+      return { text: 'Sala de Espera', colorClass: 'bg-yellow-200/70 text-yellow-900' };
     case 'confirmado':
-      return { text: 'Confirmado', colorClass: 'bg-green-200/70 text-green-800' };
+      return { text: 'Confirmado', colorClass: 'bg-green-400/70 text-green-100' };
     case 'pendiente':
-      return { text: 'Pendiente', colorClass: 'bg-orange-300/40 text-orange-800' };
+      return { text: 'Pendiente', colorClass: 'bg-orange-400/40 text-orange-700' };
     case 'cancelado':
-      return { text: 'Cancelado', colorClass: 'bg-red-200/70 text-red-800' };
+      return { text: 'Cancelado', colorClass: 'bg-red-400/70 text-red-100' };
     default:
       return { text: estado, colorClass: 'bg-gray-100 text-gray-800' };
   }

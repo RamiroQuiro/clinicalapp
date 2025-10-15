@@ -1,4 +1,3 @@
-// services/pacientes.service.ts
 import db from '@/db';
 import {
   archivosAdjuntos,
@@ -8,18 +7,20 @@ import {
   historiaClinica,
   medicamento,
   pacientes,
-  turnos,
   users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
-import { asc, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 function generateColor(index: number) {
   const colors = ['#A5CDFE38', '#DCECFF45', '#FCE3D54C', '#FFD2B2BD', '#E25B3250'];
   return colors[index % colors.length];
 }
 
-export async function getPacienteData(pacienteId: string, userId: string) {
+export async function getPacienteData(pacienteId: string, userId: string, centroMedicoId: string) {
+  if (!centroMedicoId) {
+    throw new Error('Centro médico no especificado');
+  }
   try {
     // Ejecutar consultas en paralelo
     const [
@@ -52,13 +53,18 @@ export async function getPacienteData(pacienteId: string, userId: string) {
         })
         .from(pacientes)
         .innerJoin(historiaClinica, eq(historiaClinica.pacienteId, pacienteId))
-        .where(eq(pacientes.id, pacienteId)),
+        .where(and(eq(pacientes.id, pacienteId), eq(pacientes.centroMedicoId, centroMedicoId))),
 
       // medicamentos
       db
         .select()
         .from(medicamento)
-        .where(eq(medicamento.pacienteId, pacienteId))
+        .where(
+          and(
+            eq(medicamento.pacienteId, pacienteId),
+            eq(medicamento.centroMedicoId, centroMedicoId)
+          )
+        )
         .orderBy(desc(medicamento.created_at)),
 
       // historial de visitas
@@ -75,20 +81,45 @@ export async function getPacienteData(pacienteId: string, userId: string) {
         })
         .from(atenciones)
         .innerJoin(users, eq(users.id, atenciones.userIdMedico))
-        .where(eq(atenciones.pacienteId, pacienteId))
+        .where(
+          and(eq(atenciones.pacienteId, pacienteId), eq(atenciones.centroMedicoId, centroMedicoId))
+        )
         .groupBy(atenciones.id)
         .orderBy(desc(atenciones.created_at))
         .limit(10),
       // diagnostico
-      db.select().from(diagnostico).where(eq(diagnostico.pacienteId, pacienteId)).limit(10),
+      db
+        .select()
+        .from(diagnostico)
+        .where(
+          and(
+            eq(diagnostico.pacienteId, pacienteId),
+            eq(diagnostico.centroMedicoId, centroMedicoId)
+          )
+        )
+        .limit(10),
       // antecedentes
-      db.select().from(antecedentes).where(eq(antecedentes.pacienteId, pacienteId)).limit(10),
+      db
+        .select()
+        .from(antecedentes)
+        .where(
+          and(
+            eq(antecedentes.pacienteId, pacienteId),
+            eq(antecedentes.centroMedicoId, centroMedicoId)
+          )
+        )
+        .limit(10),
 
       // archivos adjuntos
       db
         .select()
         .from(archivosAdjuntos)
-        .where(eq(archivosAdjuntos.pacienteId, pacienteId))
+        .where(
+          and(
+            eq(archivosAdjuntos.pacienteId, pacienteId),
+            eq(archivosAdjuntos.centroMedicoId, centroMedicoId)
+          )
+        )
         .orderBy(desc(archivosAdjuntos.created_at)),
 
       // // notas médicas
@@ -107,21 +138,21 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       //   .orderBy(desc(notasMedicas.created_at)),
 
       // Próximos Turnos
-      db
-        .select({
-          id: turnos.id,
-          fecha: turnos.fechaTurno,
-          hora: turnos.horaAtencion,
-          motivoConsulta: turnos.motivoConsulta,
-          profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
-          userMedicoId: turnos.userMedicoId,
-        })
-        .from(turnos)
-        .innerJoin(users, eq(users.id, turnos.userMedicoId))
-        .where(eq(turnos.pacienteId, pacienteId))
-        // .where(gte(turnos.fechaTurno, new Date())) // Filtrar por fechas futuras
-        .orderBy(asc(turnos.fechaTurno))
-        .limit(5),
+      // db
+      //   .select({
+      //     id: turnos.id,
+      //     fecha: turnos.fechaTurno,
+      //     hora: turnos.horaAtencion,
+      //     motivoConsulta: turnos.motivoConsulta,
+      //     profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
+      //     userMedicoId: turnos.userMedicoId,
+      //   })
+      //   .from(turnos)
+      //   .innerJoin(users, eq(users.id, turnos.userMedicoId))
+      //   .where(and(eq(turnos.pacienteId, pacienteId), eq(turnos.centroMedicoId, centroMedicoId)))
+      // .where(gte(turnos.fechaTurno, new Date())) // Filtrar por fechas futuras
+      //     .orderBy(asc(turnos.fechaTurno))
+      //     .limit(5),
     ]);
 
     const pacienteData = pacienteDataRaw.at(0);
@@ -134,6 +165,7 @@ export async function getPacienteData(pacienteId: string, userId: string) {
       userId,
       actionType: 'VIEW',
       description: 'ver perfil del paciente',
+      centroMedicoId: centroMedicoId,
     });
 
     // Colores para visitas

@@ -10,7 +10,7 @@ const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
 // TODO: Reemplazar con la lista de médicos del centro médico obtenida de la API
 const medicosDeEjemplo = [
   { id: 'sqss31m17w99rkj', nombre: 'Dr. Ramiro' },
-  { id: 'sqss31m17w99rkj', nombre: 'Dra. Lucia' },
+  { id: 'another-doc-id', nombre: 'Dra. Lucia' }, // ID Corregido
 ];
 
 interface PacienteResult {
@@ -82,7 +82,7 @@ export const FormularioTurnoRecepcion: React.FC = () => {
         horaLlegadaPaciente: fechaTurnoUtc.toISOString(),
         estado: 'sala_de_espera',
       };
-
+      console.log('ESTE ES EL payload del formulairo de espontaneas ->', payload);
       const response = await fetch('/api/recepcion/turnos/createEspontanea', {
         method: 'POST',
         headers: {

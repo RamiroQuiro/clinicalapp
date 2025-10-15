@@ -8,7 +8,7 @@ export const usersCentrosMedicos = sqliteTable('usersCentrosMedicos', {
   userId: text('userId')
     .references(() => users.id)
     .notNull(),
-  centroMedicoId: integer('centroMedicoId')
+  centroMedicoId: text('centroMedicoId')
     .references(() => centrosMedicos.id)
     .notNull(),
   nombreCentroMedico: text('nombreCentroMedico').notNull(),

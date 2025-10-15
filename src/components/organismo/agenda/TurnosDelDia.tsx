@@ -90,9 +90,7 @@ export default function TurnosDelDia({ userId }: { userId: string }) {
         throw new Error('Error al cancelar el turno');
       }
 
-      const data = await responseFetch.json();
-      console.log('Turno cancelado exitosamente:', data);
-      agendaDelDia.set([...agendaDelDia.get().filter(slot => slot.turnoInfo?.id !== data.data.id)]);
+      // La actualización del store agendaDelDia ahora se maneja a través de SSE
       showToast('Turno cancelado exitosamente', { background: 'bg-green-500' });
     } catch (error) {
       console.error('Error al cancelar el turno:', error);
@@ -169,53 +167,34 @@ export default function TurnosDelDia({ userId }: { userId: string }) {
       </div>
     );
   }
-
-  return (
-    <div className="w-full">
-      {/* Header con contador */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary-300" />
-          <h4 className="text-lg font-semibold text-primary-100 capitalize">{formattedDate}</h4>
-        </div>
-        <span className="px-2 py-1 bg-primary-500/20 text-primary-300 text-xs font-medium rounded-full">
-          {turnosOcupados.length} turno{turnosOcupados.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-      {/* Lista de turnos */}
-      <div className="space-y-2">
-        {turnosOcupados.map((slot, index) => (
-          <TurnoCard
-            key={`${slot.hora}-${index}`}
-            slot={slot}
-            onVerDetalles={handleVerDetalles}
-            onReagendar={handleReagendar}
-            onCancelar={handleCancelar}
-            onLlamar={handleLlamar}
-            onWhatsApp={handleWhatsApp}
-          />
-        ))}
-      </div>
-      {/* Resumen del día
-      <div className="mt-4 p-3 bg-primary-bg-componentes text-primary-textoTitle rounded-lg border ">
-        <div className="flex justify-between text-sm border-b border-primary-200">
-          <span>Total de horas:</span>
-          <span className="font-medium">
-            {turnosOcupados.reduce((total, slot) => total + (slot.turnoInfo?.duracion || 30), 0)}{' '}
-            min
+  if (turnosOcupados.length > 0) {
+    return (
+      <div className="w-full">
+        {/* Header con contador */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary-300" />
+            <h4 className="text-lg font-semibold text-primary-100 capitalize">{formattedDate}</h4>
+          </div>
+          <span className="px-2 py-1 bg-primary-500/20 text-primary-300 text-xs font-medium rounded-full">
+            {turnosOcupados.length} turno{turnosOcupados.length !== 1 ? 's' : ''}
           </span>
         </div>
-        <div className="flex justify-between text-sm border-b border-primary-200 mt-1">
-          <span>Promedio por turno:</span>
-          <span className="font-medium">
-            {Math.round(
-              turnosOcupados.reduce((total, slot) => total + (slot.turnoInfo?.duracion || 30), 0) /
-                turnosOcupados.length
-            )}{' '}
-            min
-          </span>
+        {/* Lista de turnos */}
+        <div className="space-y-2">
+          {turnosOcupados.map((slot, index) => (
+            <TurnoCard
+              key={`${slot.hora}-${index}`}
+              slot={slot}
+              onVerDetalles={handleVerDetalles}
+              onReagendar={handleReagendar}
+              onCancelar={handleCancelar}
+              onLlamar={handleLlamar}
+              onWhatsApp={handleWhatsApp}
+            />
+          ))}
         </div>
-      </div> */}
-    </div>
-  );
+      </div>
+    );
+  }
 }

@@ -53,7 +53,7 @@ const userId = session?.userId;
     <ContenedorInputSelected
       options={[
         { id: 1, value: 'masculino' },
-        { id: 2, value: 'femenino' }, // Corregí "fenemino" a "femenino"
+        { id: 2, value: 'femenino' },
       ]}
       name="sexo"
       id="sexo"
@@ -170,66 +170,6 @@ const userId = session?.userId;
   const nObraSocialInput = document.getElementById('nObraSocial');
   const estaturaInput = document.getElementById('estatura');
   const grupoSanguineoInput = document.getElementById('grupoSanguineo');
-  let timeoutId;
-
-  // Función para manejar el evento input del DNI
-  const handleDNIInput = async event => {
-    clearTimeout(timeoutId); // Limpiar el timeout anterior
-
-    // Esperar 1 segundo después de que el usuario deje de escribir
-    timeoutId = setTimeout(async () => {
-      const dni = event.target.value;
-
-      if (!dni) {
-        // Si el campo DNI está vacío, deshabilitar los campos principales
-        nombreInput.readOnly = true;
-        apellidoInput.readOnly = true;
-        domicilioInput.readOnly = true;
-        sexoInput.readOnly = true;
-        fNacimientoInput.readOnly = true;
-        return;
-      }
-
-      try {
-        // Hacer una petición al servidor para verificar si el DNI existe
-        const response = await fetch(`/api/pacientes/checkDni?dni=${dni}`);
-        const result = await response.json();
-
-        if (result.exists) {
-          // Si el paciente existe, deshabilitar los campos principales y mostrar los datos
-          nombreInput.value = result.paciente.nombre;
-          apellidoInput.value = result.paciente.apellido;
-          domicilioInput.value = result.paciente.domicilio || '';
-          sexoInput.value = result.paciente.sexo || 'masculino'; // Valor por defecto
-          fNacimientoInput.value = result.paciente.fNacimiento || '';
-
-          nombreInput.readOnly = true;
-          apellidoInput.readOnly = true;
-          domicilioInput.readOnly = true;
-          sexoInput.readOnly = true;
-          fNacimientoInput.readOnly = true;
-        } else {
-          // Si el paciente no existe, habilitar los campos principales
-          nombreInput.value = '';
-          apellidoInput.value = '';
-          domicilioInput.value = '';
-          sexoInput.value = '';
-          fNacimientoInput.value = '';
-          nombreInput.readOnly = false;
-          apellidoInput.readOnly = false;
-          domicilioInput.readOnly = false;
-          sexoInput.readOnly = false;
-          fNacimientoInput.readOnly = false;
-        }
-      } catch (error) {
-        console.error('Error al verificar el DNI:', error);
-        erroresShow.textContent = 'Error al verificar el DNI. Intente nuevamente.';
-      }
-    }, 1000); // Esperar 1 segundo
-  };
-
-  // Asignar la función al evento input del DNI
-  dniInput.addEventListener('input', handleDNIInput);
 
   // mandar el formulario
   formulario.addEventListener('submit', async e => {

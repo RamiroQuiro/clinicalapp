@@ -1,5 +1,5 @@
 import db from '@/db';
-import { centrosMedicos, users, usersCentrosMedicos } from '@/db/schema';
+import { centrosMedicos, preferenciaPerfilUser, users, usersCentrosMedicos } from '@/db/schema';
 import { lucia } from '@/lib/auth';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIContext } from 'astro';
@@ -43,6 +43,7 @@ export async function POST({ request, cookies }: APIContext): Promise<Response> 
           nombre: nombre,
           apellido: apellido,
           password: hashPassword,
+
           rol: 'admin', // Rol global del dueño del centro
         })
         .returning();
@@ -51,12 +52,24 @@ export async function POST({ request, cookies }: APIContext): Promise<Response> 
         tx.rollback();
         return {};
       }
+      console.log('creando preferencia --> ⌛', userId);
 
-      // 2. Crear el Centro Médico
+      // 2. Crear las preferencias de perfil para el nuevo usuario
+      await tx.insert(preferenciaPerfilUser).values({
+        id: nanoIDNormalizador('pref'), // Generar un ID para la preferencia
+        userId: userId,
+        nombrePerfil: 'Default', // O un nombre de perfil que tenga sentido
+        especialidad: 'General', // O la especialidad por defecto
+        estado: 'activo',
+        // Las preferencias JSON se establecerán con el valor por defecto del schema
+      });
+
+      // 3. Crear el Centro Médico
       console.log('creando centro --> ⌛');
       const [createdCentro] = await tx
         .insert(centrosMedicos)
         .values({
+          id: nanoIDNormalizador('ce'),
           nombre: nombreCentro,
           creadoPorId: userId,
           modificadoUltimoPorId: userId,

@@ -5,7 +5,6 @@ import { lucia } from '@/lib/auth';
 import { emitEvent } from '@/lib/sse/sse';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { toZonedTime } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
 
 const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
@@ -22,7 +21,16 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     estado,
     pacienteNombre,
   } = await request.json();
-
+  console.log('este es la data que viene del formulario -> ', {
+    pacienteId,
+    fechaTurno,
+    duracion,
+    horaTurno,
+    medicoId,
+    tipoDeTurno,
+    estado,
+    pacienteNombre,
+  });
   const { user } = locals;
   if (!pacienteId || !fechaTurno || !duracion || !horaTurno || !medicoId) {
     return createResponse(400, 'Faltan campos obligatorios para crear el turno.');
@@ -54,31 +62,45 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   }
 
   try {
-    const turnoId = nanoIDNormalizador('Turno_', 15);
-    const fechaTurnoLocal = toZonedTime(`${fechaTurno}T${horaTurno}`, APP_TIME_ZONE);
+    const turnoId = nanoIDNormalizador('Turno', 15);
+    console.log('iiciando la insercion de nuevo turno en el db.... ⌛', {
+      turnoId,
+      pacienteId,
+      otorgaUserId: user?.id,
+      userMedicoId: medicoId,
+      fechaTurno,
+      horaTurno,
+      duracion,
+      motivoConsulta,
+      estado,
+      tipoDeTurno,
+      centroMedicoId: user?.centroMedicoId,
+      pacienteNombre,
+    });
 
     const [newTurno] = await db
       .insert(turnos)
       .values({
         id: turnoId,
         pacienteId: pacienteId,
-        otorgaUserId: user.id,
+        otorgaUserId: user?.id,
         userMedicoId: medicoId,
-        fechaTurno: fechaTurnoLocal,
+        fechaTurno: new Date(fechaTurno),
         horaAtencion: horaTurno,
+        horaLlegadaPaciente: new Date(fechaTurno),
         duracion: duracion,
         motivoConsulta: motivoConsulta,
         estado: estado || 'pendiente',
         tipoDeTurno: tipoDeTurno || 'programado',
-        centroMedicoId: centroMedicoId,
+        centroMedicoId: user?.centroMedicoId,
       })
       .returning();
-
+    console.log('buscando los datos del profesional.... ⌛');
     const [dataProfesional] = await db
       .select()
       .from(users)
       .where(eq(users.id, newTurno.userMedicoId));
-
+    console.log('creando el log de audit.... ⌛');
     await logAuditEvent({
       userId: user.id,
       centroMedicoId: centroMedicoId,
@@ -90,7 +112,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         pacienteNombre || isPaciente[0].nombre
       }`,
     });
-
+    console.log('creando la respuesta del turno.... ⌛');
     const creandoResponse = {
       hora: newTurno.horaAtencion,
       disponible: false,

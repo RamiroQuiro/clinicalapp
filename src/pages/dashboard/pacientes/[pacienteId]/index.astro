@@ -29,9 +29,12 @@ let perfilPaciente = {
   colorMap: {},
 };
 
+if (!user || !user.id || !user.centroMedicoId) {
+  return Astro.redirect('/dashboard?error=auth');
+}
+console.log('centroMedicoId', user.centroMedicoId);
 try {
-  perfilPaciente = await getPacienteData(pacienteId as string, user?.id as string);
-  console.log('pacienteData', perfilPaciente);
+  perfilPaciente = await getPacienteData(pacienteId as string, user.id, user.centroMedicoId);
 } catch (error) {
   console.error('Error fetching paciente data:', error);
 }

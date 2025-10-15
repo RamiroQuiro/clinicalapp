@@ -33,7 +33,7 @@ const pacienteSchema = {
     type: 'string',
     optional: false,
   },
-  direccion: {
+  domicilio: {
     type: 'string',
     optional: true,
   },
@@ -75,64 +75,51 @@ const pacienteSchema = {
   },
 };
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const data = await request.json();
 
-  console.log('data entrante en nuevo paciente', data);
   if (!data.nombre || !data.dni || !data.userId) {
     return createResponse(400, 'Datos incompletos requeridos');
   }
-
+  console.log('ingresando data del paceinte ->', data);
   const normalizedData = normalize(data, pacienteSchema);
-  console.log('data normalizada', normalizedData);
+
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
       return createResponse(401, 'No autorizado');
     }
-
-    const { session, user } = await lucia.validateSession(sessionId);
-    if (!session) {
-      return createResponse(401, 'No autorizado');
+    const { user } = locals;
+    const { session } = await lucia.validateSession(sessionId);
+    if (!session || !user || !user.centroMedicoId) {
+      return createResponse(401, 'No autorizado o sin centro médico asignado.');
     }
+    const centroMedicoId = user.centroMedicoId;
 
     const result = await db.transaction(async trx => {
-      console.log('verificando existencia de pacientre');
-      let pacientenNuevo;
-      const [isPacienteExistente] = await trx
-        .select()
-        .from(pacientes)
-        .where(and(eq(pacientes.dni, normalizedData.dni), eq(pacientes.activo, true)));
+      console.log('emepzando a insertar datos en la tbla paciente... ⌛');
+      const pacienteId = nanoIDNormalizador('Pac', 15);
+      const [pacientenNuevo] = await trx
+        .insert(pacientes)
+        .values({
+          id: pacienteId,
+          nombre: normalizedData.nombre,
+          apellido: normalizedData.apellido,
+          email: normalizedData.email,
+          dni: normalizedData.dni,
+          fNacimiento: normalizedData.fNacimiento,
+          sexo: normalizedData.sexo,
+          centroMedicoId: centroMedicoId,
+        })
+        .returning();
 
-      console.log('operaciones de isPacienteExistnete', isPacienteExistente);
-      let pacienteId;
-
-      if (isPacienteExistente) {
-        pacienteId = isPacienteExistente.id;
-      } else {
-        console.log('el paciente no exite, insertando paciente');
-        pacienteId = nanoIDNormalizador('Pac_', 15);
-        pacientenNuevo = await trx
-          .insert(pacientes)
-          .values({
-            id: pacienteId,
-            nombre: normalizedData.nombre,
-            apellido: normalizedData.apellido,
-            email: normalizedData.email,
-            dni: normalizedData.dni,
-            fNacimiento: normalizedData.fNacimiento,
-
-            sexo: normalizedData.sexo,
-          })
-          .returning();
-      }
-
-      console.log('insertando historiaClinica');
+      console.log('emepzando a insertar datos en la tbla historiaClinica... ⌛');
       await trx.insert(historiaClinica).values({
-        id: nanoIDNormalizador('Hist_', 15),
+        id: nanoIDNormalizador('Hist', 15),
         pacienteId: pacienteId,
         userIdResponsable: data.userId,
-        direccion: normalizedData.direccion || null,
+        domicilio: normalizedData.domicilio || null,
+        centroMedicoId: centroMedicoId,
         celular: normalizedData.celular || null,
         estatura: normalizedData.estatura ? normalizedData.estatura : 0,
         peso: normalizedData.peso ? normalizedData.peso : 0,
@@ -145,7 +132,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         grupoSanguineo: normalizedData.grupoSanguineo || null,
       });
 
-      console.log('insertando pacienteProfesional');
+      console.log('emepzando a insertar datos en la tbla pacienteProfesional... ⌛');
       const isRelacionExistente = await trx
         .select()
         .from(pacienteProfesional)
@@ -157,10 +144,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         );
 
       if (isRelacionExistente[0]) {
-        return createResponse(402, 'El paciente ya está asociado a este usuario');
+        // Esto no debería ocurrir en un flujo de creación puro, pero se mantiene como salvaguarda
+        throw new Error('El paciente ya está asociado a este usuario');
       }
 
-      console.log('insertando pacienteProfesional');
+      console.log('emepzando a insertar datos en la tbla pacienteProfesional... ⌛');
       await trx.insert(pacienteProfesional).values({
         id: generateId(15),
         userId: data.userId,
@@ -171,17 +159,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return pacientenNuevo;
     });
 
-    console.log('insertando pacienteProfesional', result, 'y creando log de auditoria');
     await logAuditEvent({
       userId: data.userId,
       actionType: 'CREATE',
       tableName: 'pacientes',
       recordId: result.id,
       newValue: normalizedData,
+      centroMedicoId: centroMedicoId,
       description: `El usuario ${data.userId} creó al paciente ${normalizedData.nombre} ${normalizedData.apellido}`,
     });
     return createResponse(200, 'Paciente creado y asociado con éxito', result);
   } catch (error: any) {
+    if (error.message.includes('UNIQUE constraint failed')) {
+      return createResponse(
+        409,
+        'Conflicto: Ya existe un paciente con este DNI en este centro médico.'
+      );
+    }
     return createResponse(500, error.message || 'Error interno del servidor');
   }
 };

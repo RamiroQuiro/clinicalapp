@@ -24,7 +24,7 @@ export const turnos = sqliteTable(
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),
-    centroMedicoId: integer('centroMedicoId').references(() => centrosMedicos.id, {
+    centroMedicoId: text('centroMedicoId').references(() => centrosMedicos.id, {
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),

@@ -8,7 +8,7 @@ import { eq } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const data = await request.json();
-
+  console.log('data que viene del para crear turno con agenda formulario -> ', data);
   if (!data.pacienteId || !data.fechaTurno || !data.duracion || !data.horaTurno) {
     return createResponse(400, 'Faltan campos obligatorios para crear el turno.');
   }
@@ -26,7 +26,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
   try {
     const turnoId = nanoIDNormalizador('Turno', 15);
-
     const [newTurno] = await db
       .insert(turnos)
       .values({
@@ -43,6 +42,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         estado: 'pendiente', // Estado inicial
       })
       .returning();
+    console.log('objeto nuevo turno -> ', newTurno);
 
     const [dataProfesional] = await db
       .select()

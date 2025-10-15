@@ -152,7 +152,7 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
                 name="motivoEnmienda"
                 value={motivo}
                 onChange={e => setMotivo(e.target.value)}
-                className="w-full p-2 border rounded-md shadow-sm bg-white"
+                className="w-full p-2 border rounded-md shadow-sm text-primary-texto bg-white"
               >
                 {motivosEnmienda.map(m => (
                   <option key={m.value} value={m.value}>
@@ -173,7 +173,7 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
                 name="seccionEnmendar"
                 value={seccion}
                 onChange={e => setSeccion(e.target.value)}
-                className="w-full p-2 border rounded-md shadow-sm bg-white"
+                className="w-full p-2 border rounded-md shadow-sm text-primary-texto bg-white"
               >
                 {seccionesDisponibles.map(s => (
                   <option key={s.value} value={s.value}>

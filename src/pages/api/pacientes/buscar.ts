@@ -4,7 +4,7 @@ import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { like, or } from 'drizzle-orm';
+import { and, eq, like, or } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ url, request, cookies }) => {
   const searchTerm = url.searchParams.get('q');
@@ -17,8 +17,8 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
     return createResponse(401, 'No autorizado');
   }
   const { session, user } = await lucia.validateSession(sessionId);
-  if (!session || !user) {
-    return createResponse(401, 'No autorizado');
+  if (!session || !user || !user.centroMedicoId) {
+    return createResponse(401, 'No autorizado o sin centro médico asignado.');
   }
 
   if (!searchTerm || searchTerm.length < 2) {
@@ -36,10 +36,13 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
       })
       .from(pacientes)
       .where(
-        or(
-          like(pacientes.nombre, `%${searchTerm}%`),
-          like(pacientes.apellido, `%${searchTerm}%`),
-          like(pacientes.dni, `%${searchTerm}%`)
+        and(
+          eq(pacientes.centroMedicoId, user.centroMedicoId),
+          or(
+            like(pacientes.nombre, `%${searchTerm}%`),
+            like(pacientes.apellido, `%${searchTerm}%`),
+            like(pacientes.dni, `%${searchTerm}%`)
+          )
         )
       )
       .limit(10);
@@ -49,6 +52,7 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
       userId: user.id,
       actionType: 'VIEW',
       tableName: 'pacientes',
+      centroMedicoId: user.centroMedicoId,
       description: `El usuario ${user.name} (${user.email}) buscó pacientes con el término: "${searchTerm}". Se encontraron ${searchResults.length} resultados.`,
       ipAddress,
       userAgent,

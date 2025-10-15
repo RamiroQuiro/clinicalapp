@@ -1,12 +1,16 @@
 import CardSalaEspera from '@/components/moleculas/CardSalaEspera';
-import { recepcionStore } from '@/context/recepcion.store';
+import {
+  detenerConexionSSE,
+  fetchTurnosDelDia,
+  iniciarConexionSSE,
+  recepcionStore,
+} from '@/context/recepcion.store';
 import { useStore } from '@nanostores/react';
 import { CheckCheck, ClipboardCopy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { showToast } from '../../../../utils/toast/toastShow';
 
 const SalaEspera = ({ user }) => {
-  const [pacientes, setPacientes] = useState([]);
   const { turnosDelDia } = useStore(recepcionStore);
   const [nuevoPaciente, setNuevoPaciente] = useState({
     nombre: '',
@@ -23,53 +27,22 @@ const SalaEspera = ({ user }) => {
     }));
   };
 
-  console.log('turnosDelDia -->', turnosDelDia);
   useEffect(() => {
     const toYYYYMMDD = date => {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0'); // Corregido: no restar 1
+      const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     };
 
     const fechaFormateada = toYYYYMMDD(new Date());
-    const fetchAgenda = async () => {
-      try {
-        const response = await fetch(
-          `/api/agenda?fecha=${fechaFormateada}&profesionalId=${user.id}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+    fetchTurnosDelDia(fechaFormateada, user.id, user.centroMedicoId);
 
-        // 2. Guardamos los datos en el store global
-        recepcionStore.setKey('turnosDelDia', data.data);
-        recepcionStore.setKey('isLoading', false);
-      } catch (error) {
-        console.error('Error al obtener la agenda:', error);
-        recepcionStore.setKey('error', error.message);
-        recepcionStore.setKey('isLoading', false);
-      }
+    iniciarConexionSSE(user.id);
+    return () => {
+      detenerConexionSSE();
     };
-
-    fetchAgenda();
   }, [user]);
-
-  const agregarPaciente = () => {
-    if (
-      !nuevoPaciente.motivoConsulta ||
-      !nuevoPaciente.dni ||
-      !nuevoPaciente.nombre ||
-      !nuevoPaciente.apellido
-    ) {
-      showToast('no hay data para guardar', {
-        background: 'bg-primary-400',
-      });
-      return;
-    }
-    setNuevoPaciente({ nombre: '', apellido: '', motivoConsulta: '', dni: '', userId: user?.id }); // Limpia el input
-  };
 
   const handleCopy = () => {
     navigator.clipboard
@@ -84,7 +57,9 @@ const SalaEspera = ({ user }) => {
     <div className="w-full">
       <div className="flex border-b w-full pb-2 justify-between items-center text-primary-textoTitle  mb-2">
         <h2 className="text-lg font-semibold ">Lista de Espera</h2>
-        <span className="md:text-2xl">{pacientes.length}</span>
+        <span className="md:text-2xl">
+          {turnosDelDia?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')?.length || 0}
+        </span>
         <div className="relative group cursor-pointer" onClick={handleCopy}>
           <ClipboardCopy />
           <div className="absolute hidden group-hover:flex -top-8 left-1/2  animate-aparecer  -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
