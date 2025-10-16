@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
+import { integer, real, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
 import { centrosMedicos } from './centrosMedicos';
 import { pacientes } from './pacientes';
@@ -36,7 +36,7 @@ export const signosVitales = sqliteTable(
     respiracion: integer('respiracion'),
     saturacionOxigeno: integer('saturacionOxigeno'),
     glucosa: integer('glucosa'),
-    peso: integer('peso'),
+    peso: real('peso'),
     talla: integer('talla'),
     imc: integer('imc'),
     frecuenciaCardiaca: integer('frecuenciaCardiaca'),
