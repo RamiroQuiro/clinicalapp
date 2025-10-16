@@ -35,6 +35,7 @@ if (!user || !user.id || !user.centroMedicoId) {
 console.log('centroMedicoId', user.centroMedicoId);
 try {
   perfilPaciente = await getPacienteData(pacienteId as string, user.id, user.centroMedicoId);
+  console.log('perfilPaciente', perfilPaciente);
 } catch (error) {
   console.error('Error fetching paciente data:', error);
 }

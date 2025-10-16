@@ -18,14 +18,12 @@ const userId = session?.userId;
     data-user-id
     class="flex md:flex-row items-center gap-2 w-full justify-normal"
   >
-    <!-- Campo DNI con evento input -->
     <ContenedorInputForm
       label="* dni"
       type="number"
       name="dni"
       id="dni"
       value={paciente?.dni}
-      onInput="handleDNIInput(event)"
     />
     <!-- Campos principales deshabilitados inicialmente -->
     <ContenedorInputForm
@@ -156,92 +154,65 @@ const userId = session?.userId;
 <script define:vars={{ pacienteId, userId }}>
   const formulario = document.getElementById('formularioCliente');
   const erroresShow = document.getElementById('errores');
-  const dniInput = document.getElementById('dni');
-  const nombreInput = document.getElementById('nombre');
-  const apellidoInput = document.getElementById('apellido');
-  const sexoInput = document.getElementById('sexo');
-  const fNacimientoInput = document.getElementById('fNacimiento');
-  const domicilioInput = document.getElementById('domicilio');
-  const emailInput = document.getElementById('email');
-  const celularInput = document.getElementById('celular');
-  const ciudadInput = document.getElementById('ciudad');
-  const provinciaInput = document.getElementById('provincia');
-  const obraSocialInput = document.getElementById('obraSocial');
-  const nObraSocialInput = document.getElementById('nObraSocial');
-  const estaturaInput = document.getElementById('estatura');
-  const grupoSanguineoInput = document.getElementById('grupoSanguineo');
+  const submitButton = formulario.querySelector('button[type="submit"]');
 
-  // mandar el formulario
   formulario.addEventListener('submit', async e => {
     e.preventDefault();
+    if (submitButton.disabled) return; // Prevenir doble submit
+
+    // Deshabilitar botón y mostrar estado de carga
+    submitButton.disabled = true;
+    submitButton.textContent = 'Guardando...';
+    erroresShow.textContent = '';
 
     const formData = new FormData(e.target);
     formData.append('userId', userId);
     const data = Object.fromEntries(formData.entries());
-    console.log(data);
-    // condicionar el formulario para actualizar o crear un paciente
-    if (pacienteId) {
-      formData.append('id', pacienteId);
-      const data = Object.fromEntries(formData.entries());
-      try {
-        const response = await fetch('/api/pacientes/create', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-        const result = await response.json(); // Leer respuesta JSON
-        if (result.code == 400) {
-          erroresShow.textContent = result.msg;
-          return;
-        } else if (result.code == 200) {
-          erroresShow.textContent = 'Paciente actualizado exitosamente.';
-          window.location.reload();
-        } else {
-          // Manejo explícito de errores por status
-          erroresShow.textContent = result.message || 'Error al actualizar el paciente.';
-        }
-      } catch (error) {
-        console.error('Error al enviar los datos:', error);
-        erroresShow.textContent = 'Error de conexión al servidor.';
-      }
-    } else {
-      // Validación del formulario
-      const camposRequeridos = ['nombre', 'apellido', 'dni', 'domicilio'];
-      const camposFaltantes = camposRequeridos.filter(campo => !data[campo]);
 
-      if (camposFaltantes.length > 0) {
-        erroresShow.textContent = 'Por favor, complete todos los campos requeridos.';
-        return;
-      }
-      try {
-        const response = await fetch('/api/pacientes/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
+    const isUpdating = !!pacienteId;
+    const url = '/api/pacientes/create';
+    const method = isUpdating ? 'PUT' : 'POST';
 
-        const result = await response.json(); // Leer respuesta JSON
-        if (result.code == 400) {
-          erroresShow.textContent = result.msg;
-          return;
-        } else if (result.code == 200) {
-          erroresShow.textContent = 'Paciente creado exitosamente.';
-          window.location.reload();
-        } else if (result.code == 500) {
-          erroresShow.textContent = 'Paciente creado para este profesional.';
+    if (isUpdating) {
+      data.id = pacienteId;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Si la respuesta no es 2xx, mostrar el error de la API
+        erroresShow.textContent = result.msg || result.message || 'Ocurrió un error inesperado.';
+      } else {
+        // Éxito
+        const successMessage = isUpdating
+          ? 'Paciente actualizado exitosamente.'
+          : 'Paciente creado exitosamente.';
+        erroresShow.textContent = successMessage;
+
+        // Redirigir al perfil del paciente (nuevo o actualizado)
+        const newPatientId = result.paciente?.id || pacienteId;
+        if (newPatientId) {
+          window.location.href = `/dashboard/pacientes/${newPatientId}`;
         } else {
-          // Manejo explícito de errores por status
-          console.log(result);
-          erroresShow.textContent = result.message || 'Error al crear el paciente.';
+          window.location.reload(); // Fallback por si no viene el ID
         }
-      } catch (error) {
-        console.error('Error al enviar los datos:', error);
-        erroresShow.textContent = 'Error de conexión al servidor.';
       }
+    } catch (error) {
+      console.error('Error al enviar los datos:', error);
+      erroresShow.textContent = 'Error de conexión al servidor.';
+    } finally {
+      // Volver a habilitar el botón en cualquier caso (éxito o error)
+      submitButton.disabled = false;
+      submitButton.textContent = 'Agregar';
     }
   });
 </script>

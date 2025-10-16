@@ -1,24 +1,90 @@
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
+import { emitEvent } from '@/lib/sse/sse';
+import { normalize } from '@/utils/normalizadorInput';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { and, eq, sql } from 'drizzle-orm';
-import { generateId } from 'lucia';
-import { z } from 'zod';
 import db from '../../../db';
 import { historiaClinica, pacienteProfesional, pacientes } from '../../../db/schema';
+
+const pacienteSchema = {
+  nombre: {
+    type: 'string',
+    optional: false,
+  },
+  apellido: {
+    type: 'string',
+    optional: false,
+  },
+  email: {
+    type: 'string',
+    optional: false,
+  },
+  dni: {
+    type: 'number',
+    optional: false,
+  },
+  fNacimiento: {
+    type: 'date',
+    optional: false,
+  },
+  sexo: {
+    type: 'string',
+    optional: false,
+  },
+  domicilio: {
+    type: 'string',
+    optional: true,
+  },
+  celular: {
+    type: 'string',
+    optional: true,
+  },
+  estatura: {
+    type: 'number',
+    optional: true,
+  },
+  peso: {
+    type: 'number',
+    optional: true,
+  },
+  pais: {
+    type: 'string',
+    optional: true,
+  },
+  provincia: {
+    type: 'string',
+    optional: true,
+  },
+  ciudad: {
+    type: 'string',
+    optional: true,
+  },
+  obraSocial: {
+    type: 'string',
+    optional: true,
+  },
+  nObraSocial: {
+    type: 'string',
+    optional: true,
+  },
+  grupoSanguineo: {
+    type: 'string',
+    optional: true,
+  },
+};
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
     const rawData = await request.json();
 
     // Validación robusta
+    const normalizedData = normalize(rawData, pacienteSchema);
 
-    const data = rawData;
+    const data = normalizedData;
     console.log('📥 Creando paciente:', {
-      nombre: data.nombre,
-      dni: data.dni,
-      userId: data.userId,
+      ...data,
     });
 
     // Validar sesión
@@ -35,17 +101,20 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     }
 
     const centroMedicoId = user.centroMedicoId;
-    console.log('🏥 Centro médico:', centroMedicoId);
+    console.log('🏥 Centro médico:', normalizedData.dni);
 
-    // VERIFICAR SI EL DNI YA EXISTE EN ESTE CENTRO MÉDICO
     const pacienteExistente = await db
       .select()
       .from(pacientes)
-      .where(and(eq(pacientes.dni, data.dni), eq(pacientes.centroMedicoId, centroMedicoId)))
+      .where(
+        and(eq(pacientes.dni, normalizedData.dni), eq(pacientes.centroMedicoId, centroMedicoId))
+      )
       .limit(1);
-
     if (pacienteExistente.length > 0) {
-      return createResponse(409, `Ya existe un paciente con DNI ${data.dni} en este centro médico`);
+      return createResponse(
+        409,
+        `Ya existe un paciente con DNI ${normalizedData.dni} en este centro médico`
+      );
     }
 
     // TRANSACCIÓN ATÓMICA
@@ -59,15 +128,13 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         .insert(pacientes)
         .values({
           id: pacienteId,
-          nombre: data.nombre,
-          apellido: data.apellido,
-          email: data.email || null,
-          dni: data.dni,
-          fNacimiento: data.fNacimiento,
-          sexo: data.sexo,
+          nombre: normalizedData.nombre,
+          apellido: normalizedData.apellido,
+          email: normalizedData.email || null,
+          dni: normalizedData.dni,
+          fNacimiento: normalizedData.fNacimiento,
+          sexo: normalizedData.sexo,
           centroMedicoId: centroMedicoId,
-          created_at: sql`(strftime('%s','now'))`,
-          updated_at: sql`(strftime('%s','now'))`,
         })
         .returning();
 
@@ -78,8 +145,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       await trx.insert(historiaClinica).values({
         id: nanoIDNormalizador('Hist', 15),
         pacienteId: pacienteId,
-        userIdResponsable: data.userId,
-        domicilio: data.domicilio || null,
+        userIdResponsable: user.id,
+        domicilio: normalizedData.domicilio || null,
         centroMedicoId: centroMedicoId,
         celular: normalizedData.celular || null,
         pais: normalizedData.pais || null,
@@ -89,6 +156,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         nObraSocial: normalizedData.nObraSocial || null,
         email: normalizedData.email || null,
         grupoSanguineo: normalizedData.grupoSanguineo || null,
+        numeroHC: nanoIDNormalizador('HistClinicaInterna', 10),
       });
 
       console.log('✅ Historia clínica creada');
@@ -101,7 +169,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         .from(pacienteProfesional)
         .where(
           and(
-            eq(pacienteProfesional.userId, data.userId),
+            eq(pacienteProfesional.userId, user.id),
             eq(pacienteProfesional.pacienteId, pacienteId)
           )
         )
@@ -109,11 +177,11 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
       if (relacionExistente.length === 0) {
         await trx.insert(pacienteProfesional).values({
-          id: generateId(15),
-          userId: data.userId,
+          id: nanoIDNormalizador('PacProf', 15),
+          userId: user.id,
           pacienteId: pacienteId,
           estado: 'activo',
-          created_at: sql`(strftime('%s','now'))`,
+          centroMedicoId: centroMedicoId,
         });
         console.log('✅ Relación profesional creada');
       }
@@ -123,7 +191,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     // AUDITORÍA
     await logAuditEvent({
-      userId: data.userId,
+      userId: user.id,
       actionType: 'CREATE',
       tableName: 'pacientes',
       recordId: result.id,
@@ -134,7 +202,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     console.log('🎉 Paciente creado exitosamente:', result.id);
 
-    return createResponse(201, 'Paciente creado y asociado exitosamente', {
+    emitEvent('paciente-creado', result);
+    return createResponse(200, 'Paciente creado y asociado exitosamente', {
       paciente: result,
       timestamp: new Date().toISOString(),
     });
@@ -157,20 +226,7 @@ export const PUT: APIRoute = async ({ request, cookies, locals }) => {
   try {
     const rawData = await request.json();
 
-    // Esquema para actualización (campos opcionales)
-    const updateSchema = pacienteSchema.partial().extend({
-      id: z.string().min(1, 'ID de paciente requerido'),
-    });
-
-    const validationResult = updateSchema.safeParse(rawData);
-    if (!validationResult.success) {
-      const errors = validationResult.error.errors.map(
-        err => `${err.path.join('.')}: ${err.message}`
-      );
-      return createResponse(400, `Datos inválidos: ${errors.join(', ')}`);
-    }
-
-    const data = validationResult.data;
+    const data = rawData;
 
     // Validar sesión
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;

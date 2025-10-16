@@ -1,38 +1,48 @@
 import db from '@/db';
 import { pacientes } from '@/db/schema';
-import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { and, eq, like, or } from 'drizzle-orm';
 
-export const GET: APIRoute = async ({ url, request, cookies }) => {
-  const searchTerm = url.searchParams.get('q');
-  const ipAddress = request.headers.get('x-forwarded-for') || undefined;
-  const userAgent = request.headers.get('user-agent') || undefined;
+export const GET: APIRoute = async ({ url, request, cookies, locals }) => {
+  const searchTerm = url.searchParams.get('q')?.trim();
 
-  // 1. Autenticación
+  // 1. Autenticación rápida
   const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
   if (!sessionId) {
     return createResponse(401, 'No autorizado');
   }
-  const { session, user } = await lucia.validateSession(sessionId);
+
+  const { user } = locals;
+  const { session } = await lucia.validateSession(sessionId);
   if (!session || !user || !user.centroMedicoId) {
     return createResponse(401, 'No autorizado o sin centro médico asignado.');
   }
 
+  // 2. Validación rápida
   if (!searchTerm || searchTerm.length < 2) {
     return createResponse(200, 'OK', []);
   }
 
+  if (searchTerm.length > 50) {
+    return createResponse(400, 'Término de búsqueda demasiado largo');
+  }
+
   try {
-    // 2. Búsqueda en la base de datos
-    const searchResults = await db
+    const centroMedicoId = user.centroMedicoId;
+
+    // 3. BÚSQUEDA PURA Y RÁPIDA
+    let searchResults;
+
+    searchResults = await db
       .select({
         id: pacientes.id,
         nombre: pacientes.nombre,
         apellido: pacientes.apellido,
         dni: pacientes.dni,
+        fNacimiento: pacientes.fNacimiento,
+        sexo: pacientes.sexo,
       })
       .from(pacientes)
       .where(
@@ -41,26 +51,44 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
           or(
             like(pacientes.nombre, `%${searchTerm}%`),
             like(pacientes.apellido, `%${searchTerm}%`),
-            like(pacientes.dni, `%${searchTerm}%`)
+            like(pacientes.dni, `%${searchTerm}%`),
+            like(pacientes.sexo, `%${searchTerm}%`),
+            like(pacientes.celular, `%${searchTerm}%`)
           )
         )
       )
       .limit(10);
 
-    // 3. Registrar evento de auditoría
-    await logAuditEvent({
-      userId: user.id,
-      actionType: 'VIEW',
-      tableName: 'pacientes',
-      centroMedicoId: user.centroMedicoId,
-      description: `El usuario ${user.name} (${user.email}) buscó pacientes con el término: "${searchTerm}". Se encontraron ${searchResults.length} resultados.`,
-      ipAddress,
-      userAgent,
-    });
+    // 4. ENRIQUECER DATOS (sin auditoría)
+    const resultadosEnriquecidos = searchResults.map(paciente => ({
+      ...paciente,
+      edad: calcularEdadDesdeFecha(paciente.fNacimiento),
+      displayName: `${paciente.nombre} ${paciente.apellido}`,
+      iniciales: `${paciente.nombre[0]}${paciente.apellido[0]}`.toUpperCase(),
+    }));
 
-    return createResponse(200, 'OK', searchResults);
+    // 5. LOG LIGERO (opcional, solo desarrollo)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [DEV] Búsqueda "${searchTerm}": ${searchResults.length} resultados`);
+    }
+
+    return createResponse(200, 'OK', resultadosEnriquecidos);
   } catch (error) {
-    console.error('Error searching for patients:', error);
+    console.error('❌ Error en búsqueda de pacientes:', error);
     return createResponse(500, 'Error interno del servidor');
   }
 };
+
+// 🔧 Función auxiliar para calcular edad
+function calcularEdadDesdeFecha(fechaNacimiento: Date | number): number {
+  const nacimiento = new Date(fechaNacimiento);
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
+  const mes = hoy.getMonth() - nacimiento.getMonth();
+
+  if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+    edad--;
+  }
+
+  return edad;
+}

@@ -48,7 +48,7 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
           ciudad: historiaClinica.ciudad,
           provincia: historiaClinica.provincia,
           grupoSanguineo: historiaClinica.grupoSanguineo,
-          estatura: historiaClinica.estatura,
+
           domicilio: pacientes.domicilio,
         })
         .from(pacientes)
@@ -91,20 +91,35 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       db
         .select()
         .from(diagnostico)
-        .where(and(eq(diagnostico.pacienteId, pacienteId)))
+        .where(
+          and(
+            eq(diagnostico.pacienteId, pacienteId),
+            eq(diagnostico.centroMedicoId, centroMedicoId)
+          )
+        )
         .limit(10),
       // antecedentes
       db
         .select()
         .from(antecedentes)
-        .where(and(eq(antecedentes.pacienteId, pacienteId)))
+        .where(
+          and(
+            eq(antecedentes.pacienteId, pacienteId),
+            eq(antecedentes.centroMedicoId, centroMedicoId)
+          )
+        )
         .limit(10),
 
       // archivos adjuntos
       db
         .select()
         .from(archivosAdjuntos)
-        .where(and(eq(archivosAdjuntos.pacienteId, pacienteId)))
+        .where(
+          and(
+            eq(archivosAdjuntos.pacienteId, pacienteId),
+            eq(archivosAdjuntos.centroMedicoId, centroMedicoId)
+          )
+        )
         .orderBy(desc(archivosAdjuntos.created_at)),
 
       // // notas médicas
