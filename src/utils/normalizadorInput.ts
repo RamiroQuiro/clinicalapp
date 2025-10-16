@@ -9,10 +9,6 @@ export function normalize<T>(data: Record<string, any>, schema: Record<keyof T, 
     const fieldSchema = schema[key];
     const value = data[key];
 
-    console.log('valor del campo', value);
-    console.log('tipo del campo', fieldSchema.type);
-    console.log('es opcional', fieldSchema.optional);
-
     // Si el campo es opcional y no está presente o es vacío, lo omitimos o lo ponemos a null
     if (fieldSchema.optional && (value === '' || value === null || value === undefined)) {
       // Si es opcional y no viene, no lo incluimos en el objeto normalizado

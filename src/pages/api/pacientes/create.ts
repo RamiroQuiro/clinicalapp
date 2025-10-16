@@ -1,139 +1,105 @@
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
-import { normalize } from '@/utils/normalizadorInput';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { generateId } from 'lucia';
+import { z } from 'zod';
 import db from '../../../db';
-import { fichaPaciente, historiaClinica, pacienteProfesional, pacientes } from '../../../db/schema';
-
-const pacienteSchema = {
-  nombre: {
-    type: 'string',
-    optional: false,
-  },
-  apellido: {
-    type: 'string',
-    optional: false,
-  },
-  email: {
-    type: 'string',
-    optional: false,
-  },
-  dni: {
-    type: 'number',
-    optional: false,
-  },
-  fNacimiento: {
-    type: 'date',
-    optional: false,
-  },
-  sexo: {
-    type: 'string',
-    optional: false,
-  },
-  domicilio: {
-    type: 'string',
-    optional: true,
-  },
-  celular: {
-    type: 'string',
-    optional: true,
-  },
-  estatura: {
-    type: 'number',
-    optional: true,
-  },
-  peso: {
-    type: 'number',
-    optional: true,
-  },
-  pais: {
-    type: 'string',
-    optional: true,
-  },
-  provincia: {
-    type: 'string',
-    optional: true,
-  },
-  ciudad: {
-    type: 'string',
-    optional: true,
-  },
-  obraSocial: {
-    type: 'string',
-    optional: true,
-  },
-  nObraSocial: {
-    type: 'string',
-    optional: true,
-  },
-  grupoSanguineo: {
-    type: 'string',
-    optional: true,
-  },
-};
+import { historiaClinica, pacienteProfesional, pacientes } from '../../../db/schema';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
-  const data = await request.json();
-
-  if (!data.nombre || !data.dni || !data.userId) {
-    return createResponse(400, 'Datos incompletos requeridos');
-  }
-  console.log('ingresando data del paceinte ->', data);
-  const normalizedData = normalize(data, pacienteSchema);
-
   try {
+    const rawData = await request.json();
+
+    // Validación robusta
+
+    const data = rawData;
+    console.log('📥 Creando paciente:', {
+      nombre: data.nombre,
+      dni: data.dni,
+      userId: data.userId,
+    });
+
+    // Validar sesión
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
-      return createResponse(401, 'No autorizado');
+      return createResponse(401, 'No autorizado - Sesión no encontrada');
     }
+
     const { user } = locals;
     const { session } = await lucia.validateSession(sessionId);
-    if (!session || !user || !user.centroMedicoId) {
-      return createResponse(401, 'No autorizado o sin centro médico asignado.');
-    }
-    const centroMedicoId = user.centroMedicoId;
 
+    if (!session || !user || !user.centroMedicoId) {
+      return createResponse(401, 'No autorizado o sin centro médico asignado');
+    }
+
+    const centroMedicoId = user.centroMedicoId;
+    console.log('🏥 Centro médico:', centroMedicoId);
+
+    // VERIFICAR SI EL DNI YA EXISTE EN ESTE CENTRO MÉDICO
+    const pacienteExistente = await db
+      .select()
+      .from(pacientes)
+      .where(and(eq(pacientes.dni, data.dni), eq(pacientes.centroMedicoId, centroMedicoId)))
+      .limit(1);
+
+    if (pacienteExistente.length > 0) {
+      return createResponse(409, `Ya existe un paciente con DNI ${data.dni} en este centro médico`);
+    }
+
+    // TRANSACCIÓN ATÓMICA
     const result = await db.transaction(async trx => {
-      console.log('emepzando a insertar datos en la tbla paciente... ⌛');
+      console.log('💾 Insertando paciente...');
+
       const pacienteId = nanoIDNormalizador('Pac', 15);
-      const [pacientenNuevo] = await trx
+
+      // 1. Insertar en tabla principal de pacientes
+      const [nuevoPaciente] = await trx
         .insert(pacientes)
         .values({
           id: pacienteId,
-          nombre: normalizedData.nombre,
-          apellido: normalizedData.apellido,
-          email: normalizedData.email,
-          dni: normalizedData.dni,
-          fNacimiento: normalizedData.fNacimiento,
-          sexo: normalizedData.sexo,
+          nombre: data.nombre,
+          apellido: data.apellido,
+          email: data.email || null,
+          dni: data.dni,
+          fNacimiento: data.fNacimiento,
+          sexo: data.sexo,
           centroMedicoId: centroMedicoId,
+          created_at: sql`(strftime('%s','now'))`,
+          updated_at: sql`(strftime('%s','now'))`,
         })
         .returning();
 
-      console.log('emepzando a insertar datos en la tbla historiaClinica... ⌛');
+      console.log('✅ Paciente creado:', nuevoPaciente.id);
+
+      // 2. Insertar en historia clínica (¿o fichaPaciente? DECIDÍ CUÁL USAR)
+      console.log('📋 Creando historia clínica...');
       await trx.insert(historiaClinica).values({
         id: nanoIDNormalizador('Hist', 15),
         pacienteId: pacienteId,
         userIdResponsable: data.userId,
-        domicilio: normalizedData.domicilio || null,
+        domicilio: data.domicilio || null,
         centroMedicoId: centroMedicoId,
-        celular: normalizedData.celular || null,
-        estatura: normalizedData.estatura ? normalizedData.estatura : 0,
-        peso: normalizedData.peso ? normalizedData.peso : 0,
-        pais: normalizedData.pais || null,
-        provincia: normalizedData.provincia || null,
-        ciudad: normalizedData.ciudad || null,
-        obraSocial: normalizedData.obraSocial || null,
-        nObraSocial: normalizedData.nObraSocial || null,
-        email: normalizedData.email || null,
-        grupoSanguineo: normalizedData.grupoSanguineo || null,
+        celular: data.celular || null,
+        estatura: data.estatura || null,
+        peso: data.peso || null,
+        pais: data.pais || null,
+        provincia: data.provincia || null,
+        ciudad: data.ciudad || null,
+        obraSocial: data.obraSocial || null,
+        nObraSocial: data.nObraSocial || null,
+        email: data.email || null,
+        grupoSanguineo: data.grupoSanguineo || null,
+        created_at: sql`(strftime('%s','now'))`,
       });
 
-      console.log('emepzando a insertar datos en la tbla pacienteProfesional... ⌛');
-      const isRelacionExistente = await trx
+      console.log('✅ Historia clínica creada');
+
+      // 3. Crear relación paciente-profesional
+      console.log('👥 Creando relación paciente-profesional...');
+
+      const relacionExistente = await trx
         .select()
         .from(pacienteProfesional)
         .where(
@@ -141,121 +107,164 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
             eq(pacienteProfesional.userId, data.userId),
             eq(pacienteProfesional.pacienteId, pacienteId)
           )
-        );
+        )
+        .limit(1);
 
-      if (isRelacionExistente[0]) {
-        // Esto no debería ocurrir en un flujo de creación puro, pero se mantiene como salvaguarda
-        throw new Error('El paciente ya está asociado a este usuario');
+      if (relacionExistente.length === 0) {
+        await trx.insert(pacienteProfesional).values({
+          id: generateId(15),
+          userId: data.userId,
+          pacienteId: pacienteId,
+          estado: 'activo',
+          created_at: sql`(strftime('%s','now'))`,
+        });
+        console.log('✅ Relación profesional creada');
       }
 
-      console.log('emepzando a insertar datos en la tbla pacienteProfesional... ⌛');
-      await trx.insert(pacienteProfesional).values({
-        id: generateId(15),
-        userId: data.userId,
-        pacienteId: pacienteId,
-        estado: 'activo',
-      });
-
-      return pacientenNuevo;
+      return nuevoPaciente;
     });
 
+    // AUDITORÍA
     await logAuditEvent({
       userId: data.userId,
       actionType: 'CREATE',
       tableName: 'pacientes',
       recordId: result.id,
-      newValue: normalizedData,
+      newValue: data,
       centroMedicoId: centroMedicoId,
-      description: `El usuario ${data.userId} creó al paciente ${normalizedData.nombre} ${normalizedData.apellido}`,
+      description: `Creación de paciente: ${data.nombre} ${data.apellido} (DNI: ${data.dni})`,
     });
-    return createResponse(200, 'Paciente creado y asociado con éxito', result);
+
+    console.log('🎉 Paciente creado exitosamente:', result.id);
+
+    return createResponse(201, 'Paciente creado y asociado exitosamente', {
+      paciente: result,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error: any) {
+    console.error('❌ Error creando paciente:', error);
+
     if (error.message.includes('UNIQUE constraint failed')) {
-      return createResponse(
-        409,
-        'Conflicto: Ya existe un paciente con este DNI en este centro médico.'
-      );
+      return createResponse(409, 'El paciente ya existe en el sistema');
     }
-    return createResponse(500, error.message || 'Error interno del servidor');
+
+    if (error.message.includes('FOREIGN KEY constraint failed')) {
+      return createResponse(400, 'Error de referencia: usuario o centro médico no válido');
+    }
+
+    return createResponse(500, error.message || 'Error interno del servidor al crear paciente');
   }
 };
 
-export const PUT: APIRoute = async ({ request, cookies }) => {
-  const data = await request.json();
-
-  const normalizedData = normalize(data, pacienteSchema);
-
+export const PUT: APIRoute = async ({ request, cookies, locals }) => {
   try {
+    const rawData = await request.json();
+
+    // Esquema para actualización (campos opcionales)
+    const updateSchema = pacienteSchema.partial().extend({
+      id: z.string().min(1, 'ID de paciente requerido'),
+    });
+
+    const validationResult = updateSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(
+        err => `${err.path.join('.')}: ${err.message}`
+      );
+      return createResponse(400, `Datos inválidos: ${errors.join(', ')}`);
+    }
+
+    const data = validationResult.data;
+
+    // Validar sesión
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
       return createResponse(401, 'No autorizado');
     }
 
-    const { session, user } = await lucia.validateSession(sessionId);
-    if (!session) {
+    const { user } = locals;
+    const { session } = await lucia.validateSession(sessionId);
+    if (!session || !user) {
       return createResponse(401, 'No autorizado');
     }
 
-    const isExistPaciente = (
-      await db.select().from(pacientes).where(eq(pacientes.id, normalizedData.id))
-    ).at(0);
-    if (!isExistPaciente) {
-      return createResponse(400, 'Paciente no encontrado');
+    // Verificar que el paciente existe y pertenece al centro médico del usuario
+    const pacienteExistente = await db
+      .select()
+      .from(pacientes)
+      .where(and(eq(pacientes.id, data.id), eq(pacientes.centroMedicoId, user.centroMedicoId)))
+      .limit(1);
+
+    if (!pacienteExistente[0]) {
+      return createResponse(404, 'Paciente no encontrado o no pertenece a tu centro médico');
     }
 
-    const newDataPaciente = Object.entries(normalizedData).reduce((acc: any, [key, value]) => {
-      if (value && key !== 'userId') {
-        acc[key] = value;
+    // TRANSACCIÓN DE ACTUALIZACIÓN
+    await db.transaction(async trx => {
+      // Actualizar datos básicos del paciente
+      const updateDataPaciente: any = {
+        updated_at: sql`(strftime('%s','now'))`,
+      };
+
+      // Solo actualizar campos que vienen en la data
+      const camposPaciente = ['nombre', 'apellido', 'email', 'dni', 'fNacimiento', 'sexo'];
+      camposPaciente.forEach(campo => {
+        if (data[campo as keyof typeof data] !== undefined) {
+          updateDataPaciente[campo] = data[campo as keyof typeof data];
+        }
+      });
+
+      if (Object.keys(updateDataPaciente).length > 1) {
+        // Más que solo updated_at
+        await trx.update(pacientes).set(updateDataPaciente).where(eq(pacientes.id, data.id));
       }
-      return acc;
-    }, {});
 
-    const updatePaciente = await db
-      .update(pacientes)
-      .set(newDataPaciente)
-      .where(eq(pacientes.id, normalizedData.id))
-      .returning();
+      // Actualizar historia clínica (DECIDÍ SI USAS historiaClinica O fichaPaciente)
+      const updateDataHistoria: any = {};
+      const camposHistoria = [
+        'domicilio',
+        'celular',
+        'estatura',
+        'peso',
+        'pais',
+        'provincia',
+        'ciudad',
+        'obraSocial',
+        'nObraSocial',
+        'grupoSanguineo',
+      ];
 
-    const newDataAtencionPaciente = {
-      domicilio: normalizedData.domicilio || null,
-      celular: normalizedData.celular || null,
-      estatura: normalizedData.estatura || null,
-      pais: normalizedData.pais || null,
-      provincia: normalizedData.provincia || null,
-      ciudad: normalizedData.ciudad || null,
-      obraSocial: normalizedData.obraSocial || null,
-      nObraSocial: normalizedData.nObraSocial || null,
-      email: normalizedData.email || null,
-      srcPhoto: normalizedData.srcPhoto || null,
-      grupoSanguineo: normalizedData.grupoSanguineo || null,
-    };
+      camposHistoria.forEach(campo => {
+        if (data[campo as keyof typeof data] !== undefined) {
+          updateDataHistoria[campo] = data[campo as keyof typeof data];
+        }
+      });
 
-    await db
-      .update(fichaPaciente)
-      .set(newDataAtencionPaciente)
-      .where(
-        and(
-          eq(fichaPaciente.pacienteId, normalizedData.id),
-          eq(fichaPaciente.userId, normalizedData.userId)
-        )
-      );
+      if (Object.keys(updateDataHistoria).length > 0) {
+        await trx
+          .update(historiaClinica) // ⚠️ CAMBIAR POR fichaPaciente SI ES NECESARIO
+          .set(updateDataHistoria)
+          .where(eq(historiaClinica.pacienteId, data.id));
+      }
+    });
 
+    // Auditoría
     await logAuditEvent({
       userId: user.id,
       actionType: 'UPDATE',
       tableName: 'pacientes',
-      recordId: normalizedData.id,
-      oldValue: isExistPaciente,
-      newValue: normalizedData,
-      ipAddress: request.headers.get('x-forwarded-for') || undefined,
-      userAgent: request.headers.get('user-agent') || undefined,
-      description: `El usuario ${user.id} actualizó al paciente ${normalizedData.nombre} ${normalizedData.apellido}`,
+      recordId: data.id,
+      oldValue: pacienteExistente[0],
+      newValue: data,
+      centroMedicoId: user.centroMedicoId,
+      description: `Actualización de paciente: ${data.nombre} ${data.apellido}`,
     });
 
-    return createResponse(200, 'Paciente y datos de atención actualizados con éxito', {
-      data: updatePaciente[0],
+    return createResponse(200, 'Paciente actualizado exitosamente', {
+      pacienteId: data.id,
+      timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    return createResponse(500, 'Error interno del servidor');
+  } catch (error: any) {
+    console.error('❌ Error actualizando paciente:', error);
+    return createResponse(500, 'Error interno del servidor al actualizar paciente');
   }
 };
