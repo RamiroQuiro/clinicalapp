@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
+import { centrosMedicos } from './centrosMedicos';
 import { historiaClinica } from './historiaClinica';
 import { pacientes } from './pacientes';
 import { users } from './users';
@@ -21,6 +22,9 @@ export const medicamento = sqliteTable('medicamentos', {
 
   // RELACIONES
   historiaClinicaId: text('historiaClinicaId').references(() => historiaClinica.id, {
+    onDelete: 'cascade',
+  }),
+  centroMedicoId: text('centroMedicoId').references(() => centrosMedicos.id, {
     onDelete: 'cascade',
   }),
   atencionId: text('atencionId').references(() => atenciones.id, { onDelete: 'cascade' }),

@@ -121,8 +121,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         domicilio: normalizedData.domicilio || null,
         centroMedicoId: centroMedicoId,
         celular: normalizedData.celular || null,
-        estatura: normalizedData.estatura ? normalizedData.estatura : 0,
-        peso: normalizedData.peso ? normalizedData.peso : 0,
         pais: normalizedData.pais || null,
         provincia: normalizedData.provincia || null,
         ciudad: normalizedData.ciudad || null,
@@ -171,6 +169,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     return createResponse(200, 'Paciente creado y asociado con éxito', result);
   } catch (error: any) {
     if (error.message.includes('UNIQUE constraint failed')) {
+      console.log('error.message', error);
       return createResponse(
         409,
         'Conflicto: Ya existe un paciente con este DNI en este centro médico.'

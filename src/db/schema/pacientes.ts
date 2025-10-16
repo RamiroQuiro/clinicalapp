@@ -1,11 +1,15 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { usersCentrosMedicos } from './usersCentrosMedicos';
 
 export const pacientes = sqliteTable('pacientes', {
   id: text('id').primaryKey(), // ID único del paciente
   nombre: text('nombre').notNull(), // Nombre del paciente
   apellido: text('apellido').notNull(), // Apellido del paciente
   dni: integer('dni', { mode: 'number' }).unique(), // DNI único
+  centroMedicoId: text('centroMedicoId')
+    .notNull()
+    .references(() => usersCentrosMedicos.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
   email: text('email'),
   domicilio: text('domicilio'),
   sexo: text('sexo', { enum: ['masculino', 'femenino', 'otro'] }),

@@ -43,8 +43,8 @@ export default function Calendario() {
         formatters={{ formatWeekdayName, formatMonthCaption }}
         className="w-full m-auto flex items-center justify-center"
         styles={{
-          caption: { color: '#1E1B4B' },
-          head: { color: '#1E1B4B' },
+          caption: { color: '#5B92D9' },
+          head: { color: '#5B92D9' },
           day: {
             borderRadius: '5px',
             margin: '2px',

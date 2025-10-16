@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
+import { centrosMedicos } from './centrosMedicos';
 import { pacientes } from './pacientes';
 import { users } from './users';
 
@@ -18,6 +19,9 @@ export const signosVitales = sqliteTable(
     userId: text('userId')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    centroMedicoId: text('centroMedicoId')
+      .notNull()
+      .references(() => centrosMedicos.id, { onDelete: 'cascade' }),
     updated_at: integer('updated_at', { mode: 'timestamp' }),
     created_at: integer('created_at', { mode: 'timestamp' })
       .notNull()

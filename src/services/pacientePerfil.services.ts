@@ -31,7 +31,7 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       arrayAntecedente,
       arrayArchivosAdjuntos,
       // arrayNotasMedicas,
-      proximosTurnos,
+      // proximosTurnos,
     ] = await Promise.all([
       // datos del paciente
       db
@@ -91,35 +91,20 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       db
         .select()
         .from(diagnostico)
-        .where(
-          and(
-            eq(diagnostico.pacienteId, pacienteId),
-            eq(diagnostico.centroMedicoId, centroMedicoId)
-          )
-        )
+        .where(and(eq(diagnostico.pacienteId, pacienteId)))
         .limit(10),
       // antecedentes
       db
         .select()
         .from(antecedentes)
-        .where(
-          and(
-            eq(antecedentes.pacienteId, pacienteId),
-            eq(antecedentes.centroMedicoId, centroMedicoId)
-          )
-        )
+        .where(and(eq(antecedentes.pacienteId, pacienteId)))
         .limit(10),
 
       // archivos adjuntos
       db
         .select()
         .from(archivosAdjuntos)
-        .where(
-          and(
-            eq(archivosAdjuntos.pacienteId, pacienteId),
-            eq(archivosAdjuntos.centroMedicoId, centroMedicoId)
-          )
-        )
+        .where(and(eq(archivosAdjuntos.pacienteId, pacienteId)))
         .orderBy(desc(archivosAdjuntos.created_at)),
 
       // // notas médicas
@@ -182,7 +167,7 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       arrayAntecedente,
       arrayArchivosAdjuntos,
       // arrayNotasMedicas,
-      proximosTurnos,
+      // proximosTurnos,
       colorMap,
     };
   } catch (error) {

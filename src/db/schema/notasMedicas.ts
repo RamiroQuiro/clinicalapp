@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
+import { centrosMedicos } from './centrosMedicos';
 import { pacientes } from './pacientes';
 import { users } from './users';
 
@@ -11,6 +12,9 @@ export const notasMedicas = sqliteTable('notasMedicas', {
     .notNull(),
   userMedicoId: text('userMedicoId')
     .references(() => users.id)
+    .notNull(),
+  centroMedicoId: text('centroMedicoId')
+    .references(() => centrosMedicos.id)
     .notNull(),
   title: text('title').notNull(),
   atencionId: text('atencionId').references(() => atenciones.id),
