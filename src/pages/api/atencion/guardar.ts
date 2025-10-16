@@ -97,6 +97,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             sintomas,
             observaciones,
             motivoInicial,
+            centroMedicoId: user.centroMedicoId,
             inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null,
             finAtencion: finAtencion ? new Date(finAtencion) : null,
             duracionAtencion: safeParseFloat(duracionAtencion),
@@ -130,6 +131,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           historiaClinicaId,
           estado: status,
           userIdMedico: user.id,
+          centroMedicoId: user.centroMedicoId,
           inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null,
           finAtencion: finAtencion ? new Date(finAtencion) : null,
           duracionAtencion: safeParseFloat(duracionAtencion),
@@ -173,6 +175,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           atencionId: currentAtencionId,
           pacienteId,
           userId: user.id,
+          centroMedicoId: user.centroMedicoId,
           ...processedSvData, // MODIFIED to use processedSvData
         });
       }
@@ -195,6 +198,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             observaciones: d.observaciones,
             codigoCIE: d.codigoCIE, // Y 'codigoCIE'
             ultimaModificacionPorId: user.id,
+            centroMedicoId: user.centroMedicoId,
           }))
         );
       }
@@ -220,6 +224,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             atencionId: currentAtencionId,
             pacienteId,
             userMedicoId: user.id,
+            centroMedicoId: user.centroMedicoId,
           }))
         );
       }
@@ -234,6 +239,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             userMedicoId: user.id,
             title: n.title,
             descripcion: n.descripcion,
+            centroMedicoId: user.centroMedicoId,
             created_at: n.created_at,
             estado: n.estado,
           }))

@@ -303,3 +303,20 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
         *   Se modificó `src/pages/dashboard/dashboard/componente/SalaEspera.jsx` para iniciar y detener la conexión SSE y realizar una carga inicial de los turnos del día al montarse/desmontarse, asegurando que la lista de pacientes recepcionados se actualice en tiempo real.
 *   **Problema Pendiente**: El usuario reporta que los eventos SSE de "turno-agendado" no se reflejan correctamente en la vista de Agenda (`TurnosDelDia.tsx`). Se sospecha un problema en la lógica de `manejarEventoSSEAgenda` al procesar este tipo de evento, específicamente en la comparación de horas y la actualización del `agendaDelDia` atom.
 *   **Próximos Pasos**: Investigar y corregir la lógica de `manejarEventoSSEAgenda` en `src/context/agenda.store.ts` para el evento `turno-agendado`.
+---
+## Sesión 15: 2025-10-13
+
+*   **Objetivo**: Implementar un sistema de Vademecum para la búsqueda y carga de medicamentos.
+*   **Backend (API)**:
+    *   Se optimizó la consulta en `GET /api/vademecum/search.ts` para delegar el filtrado a la base de datos.
+    *   Se corrigió un error crítico de compatibilidad reemplazando la función `ilike` (de PostgreSQL) por `like` (de SQLite), solucionando un error de sintaxis en la base de datos.
+*   **Poblado de Datos (Vademecum ANMAT)**:
+    *   Se decidió usar los datasets públicos de ANMAT como fuente de datos.
+    *   Se creó un script autónomo (`scripts/import-vademecum.js`) para leer múltiples archivos CSV, procesarlos, eliminar duplicados e insertarlos en la base de datos.
+    *   Se depuró el script para solucionar varios errores de entorno de Node.js (`ERR_MODULE_NOT_FOUND`, `import.meta.env`).
+    *   Se ejecutó el script con éxito, poblando la base de datos con **743 medicamentos únicos**.
+*   **Frontend (UI)**:
+    *   Se creó el componente `BuscadorVademecum.tsx` con lógica de búsqueda y "debounce".
+    *   Se integró el buscador en el formulario `FormularioMedicamentos.tsx` para autocompletar los datos al seleccionar un resultado.
+    *   Se rediseñó el layout de dicho formulario para mostrar los campos de texto de forma horizontal.
+*   **Próximos Pasos**: El usuario descargará más archivos CSV de ANMAT de años anteriores. El script de importación está listo para ser reutilizado y así enriquecer la base de datos.

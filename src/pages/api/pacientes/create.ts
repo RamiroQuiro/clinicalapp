@@ -81,17 +81,14 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         userIdResponsable: data.userId,
         domicilio: data.domicilio || null,
         centroMedicoId: centroMedicoId,
-        celular: data.celular || null,
-        estatura: data.estatura || null,
-        peso: data.peso || null,
-        pais: data.pais || null,
-        provincia: data.provincia || null,
-        ciudad: data.ciudad || null,
-        obraSocial: data.obraSocial || null,
-        nObraSocial: data.nObraSocial || null,
-        email: data.email || null,
-        grupoSanguineo: data.grupoSanguineo || null,
-        created_at: sql`(strftime('%s','now'))`,
+        celular: normalizedData.celular || null,
+        pais: normalizedData.pais || null,
+        provincia: normalizedData.provincia || null,
+        ciudad: normalizedData.ciudad || null,
+        obraSocial: normalizedData.obraSocial || null,
+        nObraSocial: normalizedData.nObraSocial || null,
+        email: normalizedData.email || null,
+        grupoSanguineo: normalizedData.grupoSanguineo || null,
       });
 
       console.log('✅ Historia clínica creada');
@@ -145,11 +142,11 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     console.error('❌ Error creando paciente:', error);
 
     if (error.message.includes('UNIQUE constraint failed')) {
-      return createResponse(409, 'El paciente ya existe en el sistema');
-    }
-
-    if (error.message.includes('FOREIGN KEY constraint failed')) {
-      return createResponse(400, 'Error de referencia: usuario o centro médico no válido');
+      console.log('error.message', error);
+      return createResponse(
+        409,
+        'Conflicto: Ya existe un paciente con este DNI en este centro médico.'
+      );
     }
 
     return createResponse(500, error.message || 'Error interno del servidor al crear paciente');
