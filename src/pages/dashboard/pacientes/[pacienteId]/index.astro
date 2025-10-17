@@ -35,7 +35,7 @@ if (!user || !user.id || !user.centroMedicoId) {
 console.log('centroMedicoId', user.centroMedicoId);
 try {
   perfilPaciente = await getPacienteData(pacienteId as string, user.id, user.centroMedicoId);
-  console.log('perfilPaciente', perfilPaciente);
+  // console.log('perfilPaciente', perfilPaciente);
 } catch (error) {
   console.error('Error fetching paciente data:', error);
 }
@@ -75,7 +75,7 @@ if (!perfilPaciente.proximosTurnos || perfilPaciente.proximosTurnos.length === 0
   <MainDashboard h1="Ficha del paciente" pacienteId={pacienteId}>
     <div class="gap-2 flex flex-col w-full">
       <PacienteHeader pacienteData={perfilPaciente.pacienteData} />
-      <DivBox1 styleDiv="w-full text-primary-texto">
+      <DivBox1 className="w-full text-primary-texto">
         <details class="w-full group">
           <summary
             class="px-4 py-3

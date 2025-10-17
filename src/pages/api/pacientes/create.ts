@@ -4,7 +4,7 @@ import { emitEvent } from '@/lib/sse/sse';
 import { normalize } from '@/utils/normalizadorInput';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import db from '../../../db';
 import { historiaClinica, pacienteProfesional, pacientes } from '../../../db/schema';
 
@@ -134,6 +134,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
           dni: normalizedData.dni,
           fNacimiento: normalizedData.fNacimiento,
           sexo: normalizedData.sexo,
+          domicilio: normalizedData.domicilio,
           centroMedicoId: centroMedicoId,
         })
         .returning();
@@ -219,105 +220,5 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     }
 
     return createResponse(500, error.message || 'Error interno del servidor al crear paciente');
-  }
-};
-
-export const PUT: APIRoute = async ({ request, cookies, locals }) => {
-  try {
-    const rawData = await request.json();
-
-    const data = rawData;
-
-    // Validar sesión
-    const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
-    if (!sessionId) {
-      return createResponse(401, 'No autorizado');
-    }
-
-    const { user } = locals;
-    const { session } = await lucia.validateSession(sessionId);
-    if (!session || !user) {
-      return createResponse(401, 'No autorizado');
-    }
-
-    // Verificar que el paciente existe y pertenece al centro médico del usuario
-    const pacienteExistente = await db
-      .select()
-      .from(pacientes)
-      .where(and(eq(pacientes.id, data.id), eq(pacientes.centroMedicoId, user.centroMedicoId)))
-      .limit(1);
-
-    if (!pacienteExistente[0]) {
-      return createResponse(404, 'Paciente no encontrado o no pertenece a tu centro médico');
-    }
-
-    // TRANSACCIÓN DE ACTUALIZACIÓN
-    await db.transaction(async trx => {
-      // Actualizar datos básicos del paciente
-      const updateDataPaciente: any = {
-        updated_at: sql`(strftime('%s','now'))`,
-      };
-
-      // Solo actualizar campos que vienen en la data
-      const camposPaciente = ['nombre', 'apellido', 'email', 'dni', 'fNacimiento', 'sexo'];
-      camposPaciente.forEach(campo => {
-        if (data[campo as keyof typeof data] !== undefined) {
-          updateDataPaciente[campo] = data[campo as keyof typeof data];
-        }
-      });
-
-      if (Object.keys(updateDataPaciente).length > 1) {
-        // Más que solo updated_at
-        await trx.update(pacientes).set(updateDataPaciente).where(eq(pacientes.id, data.id));
-      }
-
-      // Actualizar historia clínica (DECIDÍ SI USAS historiaClinica O fichaPaciente)
-      const updateDataHistoria: any = {};
-      const camposHistoria = [
-        'domicilio',
-        'celular',
-        'estatura',
-        'peso',
-        'pais',
-        'provincia',
-        'ciudad',
-        'obraSocial',
-        'nObraSocial',
-        'grupoSanguineo',
-      ];
-
-      camposHistoria.forEach(campo => {
-        if (data[campo as keyof typeof data] !== undefined) {
-          updateDataHistoria[campo] = data[campo as keyof typeof data];
-        }
-      });
-
-      if (Object.keys(updateDataHistoria).length > 0) {
-        await trx
-          .update(historiaClinica) // ⚠️ CAMBIAR POR fichaPaciente SI ES NECESARIO
-          .set(updateDataHistoria)
-          .where(eq(historiaClinica.pacienteId, data.id));
-      }
-    });
-
-    // Auditoría
-    await logAuditEvent({
-      userId: user.id,
-      actionType: 'UPDATE',
-      tableName: 'pacientes',
-      recordId: data.id,
-      oldValue: pacienteExistente[0],
-      newValue: data,
-      centroMedicoId: user.centroMedicoId,
-      description: `Actualización de paciente: ${data.nombre} ${data.apellido}`,
-    });
-
-    return createResponse(200, 'Paciente actualizado exitosamente', {
-      pacienteId: data.id,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error: any) {
-    console.error('❌ Error actualizando paciente:', error);
-    return createResponse(500, 'Error interno del servidor al actualizar paciente');
   }
 };

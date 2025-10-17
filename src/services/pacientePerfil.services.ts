@@ -75,14 +75,18 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
           motivoConsulta: atenciones.motivoConsulta,
           motivoInicial: atenciones.motivoInicial,
           profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
-
+          estado: atenciones.estado,
           tratamientoId: atenciones.tratamientoId,
           tratamiento: atenciones.tratamientoId,
         })
         .from(atenciones)
         .innerJoin(users, eq(users.id, atenciones.userIdMedico))
         .where(
-          and(eq(atenciones.pacienteId, pacienteId), eq(atenciones.centroMedicoId, centroMedicoId))
+          and(
+            eq(atenciones.pacienteId, pacienteId),
+            eq(atenciones.centroMedicoId, centroMedicoId),
+            eq(atenciones.estado, 'finalizada')
+          )
         )
         .groupBy(atenciones.id)
         .orderBy(desc(atenciones.created_at))

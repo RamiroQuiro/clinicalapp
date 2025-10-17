@@ -44,10 +44,11 @@ const buttonVariants = {
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: keyof typeof buttonVariants.variants.variant;
   size?: keyof typeof buttonVariants.variants.size;
+  href?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => {
+  ({ className, variant, size, href, ...props }, ref) => {
     // Usamos `cn` para construir las clases finales
     const finalClassName = cn(
       buttonVariants.base,
@@ -56,7 +57,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className
     );
 
-    return <button className={finalClassName} ref={ref} {...props} />;
+    return href ? (
+      <a href={href} className={finalClassName} {...props} />
+    ) : (
+      <button className={finalClassName} ref={ref} {...props} />
+    );
   }
 );
 

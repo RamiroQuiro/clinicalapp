@@ -8,7 +8,7 @@ import ContenedorInputSelected from '../../../components/moleculas/ContenedorInp
 
 const { user, paciente } = Astro.props;
 const { session } = Astro.locals;
-const { pacienteId } = Astro.params;
+const pacienteId = paciente ? paciente.id : null;
 const userId = session?.userId;
 ---
 
@@ -18,13 +18,7 @@ const userId = session?.userId;
     data-user-id
     class="flex md:flex-row items-center gap-2 w-full justify-normal"
   >
-    <ContenedorInputForm
-      label="* dni"
-      type="number"
-      name="dni"
-      id="dni"
-      value={paciente?.dni}
-    />
+    <ContenedorInputForm label="* dni" type="number" name="dni" id="dni" value={paciente?.dni} />
     <!-- Campos principales deshabilitados inicialmente -->
     <ContenedorInputForm
       label="* nombre"
@@ -143,7 +137,7 @@ const userId = session?.userId;
     />
   </div>
   <ContenedorBoton>
-    <Button1 type="submit">Agregar</Button1>
+    <Button1 type="submit">{pacienteId ? 'Actualizar' : 'Agregar'}</Button1>
   </ContenedorBoton>
   <div class="h-6 text-center w-full">
     <span class="items-center text-sm text-primary-texto">* campos requeridos </span>
@@ -151,7 +145,10 @@ const userId = session?.userId;
   </div>
 </FormCont>
 
-<script define:vars={{ pacienteId, userId }}>
+<script define:vars={{ pacienteId, userId }} is:inline>
+  console.log('pacienteId', pacienteId);
+  console.log('userId', userId);
+
   const formulario = document.getElementById('formularioCliente');
   const erroresShow = document.getElementById('errores');
   const submitButton = formulario.querySelector('button[type="submit"]');
@@ -168,11 +165,14 @@ const userId = session?.userId;
     const formData = new FormData(e.target);
     formData.append('userId', userId);
     const data = Object.fromEntries(formData.entries());
+    // compobacion de si es editar o ingresar paciente
+    console.log('pacienteId', pacienteId);
+    console.log('datos del formulario ->', data);
 
-    const isUpdating = !!pacienteId;
-    const url = '/api/pacientes/create';
+    const isUpdating = pacienteId;
+    const url = isUpdating ? '/api/pacientes' : '/api/pacientes/create';
     const method = isUpdating ? 'PUT' : 'POST';
-
+    console.log('datos paraa enviar a la api', data, isUpdating, method, url);
     if (isUpdating) {
       data.id = pacienteId;
     }

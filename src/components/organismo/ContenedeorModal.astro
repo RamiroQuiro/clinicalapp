@@ -1,10 +1,10 @@
 ---
 import Button1 from '../atomos/Button1.astro';
 import Modal from '../moleculas/Modal.astro';
-const { label, title, id } = Astro.props;
+const { label, title, id, iconNode } = Astro.props;
 ---
 
-<Modal label={label} title={title} id={id}>
+<Modal label={label} iconNode={iconNode} title={title} id={id}>
   <Button1 slot="close" id="cerrarModal" style="absolute top-1 right-1 ">✕</Button1>
   <slot />
 </Modal>

@@ -1,12 +1,20 @@
 ---
+import Button from '../atomos/Button';
 import Button1 from '../atomos/Button1.astro';
 import { CircleX } from 'lucide-react';
 const { id, iconNode, label, title, isIcon } = Astro.props;
+const Icon = iconNode;
 ---
 
 <div data-id={id}>
-  {isIcon && <slot name="icon" />}
-  {label && <Button1 id={`modal-open-${id}`}>{label}</Button1>}
+  {
+    label && (
+      <Button className="w-full" variant="primary" id={`modal-open-${id}`}>
+        {isIcon && <Icon className="mr-2" />}
+        {label}
+      </Button>
+    )
+  }
 
   <dialog
     id={`dialog-modal-${id}`}
