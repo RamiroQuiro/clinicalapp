@@ -1,46 +1,65 @@
 import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
-import { setPaciente } from '@/context/agenda.store';
+import InputDate from '@/components/atomos/InputDate';
+
 import { showToast } from '@/utils/toast/toastShow';
 
 import React, { useState } from 'react';
 
 interface FormularioNuevoPacienteProps {
-  onPacienteCreado: (paciente: {
-    id: string;
+  isStoreAgenda: boolean;
+  pacienteData?: {
+    id?: string;
     nombre: string;
     apellido: string;
-    dni: string;
-  }) => void;
-  onCancel: () => void;
-  isStoreAgenda: boolean;
+    dni: number;
+    celular: string;
+    fNacimiento: string;
+    domicilio: string;
+    ciudad: string;
+    provincia: string;
+    obraSocial: string;
+    nObraSocial: string;
+    grupoSanguineo: string;
+    sexo: string;
+    email: string;
+    userId: string;
+  };
   userId: string;
+  session: any;
 }
 
 export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = ({
-  onPacienteCreado,
   isStoreAgenda = true,
   userId,
-  onCancel,
+  pacienteData,
 }) => {
-  const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    dni: '',
-    celular: '',
-    fNacimiento: '',
-    sexo: '',
-    email: '',
-    userId: '',
-  });
+  const [formData, setFormData] = useState(
+    pacienteData || {
+      id: '',
+      nombre: '',
+      apellido: '',
+      dni: 0,
+      celular: '',
+      fNacimiento: '',
+      domicilio: '',
+      ciudad: '',
+      provincia: '',
+      obraSocial: '',
+      nObraSocial: '',
+      grupoSanguineo: '',
+      sexo: '',
+      email: '',
+      userId: '',
+    }
+  );
   const [loading, setLoading] = useState(false);
-
-  const sexoOptions = [
-    { value: 'masculino', label: 'Masculino' },
-    { value: 'femenino', label: 'Femenino' },
-  ];
-
+  const [error, setError] = useState({
+    message: '',
+    code: 0,
+  });
   const handleSubmit = async (e: React.FormEvent) => {
+    setLoading(true);
     e.preventDefault();
     if (!formData.nombre || !formData.apellido || !formData.dni) {
       alert('Nombre, Apellido y DNI son obligatorios.');
@@ -49,31 +68,35 @@ export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = (
     formData.userId = userId;
 
     setLoading(true);
+    let isUpdate = formData.id ? true : false;
     try {
-      const response = await fetch('/api/pacientes/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        isUpdate ? `/api/pacientes/${formData.id}/update` : '/api/pacientes/create',
+        {
+          method: isUpdate ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
+        setError({
+          message: errorData.message,
+          code: errorData.code,
+        });
         throw new Error(errorData.message || 'Error al crear paciente');
       }
 
-      const result = await response.json();
-      const [nuevoPaciente] = result.data;
-
-      if (isStoreAgenda) {
-        setPaciente({
-          id: nuevoPaciente.id,
-          nombre: `${nuevoPaciente.nombre} ${nuevoPaciente.apellido}`,
-        });
-      }
       showToast('Paciente creado con éxito', { background: 'bg-green-600' });
+      window.location.reload();
     } catch (error: any) {
+      setError({
+        message: error.message,
+        code: error.code,
+      });
       showToast(`Error al crear paciente: ${error.message}`, { background: 'bg-red-600' });
       console.error('Error al crear paciente:', error);
     } finally {
@@ -82,88 +105,157 @@ export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = (
     }
   };
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+
+    // Para manejar correctamente los valores numéricos
+    const finalValue = type === 'number' ? Number(value) : value;
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: finalValue,
+    }));
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4">
-      <div className="w-full flex items-center justify-satar gap-2">
+    <form
+      onSubmit={handleSubmit}
+      id="formularioCliente"
+      title="Nuevo Paciente"
+      className="flex flex-col items-start gap-2 pb-3 px-3 w-full"
+    >
+      <div data-user-id className="flex md:flex-row items-center gap-2 w-full justify-between">
         <Input
-          label="Nombre"
-          type="text"
-          id="nombre"
-          value={formData.nombre}
-          onChange={e => setFormData({ ...formData, nombre: e.target.value })}
-          required
-        />
-        <Input
-          label="Apellido"
-          type="text"
-          id="apellido"
-          value={formData.apellido}
-          onChange={e => setFormData({ ...formData, apellido: e.target.value })}
-          required
-        />
-        <Input
-          label="DNI"
-          type="text"
+          label="* DNI"
+          type="number"
+          name="dni"
           id="dni"
           value={formData.dni}
-          onChange={e => setFormData({ ...formData, dni: e.target.value })}
-          required
+          onChange={handleChange}
+        />
+        <Input
+          label="* Nombre"
+          type="text"
+          name="nombre"
+          id="nombre"
+          styleInput=""
+          value={formData.nombre}
+          onChange={handleChange}
+          readOnly
+        />
+        <Input
+          label="* Apellido"
+          type="text"
+          name="apellido"
+          id="apellido"
+          styleInput=""
+          value={formData.apellido}
+          onChange={handleChange}
+          readOnly
         />
       </div>
 
-      <Input
-        label="Email"
-        type="email"
-        id="email"
-        value={formData.email}
-        onChange={e => setFormData({ ...formData, email: e.target.value })}
-        required
-      />
-      <Input
-        label="Teléfono (Opcional)"
-        type="text"
-        id="celular"
-        value={formData.celular}
-        onChange={e => setFormData({ ...formData, celular: e.target.value })}
-        required
-      />
-      <div className="w-full flex items-center justify-satar gap-2">
-        <div className="w-1/2 flex flex-col">
-          <label htmlFor="sexo" className="mb-1 text-sm font-semibold text-primary-texto ">
-            Sexo
+      <div className="flex md:flex-row items-center gap-2 w-full justify-between">
+        <div className="w-full flex  items flex-col items-start justify-center  duration-300 group px-2 -md">
+          <label
+            htmlFor="sexo"
+            className="text-primary-texto w-full duration-300 group-hover  group-hover:text-primary-100 capitalize focus:text-primary-150 text-left text-sm"
+          >
+            * Genero
           </label>
           <select
+            name="sexo"
             id="sexo"
-            value={formData.sexo}
-            className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-offset-2 focus:ring-primary-100 focus:border-primary-100 placeholder:text-gray-400 transition"
-            onChange={e => setFormData({ ...formData, sexo: e.target.value })}
-            required
+            className=" w-full text-sm bg-primary-bg-componentes group-hover:ring-2 rounded-lg  border-gray-300  ring-primary-150 focus:ring-2  outline-none transition-colors duration-200 ease-in-out px-2 py-2"
           >
-            <option value="">Seleccionar</option>
-            {sexoOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
           </select>
         </div>
+        <Input label="* Email" type="email" name="email" id="email" value={formData.email} />
+        <Input label="* Celular" type="text" name="celular" id="celular" value={formData.celular} />
+      </div>
+      <div className="flex md:flex-row items-center gap-2 w-full justify-between">
         <Input
-          className="w-full"
-          label="Fecha de Nacimiento"
-          type="date"
-          id="fNacimiento"
-          value={formData.fNacimiento}
-          onChange={e => setFormData({ ...formData, fNacimiento: e.target.value })}
-          required
+          label="Domicilio"
+          type="text"
+          id="domicilio"
+          readOnly
+          name="domicilio"
+          value={formData.domicilio}
+          onChange={handleChange}
+        />
+        <Input
+          label="Ciudad"
+          type="text"
+          name="ciudad"
+          id="ciudad"
+          value={formData.ciudad}
+          onChange={handleChange}
+        />
+        <Input
+          label="Provincia"
+          type="text"
+          name="provincia"
+          id="provincia"
+          value={formData.provincia}
+          onChange={handleChange}
         />
       </div>
-      <div className="flex justify-end space-x-3 pt-4">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
-          Cancelar
+      <div className="flex md:flex-row items-center gap-2 w-full justify-between">
+        <Input
+          label="Obra Social"
+          type="text"
+          name="obraSocial"
+          id="obraSocial"
+          value={formData.obraSocial}
+          onChange={handleChange}
+        />
+        <Input
+          label="N° Obra Social"
+          type="text"
+          name="nObraSocial"
+          id="nObraSocial"
+          value={formData.nObraSocial}
+          onChange={handleChange}
+        />
+      </div>
+      <div className="text-xs text-left flex flex-col items-start gap-">
+        <p>Fecha de Nacimiento</p>
+        <InputDate
+          label="Fecha de Nacimiento"
+          name="fNacimiento"
+          readOnly
+          id="fNacimiento"
+          client:load
+          value={formData.fNacimiento}
+        />
+      </div>
+      <div className="flex md:flex-row items-center gap-2 w-full justify-between">
+        <Input
+          label="Grupo Sanguineo"
+          type="text"
+          name="grupoSanguineo"
+          id="grupoSanguineo"
+          value={formData.grupoSanguineo}
+          onChange={handleChange}
+        />
+      </div>
+      <div className="flex w-full gap-3 items-center justify-end">
+        <Button variant="cancel">Cancelar</Button>
+        <Button variant="primary" type="submit" disabled={loading}>
+          {loading ? 'Cargando...' : 'Actualizar'}
         </Button>
-        <Button type="submit" variant="primary" disabled={loading}>
-          {loading ? 'Creando...' : 'Crear Paciente'}
-        </Button>
+      </div>
+      <div className="h-6 text-center w-full">
+        <span className="items-center text-sm text-primary-texto">* campos requeridos </span>
+        <p id="errores" className="text-xs font-semibold tracking-wider text-primary-400"></p>
+      </div>
+      <div className="h-6 text-center w-full">
+        <span className="items-center text-sm text-primary-texto">{error.message}</span>
+        <p id="errores" className="text-xs font-semibold tracking-wider text-primary-400"></p>
       </div>
     </form>
   );

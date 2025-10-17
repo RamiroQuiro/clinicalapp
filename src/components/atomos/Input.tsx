@@ -7,7 +7,7 @@ export const Input = ({
   type = 'text',
   className,
 }: any) => (
-  <div className="flex flex-col">
+  <div className="flex flex-col w-full">
     <label htmlFor={name} className="mb-1 text-sm font-semibold text-primary-texto ">
       {label}
     </label>

@@ -34,7 +34,7 @@ function calcularEdad(fechaNacimiento: Date): number {
       class="flex md:flex-col items-center w-full md:w-auto md:justify-between justify-end gap-2 text-sm"
     >
       <Modal isIcon iconNode={Edit3} label={`Editar`} title="Editar paciente" id="modal-agregar">
-        <FormularioNuevoPaciente client:load paciente={pacienteData} />
+        <FormularioNuevoPaciente client:visible pacienteData={pacienteData} />
       </Modal>
       <Button variant="primary">
         <SaveIcon className="mr-2" /> Exportar HC

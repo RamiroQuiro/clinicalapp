@@ -36,6 +36,7 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       // datos del paciente
       db
         .select({
+          id: pacientes.id,
           nombre: pacientes.nombre,
           apellido: pacientes.apellido,
           dni: pacientes.dni,

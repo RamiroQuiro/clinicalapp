@@ -170,7 +170,7 @@ const userId = session?.userId;
     console.log('datos del formulario ->', data);
 
     const isUpdating = pacienteId;
-    const url = isUpdating ? '/api/pacientes' : '/api/pacientes/create';
+    const url = isUpdating ? `/api/pacientes/${pacienteId}/update` : '/api/pacientes/create';
     const method = isUpdating ? 'PUT' : 'POST';
     console.log('datos paraa enviar a la api', data, isUpdating, method, url);
     if (isUpdating) {
