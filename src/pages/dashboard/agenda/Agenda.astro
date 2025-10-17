@@ -7,10 +7,9 @@ import Calendario from '@/components/organismo/agenda/Calendario.tsx';
 import ConstendorStats from '@/components/organismo/agenda/ConstendorStats';
 import ContenedorSeleccionProfesionales from '@/components/organismo/agenda/ContenedorSeleccionProfesionales';
 import { FormularioTurno } from '@/components/organismo/agenda/FormularioTurno';
-
 import HorariosDisponibles from '@/components/organismo/agenda/HorariosDisponibles.tsx';
 import TurnosDelDia from '@/components/organismo/agenda/TurnosDelDia.tsx';
-import { FormularioNuevoPaciente } from '@/components/organismo/pacientes/FormularioNuevoPaciente';
+import { FormularioRapicoCargaPaciente } from '@/components/organismo/pacientes/FormularioRapicoCargaPaciente';
 import { fetchDataProfesionalesEntidad } from '@/services/agenda.services';
 const { user } = Astro.locals;
 // Solución temporal: Como solo hay un profesional, pasamos sus propios datos
@@ -36,7 +35,7 @@ try {
       <FormularioTurno client:load user={user} />
     </Modal>
     <Modal id="modalNuevoPaciente" title="Nuevo Paciente">
-      <FormularioNuevoPaciente client:load userId={user.id} />
+      <FormularioRapicoCargaPaciente client:load userId={user.id} />
     </Modal>
 
     <ContenedorSeleccionProfesionales
