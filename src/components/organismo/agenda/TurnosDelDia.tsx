@@ -2,61 +2,24 @@ import {
   agendaDelDia,
   fechaSeleccionada,
   setFechaYHora,
-  setPaciente,
-  type AgendaSlot,
+  setPaciente
 } from '@/context/agenda.store';
 
+import { useSSE } from '@/hook/useSSE';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
 import { Calendar, Clock } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import TurnoCard from './TurnoCard';
 
 export default function TurnosDelDia({ userId }: { userId: string }) {
   const agenda = useStore(agendaDelDia);
   const diaSeleccionado = useStore(fechaSeleccionada);
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<any>(null);
+  const { sseConectado } = useSSE(userId);
 
-  useEffect(() => {
-    if (!userId) return;
 
-    console.log('🔌 Conectando SSE para la Agenda...');
-    const eventSource = new EventSource(`/api/events?userId=${userId}`);
-
-    eventSource.onopen = () => {
-      console.log('✅ Conexión SSE de Agenda establecida');
-    };
-
-    const listener = (event: MessageEvent) => {
-      try {
-        const nuevoTurno: AgendaSlot = JSON.parse(event.data);
-        const storeActual = agendaDelDia.get();
-
-        // Prevenir duplicados
-        if (storeActual.some(slot => slot.turnoInfo?.id === nuevoTurno.turnoInfo?.id)) {
-          return;
-        }
-
-        console.log('📥 Nuevo turno recibido via SSE en Agenda:', nuevoTurno);
-        agendaDelDia.set([...storeActual, nuevoTurno]);
-      } catch (error) {
-        console.error('Error procesando evento SSE en Agenda:', error);
-      }
-    };
-
-    eventSource.addEventListener('turno-agendado', listener);
-
-    eventSource.onerror = err => {
-      console.error('Error en conexión SSE de Agenda:', err);
-      eventSource.close();
-    };
-
-    // Limpieza al desmontar el componente
-    return () => {
-      console.log('🔌 Desconectando SSE de Agenda...');
-      eventSource.close();
-    };
-  }, [userId]);
+  console.log('esta es e stpre de la agenda', sseConectado)
 
   const turnosOcupados = useMemo(() => {
     return agenda.filter(slot => !slot.disponible).sort((a, b) => a.hora.localeCompare(b.hora));
@@ -142,11 +105,11 @@ export default function TurnosDelDia({ userId }: { userId: string }) {
   };
   const formattedDate = diaSeleccionado
     ? new Intl.DateTimeFormat('es-AR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }).format(diaSeleccionado)
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(diaSeleccionado)
     : 'Seleccione una fecha';
 
   if (turnosOcupados.length === 0) {
@@ -168,6 +131,7 @@ export default function TurnosDelDia({ userId }: { userId: string }) {
     );
   }
   if (turnosOcupados.length > 0) {
+    console.log('turnosOcupados', turnosOcupados);
     return (
       <div className="w-full">
         {/* Header con contador */}

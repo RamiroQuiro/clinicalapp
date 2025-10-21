@@ -203,7 +203,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     console.log('🎉 Paciente creado exitosamente:', result.id);
 
-    emitEvent('paciente-creado', result);
+    emitEvent('paciente-creado', result, { centroMedicoId: centroMedicoId });
     return createResponse(200, 'Paciente creado y asociado exitosamente', {
       paciente: result,
       timestamp: new Date().toISOString(),

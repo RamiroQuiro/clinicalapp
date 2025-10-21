@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     const updatedTurno = turnoUpdate[0];
     // console.log('✅ Database updated:', updatedTurno.id, updatedTurno.estado);
-    emitEvent('turno-actualizado', updatedTurno);
+    emitEvent('turno-actualizado', updatedTurno, { centroMedicoId: updatedTurno.centroMedicoId });
     // 5. Respuesta al cliente que hizo el fetch
     return createResponse(200, 'Turno actualizado', updatedTurno);
   } catch (error) {

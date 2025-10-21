@@ -1,12 +1,9 @@
-// context/recepcion.store.ts
 import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { computed, map } from 'nanostores';
 
-import { toZonedTime } from 'date-fns-tz';
 import type { AgendaSlot } from './agenda.store';
 
-import APP_TIME_ZONE from '@/lib/timeZone';
 
 // --- TIPOS ---
 type Turno = {
@@ -97,39 +94,37 @@ export function manejarEventoSSE(evento: any) {
   // manejar turnos agendados recientes
   else if (evento.type === 'turno-agendado') {
     const turnoAgendado: AgendaSlot = evento.data;
+    const turnosActuales = recepcionStore.get().turnosDelDia;
 
-    const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
-    console.log('turnoAgendado', turnoAgendado);
-    const splitFechaTurno = turnoAgendado.turnoInfo?.fechaTurno.split('T');
-    let horaFormateada = toZonedTime(
-      `${splitFechaTurno[0]}T${turnoAgendado.turnoInfo?.horaTurno}:00.000`,
-      APP_TIME_ZONE
+    // Prevenir duplicados
+    const yaExiste = turnosActuales.some(
+      slot => slot.turnoInfo?.id === turnoAgendado.turnoInfo?.id
     );
+    if (yaExiste) {
+      console.log('🔄 Turno agendado ya existe en el store de recepción. Omitiendo.');
+      return;
+    }
 
-    console.log('horaFormateada', horaFormateada);
+    const turnosNuevos = [...turnosActuales, turnoAgendado];
+    // Opcional: Ordenar si es necesario
+    turnosNuevos.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
 
-    const agendaSlotsNuevos = [
-      ...agendaSlotsActuales,
-      { ...turnoAgendado, hora: horaFormateada.toISOString() },
-    ];
-
-    recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
-    console.log(`🔄 Store actualizado via SSE: ${turnoAgendado.id}`);
-    recepcionStore.setKey('ultimaActualizacion', new Date(getFechaEnMilisegundos()).toISOString());
+    recepcionStore.setKey('turnosDelDia', turnosNuevos);
+    console.log(`✅ Turno agendado añadido a recepción via SSE: ${turnoAgendado.turnoInfo?.id}`);
+    recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
 
   // Manejar otros tipos de eventos si es necesario
   else if (evento.type === 'turno-eliminado') {
     const turnoId = evento.data.id;
     const turnosActuales = recepcionStore.get().turnosDelDia;
-    const turnosNuevos = turnosActuales.filter(t => t.id !== turnoId);
+    // Corregido: filtrar por turnoInfo.id
+    const turnosNuevos = turnosActuales.filter(t => t.turnoInfo?.id !== turnoId);
 
     recepcionStore.setKey('turnosDelDia', turnosNuevos);
-    console.log(`🗑️ Turno eliminado via SSE: ${turnoId}`);
-    recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
-  }
+    console.log(`🗑️ Turno eliminado de recepción via SSE: ${turnoId}`);
 }
-
+}
 // --- GESTIÓN DE CONEXIÓN SSE ---
 export function iniciarConexionSSE(userId?: string) {
   if (userId) {
@@ -223,4 +218,4 @@ export const recepcionActions = {
   comenzarConsulta: (turno: AgendaSlot) => setTurnoEstado(turno, 'en_consulta'),
   finalizarTurno: (turno: AgendaSlot) => setTurnoEstado(turno, 'finalizado'),
   cancelarTurno: (turno: AgendaSlot) => setTurnoEstado(turno, 'cancelado'),
-};
+}

@@ -247,7 +247,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
 
       // emitir evento de atencion guardada
-      emitEvent('turno-actualizado', turnoActualizado);
+      emitEvent('turno-actualizado', turnoActualizado, { centroMedicoId: user.centroMedicoId });
     });
     const action: 'CREATE' | 'UPDATE' = consultaData.id ? 'UPDATE' : 'CREATE';
     // Auditoría

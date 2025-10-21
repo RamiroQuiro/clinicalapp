@@ -2,9 +2,6 @@ import { format, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { es } from 'date-fns/locale';
 
 // --- CONFIGURACIÓN ---
-// Define la zona horaria principal de la aplicación (ej. la del consultorio).
-// Esto evita tener que pasarla en cada llamada.
-// Lista de zonas horarias: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
 
 /**

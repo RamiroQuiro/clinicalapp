@@ -1,9 +1,5 @@
-import APP_TIME_ZONE from '@/lib/timeZone';
 import { sseService } from '@/services/sse.services';
-import { getFechaEnMilisegundos } from '@/utils/timesUtils';
-import { toZonedTime } from 'date-fns-tz';
 import { atom, map } from 'nanostores';
-import { recepcionStore } from './recepcion.store';
 
 // --- INTERFACES Y TIPOS ---
 export interface Profesional {
@@ -32,12 +28,12 @@ export interface AgendaSlot {
     horaLlegadaPaciente: string;
     duracion: number;
     estado:
-      | 'confirmado'
-      | 'pendiente'
-      | 'cancelado'
-      | 'sala_de_espera'
-      | 'en_consulta'
-      | 'finalizado';
+    | 'confirmado'
+    | 'pendiente'
+    | 'cancelado'
+    | 'sala_de_espera'
+    | 'en_consulta'
+    | 'finalizado';
   } | null;
 }
 
@@ -98,26 +94,33 @@ export function manejarEventoSSEAgenda(evento: any) {
     agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   } else if (evento.type === 'turno-agendado') {
     const turnoAgendado: AgendaSlot = evento.data;
+    const agendaActual = agendaDelDia.get();
 
-    const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
-    console.log('turnoAgendado', turnoAgendado);
-    const splitFechaTurno = turnoAgendado.turnoInfo?.fechaTurno.split('T');
-    let horaFormateada = toZonedTime(
-      `${splitFechaTurno[0]}T${turnoAgendado.turnoInfo?.horaTurno}:00.000`,
-      APP_TIME_ZONE
+    // Comprobamos si el turno ya existe para evitar duplicados
+    const yaExiste = agendaActual.some(
+      slot => slot.turnoInfo?.id === turnoAgendado.turnoInfo?.id
+    );
+    if (yaExiste) {
+      console.log('🔄 Turno agendado ya existe en el store de agenda. Omitiendo.');
+      return;
+    }
+
+    const fechaFormateada = new Date(turnoAgendado.hora);
+
+    console.log('fechaFormateada', fechaFormateada);
+
+    // Añadimos el nuevo turno al array
+    const nuevaAgenda = [...agendaActual, turnoAgendado];
+
+    // Ordenamos la agenda por hora, convirtiendo la fecha ISO a un valor numérico
+    const agendaOrdenada = nuevaAgenda.sort(
+      (a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime()
     );
 
-    console.log('horaFormateada', horaFormateada);
-
-    const agendaSlotsNuevos = [
-      ...agendaSlotsActuales,
-      { ...turnoAgendado, hora: horaFormateada.toISOString() },
-    ];
-
-    recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
-    console.log(`nueva agenda ->`, agendaSlotsNuevos);
-    console.log(`🔄 Store actualizado via SSE: ${turnoAgendado.turnoInfo.id}`);
-    recepcionStore.setKey('ultimaActualizacion', new Date(getFechaEnMilisegundos()).toISOString());
+    console.log('esta es la agenda ordenada en el AstroConfigRefinedSchema.store', agendaOrdenada);
+    agendaDelDia.set(agendaOrdenada);
+    console.log(`✅ Turno agendado añadido a la agenda via SSE: ${turnoAgendado.turnoInfo?.id}`);
+    agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   } else if (evento.type === 'turno-eliminado') {
     const turnoId = evento.data.id;
     const agendaActual = agendaDelDia.get();

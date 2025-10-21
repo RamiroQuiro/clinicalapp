@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // --- EMITIR EVENTO SSE ---
     // Notificamos a todos los clientes (recepción, médico) que el estado del turno cambió.
-    emitEvent('turno-actualizado', turnoActualizado);
+    emitEvent('turno-actualizado', turnoActualizado, { centroMedicoId: turnoActualizado.centroMedicoId });
     console.log(
       `[API /autocheckin] Evento SSE 'turno-actualizado' emitido para turno ${turnoActualizado.id}`
     );

@@ -1,31 +1,43 @@
+declare global {
+  // Hacemos esto para que el estado de SSE persista durante el Hot-Reloading en desarrollo
+  var sseClients: Map<string, SSEClient> | undefined;
+  var sseHeartbeatTimer: NodeJS.Timeout | null | undefined;
+}
+
 // lib/sse/sse.ts
 export type SSEClient = {
   id: string;
   controller: ReadableStreamDefaultController;
   userId?: string;
+  centroMedicoId?: string;
   lastActivity: Date;
 };
 
-const clients = new Map<string, SSEClient>();
+const clients = (globalThis.sseClients = globalThis.sseClients || new Map<string, SSEClient>());
 const encoder = new TextEncoder();
-const heartbeatInterval = 15 * 1000; // 15 segundos
-let heartbeatTimer: NodeJS.Timeout | null = null;
+const heartbeatInterval = 15 * 1000;
+
+function getHeartbeatTimer(): NodeJS.Timeout | null | undefined {
+  return globalThis.sseHeartbeatTimer;
+}
+
+function setHeartbeatTimer(timer: NodeJS.Timeout | null) {
+  globalThis.sseHeartbeatTimer = timer;
+}
 
 function generateClientId(): string {
   return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
 function startHeartbeat() {
-  if (heartbeatTimer) return;
+  if (getHeartbeatTimer()) return;
   console.log('❤️ Iniciando Heartbeat SSE...');
 
-  heartbeatTimer = setInterval(() => {
+  const timer = setInterval(() => {
     if (clients.size === 0) {
-      // No hay clientes, no hacer nada
       return;
     }
 
-    // console.log(`❤️ Enviando heartbeat a ${clients.size} clientes...`);
     const pingPayload = encoder.encode(':ping\n\n');
 
     for (const [id, client] of clients.entries()) {
@@ -34,35 +46,40 @@ function startHeartbeat() {
         client.lastActivity = new Date();
       } catch (error) {
         console.log(`🔌 Cliente [${id}] no responde a heartbeat. Removiendo.`);
-        // No es necesario llamar a client.controller.close(), el error en enqueue ya implica que está cerrado.
         clients.delete(id);
       }
     }
   }, heartbeatInterval);
+  setHeartbeatTimer(timer);
 }
 
 function stopHeartbeat() {
-  if (heartbeatTimer) {
-    clearInterval(heartbeatTimer);
-    heartbeatTimer = null;
+  const timer = getHeartbeatTimer();
+  if (timer) {
+    clearInterval(timer);
+    setHeartbeatTimer(null);
     console.log('💔 Deteniendo Heartbeat SSE.');
   }
 }
 
-export function addClient(controller: ReadableStreamDefaultController, userId?: string): string {
+export function addClient(
+  controller: ReadableStreamDefaultController,
+  userId?: string,
+  centroMedicoId?: string
+): string {
   const clientId = generateClientId();
   clients.set(clientId, {
     id: clientId,
     controller,
     userId,
+    centroMedicoId,
     lastActivity: new Date(),
   });
 
   console.log(
-    `🔌 Nuevo cliente SSE [${clientId}] para usuario: ${userId}. Total: ${clients.size}`
+    `🔌 Nuevo cliente SSE [${clientId}] para usuario: ${userId} en centro: ${centroMedicoId}. Total: ${clients.size}`
   );
 
-  // Iniciar el heartbeat si es el primer cliente
   if (clients.size === 1) {
     startHeartbeat();
   }
@@ -79,32 +96,40 @@ export function removeClient(controller: ReadableStreamDefaultController): void 
     }
   }
 
-  // Detener el heartbeat si no quedan clientes
   if (clients.size === 0) {
     stopHeartbeat();
   }
 }
-
-export function emitEvent(event: string, data: unknown): void {
+export function emitEvent(event: string, data: unknown, opts?: { centroMedicoId?: string, userId?: string }): void {
   const payload = encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   console.log(`📢 Emitiendo evento "${event}" a ${clients.size} clientes.`);
 
   let successCount = 0;
   let errorCount = 0;
+  const clientesAEliminar: string[] = [];
 
   for (const [id, client] of clients.entries()) {
+    // Filtrado condicional
+    if (opts?.centroMedicoId && client.centroMedicoId !== opts.centroMedicoId) continue;
+    if (opts?.userId && client.userId !== opts.userId) continue;
+
     try {
       client.controller.enqueue(payload);
       client.lastActivity = new Date();
-      successCount++;
-    } catch (error) {
-      console.error(`❌ Error enviando a [${id}]:`, (error as Error).message);
-      // El heartbeat se encargará de limpiar este cliente si la conexión está rota
-      errorCount++;
+    } catch {
+      clientesAEliminar.push(id);
     }
   }
-  // console.log(`📊 Resumen de emisión: ${successCount} éxitos, ${errorCount} errores.`);
+
+  // 🔥 Limpiar clientes que rompieron el stream
+  for (const id of clientesAEliminar) {
+    clients.delete(id);
+    console.log(`🧹 Cliente [${id}] eliminado tras error de envío.`);
+  }
+
+  if (clients.size === 0) stopHeartbeat();
 }
+
 
 export function getSSEStats() {
   const now = Date.now();

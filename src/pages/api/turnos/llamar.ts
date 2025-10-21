@@ -12,27 +12,33 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response('Faltan datos (turnoId, consultorio)', { status: 400 });
     }
 
-    // Buscar el nombre del paciente para el evento
+    // Buscar el nombre del paciente y el centro médico para el evento
     const result = await db
-      .select({ 
+      .select({
         nombre: pacientes.nombre,
-        apellido: pacientes.apellido
-       })
+        apellido: pacientes.apellido,
+        centroMedicoId: turnos.centroMedicoId, // <-- AÑADIDO
+      })
       .from(turnos)
       .leftJoin(pacientes, eq(turnos.pacienteId, pacientes.id))
       .where(eq(turnos.id, turnoId));
 
-    if (result.length === 0) {
-      return new Response('Turno no encontrado', { status: 404 });
+    if (result.length === 0 || !result[0].centroMedicoId) {
+      return new Response('Turno no encontrado o sin centro médico asignado', { status: 404 });
     }
 
     const nombreCompleto = `${result[0].nombre} ${result[0].apellido}`;
+    const centroMedicoId = result[0].centroMedicoId;
 
     // Emitir el evento que el portal del paciente y el turnero están escuchando
-    emitEvent('paciente-llamado', {
-      nombrePaciente: nombreCompleto,
-      consultorio: consultorio,
-    });
+    emitEvent(
+      'paciente-llamado',
+      {
+        nombrePaciente: nombreCompleto,
+        consultorio: consultorio,
+      },
+      { centroMedicoId: centroMedicoId } // <-- AÑADIDO
+    );
 
     console.log(`[API /llamar] Evento 'paciente-llamado' emitido para ${nombreCompleto}`);
 

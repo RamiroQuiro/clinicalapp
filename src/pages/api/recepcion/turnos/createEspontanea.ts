@@ -136,9 +136,9 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     };
 
     if (newTurno.estado === 'sala_de_espera') {
-      emitEvent(`paciente-en-espera_${centroMedicoId}`, creandoResponse);
+      emitEvent('paciente-en-espera', creandoResponse, { centroMedicoId: centroMedicoId });
     }
-    emitEvent(`turno-agendado_${centroMedicoId}`, creandoResponse);
+    emitEvent('turno-agendado', creandoResponse, { centroMedicoId: centroMedicoId });
 
     return createResponse(200, 'Turno creado con éxito', creandoResponse);
   } catch (error: any) {

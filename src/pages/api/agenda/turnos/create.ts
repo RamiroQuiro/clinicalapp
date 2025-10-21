@@ -59,8 +59,10 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     });
 
     const creandoResponse = {
-      hora: newTurno.horaAtencion,
+      hora: newTurno.fechaTurno.toISOString(), // DEVOLVEMOS FECHA COMPLETA ISO
       disponible: false,
+      centroMedicoId: user?.centroMedicoId,
+      userMedicoId: newTurno?.userMedicoId,
       turnoInfo: {
         id: newTurno.id,
         pacienteDocumento: isPaciente[0].dni,
@@ -79,7 +81,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       },
     };
 
-    emitEvent('turno-agendado', creandoResponse);
+    emitEvent('turno-agendado', creandoResponse, { centroMedicoId: user?.centroMedicoId });
     return createResponse(200, 'Turno creado con éxito', creandoResponse);
   } catch (error: any) {
     console.error('Error al crear el turno:', error);

@@ -40,7 +40,7 @@ export const GET: APIRoute = async ({ request, locals, redirect }) => {
         .where(eq(turnos.id, turnoId))
         .returning();
 
-      emitEvent('turno-actualizado', modificarTablaTurno);
+      emitEvent('turno-actualizado', modificarTablaTurno, { centroMedicoId: user.centroMedicoId });
     }
 
     console.log('atencion creada nueva', atencionNueva, 'turno modificado', modificarTablaTurno);

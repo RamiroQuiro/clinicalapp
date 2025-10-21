@@ -15,8 +15,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
       // --- CONEXIÓN ---
       // Se añade el controller al pool de clientes gestionado por sse.ts
       // que se encargará de los heartbeats y la limpieza.
-      const clientId = addClient(controller, userId);
-      console.log(`[API] Cliente SSE conectado [${clientId}] para usuario ${userId}`);
+      const clientId = addClient(controller, user.id, user.centroMedicoId);
+      console.log(`[API] Cliente SSE conectado [${clientId}] para usuario ${user.id} en centro ${user.centroMedicoId}`);
 
       // --- DESCONEXIÓN ---
       // Cuando el cliente cierra la pestaña o se aborta la petición,
