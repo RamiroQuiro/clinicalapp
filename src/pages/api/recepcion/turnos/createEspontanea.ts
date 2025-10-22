@@ -7,7 +7,7 @@ import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 
-const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const {
@@ -68,7 +68,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       pacienteId,
       otorgaUserId: user?.id,
       userMedicoId: medicoId,
-      fechaTurno,
+      fechaTurno: new Date(fechaTurno),
       horaTurno,
       duracion,
       motivoConsulta,
@@ -90,8 +90,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         horaLlegadaPaciente: new Date(fechaTurno),
         duracion: duracion,
         motivoConsulta: motivoConsulta,
-        estado: estado || 'pendiente',
-        tipoDeTurno: tipoDeTurno || 'programado',
+        estado: estado || 'sala_de_espera',
+        tipoDeTurno: tipoDeTurno || 'espontaneo',
         centroMedicoId: user?.centroMedicoId,
       })
       .returning();
@@ -108,13 +108,12 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       tableName: 'turnos',
       recordId: newTurno.id,
       newValue: newTurno,
-      description: `Se creó un nuevo turno (${newTurno.tipoDeTurno}) para el paciente ${
-        pacienteNombre || isPaciente[0].nombre
-      }`,
+      description: `Se creó un nuevo turno (${newTurno.tipoDeTurno}) para el paciente ${pacienteNombre || isPaciente[0].nombre
+        }`,
     });
     console.log('creando la respuesta del turno.... ⌛');
     const creandoResponse = {
-      hora: newTurno.horaAtencion,
+      hora: newTurno.fechaTurno.toISOString(),
       disponible: false,
       turnoInfo: {
         id: newTurno.id,

@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         horaAtencion: data.horaTurno,
         duracion: data.duracion,
         motivoConsulta: data.motivoConsulta,
-        estado: 'pendiente', // Estado inicial
+        estado: 'pendiente',
       })
       .returning();
     console.log('objeto nuevo turno -> ', newTurno);

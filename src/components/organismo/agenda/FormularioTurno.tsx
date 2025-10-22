@@ -7,6 +7,7 @@ import {
   resetNuevoTurno,
   setPaciente,
 } from '@/context/agenda.store';
+import APP_TIME_ZONE from '@/lib/timeZone';
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { showToast } from '@/utils/toast/toastShow';
 import { useStore } from '@nanostores/react';
@@ -16,7 +17,7 @@ import { Moon, Sun } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import BotonHora from './BotonHora';
 
-const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+
 
 // --- Interfaces ---
 interface PacienteResult {
@@ -113,6 +114,8 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
 
     setLoading(true);
     try {
+      console.log('fechaTurno', form.fechaTurno);
+      console.log('horaTurno', form.horaTurno);
       const fechaTurnoUtc = toZonedTime(
         `${format(new Date(form.fechaTurno!), 'yyyy-MM-dd')}T${form.horaTurno}`,
         APP_TIME_ZONE
@@ -135,10 +138,10 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
       if (!response.ok) {
         throw new Error(data.msg || 'Error al crear el turno');
       }
-      agendaDelDia.set([
-        ...agendaDelDia.get(),
-        { disponible: false, hora: fechaTurnoUtc.toISOString(), turnoInfo: data.data.turnoInfo },
-      ]);
+      // agendaDelDia.set([
+      //   ...agendaDelDia.get(),
+      //   { disponible: false, hora: fechaTurnoUtc.toISOString(), turnoInfo: data.data.turnoInfo },
+      // ]);
       showToast('Turno creado con éxito', { background: 'bg-green-600' });
 
       const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
@@ -237,8 +240,8 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
         </div>
       )}
       {horariosAgrupados.mañana.length > 0 &&
-      !datosNuevoTurno.get().fechaTurno &&
-      !datosNuevoTurno.get().horaTurno ? (
+        !datosNuevoTurno.get().fechaTurno &&
+        !datosNuevoTurno.get().horaTurno ? (
         <div className="w-full space-y-2">
           {horariosAgrupados.mañana.length > 0 && (
             <div>

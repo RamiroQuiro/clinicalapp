@@ -1,8 +1,8 @@
+import APP_TIME_ZONE from '@/lib/timeZone';
 import { format, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { es } from 'date-fns/locale';
 
-// --- CONFIGURACIÓN ---
-const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+
 
 /**
  * Convierte una fecha (string o Date) que está en UTC a la zona horaria de la aplicación.

@@ -57,7 +57,7 @@ export const turnos = sqliteTable(
     deleted_at: integer('deleted_at', { mode: 'timestamp' }),
   },
   t => [
-    [unique().on(t.fechaTurno, t.userMedicoId)],
+    [unique().on(t.fechaTurno, t.userMedicoId, t.pacienteId)],
     {
       idx_turnos_centro_fecha: index('idx_turnos_centro_fecha').on(t.centroMedicoId, t.fechaTurno),
       idx_turnos_fecha: index('idx_turnos_fecha').on(t.fechaTurno),

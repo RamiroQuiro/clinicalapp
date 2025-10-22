@@ -1,5 +1,5 @@
 import db from '@/db';
-import { pacientes, relacionesProfesionales, turnos, users } from '@/db/schema';
+import { pacientes, turnos, users } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { addMinutes } from 'date-fns';
@@ -156,7 +156,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
         const turnoFin = new Date(
           turnoInicio.getTime() + (turno.duracion || DURACION_SLOT_MINUTOS) * 60000
         );
-        return slotInicio < turnoFin && slotFin > turnoInicio && turno.estado !== 'cancelado';
+        // Modificación: Un turno ocupa un slot si su inicio está dentro del slot
+        // O si el slot se superpone con el turno
+        return (
+          (turnoInicio >= slotInicio && turnoInicio < slotFin) || // Turno empieza dentro del slot
+          (slotInicio >= turnoInicio && slotInicio < turnoFin)    // Slot empieza dentro del turno
+        ) && turno.estado !== 'cancelado';
       });
 
       if (turnoOcupante) {
@@ -192,6 +197,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       }
     });
 
+    console.log('Agenda completa generada:', agendaCompleta);
     return createResponse(200, 'Agenda del día obtenida exitosamente', agendaCompleta);
   } catch (error) {
     console.error('Error al obtener la agenda del día:', error);

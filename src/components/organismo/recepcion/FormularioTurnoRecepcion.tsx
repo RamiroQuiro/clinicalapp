@@ -1,11 +1,12 @@
 import Button from '@/components/atomos/Button';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
+import APP_TIME_ZONE from '@/lib/timeZone';
 import { showToast } from '@/utils/toast/toastShow';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import React, { useState } from 'react';
 
-const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+
 
 // TODO: Reemplazar con la lista de médicos del centro médico obtenida de la API
 const medicosDeEjemplo = [
@@ -71,8 +72,9 @@ export const FormularioTurnoRecepcion: React.FC = () => {
 
     setLoading(true);
     try {
-      const fechaTurnoUtc = toZonedTime(
-        `${format(new Date(form.fechaTurno!), 'yyyy-MM-dd')}T${form.horaTurno}`,
+      console.log('fechaTurno', form.fechaTurno);
+      console.log('horaTurno', form.horaTurno); const fechaTurnoUtc = toZonedTime(
+        `${format(new Date(form.fechaTurno), 'yyyy-MM-dd')}T${form.horaTurno}`,
         APP_TIME_ZONE
       );
 
