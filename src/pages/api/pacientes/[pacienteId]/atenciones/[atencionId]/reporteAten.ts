@@ -10,7 +10,7 @@ import {
 } from '@/db/schema';
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
-import generateReportHtml from '@/lib/templates/atencionReportHtml';
+import generateReportHtmlV4 from '@/lib/templates/atencionReportHtmlV4';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
@@ -111,7 +111,7 @@ export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
     console.log('Paso 1: Datos de la atención obtenidos.');
 
     // 3. Generar HTML
-    const htmlContent = generateReportHtml(reportData);
+    const htmlContent = generateReportHtmlV4(reportData);
     console.log('Paso 2: HTML generado.');
 
     // 4. Usar Puppeteer para generar el PDF

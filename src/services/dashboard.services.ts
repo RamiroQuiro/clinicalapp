@@ -113,8 +113,7 @@ export async function getDashboardData(userId: string) {
           gte(atenciones.created_at, inicioUltimos7dias),
           lte(atenciones.created_at, finUltimos7dias)
         )
-      )
-      .groupBy(sql`DATE(${atenciones.created_at})`, atenciones.motivoInicial),
+      ),
 
     // Query 6: Motivos más frecuentes (histórico)
     db
