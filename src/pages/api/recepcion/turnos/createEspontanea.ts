@@ -63,20 +63,20 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
   try {
     const turnoId = nanoIDNormalizador('Turno', 15);
-    console.log('iiciando la insercion de nuevo turno en el db.... ⌛', {
-      turnoId,
-      pacienteId,
-      otorgaUserId: user?.id,
-      userMedicoId: medicoId,
-      fechaTurno: new Date(fechaTurno),
-      horaTurno,
-      duracion,
-      motivoConsulta,
-      estado,
-      tipoDeTurno,
-      centroMedicoId: user?.centroMedicoId,
-      pacienteNombre,
-    });
+    // console.log('iiciando la insercion de nuevo turno en el db.... ⌛', {
+    //   turnoId,
+    //   pacienteId,
+    //   otorgaUserId: user?.id,
+    //   userMedicoId: medicoId,
+    //   fechaTurno: new Date(fechaTurno),
+    //   horaTurno,
+    //   duracion,
+    //   motivoConsulta,
+    //   estado,
+    //   tipoDeTurno,
+    //   centroMedicoId: user?.centroMedicoId,
+    //   pacienteNombre,
+    // });
 
     const [newTurno] = await db
       .insert(turnos)

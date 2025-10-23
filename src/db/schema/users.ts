@@ -11,6 +11,7 @@ export const users = sqliteTable(
     password: text('password').notNull(),
     mp: text('mp'),
     especialidad: text('especialidad'),
+    abreviatura: text('abreviatura'),
     rol: text('rol', {
       enum: ['superadmin', 'admin', 'profesional', 'recepcionista', 'dataEntry', 'reader'],
     })

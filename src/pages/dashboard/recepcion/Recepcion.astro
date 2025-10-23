@@ -4,13 +4,20 @@ import ContenedeorModal from '@/components/organismo/ContenedeorModal.astro';
 import ContenedorRenderizdoPantalla from '@/components/organismo/recepcion/ContenedorRenderizdoPantalla.tsx';
 import ConstendorStatsRec from '@/components/organismo/recepcion/ContenedorStatsRec';
 import { FormularioTurnoRecepcion } from '@/components/organismo/recepcion/FormularioTurnoRecepcion';
+import { fetchDataProfesionalesEntidad } from '@/services/agenda.services';
 const { user } = Astro.locals;
+let dataProfesionales;
+try {
+  dataProfesionales = await fetchDataProfesionalesEntidad(user.id);
+} catch (error) {
+  console.log(error);
+}
 ---
 
 <MainDashboard h1="Recepción">
   <div slot="botonera">
     <ContenedeorModal label="➕ Turno Rápido" title="Crear Turno Rápido" id="modal-agregar">
-      <FormularioTurnoRecepcion client:load />
+      <FormularioTurnoRecepcion client:load profesionalesRelacionados={dataProfesionales} />
     </ContenedeorModal>
   </div>
   <ConstendorStatsRec client:load />

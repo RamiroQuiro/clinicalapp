@@ -42,7 +42,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         estado: 'pendiente',
       })
       .returning();
-    console.log('objeto nuevo turno -> ', newTurno);
 
     const [dataProfesional] = await db
       .select()
