@@ -7,22 +7,20 @@ import {
 } from '@/utils/timesUtils';
 import { and, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
 
-export async function getDashboardData(userId: string) {
+export async function getDashboardData(userId: string, centroMedicoId: string) {
   // --- 1. RANGOS DE FECHAS ---
-  // Obtener timestamps
-  const mesActualTimestamps = getInicioYFinDeMesActual(); // Devuelve ms
-  const mesAnteriorTimestamps = getInicioYFinDeMesAnterior(); // Devuelve segundos
-  const ultimos7diasTimestamps = getUltimosNDias(7);
+  const mesActual = getInicioYFinDeMesActual();
+  const mesAnterior = getInicioYFinDeMesAnterior();
+  const ultimos7dias = getUltimosNDias(7);
 
-  // Convertir a strings ISO para consistencia en las queries
-  const inicioUltimos7dias = new Date(ultimos7diasTimestamps.desde);
-  const finUltimos7dias = new Date(ultimos7diasTimestamps.hasta);
-  const inicioMesActual = new Date(mesActualTimestamps.inicio);
-  const finMesActual = new Date(mesActualTimestamps.fin);
-  const inicioMesAnterior = new Date(mesAnteriorTimestamps.inicio * 1000);
-  const finMesAnterior = new Date(mesAnteriorTimestamps.fin * 1000);
+  const inicioMesActual = new Date(mesActual.inicio);
+  const finMesActual = new Date(mesActual.fin);
+  const inicioMesAnterior = new Date(mesAnterior.inicio * 1000);
+  const finMesAnterior = new Date(mesAnterior.fin * 1000);
+  const inicioUltimos7dias = new Date(ultimos7dias.desde);
+  const finUltimos7dias = new Date(ultimos7dias.hasta);
 
-  // --- 2. EJECUCIÓN DE QUERIES EN PARALELO ---
+  // --- 2. QUERIES EN PARALELO ---
   const [
     pacientesData,
     atencionesMes,
@@ -34,149 +32,137 @@ export async function getDashboardData(userId: string) {
     promedioDuracion,
     atencionesHoy,
   ] = await Promise.all([
-    // Query 0: Total de pacientes (histórico)
-    db
-      .select({ total: count() })
+    // 0️⃣ Total pacientes históricos
+    db.select({ total: count() })
       .from(pacienteProfesional)
-      .where(eq(pacienteProfesional.userId, userId)),
+      .where(and(
+        eq(pacienteProfesional.userId, userId),
+        eq(pacienteProfesional.centroMedicoId, centroMedicoId)
+      )),
 
-    // Query 1: Atenciones del mes actual
-    db
-      .select({ total: count() })
+    // 1️⃣ Atenciones del mes actual
+    db.select({ total: count() })
       .from(atenciones)
-      .where(
-        and(
-          eq(atenciones.userIdMedico, userId),
-          gte(atenciones.created_at, inicioMesActual),
-          lte(atenciones.created_at, finMesActual)
-        )
-      ),
+      .where(and(
+        eq(atenciones.userIdMedico, userId),
+        eq(atenciones.centroMedicoId, centroMedicoId),
+        gte(atenciones.fecha, inicioMesActual),
+        lte(atenciones.fecha, finMesActual)
+      )),
 
-    // Query 2: Atenciones del mes pasado
-    db
-      .select({ total: count() })
+    // 2️⃣ Atenciones del mes pasado
+    db.select({ total: count() })
       .from(atenciones)
-      .where(
-        and(
-          eq(atenciones.userIdMedico, userId),
-          gte(atenciones.created_at, inicioMesAnterior),
-          lte(atenciones.created_at, finMesAnterior)
-        )
-      ),
+      .where(and(
+        eq(atenciones.userIdMedico, userId),
+        eq(atenciones.centroMedicoId, centroMedicoId),
+        gte(atenciones.fecha, inicioMesAnterior),
+        lte(atenciones.fecha, finMesAnterior)
+      )),
 
-    // Query 3: Nuevos pacientes del mes actual
-    db
-      .select({ total: count() })
+    // 3️⃣ Nuevos pacientes del mes actual
+    db.select({ total: count() })
       .from(pacientes)
       .innerJoin(pacienteProfesional, eq(pacienteProfesional.pacienteId, pacientes.id))
-      .where(
-        and(
-          eq(pacienteProfesional.userId, userId),
-          gte(pacientes.created_at, inicioMesActual),
-          lte(pacientes.created_at, finMesActual)
-        )
-      ),
+      .where(and(
+        eq(pacienteProfesional.userId, userId),
+        eq(pacienteProfesional.centroMedicoId, centroMedicoId), // CORREGIDO
+        gte(pacientes.created_at, inicioMesActual),
+        lte(pacientes.created_at, finMesActual)
+      )),
 
-    // Query 4: Nuevos pacientes del mes pasado
-    db
-      .select({ total: count() })
+    // 4️⃣ Nuevos pacientes del mes pasado
+    db.select({ total: count() })
       .from(pacientes)
       .innerJoin(pacienteProfesional, eq(pacienteProfesional.pacienteId, pacientes.id))
-      .where(
-        and(
-          eq(pacienteProfesional.userId, userId),
-          gte(pacientes.created_at, inicioMesAnterior),
-          lte(pacientes.created_at, finMesAnterior)
-        )
-      ),
+      .where(and(
+        eq(pacienteProfesional.userId, userId),
+        eq(pacienteProfesional.centroMedicoId, centroMedicoId), // CORREGIDO
+        gte(pacientes.created_at, inicioMesAnterior),
+        lte(pacientes.created_at, finMesAnterior)
+      )),
 
-    // Query 5: Atenciones últimos 7 días (periodo móvil)
-    db
-      .select({
-        pacienteId: atenciones.pacienteId,
-        id: atenciones.id,
-        nombrePaciente: sql`CONCAT(pacientes.nombre, ' ', pacientes.apellido)`,
-        fecha: atenciones.fecha,
-        motivoInicial: atenciones.motivoInicial,
-        inicioAtencion: atenciones.inicioAtencion,
-        obraSocial: historiaClinica.obraSocial,
-        estado: atenciones.estado,
-        finAtencion: atenciones.finAtencion,
-        cantidad: count(),
-      })
+    // 5️⃣ Atenciones últimos 7 días
+    db.select({
+      id: atenciones.id,
+      pacienteId: atenciones.pacienteId,
+      nombrePaciente: sql`(pacientes.nombre || ' ' || pacientes.apellido)`,
+      fecha: atenciones.fecha,
+      motivoInicial: atenciones.motivoInicial,
+      inicioAtencion: atenciones.inicioAtencion,
+      finAtencion: atenciones.finAtencion,
+      obraSocial: historiaClinica.obraSocial,
+      estado: atenciones.estado,
+    })
       .from(atenciones)
       .innerJoin(pacientes, eq(pacientes.id, atenciones.pacienteId))
       .innerJoin(historiaClinica, eq(historiaClinica.pacienteId, atenciones.pacienteId))
-      .where(
-        and(
-          eq(atenciones.userIdMedico, userId),
-          gte(atenciones.created_at, inicioUltimos7dias),
-          lte(atenciones.created_at, finUltimos7dias)
-        )
-      ),
+      .where(and(
+        eq(atenciones.userIdMedico, userId),
+        eq(atenciones.centroMedicoId, centroMedicoId), // CORREGIDO
+        gte(atenciones.fecha, inicioUltimos7dias), // CORREGIDO
+        lte(atenciones.fecha, finUltimos7dias) // CORREGIDO
+      ))
+      .orderBy(desc(atenciones.fecha))
+      .limit(20),
 
-    // Query 6: Motivos más frecuentes (histórico)
-    db
-      .select({
-        motivoInicial: atenciones.motivoInicial,
-        cantidad: count(),
-      })
+    // 6️⃣ Motivos más frecuentes
+    db.select({
+      motivoInicial: atenciones.motivoInicial,
+      cantidad: count(),
+    })
       .from(atenciones)
-      .where(eq(atenciones.userIdMedico, userId))
+      .where(and( // CORREGIDO
+        eq(atenciones.userIdMedico, userId),
+        eq(atenciones.centroMedicoId, centroMedicoId)
+      ))
       .groupBy(atenciones.motivoInicial)
       .orderBy(desc(count()))
       .limit(5),
 
-    // Query 7: Promedio de duración de las atenciones en minutos (histórico)
-    db
-      .select({
-        promedio: sql<number>`AVG((julianday(finAtencion) - julianday(inicioAtencion)) * 24 * 60)`,
-      })
+    // 7️⃣ Promedio duración (en minutos)
+    db.select({
+      promedio: sql<number>`AVG(((${atenciones.finAtencion} - ${atenciones.inicioAtencion}) / 60.0))`,
+    })
       .from(atenciones)
-      .where(eq(atenciones.userIdMedico, userId)),
+      .where(and( // CORREGIDO
+        eq(atenciones.userIdMedico, userId),
+        eq(atenciones.centroMedicoId, centroMedicoId)
+      )),
 
-    // Query 8: Atenciones del día
-    db
-      .select({
-        id: atenciones.id,
-        pacienteId: atenciones.pacienteId,
-        fecha: atenciones.created_at,
-        motivoInicial: atenciones.motivoInicial,
-        turno:
-          sql<string>`CASE WHEN CAST(strftime('%H', ${atenciones.created_at}) AS INTEGER) < 13 THEN 'Mañana' ELSE 'Tarde' END`.as(
-            'turno'
-          ),
-      })
+    // 8️⃣ Atenciones del día (turno mañana/tarde)
+    db.select({
+      id: atenciones.id,
+      pacienteId: atenciones.pacienteId,
+      fecha: atenciones.fecha,
+      motivoInicial: atenciones.motivoInicial,
+      turno: sql<string>`
+        CASE 
+          WHEN CAST(strftime('%H', datetime(${atenciones.fecha}, 'unixepoch')) AS INTEGER) < 13 
+          THEN 'Mañana' 
+          ELSE 'Tarde' 
+        END
+      `,
+    })
       .from(atenciones)
-      .where(
-        and(
-          eq(atenciones.userIdMedico, userId),
-          gte(atenciones.created_at, sql`strftime('%Y-%m-%dT00:00:00Z', 'now')`),
-          lte(atenciones.created_at, sql`strftime('%Y-%m-%dT23:59:59Z', 'now')`)
-        )
-      ),
+      .where(and(
+        eq(atenciones.userIdMedico, userId),
+        eq(atenciones.centroMedicoId, centroMedicoId), // CORREGIDO
+        gte(atenciones.fecha, sql`strftime('%s', date('now', 'start of day'))`), // CORREGIDO
+        lte(atenciones.fecha, sql`strftime('%s', date('now', '+1 day', 'start of day', '-1 second'))`) // CORREGIDO
+      )),
   ]);
 
-  // console.log('data dashboard', {
-  //   pacientesData,
-  //   atencionesMes,
-  //   atencionesMesPasado,
-  //   nuevosPacientesMes,
-  //   nuevosPacientesMesPasado,
-  //   atencionesUlt7d,
-  //   motivos,
-  //   promedioDuracion,
-  //   atencionesHoy,
-  // });
-
-  // --- 3. PROCESAMIENTO Y RETORNO DE DATOS ---
+  // --- 3. PROCESAMIENTO ---
   const ultimasAtencionesProcesadas = atencionesUlt7d
-    .map(atencion => ({
-      ...atencion,
-      fecha: atencion.fecha.toISOString(),
+    .map(a => ({
+      ...a,
+      fecha: a.fecha instanceof Date ? a.fecha.toISOString() : a.fecha,
     }))
-    .sort((a, b) => b.fecha.localeCompare(a.fecha))
+    .sort((a, b) => (a.fecha < b.fecha ? 1 : -1))
     .slice(0, 10);
+
+  // --- 4. RETORNO ---
   return {
     stats: [
       {

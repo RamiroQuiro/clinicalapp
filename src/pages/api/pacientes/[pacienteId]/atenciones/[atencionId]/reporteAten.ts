@@ -5,6 +5,7 @@ import {
   historiaClinica,
   medicamento,
   pacientes,
+  preferenciaPerfilUser,
   signosVitales,
   users,
 } from '@/db/schema';
@@ -20,17 +21,12 @@ export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
   const { pacienteId, atencionId } = params;
   const ipAddress = request.headers.get('x-forwarded-for') || undefined;
   const userAgent = request.headers.get('user-agent') || undefined;
-  console.log('ingresando a la ruta de pdf', params);
-  // 1. Autenticación
+
   const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
-  if (!sessionId) {
-    return createResponse(401, 'No autorizado');
-  }
+  if (!sessionId) return createResponse(401, 'No autorizado');
+
   const { user } = locals;
-  const { session } = await lucia.validateSession(sessionId);
-  if (!session || !user) {
-    return createResponse(401, 'No autorizado');
-  }
+  if (!user) return createResponse(401, 'No autorizado');
 
   if (!pacienteId || !atencionId) {
     return createResponse(400, 'Se requieren el ID del paciente y de la atención');
@@ -38,18 +34,19 @@ export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
 
   let browser;
   try {
-    // 2. Obtener datos de la atención
+    // 1. Obtener todos los datos en paralelo
     const [atencionData] = await db
       .select({
         id: atenciones.id,
         motivoConsulta: atenciones.motivoConsulta,
         sintomas: atenciones.sintomas,
         observaciones: atenciones.observaciones,
+        planSeguir: atenciones.planSeguir,
         estado: atenciones.estado,
         created_at: atenciones.created_at,
-        inicioConsulta: atenciones.inicioAtencion,
-        finConsulta: atenciones.finAtencion,
-        duracionConsulta: atenciones.duracionAtencion,
+        inicioAtencion: atenciones.inicioAtencion,
+        finAtencion: atenciones.finAtencion,
+        duracionAtencion: atenciones.duracionAtencion,
         nombreDoctor: users.nombre,
         apellidoDoctor: users.apellido,
       })
@@ -83,6 +80,11 @@ export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
       return createResponse(404, 'Paciente no encontrado');
     }
 
+    const [userPreferences] = await db
+      .select()
+      .from(preferenciaPerfilUser)
+      .where(eq(preferenciaPerfilUser.userId, user.id));
+
     const [signosVitalesAtencion] = await db
       .select()
       .from(signosVitales)
@@ -106,23 +108,19 @@ export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
         signosVitales: signosVitalesAtencion || null,
       },
       pacienteData: pacienteData,
+      preferencias: userPreferences?.preferencias || {},
     };
 
-    console.log('Paso 1: Datos de la atención obtenidos.');
-
-    // 3. Generar HTML
+    // 2. Generar HTML
     const htmlContent = generateReportHtmlV4(reportData);
-    console.log('Paso 2: HTML generado.');
 
-    // 4. Usar Puppeteer para generar el PDF
-    console.log('Paso 3: Iniciando Puppeteer...');
+    // 3. Usar Puppeteer para generar el PDF
     browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-    console.log('Paso 4: PDF generado en buffer.');
 
-    // 5. Registrar evento de auditoría
+    // 4. Registrar evento de auditoría
     await logAuditEvent({
       userId: user.id,
       actionType: 'EXPORT',
@@ -133,8 +131,7 @@ export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
       userAgent,
     });
 
-    // 6. Enviar el PDF como respuesta
-    console.log('Paso 5: Enviando respuesta PDF.');
+    // 5. Enviar el PDF como respuesta
     return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
