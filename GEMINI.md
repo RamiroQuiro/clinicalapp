@@ -320,3 +320,16 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
     *   Se integró el buscador en el formulario `FormularioMedicamentos.tsx` para autocompletar los datos al seleccionar un resultado.
     *   Se rediseñó el layout de dicho formulario para mostrar los campos de texto de forma horizontal.
 *   **Próximos Pasos**: El usuario descargará más archivos CSV de ANMAT de años anteriores. El script de importación está listo para ser reutilizado y así enriquecer la base de datos.
+---
+## Sesión 16: 2025-10-23
+
+*   **Objetivo**: Implementar y depurar el flujo de creación de turnos espontáneos desde la recepción.
+*   **Implementación - Turnos Espontáneos**:
+    *   Se trabajó sobre el componente `FormularioTurnoRecepcion.tsx` para permitir la creación de turnos que se asignan directamente al estado "sala_de_espera".
+*   **Bug Fix - Manejo de Fechas (Timezone)**:
+    *   Se solucionó un bug crítico en el formulario que causaba que la fecha del turno se guardara como el día anterior. El problema se resolvió ajustando la manera en que se construye el objeto `Date` para evitar una conversión incorrecta de zona horaria.
+    *   Se corrigió el campo `horaLlegadaPaciente` para que almacene una marca de tiempo (`timestamp`) completa, asegurando la precisión del registro de llegada.
+*   **Refactorización Backend (API de Agenda)**:
+    *   Se refactorizó el endpoint `GET /api/agenda/index.ts` para mejorar la visualización de los turnos del día, incluyendo los espontáneos.
+    *   **Lógica Multi-Tenant**: Se consolidó la lógica para que la API filtre los turnos correctamente según el `centroMedicoId`, respetando la separación entre distintas entidades de salud.
+    *   **Corrección de Visualización**: Se solucionó un error que impedía mostrar correctamente los turnos espontáneos. La nueva implementación previene la duplicación de turnos y asegura que la lista final de la agenda se devuelva siempre ordenada cronológicamente.

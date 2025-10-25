@@ -1,12 +1,13 @@
 import db from '@/db';
-import { pacientes, turnos, users } from '@/db/schema';
+import { pacientes, turnos, users, usersCentrosMedicos } from '@/db/schema';
+import APP_TIME_ZONE from '@/lib/timeZone';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { addMinutes } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
-const APP_TIME_ZONE = 'America/Argentina/Buenos_Aires';
+
 
 export const GET: APIRoute = async ({ locals, request }) => {
   if (!locals.session) {
@@ -42,12 +43,13 @@ export const GET: APIRoute = async ({ locals, request }) => {
       // Recepción: intentar obtener profesionales del centro médico
       const relaciones = await db
         .select()
-        .from(relacionesProfesionales)
-        .where(eq(relacionesProfesionales.centroMedicoId, centroMedicoId));
+        .from(usersCentrosMedicos)
+        .where(eq(usersCentrosMedicos.centroMedicoId, centroMedicoId));
 
+      console.log('relaciones', relaciones);
       // Si no hay relaciones, no es error - simplemente no hay profesionales asignados
       if (relaciones.length > 0) {
-        profesionalesIds = relaciones.map(relacion => relacion.profesionalId);
+        profesionalesIds = relaciones.map(relacion => relacion.userId);
 
         // Si se proporciona un userId específico, validar que pertenezca al centro
         if (userId) {
@@ -111,11 +113,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
         tipoTurno: turnos.tipoTurno,
         especialidadProfesional: users.especialidad,
         horaLlegadaPaciente: turnos.horaLlegadaPaciente,
+        tipoDeTurno: turnos.tipoDeTurno,
         userMedicoId: users.id,
         profesionalNombre: users.nombre,
         profesionalApellido: users.apellido,
         estado: turnos.estado,
-        horaTurno: turnos.fechaTurno,
+        horaTurno: turnos.horaAtencion,
         motivoConsulta: turnos.motivoConsulta,
       })
       .from(turnos)
@@ -129,6 +132,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
           eq(turnos.centroMedicoId, centroMedicoId)
         )
       );
+
 
     // Generar slots y construir agenda...
     const slotsDelDia = [];
@@ -157,12 +161,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         const turnoFin = new Date(
           turnoInicio.getTime() + (turno.duracion || DURACION_SLOT_MINUTOS) * 60000
         );
-        // Modificación: Un turno ocupa un slot si su inicio está dentro del slot
-        // O si el slot se superpone con el turno
-        return (
-          (turnoInicio >= slotInicio && turnoInicio < slotFin) || // Turno empieza dentro del slot
-          (slotInicio >= turnoInicio && slotInicio < turnoFin)    // Slot empieza dentro del turno
-        ) && turno.estado !== 'cancelado';
+        return slotInicio < turnoFin && slotFin > turnoInicio && turno.estado !== 'cancelado';
       });
 
       if (turnoOcupante) {
@@ -182,6 +181,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             userMedicoId: turnoOcupante.userMedicoId,
             profesionalNombre: turnoOcupante.profesionalNombre,
             especialidadProfesional: turnoOcupante.especialidadProfesional,
+            tipoDeTurno: turnoOcupante.tipoDeTurno,
             profesionalApellido: turnoOcupante.profesionalApellido,
             motivoConsulta: turnoOcupante.motivoConsulta,
             horaTurno: turnoOcupante.horaTurno,
@@ -199,8 +199,53 @@ export const GET: APIRoute = async ({ locals, request }) => {
       }
     });
 
-    console.log('Agenda completa generada:', agendaCompleta);
-    return createResponse(200, 'Agenda del día obtenida exitosamente', agendaCompleta);
+    // Identificar los turnos que ya fueron asignados a un slot para no duplicarlos.
+    const turnosAsignadosEnSlots = agendaCompleta.reduce((acc, slot) => {
+      if (slot.turnoInfo) {
+        acc.add(slot.turnoInfo.id);
+      }
+      return acc;
+    }, new Set());
+
+    // Filtrar solo los turnos espontáneos o sobreturnos que NO han sido ya asignados.
+    const turnosExtraNoAsignados = turnosDelDia.filter(
+      (turno) =>
+        (turno.tipoDeTurno === 'espontaneo' || turno.tipoDeTurno === 'sobreturno') &&
+        !turnosAsignadosEnSlots.has(turno.id)
+    );
+
+    // Mapear esos turnos extra a la estructura de la agenda.
+    const estruturaTurnosExtra = turnosExtraNoAsignados.map((turno) => {
+      return {
+        hora: turno.fechaTurno.toISOString(),
+        disponible: false,
+        userMedicoId: turno.userMedicoId,
+        turnoInfo: {
+          id: turno.id,
+          pacienteId: turno.pacienteId,
+          pacienteCelular: turno.pacienteCelular,
+          pacienteNombre: turno.pacienteNombre,
+          horaLlegadaPaciente: turno.horaLlegadaPaciente,
+          pacienteApellido: turno.pacienteApellido,
+          pacienteDocumento: turno.pacienteDocumento,
+          userMedicoId: turno.userMedicoId,
+          profesionalNombre: turno.profesionalNombre,
+          especialidadProfesional: turno.especialidadProfesional,
+          tipoDeTurno: turno.tipoDeTurno,
+          profesionalApellido: turno.profesionalApellido,
+          motivoConsulta: turno.motivoConsulta,
+          horaTurno: turno.horaTurno,
+          duracion: turno.duracion,
+          estado: turno.estado,
+        },
+      };
+    });
+
+    // Combinar la agenda de slots con los turnos extra y ordenar cronológicamente.
+    const agendaCompletisima = [...agendaCompleta, ...estruturaTurnosExtra];
+    agendaCompletisima.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
+
+    return createResponse(200, 'Agenda del día obtenida exitosamente', agendaCompletisima);
   } catch (error) {
     console.error('Error al obtener la agenda del día:', error);
     return createResponse(500, 'Error interno del servidor');

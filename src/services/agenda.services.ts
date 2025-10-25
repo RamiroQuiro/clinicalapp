@@ -11,6 +11,8 @@ const fetchDataProfesionalesEntidad = async (userId: string) => {
         id: usersCentrosMedicos.userId,
         nombre: users.nombre,
         apellido: users.apellido,
+        especialidad: users.especialidad,
+        abreviatura: users.abreviatura,
       })
       .from(usersCentrosMedicos)
       .innerJoin(users, eq(usersCentrosMedicos.userId, users.id))
@@ -32,3 +34,4 @@ const fetchDataProfesionalesEntidad = async (userId: string) => {
 };
 
 export { fetchDataProfesionalesEntidad };
+

@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 // TODO: Reemplazar con la lista de médicos del centro médico obtenida de la API
 const medicosDeEjemplo = [
   { id: 'sqss31m17w99rkj', nombre: 'Dr. Ramiro' },
-  { id: 'another-doc-id', nombre: 'Dra. Lucia' }, // ID Corregido
+  { id: 'oojr7ioig35c2gl', nombre: 'Dr. Exequiel' }, // ID Corregido
 ];
 
 interface PacienteResult {
@@ -32,10 +32,22 @@ const initialState = {
   medicoId: medicosDeEjemplo[0].id, // Default al primer médico
 };
 
-export const FormularioTurnoRecepcion: React.FC = () => {
+interface Props {
+  profesionalesRelacionados: [{
+    id: string;
+    nombre: string;
+    especialidad?: string;
+    abreviatura?: string;
+    apellido: string;
+  }];
+}
+export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacionados }) => {
   const [form, setForm] = useState(initialState);
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [profesionalesDisponibles, setprofesionalesDisponibles] = useState(profesionalesRelacionados)
+
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -72,16 +84,15 @@ export const FormularioTurnoRecepcion: React.FC = () => {
 
     setLoading(true);
     try {
-      console.log('fechaTurno', form.fechaTurno);
-      console.log('horaTurno', form.horaTurno); const fechaTurnoUtc = toZonedTime(
-        `${format(new Date(form.fechaTurno), 'yyyy-MM-dd')}T${form.horaTurno}`,
+      const fechaTurnoUtc = toZonedTime(
+        `${form.fechaTurno}T${form.horaTurno}`,
         APP_TIME_ZONE
       );
 
       const payload = {
         ...form,
         fechaTurno: fechaTurnoUtc.toISOString(),
-        horaLlegadaPaciente: fechaTurnoUtc.toISOString(),
+        horaLlegadaPaciente: new Date().toISOString(),
         estado: 'sala_de_espera',
       };
       console.log('ESTE ES EL payload del formulairo de espontaneas ->', payload);
@@ -170,11 +181,11 @@ export const FormularioTurnoRecepcion: React.FC = () => {
             id="medicoId"
             value={form.medicoId}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md capitalize shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           >
-            {medicosDeEjemplo.map(medico => (
-              <option key={medico.id} value={medico.id}>
-                {medico.nombre}
+            {profesionalesDisponibles.map(medico => (
+              <option key={medico.id} value={medico.id} className='capi'>
+                {medico.especialidad} {medico.abreviatura} {medico.nombre} {medico.apellido}
               </option>
             ))}
           </select>

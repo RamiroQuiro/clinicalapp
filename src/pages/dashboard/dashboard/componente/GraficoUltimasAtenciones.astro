@@ -18,13 +18,20 @@ const { data } = Astro.props;
 <script define:vars={{ data }}>
   // Agrupar los datos por fecha y separar por turno
   const datosAgrupados = data.reduce((acc, curr) => {
-    const fecha = curr.fecha;
-    const hora = new Date(curr.fecha).getHours();
+    const fechaObj = new Date(curr.fecha);
+    const fecha = fechaObj.toISOString().split('T')[0];
+    const hora = fechaObj.getHours();
 
     if (!acc[fecha]) {
       acc[fecha] = { mañana: 0, tarde: 0 };
     }
-    acc[fecha][hora < 12 ? 'mañana' : 'tarde'] = curr.cantidad;
+
+    if (hora < 12) {
+      acc[fecha].mañana += 1;
+    } else {
+      acc[fecha].tarde += 1;
+    }
+
     return acc;
   }, {});
   // Convertir a un array para el gráfico
@@ -35,6 +42,8 @@ const { data } = Astro.props;
       ...turnos, // mañana y tarde}
     };
   });
+  console.log('datos para grafico', datosParaGrafico);
+
   const initGrafico = () => {
     const labels = datosParaGrafico.map(data => {
       const fecha = new Date(data.fecha);
