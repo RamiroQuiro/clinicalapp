@@ -108,6 +108,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         pacienteApellido: pacientes.apellido,
         pacienteDocumento: pacientes.dni,
         pacienteCelular: pacientes.celular,
+        tipoTurno: turnos.tipoTurno,
         especialidadProfesional: users.especialidad,
         horaLlegadaPaciente: turnos.horaLlegadaPaciente,
         userMedicoId: users.id,
@@ -150,7 +151,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
     const agendaCompleta = slotsDelDia.map(slotInicio => {
       const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MINUTOS * 60000);
-
+      console.log('turnos del dia->', turnosDelDia)
       const turnoOcupante = turnosDelDia.find(turno => {
         const turnoInicio = new Date(turno.fechaTurno);
         const turnoFin = new Date(
@@ -175,6 +176,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             pacienteCelular: turnoOcupante.pacienteCelular,
             pacienteNombre: turnoOcupante.pacienteNombre,
             horaLlegadaPaciente: turnoOcupante.horaLlegadaPaciente,
+            tipoTurno: turnoOcupante.tipoTurno,
             pacienteApellido: turnoOcupante.pacienteApellido,
             pacienteDocumento: turnoOcupante.pacienteDocumento,
             userMedicoId: turnoOcupante.userMedicoId,
