@@ -1,7 +1,8 @@
 ---
 import { twMerge } from 'tailwind-merge';
+import Button from './Button';
 
-const { title, dataIds, h1, pacienteId, classMain, classContent } = Astro.props;
+const { title, dataIds, h1, pacienteId, classMain, classContent, isBack } = Astro.props;
 const { user, session } = Astro.locals;
 
 const containerClasses = twMerge(
@@ -10,16 +11,27 @@ const containerClasses = twMerge(
 );
 
 const contentClasses = twMerge(
-  'w-full md:px-4 px-2 flex flex-col items-center justify-start rounded-lg h-full',
+  'w-full md:px-4 lg:px-6 xl:px-8 px-2 flex flex-col items-center justify-start rounded-lg h-full',
   classContent
 );
+
+const handleBack = () => {
+  history.back();
+};
 ---
 
 <div data-usisisi={user?.id} data-pasisisi={pacienteId ? pacienteId : 0} class={containerClasses}>
   {
     h1 && (
-      <div class="w-full py-2 md:px-4 px-2 flex items-center justify-between ">
-        <h1 class="text-lg  font-semibold text-primary-textoTitle ">{h1}</h1>
+      <div class="w-full py-2 md:px-4 lg:px-6 xl:px-8 px-2 flex items-center justify-between ">
+        <div class="flex items-center gap-2">
+          {isBack && (
+            <Button onClick={handleBack} variant="outline" className="h-8  w-8">
+              ←
+            </Button>
+          )}
+          <h1 class="text-lg  font-semibold text-primary-textoTitle ">{h1}</h1>
+        </div>
         <div>
           <slot name="botonera" />
         </div>

@@ -1,8 +1,108 @@
 ---
-import LayoutDash from '../../../components/layouts/LayoutDash.astro';
-import Ajustes from './components/ajustes.astro';
+import Button from '@/components/atomos/Button';
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/organismo/Card';
+import {
+  ArrowRight,
+  Bell,
+  Calendar,
+  Database,
+  DollarSign,
+  FileText,
+  Settings,
+  Shield,
+  Stethoscope,
+  Users,
+} from 'lucide-react';
+
+const settingsCategories = [
+  {
+    id: 'general',
+    name: 'Ajustes Generales',
+    description: 'Configuración básica del club, información de contacto y branding.',
+    icon: Settings,
+  },
+  {
+    id: 'usuarios',
+    name: 'Gestión de Usuarios',
+    description: 'Administra roles, permisos y accesos de los usuarios del sistema.',
+    icon: Users,
+  },
+  {
+    id: 'agenda',
+    name: 'Agenda y Turnos',
+    description: 'Configura horarios, duración de turnos y tipos de consulta.',
+    icon: Calendar,
+  },
+  {
+    id: 'notificaciones',
+    name: 'Notificaciones',
+    description: 'Personaliza plantillas de email, SMS y preferencias de alerta.',
+    icon: Bell,
+  },
+
+  {
+    id: 'datos',
+    name: 'Gestión de Datos',
+    description: 'Opciones de respaldo, restauración y políticas de retención de datos.',
+    icon: Database,
+  },
+
+  {
+    id: 'historia-clinica',
+    name: 'Historia Clínica',
+    description: 'Personaliza campos, secciones y plantillas de la historia clínica.',
+    icon: Stethoscope,
+  },
+  {
+    id: 'plantillas',
+    name: 'Plantillas de Documentos',
+    description: 'Crea y gestiona plantillas para recetas, certificados e informes.',
+    icon: FileText,
+  },
+  {
+    id: 'facturacion',
+    name: 'Facturación y Aranceles',
+    description: 'Define aranceles de prestaciones y configura datos para facturación.',
+    icon: DollarSign,
+  },
+  {
+    id: 'seguridad',
+    name: 'Seguridad',
+    description: 'Configura 2FA, políticas de contraseñas y auditoría de accesos.',
+    icon: Shield,
+  },
+];
 ---
 
-<LayoutDash>
-  <Ajustes />
+<LayoutDash title="Ajustes del Sistema">
+  <MainDashboard title="Ajustes del Sistema" h1="Ajustes del Sistema">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {
+        settingsCategories.map(category => {
+          const Icono = category?.icon;
+          return (
+            <Card className="border-primary-border shadow-card flex flex-col h-full justify-between">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icono className="h-5 w-5 text-primary-300" />
+                  <span class="text-lg font-bold">{category?.name}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p class="text-sm text-muted-foreground line-clamp-2">{category?.description}</p>
+                <a href={`/dashboard/ajustes/${category?.id}`}>
+                  <Button variant="indigo" className="mt-4 w-full gap-2">
+                    Configurar
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+          );
+        })
+      }
+    </div>
+  </MainDashboard>
 </LayoutDash>

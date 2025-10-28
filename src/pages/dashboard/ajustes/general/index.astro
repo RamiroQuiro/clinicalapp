@@ -1,0 +1,13 @@
+---
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import FormConfiguracionCentro from './components/FormConfiguracionCentro';
+---
+
+<LayoutDash title="Ajustes Generales">
+  <MainDashboard title="Ajustes Generales" h1="Ajustes Generales">
+    <div class="p-4 w-1/2">
+      <FormConfiguracionCentro client:load />
+    </div>
+  </MainDashboard>
+</LayoutDash>

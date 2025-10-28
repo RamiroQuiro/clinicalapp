@@ -1,0 +1,33 @@
+---
+import Button2 from '@/components/atomos/Button2.astro';
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import ContenedorDiv1 from '@/components/moleculas/ContenedorDiv1.astro';
+import ContenedorModal from '@/components/organismo/ContenedeorModal.astro';
+import ContenedorTablaUsuarios from './components/ContenedorTablaUsuarios.astro';
+import FormNuevoUsuario from './components/FormNuevoUsuario';
+
+const { user } = Astro.locals;
+// console.log('estoy en paciente.astro', user);
+---
+
+<LayoutDash title="Usuarios">
+  <MainDashboard title="Usuarios" h1="Usuarios">
+    <div slot="botonera">
+      <ContenedorModal
+        slot="botonera"
+        label="Crear Usuario"
+        id="dialogUsuario"
+        title="Crear Usuario"
+      >
+        <FormNuevoUsuario onClose={() => {}} />
+      </ContenedorModal>
+    </div>
+    <ContenedorDiv1>
+      <div class="w-full flex justify-between items-center gap-4">
+        <Button2>pdf</Button2>
+      </div>
+      <ContenedorTablaUsuarios />
+    </ContenedorDiv1>
+  </MainDashboard>
+</LayoutDash>
