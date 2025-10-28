@@ -42,7 +42,7 @@ export default {
           'bg-componentes-3': '#BDBDBD',
 
           resaltado: '#E3D32B',
-          texto: '#757575',
+          texto: '#344256',
           textoInput: '#7F8A9AFF',
           textoTitle: '#212121',
           error: '#BF0404',

@@ -1,13 +1,16 @@
 ---
-import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import { Card, CardContent } from '@/components/organismo/Card';
+import FormAgendaGeneral from './components/FormAgendaGeneral';
 ---
 
 <LayoutDash title="Ajustes de Agenda y Turnos">
   <MainDashboard title="Ajustes de Agenda y Turnos" h1="Ajustes de Agenda y Turnos">
-    <div class="p-4">
-      <h2 class="text-xl font-semibold">Aquí podrás configurar los ajustes de la agenda y los turnos.</h2>
-      <p>Selecciona una opción del menú lateral para empezar.</p>
-    </div>
+    <Card className="p-4 w-full ">
+      <CardContent>
+        <FormAgendaGeneral />
+      </CardContent>
+    </Card>
   </MainDashboard>
 </LayoutDash>
