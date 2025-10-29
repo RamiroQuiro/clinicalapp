@@ -19,41 +19,13 @@ const fetchUserById = async (userId: string) => {
     rol: 'Administrador',
     avatarUrl: '/avatarDefault.png',
     horarios: {
-      lunes: {
-        isLaboral: true,
-        rangoAtencion: { start: '09:00', end: '18:00' },
-        rangoDescanso: { start: '12:00', end: '12:00' },
-      },
-      martes: {
-        isLaboral: true,
-        rangoAtencion: { start: '09:00', end: '18:00' },
-        rangoDescanso: { start: '12:00', end: '12:00' },
-      },
-      miercoles: {
-        isLaboral: true,
-        rangoAtencion: { start: '09:00', end: '13:00' },
-        rangoDescanso: { start: '12:00', end: '12:00' },
-      },
-      jueves: {
-        isLaboral: true,
-        rangoAtencion: { start: '09:00', end: '18:00' },
-        rangoDescanso: { start: '12:00', end: '12:00' },
-      },
-      viernes: {
-        isLaboral: true,
-        rangoAtencion: { start: '09:00', end: '18:00' },
-        rangoDescanso: { start: '12:00', end: '12:00' },
-      },
-      sabado: {
-        isLaboral: false,
-        rangoAtencion: { start: '09:00', end: '18:00' },
-        rangoDescanso: { start: '12:00', end: '12:00' },
-      },
-      domingo: {
-        isLaboral: false,
-        rangoAtencion: { start: '09:00', end: '18:00' },
-        rangoDescanso: { start: '12:00', end: '12:00' },
-      },
+      lunes: { isLaboral: true, rangoAtencion: { start: '09:00', end: '13:00' }, rangoDescanso: { start: '12:00', end: '12:00' } },
+      martes: { isLaboral: true, rangoAtencion: { start: '09:00', end: '20:00' }, rangoDescanso: { start: '13:00', end: '17:00' } },
+      miercoles: { isLaboral: true, rangoAtencion: { start: '09:00', end: '13:00' }, rangoDescanso: { start: '13:00', end: '17:00' } },
+      jueves: { isLaboral: true, rangoAtencion: { start: '09:00', end: '18:00' }, rangoDescanso: { start: '15:00', end: '19:00' } },
+      viernes: { isLaboral: true, rangoAtencion: { start: '09:00', end: '18:00' }, rangoDescanso: { start: '12:00', end: '14:00' } },
+      sabado: { isLaboral: false, rangoAtencion: { start: '09:00', end: '18:00' }, rangoDescanso: { start: '12:00', end: '14:00' } },
+      domingo: { isLaboral: false, rangoAtencion: { start: '09:00', end: '18:00' }, rangoDescanso: { start: '12:00', end: '14:00' } },
     },
   };
 };
