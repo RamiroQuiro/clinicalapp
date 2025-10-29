@@ -1,0 +1,13 @@
+---
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import PerfilUsuario from '@/components/organismo/PerfilUsuario.tsx';
+
+const { id } = Astro.params;
+---
+
+<LayoutDash title="Perfil de Usuario">
+  <MainDashboard title="Perfil de Usuario" h1="Perfil de Usuario" isBack={true}>
+    <PerfilUsuario userId={id} client:load />
+  </MainDashboard>
+</LayoutDash>

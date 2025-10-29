@@ -1,5 +1,5 @@
 ---
-import Button2 from '@/components/atomos/Button2.astro';
+import Button from '@/components/atomos/Button';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import ContenedorDiv1 from '@/components/moleculas/ContenedorDiv1.astro';
@@ -12,8 +12,8 @@ const { user } = Astro.locals;
 ---
 
 <LayoutDash title="Usuarios">
-  <MainDashboard title="Usuarios" h1="Usuarios">
-    <div slot="botonera">
+  <MainDashboard title="Usuarios" h1="Usuarios" isBack={true}>
+    <div slot="botonera" class="w-full flex justify-between items-center gap-4">
       <ContenedorModal
         slot="botonera"
         label="Crear Usuario"
@@ -22,11 +22,11 @@ const { user } = Astro.locals;
       >
         <FormNuevoUsuario onClose={() => {}} />
       </ContenedorModal>
+      <div>
+        <Button variant="outline">pdf</Button>
+      </div>
     </div>
     <ContenedorDiv1>
-      <div class="w-full flex justify-between items-center gap-4">
-        <Button2>pdf</Button2>
-      </div>
       <ContenedorTablaUsuarios />
     </ContenedorDiv1>
   </MainDashboard>

@@ -6,14 +6,19 @@ export const Input = ({
   placeholder,
   type = 'text',
   className,
+  disabled = false,
 }: any) => (
   <div className="flex flex-col w-full">
-    <label htmlFor={name} className="mb-1 text-sm font-semibold text-primary-texto ">
+    <label
+      htmlFor={name}
+      className="mb-1 text-sm font-semibold text-primary-texto disabled:text-gray-400"
+    >
       {label}
     </label>
     <input
       type={type}
       id={name}
+      disabled={disabled}
       name={name}
       value={value}
       onChange={onChange}

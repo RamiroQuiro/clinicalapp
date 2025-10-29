@@ -1,4 +1,4 @@
-import { CalendarPlus, Edit3, Stethoscope, Trash2, User } from 'lucide-react';
+import { CalendarPlus, Stethoscope, Trash2, User, UserCheck } from 'lucide-react';
 import { atencion, dataFormularioContexto } from '../../context/store';
 import Button from '../atomos/Button';
 import BotonEditar from '../moleculas/BotonEditar';
@@ -32,17 +32,13 @@ export const RenderActionsPacientes = data => (
 );
 export const RenderBotonesUsuarios = data => (
   <div className="flex gap-2 pr-5 justify-end items-center text-xs">
-    <a
-      href={`/dashboard/ajustes/usuarios/${data.id}`}
-    >
+    <a href={`/dashboard/ajustes/usuarios/${data.id}`}>
       <Button variant="blanco" className="px-2 py-1" size={14}>
-        <Edit3 size={14} />
-        <span>Editar</span>
+        <UserCheck size={14} />
+        <span>Perfil</span>
       </Button>
     </a>
-    <a
-      href={`/api/ajustes/usuarios/eliminar/${data.id}`}
-    >
+    <a href={`/api/ajustes/usuarios/eliminar/${data.id}`}>
       <Button variant="blanco" className="px-2 py-1" size={14}>
         <Trash2 size={14} />
         <span>Eliminar</span>

@@ -1,10 +1,7 @@
-
-
 import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/organismo/Card';
 import React, { useState } from 'react';
-import FormularioPerfilAvatar from './FormularioPerfilAvatar';
 
 export default function FormConfiguracionCentro() {
   const [formData, setFormData] = useState({
@@ -12,104 +9,155 @@ export default function FormConfiguracionCentro() {
     direccion: '',
     telefono: '',
     emailContacto: '',
-    logoUrl: '',
-    idiomaDefecto: 'es', // Default value
-    zonaHoraria: 'America/Argentina/Buenos_Aires', // Default value
-    colorPrincipal: '#3b82f6', // Default value (Tailwind blue-500)
-    fuenteDefecto: '',
+    sitioWeb: '',
+    logo: null as File | null,
+    horarios: {
+      lunes: '09:00-18:00',
+      martes: '09:00-18:00',
+      miercoles: '09:00-18:00',
+      jueves: '09:00-18:00',
+      viernes: '09:00-18:00',
+      sabado: 'Cerrado',
+      domingo: 'Cerrado',
+    },
   });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleHorarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      horarios: { ...prevData.horarios, [name]: value },
+    }));
+  };
 
-    try {
-      const response = await fetch('/api/ajustes/general/informacion', { // Endpoint a crear
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        alert('Información guardada con éxito');
-      } else {
-        alert('Error al guardar la información: ' + result.message);
-      }
-    } catch (error) {
-      console.error('Error al enviar los datos:', error);
-      alert('Error de conexión al servidor');
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prevData => ({ ...prevData, logo: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Aquí iría la lógica para subir el logo a un servicio de almacenamiento
+    // y luego enviar todos los datos al backend.
+    console.log(formData);
+    alert('Funcionalidad en desarrollo. Revisa la consola para ver los datos del formulario.');
+  };
+
   return (
-    <form title="Datos del Centro Médico" id="formularioInformacionCentro" className='flex items-center justify-between flex-col gap-2 pb-3 px-3 w-full' onSubmit={handleSubmit}>
-      <Card className='flex items-center flex-col justify-between w-full gap-2 flex-1 w-full'>
+    <form onSubmit={handleSubmit} className="gap-4 grid grid-cols-2 w-full">
+      {/* Información del Centro */}
+      <Card>
         <CardHeader>
           <CardTitle>Información del Centro</CardTitle>
         </CardHeader>
-        <CardContent className='w-full space-y-3'>
+        <CardContent className="grid gap-6 w-full md:grid-cols-2">
           <Input
-            id="nombreCentro"
-            label="Nombre del Centro"
             name="nombreCentro"
-            type="text"
-            placeholder="Nombre de tu clínica o consultorio"
+            label="Nombre del Centro"
+            placeholder="Clínica Salud Total"
+            onChange={handleChange}
             value={formData.nombreCentro}
-            onChange={handleChange}
           />
           <Input
-            id="direccion"
-            label="Dirección"
             name="direccion"
-            type="text"
-            placeholder="Dirección completa"
+            label="Dirección"
+            placeholder="Av. Siempre Viva 123"
+            onChange={handleChange}
             value={formData.direccion}
-            onChange={handleChange}
           />
-          <div className="flex items-center justify-between w-full gap-2">
-            <Input
-              id="telefono"
-              label="Teléfono"
-              name="telefono"
-              type="text"
-              placeholder="Número de teléfono"
-              value={formData.telefono}
-              onChange={handleChange}
-            />
-            <Input
-              id="emailContacto"
-              label="Email de Contacto"
-              name="emailContacto"
-              type="email"
-              placeholder="Email de contacto"
-              value={formData.emailContacto}
-              onChange={handleChange}
-            />
-          </div>
-          <FormularioPerfilAvatar user={formData} />
           <Input
-            id="logoUrl"
-            label="URL del Logo (o subir archivo)"
-            name="logoUrl"
-            type="text"
-            placeholder="URL de tu logo"
-            value={formData.logoUrl}
+            name="telefono"
+            label="Teléfono"
+            placeholder="+54 9 11 1234-5678"
             onChange={handleChange}
+            value={formData.telefono}
+          />
+          <Input
+            name="emailContacto"
+            label="Email de Contacto"
+            type="email"
+            placeholder="contacto@saludtotal.com"
+            onChange={handleChange}
+            value={formData.emailContacto}
+          />
+          <Input
+            name="sitioWeb"
+            label="Sitio Web"
+            type="url"
+            placeholder="https://www.saludtotal.com"
+            onChange={handleChange}
+            value={formData.sitioWeb}
           />
         </CardContent>
       </Card>
 
+      {/* Logo del Centro */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Logo del Centro</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center gap-4">
+          <div className="w-48 h-48 border-2 border-dashed rounded-lg flex items-center justify-center overflow-hidden">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Previsualización del logo"
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <span className="text-muted-foreground text-sm text-center">Sin logo</span>
+            )}
+          </div>
+          <label
+            htmlFor="logo-upload"
+            className="cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
+          >
+            Seleccionar Logo
+          </label>
+          <input
+            id="logo-upload"
+            name="logo"
+            type="file"
+            className="hidden"
+            onChange={handleLogoChange}
+            accept="image/*"
+          />
+        </CardContent>
+      </Card>
 
-      <div className="flex items-center justify-end mt-4 w-full">
-        <Button type="submit">Guardar Información</Button>
+      {/* Horarios de Atención */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Horarios de Atención</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          {Object.keys(formData.horarios).map(day => (
+            <Input
+              key={day}
+              name={day}
+              label={day.charAt(0).toUpperCase() + day.slice(1)}
+              value={formData.horarios[day as keyof typeof formData.horarios]}
+              onChange={handleHorarioChange}
+            />
+          ))}
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button type="submit">Guardar Cambios</Button>
       </div>
     </form>
   );

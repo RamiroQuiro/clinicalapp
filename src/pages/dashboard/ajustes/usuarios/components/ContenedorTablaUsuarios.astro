@@ -30,7 +30,7 @@ try {
 
   usersData = dataDB.map(user => {
     return {
-      href: `/api/ajustes/usuarios/nueva?userId=${user.id}`,
+      href: `/dashboard/ajustes/usuarios/${user.id}`,
       id: user.id,
       nombreApellido: `${user.nombre}  ${user.apellido} `,
       email: user.email,
