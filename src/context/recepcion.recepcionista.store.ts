@@ -9,14 +9,14 @@ import type { AgendaSlot } from './agenda.store';
 type Turno = {
   id: string;
   estado:
-  | 'pendiente'
-  | 'confirmado'
-  | 'en_consulta'
-  | 'sala_de_espera'
-  | 'finalizado'
-  | 'cancelado'
-  | 'ausente'
-  | 'demorado';
+    | 'pendiente'
+    | 'confirmado'
+    | 'en_consulta'
+    | 'sala_de_espera'
+    | 'finalizado'
+    | 'cancelado'
+    | 'ausente'
+    | 'demorado';
   horaLlegadaPaciente?: string;
   [key: string]: any;
 };
@@ -24,7 +24,8 @@ type Turno = {
 interface RecepcionStore {
   turnosDelDia: AgendaSlot[];
   isLoading: boolean;
-  pestanaActiva: 'pacientes' | 'recepcion' | 'salaDeEspera';
+  pestanaActiva: 'pacientes' | 'agendaDelDia' | 'salaDeEspera' | 'agendaSemanal';
+  medicoSeleccionadoId: string | null; // null para 'Todos'
   error: string | null;
   sseConectado: boolean;
   ultimaActualizacion: string | null;
@@ -34,11 +35,18 @@ interface RecepcionStore {
 export const recepcionStore = map<RecepcionStore>({
   turnosDelDia: [],
   isLoading: true,
-  pestanaActiva: 'recepcion',
+  pestanaActiva: 'salaDeEspera', // El default ahora es la sala de espera
+  medicoSeleccionadoId: null, // Por defecto se muestran todos
   error: null,
   sseConectado: false,
   ultimaActualizacion: null,
 });
+
+// --- ACCIÓN PARA CAMBIAR MÉDICO ---
+export function setMedicoSeleccionado(id: string | null) {
+  recepcionStore.setKey('medicoSeleccionadoId', id);
+}
+
 
 // --- ACCIÓN PARA CAMBIAR PESTAÑA ---
 export function setPestanaActiva(pestana: RecepcionStore['pestanaActiva']) {
@@ -59,10 +67,6 @@ export const turnosEnConsulta = computed(recepcionStore, $store =>
 );
 
 // --- MANEJADOR DE EVENTOS SSE ---
-/**
- * Esta función se llama cuando llegan eventos SSE del servidor
- * Actualiza el store con los datos frescos del servidor
- */
 export function manejarEventoSSE(evento: any) {
   console.log('📥 Evento SSE recibido:', evento);
 
@@ -72,18 +76,15 @@ export function manejarEventoSSE(evento: any) {
     const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
 
     const agendaSlotsNuevos = agendaSlotsActuales.map(slot => {
-      // Comparamos el ID que está dentro del objeto turnoInfo
       if (slot.turnoInfo?.id === turnoActualizado.id) {
-        // Creamos un objeto turnoInfo nuevo e inmutable
         const turnoInfoNuevo = {
           ...slot.turnoInfo,
           estado: turnoActualizado.estado,
           horaLlegadaPaciente: turnoActualizado.horaLlegadaPaciente,
         };
-        // Creamos un AgendaSlot nuevo que contiene el turnoInfo actualizado
         return { ...slot, turnoInfo: turnoInfoNuevo };
       }
-      return slot; // Devolvemos el slot sin cambios si no coincide
+      return slot;
     });
 
     recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
@@ -91,12 +92,10 @@ export function manejarEventoSSE(evento: any) {
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
 
-  // manejar turnos agendados recientes
   else if (evento.type === 'turno-agendado') {
     const turnoAgendado: AgendaSlot = evento.data;
     const turnosActuales = recepcionStore.get().turnosDelDia;
 
-    // Prevenir duplicados
     const yaExiste = turnosActuales.some(
       slot => slot.turnoInfo?.id === turnoAgendado.turnoInfo?.id
     );
@@ -106,7 +105,6 @@ export function manejarEventoSSE(evento: any) {
     }
 
     const turnosNuevos = [...turnosActuales, turnoAgendado];
-    // Opcional: Ordenar si es necesario
     turnosNuevos.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
 
     recepcionStore.setKey('turnosDelDia', turnosNuevos);
@@ -114,16 +112,14 @@ export function manejarEventoSSE(evento: any) {
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
 
-  // Manejar otros tipos de eventos si es necesario
   else if (evento.type === 'turno-eliminado') {
     const turnoId = evento.data.id;
     const turnosActuales = recepcionStore.get().turnosDelDia;
-    // Corregido: filtrar por turnoInfo.id
     const turnosNuevos = turnosActuales.filter(t => t.turnoInfo?.id !== turnoId);
 
     recepcionStore.setKey('turnosDelDia', turnosNuevos);
     console.log(`🗑️ Turno eliminado de recepción via SSE: ${turnoId}`);
-  }
+}
 }
 // --- GESTIÓN DE CONEXIÓN SSE ---
 export function iniciarConexionSSE(userId?: string) {
@@ -142,19 +138,24 @@ export function getEstadoSSE() {
 }
 
 // --- ACCIONES PRINCIPALES ---
-export async function fetchTurnosDelDia(fecha: string, userId?: string, centroMedicoId?: string) {
+export async function fetchTurnosDelDia(fecha: string, centroMedicoId?: string) {
   recepcionStore.setKey('isLoading', true);
+  const medicoId = recepcionStore.get().medicoSeleccionadoId;
+
   try {
-    const response = await fetch(
-      `/api/agenda?fecha=${fecha}&profesionalId=${userId}&centroMedicoId=${centroMedicoId}`
-    );
+    // Construir la URL dinámicamente
+    let apiUrl = `/api/agenda?fecha=${fecha}&centroMedicoId=${centroMedicoId}`;
+    if (medicoId) {
+      apiUrl += `&profesionalId=${medicoId}`;
+    }
+
+    const response = await fetch(apiUrl);
     if (!response.ok) throw new Error('Respuesta de red no fue ok');
     const data = await response.json();
-    console.log('turnos del dia->', data.data);
     recepcionStore.setKey('turnosDelDia', data.data);
 
-    // ✅ INICIAR SSE después de cargar los turnos
-    iniciarConexionSSE();
+    // La conexión SSE se mantiene para recibir actualizaciones de todos modos
+    iniciarConexionSSE(); 
   } catch (error: any) {
     recepcionStore.setKey('error', error.message);
   } finally {
@@ -162,11 +163,6 @@ export async function fetchTurnosDelDia(fecha: string, userId?: string, centroMe
   }
 }
 
-/**
- * Cambia el estado de un turno y envía la actualización al backend.
- * También aplica una actualización optimista al store local.
- * El SSE se encargará de sincronizar con otros clientes.
- */
 export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['estado']) {
   const payload = {
     ...turno,
@@ -177,7 +173,6 @@ export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['esta
         : undefined,
   };
 
-  // ✅ ACTUALIZACIÓN OPTIMISTA ORIGINAL (la que tenías)
   const turnosActuales = recepcionStore.get().turnosDelDia;
   const turnosActualizados = turnosActuales.map(t => {
     if (t.turnoInfo?.id === turno.turnoInfo?.id) {
@@ -186,7 +181,6 @@ export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['esta
         estado: nuevoEstado,
         horaLlegadaPaciente: payload.horaLlegadaPaciente,
       };
-      // Retorna un nuevo objeto para el AgendaSlot
       return { ...t, turnoInfo: turnoInfoActualizado };
     }
     return t;
@@ -204,10 +198,8 @@ export async function setTurnoEstado(turno: AgendaSlot, nuevoEstado: Turno['esta
     const data = await response.json();
     console.log(`Turno ${turno.turnoInfo.id} actualizado a ${nuevoEstado} en el backend`, data);
 
-    // ✅ NO actualizamos el store aquí - SSE lo hará automáticamente para todos los clientes
   } catch (error) {
     console.error('Error al cambiar estado del turno:', error);
-    // ✅ REVERTIR ACTUALIZACIÓN OPTIMISTA si falla (manteniendo tu lógica original)
     recepcionStore.setKey('turnosDelDia', turnosActuales);
     recepcionStore.setKey('error', 'Error al guardar cambios en el servidor');
   }

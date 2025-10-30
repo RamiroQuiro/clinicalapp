@@ -6,14 +6,6 @@ import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import React, { useState } from 'react';
 
-
-
-// TODO: Reemplazar con la lista de médicos del centro médico obtenida de la API
-const medicosDeEjemplo = [
-  { id: 'sqss31m17w99rkj', nombre: 'Dr. Ramiro' },
-  { id: 'oojr7ioig35c2gl', nombre: 'Dr. Exequiel' }, // ID Corregido
-];
-
 interface PacienteResult {
   id: string;
   nombre: string;
@@ -21,27 +13,19 @@ interface PacienteResult {
   dni: string;
 }
 
-const initialState = {
-  pacienteId: undefined,
-  pacienteNombre: '',
-  fechaTurno: format(new Date(), 'yyyy-MM-dd'),
-  horaTurno: format(new Date(), 'HH:mm'),
-  duracion: 15,
-  motivoConsulta: '',
-  tipoDeTurno: 'espontaneo',
-  medicoId: medicosDeEjemplo[0].id, // Default al primer médico
-};
-
-interface Props {
-  profesionalesRelacionados: [{
-    id: string;
-    nombre: string;
-    especialidad?: string;
-    abreviatura?: string;
-    apellido: string;
-  }];
-}
 export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacionados }) => {
+
+  const initialState = {
+    pacienteId: undefined,
+    pacienteNombre: '',
+    fechaTurno: format(new Date(), 'yyyy-MM-dd'),
+    horaTurno: format(new Date(), 'HH:mm'),
+    duracion: 15,
+    motivoConsulta: '',
+    tipoDeTurno: 'espontaneo',
+    medicoId: profesionalesRelacionados?.[0]?.id || '', // Asignar el primer médico por defecto
+  };
+
   const [form, setForm] = useState(initialState);
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);

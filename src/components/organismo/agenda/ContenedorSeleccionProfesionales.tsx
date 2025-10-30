@@ -29,10 +29,14 @@ export default function ContenedorSeleccionProfesionales({ profesionales, centro
 
       const fechaFormateada = toYYYYMMDD(diaSeleccionado);
 
+      console.log('fechaFormateada', fechaFormateada);
+      console.log('userSeleccionado', userSeleccionado.id);
+      console.log('centroMedicoId', centroMedicoId);
+
       const fetchAgenda = async () => {
         try {
           const response = await fetch(
-            `/api/agenda?fecha=${fechaFormateada}&userId=${userSeleccionado.id}&centroMedicoId=${centroMedicoId}`
+            `/api/agenda?fecha=${fechaFormateada}&profesionalId=${userSeleccionado.id}&centroMedicoId=${centroMedicoId}`
           );
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

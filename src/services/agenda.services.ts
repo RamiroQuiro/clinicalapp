@@ -2,7 +2,6 @@ import db from '@/db';
 import { users, usersCentrosMedicos } from '@/db/schema';
 import { and, eq, or } from 'drizzle-orm';
 
-// tenemos aqui al fromatter de astro
 const fetchDataProfesionalesEntidad = async (userId: string) => {
   let miembrosDelCentro;
   try {

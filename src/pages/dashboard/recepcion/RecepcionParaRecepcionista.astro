@@ -1,0 +1,34 @@
+---
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import ContenedeorModal from '@/components/organismo/ContenedeorModal.astro';
+import ContenedorSelectorProfesional from '@/components/organismo/recepcion/ContenedorSelectorProfesional';
+import ContenedorRenderizdoPantallaRecepcionista from '@/components/organismo/recepcion/ContenedorRenderizdoPantalla.recepcionista';
+import MenuPestañaRecepcionista from '@/components/organismo/recepcion/MenuPestaña.recepcionista';
+
+const { user } = Astro.locals;
+let dataProfesionales;
+try {
+  dataProfesionales = await fetchDataProfesionalesEntidad(user.id);
+} catch (error) {
+  console.log(error);
+}
+---
+
+<MainDashboard h1="Recepción - Panel de Asistente">
+  <div slot="botonera" class="flex gap-4 items-center">
+    <ContenedeorModal label="➕ Turno Rápido" title="Crear Turno Rápido" id="modal-agregar">
+      <FormularioTurnoRecepcion client:load profesionalesRelacionados={dataProfesionales} />
+    </ContenedeorModal>
+    <ContenedorSelectorProfesional client:load profesionales={dataProfesionales} />
+  </div>
+
+  <ConstendorStatsRec client:load />
+
+  <div class="mt-4 w-full flex">
+    <MenuPestañaRecepcionista client:load />
+  </div>
+
+  <div class="w-full pt-4 h-full">
+    <ContenedorRenderizdoPantallaRecepcionista client:load user={user} />
+  </div>
+</MainDashboard>

@@ -20,7 +20,7 @@ const { user } = Astro.locals;
         id="dialogUsuario"
         title="Crear Usuario"
       >
-        <FormNuevoUsuario onClose={() => {}} />
+        <FormNuevoUsuario onClose={() => {}} client:load />
       </ContenedorModal>
       <div>
         <Button variant="outline">pdf</Button>

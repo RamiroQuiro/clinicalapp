@@ -1,8 +1,21 @@
 ---
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import Recepcion from './Recepcion.astro';
+import RecepcionParaRecepcionista from './RecepcionParaRecepcionista.astro';
+
+const { user } = Astro.locals;
+
+// Asumimos que el rol actual del usuario en el centro médico está disponible aquí.
+// Si la propiedad no está directamente en user, habría que obtenerla del store o locals correspondientes.
+const esRecepcionista = user.rolEnCentro === 'recepcionista';
 ---
 
 <LayoutDash title="Recepción">
-  <Recepcion />
+  {
+    esRecepcionista ? (
+      <RecepcionParaRecepcionista />
+    ) : (
+      <Recepcion />
+    )
+  }
 </LayoutDash>

@@ -18,8 +18,10 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
   const url = new URL(request.url);
   const fechaQuery = url.searchParams.get('fecha');
-  const userId = url.searchParams.get('userId');
+  const userId = url.searchParams.get('profesionalId');
   const centroMedicoId = url.searchParams.get('centroMedicoId');
+
+  console.log('user locales', user, 'data obtenida', fechaQuery, userId, centroMedicoId)
 
   if (!fechaQuery || !/^\d{4}-\d{2}-\d{2}$/.test(fechaQuery)) {
     return createResponse(400, 'Fecha no proporcionada o en formato incorrecto. Use YYYY-MM-DD.');
@@ -100,6 +102,8 @@ export const GET: APIRoute = async ({ locals, request }) => {
     const inicioDelDia = toZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
     const finDelDia = toZonedTime(`${fechaQuery}T23:59:59`, APP_TIME_ZONE);
 
+
+    console.log('profesionalesIds', profesionalesIds)
     const turnosDelDia = await db
       .select({
         id: turnos.id,
@@ -110,7 +114,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
         pacienteApellido: pacientes.apellido,
         pacienteDocumento: pacientes.dni,
         pacienteCelular: pacientes.celular,
-        tipoTurno: turnos.tipoTurno,
         especialidadProfesional: users.especialidad,
         horaLlegadaPaciente: turnos.horaLlegadaPaciente,
         tipoDeTurno: turnos.tipoDeTurno,
@@ -133,7 +136,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         )
       );
 
-
+    console.log('turnosDelDia', turnosDelDia)
     // Generar slots y construir agenda...
     const slotsDelDia = [];
     JORNADA_LABORAL.forEach(rango => {
@@ -152,10 +155,10 @@ export const GET: APIRoute = async ({ locals, request }) => {
         currentSlotUtc = addMinutes(currentSlotUtc, DURACION_SLOT_MINUTOS);
       }
     });
+    // console.log('turnos del dia->', turnosDelDia)
 
     const agendaCompleta = slotsDelDia.map(slotInicio => {
       const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MINUTOS * 60000);
-      console.log('turnos del dia->', turnosDelDia)
       const turnoOcupante = turnosDelDia.find(turno => {
         const turnoInicio = new Date(turno.fechaTurno);
         const turnoFin = new Date(
@@ -175,7 +178,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             pacienteCelular: turnoOcupante.pacienteCelular,
             pacienteNombre: turnoOcupante.pacienteNombre,
             horaLlegadaPaciente: turnoOcupante.horaLlegadaPaciente,
-            tipoTurno: turnoOcupante.tipoTurno,
+
             pacienteApellido: turnoOcupante.pacienteApellido,
             pacienteDocumento: turnoOcupante.pacienteDocumento,
             userMedicoId: turnoOcupante.userMedicoId,
