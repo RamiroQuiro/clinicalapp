@@ -96,10 +96,10 @@ export const GET: APIRoute = async ({ locals, request }) => {
     const JORNADA_LABORAL = [];
     if (horarioProfesional && horarioProfesional.activo) {
       if (horarioProfesional.horaInicioManana && horarioProfesional.horaFinManana) {
-        JORNADA_LABORAL.push({ inicio: Number(horarioProfesional.horaInicioManana.padStart(2, '0').split(':')[0]), fin: Number(horarioProfesional.horaFinManana.padStart(2, '0').split(':')[0]) });
+        JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioManana, fin: horarioProfesional.horaFinManana });
       }
       if (horarioProfesional.horaInicioTarde && horarioProfesional.horaFinTarde) {
-        JORNADA_LABORAL.push({ inicio: Number(horarioProfesional.horaInicioTarde.padStart(2, '0').split(':')[0]), fin: Number(horarioProfesional.horaFinTarde.padStart(2, '0').split(':')[0]) });
+        JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioTarde, fin: horarioProfesional.horaFinTarde });
       }
     }
     console.log('JORNADA_LABORAL ->', JORNADA_LABORAL)
@@ -151,12 +151,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
     const slotsDelDia = [];
     JORNADA_LABORAL.forEach(rango => {
       let currentSlotUtc = toZonedTime(
-        `${fechaQuery}T${String(rango.inicio).padStart(2, '0')}:00:00`,
+        `${fechaQuery}T${rango.inicio}:00`,
         APP_TIME_ZONE
       );
 
       const endSlotUtc = toZonedTime(
-        `${fechaQuery}T${String(rango.fin).padStart(2, '0')}:00:00`,
+        `${fechaQuery}T${rango.fin}:00`,
         APP_TIME_ZONE
       );
 
