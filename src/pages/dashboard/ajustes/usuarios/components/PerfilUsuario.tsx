@@ -49,7 +49,7 @@ export default function PerfilUsuario({ userId }: PerfilUsuarioProps) {
       case 'informacion':
         return <PerfilInformacion user={user} />;
       case 'horarios':
-        return <PerfilHorarios horarios={user.horarios} />;
+        return <PerfilHorarios userId={user.id} horarios={user.horarios} />;
       case 'documentos':
         return <PerfilDocumentos />;
       case 'seguridad':
