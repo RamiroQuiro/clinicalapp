@@ -1,20 +1,20 @@
 import type { APIRoute } from 'astro';
-
-
 import db from '@/db';
 import { preferenciaPerfilUser, users, usersCentrosMedicos } from '@/db/schema';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { and, eq, or } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ request, locals }) => {
-    const { session, user } = locals
+    const { session, user: adminLocals } = locals;
 
-    if (!session || !user) {
+    if (!session || !adminLocals) {
         return createResponse(401, 'No autorizado', true);
     }
 
-    const [adminUserCentro] = await db.select().from(usersCentrosMedicos).where(and(eq(usersCentrosMedicos.userId, user.id), or(eq(usersCentrosMedicos.rolEnCentro, 'admin'), eq(usersCentrosMedicos.rolEnCentro, 'superadmin'))));
+    console.log('--- Iniciando flujo de creación/asignación de usuario ---');
+
+    const [adminUserCentro] = await db.select().from(usersCentrosMedicos).where(and(eq(usersCentrosMedicos.userId, adminLocals.id), or(eq(usersCentrosMedicos.rolEnCentro, 'admin'), eq(usersCentrosMedicos.rolEnCentro, 'adminLocal'))));
 
     if (!adminUserCentro) {
         return createResponse(403, 'Acción no permitida. Se requiere rol de administrador.', true);
@@ -22,86 +22,115 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const centroMedicoId = adminUserCentro.centroMedicoId;
     const formData = await request.json();
+    console.log('1. Datos recibidos del formulario:', formData);
+
     const { nombre, apellido, email, password, rol, especialidad, dni, mp, avatar } = formData;
 
-    if (!nombre || !apellido || !email || !password || !rol) {
-        return createResponse(400, 'Faltan campos obligatorios.', true);
+    if (!dni || !email || !nombre || !apellido || !rol) {
+        return createResponse(400, 'DNI, email, nombre, apellido y rol son obligatorios.', true);
     }
 
     try {
-        const existingUser = await db.select().from(users).where(eq(users.email, email));
+        console.log(`2. Buscando usuario existente por DNI: ${dni}`);
+        const [existingUserByDni] = await db.select().from(users).where(eq(users.dni, dni));
 
-        if (existingUser.length > 0) {
-            return createResponse(409, 'El email ya está en uso.', true);
-        }
+        if (existingUserByDni) {
+            // --- ESCENARIO 1: EL DNI YA EXISTE --- (La persona ya está en el sistema)
+            console.log('  -> El DNI ya existe. Usuario encontrado:', existingUserByDni);
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        const newUserId = nanoIDNormalizador('us');
+            const [existingRelation] = await db.select().from(usersCentrosMedicos).where(and(eq(usersCentrosMedicos.userId, existingUserByDni.id), eq(usersCentrosMedicos.centroMedicoId, centroMedicoId)));
 
+            if (existingRelation) {
+                console.log('  -> Error: El usuario ya pertenece a este centro médico.');
+                return createResponse(409, `Esta persona ya está registrada en este centro con el rol de '${existingRelation.rolEnCentro}' y el email '${existingRelation.emailUser}'.`, true);
+            }
 
-        // --- Transacción para asegurar la atomicidad ---
-        const { newUser, newRelation } = await db.transaction(async tx => {
+            console.log('  -> El usuario existe pero no en este centro. Creando nueva relación...');
+            await db.insert(usersCentrosMedicos).values({
+                userId: existingUserByDni.id,
+                centroMedicoId: centroMedicoId,
+                nombreCentroMedico: centroMedicoId, // TODO: Obtener el nombre real del centro
+                rolEnCentro: rol,
+                emailUser: email,
+            });
 
-            // 1. Crear el usuario
-            const [createdUser] = await tx
-                .insert(users)
-                .values({
+            console.log('  -> Relación creada con éxito.');
+            return createResponse(200, 'Usuario existente añadido a este centro médico.', false);
+
+        } else {
+            // --- ESCENARIO 2: EL DNI NO EXISTE --- (Es una persona nueva en el sistema)
+            console.log('  -> El DNI es nuevo.');
+
+            console.log(`  -> Verificando si el email '${email}' ya está en uso por otro usuario...`);
+            const [existingUserByEmail] = await db.select().from(users).where(eq(users.email, email));
+
+            if (existingUserByEmail) {
+                console.log('  -> Error: El email ya está en uso por otro DNI.');
+                return createResponse(409, `El email '${email}' ya está en uso por otra persona (DNI: ${existingUserByEmail.dni}). Por favor, use un email diferente.`, true);
+            }
+
+            if (!password) {
+                return createResponse(400, 'La contraseña es obligatoria para usuarios nuevos.', true);
+            }
+
+            console.log('  -> Email disponible. Procediendo a crear el nuevo usuario y la relación...');
+
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            const newUserId = nanoIDNormalizador('us');
+
+            await db.transaction(async (tx) => {
+                console.log('    -> Creando registro en la tabla `users`');
+                const [createdUser] = await tx.insert(users).values({
                     id: newUserId,
                     nombre,
                     apellido,
-                    email,
+                    email, // Email principal (puede ser el mismo que el de la relación)
                     dni,
                     mp,
                     avatar,
                     password: hashedPassword,
-                })
-                .returning();
+                }).returning();
 
-            if (!createdUser) {
-                tx.rollback();
-                return {};
-            }
-
-            const newPreferenciaPerfilUser = nanoIDNormalizador('pref');
-
-
-
-
-            console.log('creando relacion de userCentro');
-            // 3. Vincular el usuario al centro
-            const [createdRelation] = await tx
-                .insert(usersCentrosMedicos)
-                .values({
-                    userId: createdUser.id,
-                    centroMedicoId: centroMedicoId,
-                    // TODO: Obtener el nombre real del centro médico en lugar de usar el ID
-                    nombreCentroMedico: centroMedicoId, 
-                    rolEnCentro: rol, // Rol específico en ese centro
-                })
-                .returning();
-
-
-            if (rol === 'profesional') {
-                const newPreferenciaPerfilUser = nanoIDNormalizador('pref');
-                await tx.insert(preferenciaPerfilUser).values({
-                    id: newPreferenciaPerfilUser,
+                console.log('    -> Creando relación en `usersCentrosMedicos`');
+                await tx.insert(usersCentrosMedicos).values({
                     userId: newUserId,
-                    nombrePerfil: 'Default', // O un nombre de perfil que tenga sentido
-                    especialidad: especialidad || 'General', // Usar la especialidad del form o una por defecto
-                    estado: 'activo',
-                    // Las preferencias JSON se establecerán con el valor por defecto del schema
+                    centroMedicoId: centroMedicoId,
+                    nombreCentroMedico: centroMedicoId, // TODO: Obtener nombre real
+                    rolEnCentro: rol,
+                    emailUser: email, // Email específico para este centro
                 });
-            }
 
-            return { newUser: createdUser, newRelation: createdRelation };
-        });
-        return createResponse(201, 'Usuario creado con éxito', false);
+                if (rol === 'profesional') {
+                    console.log('    -> Creando preferencias de perfil para profesional');
+                    const newPreferenciaPerfilUser = nanoIDNormalizador('pref');
+                    await tx.insert(preferenciaPerfilUser).values({
+                        id: newPreferenciaPerfilUser,
+                        userId: newUserId,
+                        nombrePerfil: 'Default',
+                        especialidad: especialidad || 'General',
+                        estado: 'activo',
+                    });
+                }
+            });
+
+            console.log('5. Transacción completada. Usuario nuevo creado con éxito.');
+            return createResponse(201, 'Usuario nuevo creado y añadido al centro con éxito.', false);
+        }
 
     } catch (error) {
-        console.error('Error al crear el usuario:', error);
-        if (error instanceof Error && error.message.includes('Faltan campos profesionales')) {
-            return createResponse(400, error.message, true);
+        console.error('Error en el proceso de creación de usuario:', error);
+        // Manejo de errores de Drizzle por constraints únicos
+        if (error.message.includes('UNIQUE constraint failed')) {
+            if (error.message.includes('users.dni')) {
+                 return createResponse(500, 'Error de concurrencia: El DNI fue registrado por otro proceso. Intente de nuevo.', true);
+            }
+            if (error.message.includes('users.email')) {
+                 return createResponse(500, 'Error de concurrencia: El email fue registrado por otro proceso. Intente de nuevo.', true);
+            }
+             if (error.message.includes('usersCentrosMedicos.userId, usersCentrosMedicos.centroMedicoId')) {
+                 return createResponse(500, 'Error de concurrencia: Este usuario ya fue añadido al centro por otro proceso. Intente de nuevo.', true);
+            }
         }
         return createResponse(500, 'Error interno del servidor.', true);
     }

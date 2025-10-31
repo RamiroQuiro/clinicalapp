@@ -17,7 +17,7 @@ export const users = sqliteTable(
     })
       .notNull()
       .default('profesional'),
-    dni: integer('dni', { mode: 'number' }),
+    dni: integer('dni', { mode: 'number' }).unique(),
     documento: text('documento'),
     cuil: text('cuil'),
     cuit: text('cuit'),

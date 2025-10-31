@@ -2,7 +2,7 @@
 import DivBox1 from '@/components/atomos/DivBox1.astro';
 import db from '@/db';
 import { users, usersCentrosMedicos } from '@/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import ConfeccionTablaUsuarios from './ConfeccionTablaUsuarios';
 
 const { session, user } = Astro.locals;
@@ -21,12 +21,7 @@ try {
     })
     .from(usersCentrosMedicos)
     .innerJoin(users, eq(users.id, usersCentrosMedicos.userId))
-    .where(
-      and(
-        eq(usersCentrosMedicos.userId, user?.id),
-        eq(usersCentrosMedicos.centroMedicoId, user?.centroMedicoId)
-      )
-    );
+    .where(eq(usersCentrosMedicos.centroMedicoId, user?.centroMedicoId));
 
   usersData = dataDB.map(user => {
     return {

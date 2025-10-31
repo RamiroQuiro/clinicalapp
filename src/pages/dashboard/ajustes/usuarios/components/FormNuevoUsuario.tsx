@@ -6,20 +6,6 @@ interface FormNuevoUsuarioProps {
   onClose: () => void;
 }
 
-interface DataProfesional {
-  id: string;
-  nombre: string;
-  apellido: string;
-  email: string;
-  password: string;
-  rol: string;
-  centroMedicoId: string;
-  especialidad: string;
-  avatar: string;
-  dni: number;
-  mp: string;
-}
-
 export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
   const [formData, setFormData] = useState({
     nombre: '',
@@ -27,13 +13,14 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
     email: '',
     password: '',
     rol: '',
-    centroMedicoId: '',
     especialidad: '',
     dni: '',
     mp: '',
     avatar: '',
   });
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -42,6 +29,9 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
       const response = await fetch('/api/ajustes/usuarios', { // Endpoint corregido
@@ -54,16 +44,21 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
 
       const result = await response.json();
 
-      if (result.success) {
-        alert('Usuario creado con éxito');
-        onClose(); // Close modal on success
-        // Optionally, trigger a refresh of the user list
-      } else {
-        alert('Error al crear el usuario: ' + result.message);
+      if (!response.ok) {
+        throw new Error(result.msg || 'Ocurrió un error');
       }
-    } catch (error) {
+
+      setSuccess(result.msg || 'Usuario creado con éxito');
+      setTimeout(() => {
+        onClose();
+        window.location.reload();
+      }, 2000);
+
+    } catch (error: any) {
       console.error('Error al enviar los datos:', error);
-      alert('Error de conexión al servidor');
+      setError(error.message || 'Error de conexión al servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,6 +86,15 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
         />
       </div>
       <Input
+        id="dni"
+        label="DNI"
+        name="dni"
+        type="text"
+        placeholder="Documento Nacional de Identidad"
+        value={formData.dni}
+        onChange={handleChange}
+      />
+      <Input
         id="email"
         label="Email"
         name="email"
@@ -104,7 +108,7 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
         label="Contraseña"
         name="password"
         type="password"
-        placeholder="Contraseña"
+        placeholder="Contraseña para usuario nuevo"
         value={formData.password}
         onChange={handleChange}
       />
@@ -117,8 +121,8 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
       >
         <option value="">Seleccione un rol</option>
         <option value="profesional">Profesional</option>
-        <option value="recepcionista">Recepcionista</option>
-        <option value="administrador">Administrador</option>
+        <option value="recepcion">Recepcionista</option>
+        <option value="adminLocal">Administrador</option>
       </select>
 
       {formData.rol === 'profesional' && (
@@ -142,15 +146,6 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
             onChange={handleChange}
           />
           <Input
-            id="dni"
-            label="DNI"
-            name="dni"
-            type="text"
-            placeholder="Documento Nacional de Identidad"
-            value={formData.dni}
-            onChange={handleChange}
-          />
-          <Input
             id="avatar"
             label="Avatar (URL)"
             name="avatar"
@@ -162,9 +157,17 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
         </div>
       )}
 
+      {/* --- Mensajes de Estado --- */}
+      <div className="mt-4 text-center">
+        {error && <p className="text-red-500 bg-red-100 p-2 rounded-md">{error}</p>}
+        {success && <p className="text-green-500 bg-green-100 p-2 rounded-md">{success}</p>}
+      </div>
+
       <div className="flex justify-end gap-2 mt-4">
-        <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-        <Button type="submit">Crear Usuario</Button>
+        <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>Cancelar</Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Creando...' : 'Crear Usuario'}
+        </Button>
       </div>
     </form>
   );

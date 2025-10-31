@@ -422,3 +422,25 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 - **Depuración y Refinamiento**:
   - Se solucionó un bug crítico en el formulario de "Turno Rápido" (`FormularioTurnoRecepcion.tsx`) que no asignaba un `medicoId` por defecto, lo que impedía la creación de turnos.
   - Se analizó y debatió la causa de por qué los nuevos turnos no se reflejaban en la UI, identificando y corrigiendo inconsistencias de datos y fechas entre la API y el estado del frontend.
+
+---
+
+## Sesión 19: miércoles, 29 de octubre de 2025 (Continuación)
+
+- **Objetivo**: Implementar un sistema de configuración de horarios dinámico y robusto para los profesionales.
+- **Decisión de Arquitectura (Schema)**:
+  - Se debatió y acordó un diseño de base de datos para los horarios, optando por un enfoque relacional para garantizar la integridad y el rendimiento.
+  - Se modificó la tabla `horariosTrabajo` para soportar días inactivos, horarios corridos y horarios partidos (mañana/tarde) en una sola fila por día de la semana.
+  - Se resolvió un error de `UNIQUE constraint` al hacer `push` a Turso, añadiendo la restricción de unicidad necesaria para la combinación de `userMedicoId` y `diaSemana`.
+- **Implementación de UI (`PerfilHorarios.tsx`)**:
+  - Se construyó una interfaz de usuario para que los profesionales puedan configurar sus horarios semanales.
+  - Se implementó la lógica para cargar los horarios existentes desde la base de datos al montar el componente.
+  - Se desarrolló una capa de "traducción" para convertir el formato de la UI (rangos de atención y descanso) al formato requerido por la base de datos al guardar.
+  - Se depuró y corrigió un bug visual en el componente `Switch` (problema de componente controlado vs. no controlado).
+- **Implementación de API**:
+  - Se creó un endpoint `POST /api/ajustes/horarios` para guardar la configuración de horarios de un profesional usando una estrategia de "upsert".
+  - Se creó un endpoint `GET /api/ajustes/horarios` para leer la configuración existente de un usuario.
+- **Integración con Agenda**:
+  - Se refactorizó la API principal de la agenda (`GET /api/agenda`) para que sea 100% dinámica.
+  - Se eliminó la `JORNADA_LABORAL` hardcodeada y ahora la API consulta la tabla `horariosTrabajo` para generar los slots de turnos disponibles basándose en la configuración guardada para cada profesional.
+  - Se solucionó un bug de formato de fecha que impedía la correcta generación de los slots.
