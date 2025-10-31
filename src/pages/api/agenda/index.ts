@@ -1,5 +1,6 @@
 import db from '@/db';
 import { pacientes, turnos, users, usersCentrosMedicos } from '@/db/schema';
+import { agendaGeneralCentroMedico, horariosTrabajo } from '@/db/schema/agenda';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
@@ -31,29 +32,20 @@ export const GET: APIRoute = async ({ locals, request }) => {
     return createResponse(400, 'centroMedicoId no proporcionado');
   }
 
-  const JORNADA_LABORAL = [
-    { inicio: 8, fin: 12 },
-    { inicio: 18, fin: 22 },
-  ];
-  const DURACION_SLOT_MINUTOS = 30;
+  // La JORNADA_LABORAL y DURACION_SLOT_MINUTOS ahora se obtendrán de la base de datos
 
   try {
     const isRecepcionista = user.rolEnCentro === 'recepcion';
     let profesionalesIds: string[] = [];
 
     if (isRecepcionista) {
-      // Recepción: intentar obtener profesionales del centro médico
       const relaciones = await db
         .select()
         .from(usersCentrosMedicos)
         .where(eq(usersCentrosMedicos.centroMedicoId, centroMedicoId));
 
-      console.log('relaciones', relaciones);
-      // Si no hay relaciones, no es error - simplemente no hay profesionales asignados
       if (relaciones.length > 0) {
         profesionalesIds = relaciones.map(relacion => relacion.userId);
-
-        // Si se proporciona un userId específico, validar que pertenezca al centro
         if (userId) {
           if (!profesionalesIds.includes(userId)) {
             return createResponse(403, 'No tiene permisos para ver la agenda de este profesional');
@@ -61,49 +53,67 @@ export const GET: APIRoute = async ({ locals, request }) => {
           profesionalesIds = [userId];
         }
       } else {
-        // No hay relaciones en la tabla - el recepcionista solo puede ver agendas si se especifica un userId válido
         if (userId) {
-          // Verificar que el usuario existe y es un profesional
-          const profesional = await db
-            .select()
-            .from(users)
-            .where(and(eq(users.id, userId), eq(users.rol, 'profesional')))
-            .limit(1);
-
-          if (profesional.length === 0) {
-            return createResponse(404, 'Profesional no encontrado');
-          }
+          const profesional = await db.select().from(users).where(and(eq(users.id, userId), eq(users.rol, 'profesional'))).limit(1);
+          if (profesional.length === 0) return createResponse(404, 'Profesional no encontrado');
           profesionalesIds = [userId];
         } else {
-          // No hay relaciones y no se especificó userId - devolver agenda vacía o error
-          return createResponse(200, 'No hay profesionales asignados a este centro médico', {
-            agenda: [],
-          });
+          return createResponse(200, 'No hay profesionales asignados a este centro médico', { agenda: [] });
         }
       }
     } else {
-      // No es recepción: solo puede ver su propia agenda
       if (!userId || userId !== user.id) {
         return createResponse(403, 'Solo puede ver su propia agenda');
       }
       profesionalesIds = [userId];
     }
 
-    // Si no hay profesionales IDs después de toda la lógica, retornar agenda vacía
     if (profesionalesIds.length === 0) {
-      return createResponse(200, 'No hay agendas para mostrar', {
-        agenda: [],
-        profesionalesIds: [],
-        esRecepcion: isRecepcionista,
-      });
+      return createResponse(200, 'No hay agendas para mostrar', { agenda: [], profesionalesIds: [], esRecepcion: isRecepcionista });
     }
 
-    // Continuar con la obtención de turnos y generación de agenda...
+    // --- INICIO DE LA NUEVA LÓGICA DINÁMICA ---
+
+    // 1. Calcular el día de la semana a partir de la fecha
+    const fecha = toZonedTime(`${fechaQuery}T12:00:00`, APP_TIME_ZONE); // Usar mediodía para evitar problemas de timezone
+    const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+    const diaSemanaNombre = diasSemana[fecha.getDay()];
+
+    // 2. Obtener la configuración de la agenda y el horario del profesional para ese día
+    // (Asumimos que si hay varios profesionales, todos usan la misma config de duración de turno del centro)
+    const profesionalIdParaHorario = profesionalesIds[0]; // Tomamos el primer (y a menudo único) profesional para buscar su horario
+
+    const [configuracionAgenda] = await db.select().from(agendaGeneralCentroMedico).where(eq(agendaGeneralCentroMedico.centroMedicoId, centroMedicoId));
+    const [horarioProfesional] = await db.select().from(horariosTrabajo).where(and(eq(horariosTrabajo.userMedicoId, profesionalIdParaHorario), eq(horariosTrabajo.diaSemana, diaSemanaNombre)));
+
+    const DURACION_SLOT_MINUTOS = configuracionAgenda?.duracionTurnoPorDefecto || 30;
+    console.log('horarios ->', horarioProfesional)
+    // 3. Construir la JORNADA_LABORAL dinámicamente
+    //     const JORNADA_LABORAL = [
+    //   { inicio: 8, fin: 12 },
+    //   { inicio: 18, fin: 22 },
+    // ];
+    const JORNADA_LABORAL = [];
+    if (horarioProfesional && horarioProfesional.activo) {
+      if (horarioProfesional.horaInicioManana && horarioProfesional.horaFinManana) {
+        JORNADA_LABORAL.push({ inicio: Number(horarioProfesional.horaInicioManana.padStart(2, '0').split(':')[0]), fin: Number(horarioProfesional.horaFinManana.padStart(2, '0').split(':')[0]) });
+      }
+      if (horarioProfesional.horaInicioTarde && horarioProfesional.horaFinTarde) {
+        JORNADA_LABORAL.push({ inicio: Number(horarioProfesional.horaInicioTarde.padStart(2, '0').split(':')[0]), fin: Number(horarioProfesional.horaFinTarde.padStart(2, '0').split(':')[0]) });
+      }
+    }
+    console.log('JORNADA_LABORAL ->', JORNADA_LABORAL)
+    // Si JORNADA_LABORAL está vacía, no hay turnos para generar
+    if (JORNADA_LABORAL.length === 0) {
+      return createResponse(200, 'El profesional no trabaja en la fecha seleccionada', []);
+    }
+
+    // --- FIN DE LA NUEVA LÓGICA DINÁMICA ---
+
     const inicioDelDia = toZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
     const finDelDia = toZonedTime(`${fechaQuery}T23:59:59`, APP_TIME_ZONE);
 
 
-    console.log('profesionalesIds', profesionalesIds)
     const turnosDelDia = await db
       .select({
         id: turnos.id,
