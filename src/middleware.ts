@@ -1,16 +1,18 @@
 import { lucia } from '@/lib/auth';
-import { ADMIN_ROUTES, PUBLIC_ROUTES } from '@/lib/protectRoutes';
+import { ADMIN_ROUTES, PUBLIC_ROUTES, RECEPCION_ROUTES } from '@/lib/protectRoutes';
 import { defineMiddleware } from 'astro/middleware';
 import jwt from 'jsonwebtoken';
 import { verifyRequestOrigin } from 'lucia';
 
 type UserData = {
-  id: number;
+  id: string;
   nombre: string;
   apellido: string;
   userName: string;
   email: string;
   rol: string;
+  rolEnCentro?: string;
+  centroMedicoId?: string;
 };
 
 function isPublicRoute(pathname: string): boolean {
@@ -21,9 +23,13 @@ function isAdminRoute(pathname: string): boolean {
   return ADMIN_ROUTES.includes(pathname);
 }
 
+function isRecepcionRoute(pathname: string): boolean {
+  return RECEPCION_ROUTES.includes(pathname);
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   try {
-    // CSRF check para métodos no GET
+    // ✅ Protección CSRF en métodos no GET
     if (context.request.method !== 'GET') {
       const originHeader = context.request.headers.get('Origin');
       const hostHeader = context.request.headers.get('Host');
@@ -34,12 +40,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
     const pathname = context.url.pathname;
 
-    // 🚪 Dejar pasar si es pública
+    // ✅ Dejar pasar si es ruta pública
     if (isPublicRoute(pathname)) {
       return next();
     }
 
-    // 🚪 Dejar pasar si es API o rutas abiertas especiales
+    // ✅ Rutas abiertas especiales (públicas por naturaleza)
     if (
       pathname.startsWith('/api/public/') ||
       pathname.startsWith('/reportes/') ||
@@ -52,7 +58,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return next();
     }
 
-    // 🔐 Validar sesión
+    // 🔒 Validar sesión
     const sessionId = context.cookies.get(lucia.sessionCookieName)?.value ?? null;
     const userDataCookie = context.cookies.get('userData')?.value ?? null;
 
@@ -68,8 +74,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
         context.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
       }
       if (!session) {
-        const sessionCookie = lucia.createBlankSessionCookie();
-        context.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+        const blank = lucia.createBlankSessionCookie();
+        context.cookies.set(blank.name, blank.value, blank.attributes);
       }
     }
 
@@ -81,17 +87,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
     }
 
-    // Guardar en locals
-    context.locals.session = session;
-    context.locals.user = user;
-
-    // 🚫 Si no hay sesión ni user -> login
+    // 🚫 Si no hay sesión o usuario -> login
     if (!session || !user) {
       return Response.redirect(new URL('/login', context.url));
     }
 
-    // 🚫 Si es admin route y no tiene rol admin -> login
+    // 🧠 Guardar en locals
+    context.locals.session = session;
+    context.locals.user = user;
+
+    // --- 🔄 REDIRECCIONES SEGÚN ROL ---
+    // Si el usuario es recepcionista y entra a /dashboard base, redirigilo a su panel
+    if (user.rolEnCentro === 'recepcion' && pathname === '/dashboard') {
+      return Response.redirect(new URL('/dashboard/recepcion', context.url));
+    }
+
+    // 🚫 Bloqueo de rutas no autorizadas
     if (isAdminRoute(pathname) && user.rol !== 'admin') {
+      return Response.redirect(new URL('/login', context.url));
+    }
+
+    if (isRecepcionRoute(pathname) && user.rolEnCentro !== 'recepcion') {
       return Response.redirect(new URL('/login', context.url));
     }
 

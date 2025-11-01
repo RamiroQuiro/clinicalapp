@@ -443,4 +443,26 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 - **Integración con Agenda**:
   - Se refactorizó la API principal de la agenda (`GET /api/agenda`) para que sea 100% dinámica.
   - Se eliminó la `JORNADA_LABORAL` hardcodeada y ahora la API consulta la tabla `horariosTrabajo` para generar los slots de turnos disponibles basándose en la configuración guardada para cada profesional.
-  - Se solucionó un bug de formato de fecha que impedía la correcta generación de los slots.
+--- End of Context from: GEMINI.md ---
+
+---
+
+## Sesión 20: viernes, 31 de octubre de 2025
+
+*   **Objetivo**: Implementar una lógica de creación de usuarios multi-tenant robusta y configurar la redirección de roles para el personal de recepción.
+*   **Decisión de Arquitectura Clave**: Tras un profundo debate sobre varios modelos de datos, se estableció una arquitectura final para la gestión de usuarios y su relación con los centros médicos:
+    *   **Tabla `users`**: Se acordó que esta tabla debe tener un `UNIQUE` constraint en la columna `dni` para anclar la identidad de una persona a través de toda la plataforma. El campo `email` se mantiene, pero no se utilizará como identificador único principal en la lógica de negocio multi-tenant.
+    *   **Tabla `usersCentrosMedicos`**: Se confirmó que esta tabla es la clave para la multi-tenencia. Contiene el `userId`, `centroMedicoId`, el `rolEnCentro`, y un campo `emailUser` para el email específico de login en ese centro. Se aseguró que tuviera un `UNIQUE` constraint en la combinación de `userId` y `centroMedicoId`.
+*   **Implementación - API de Creación de Usuarios (`POST /api/ajustes/usuarios`)**:
+    *   Se refactorizó completamente el endpoint para manejar la nueva lógica.
+    *   El sistema ahora primero busca un usuario por `dni`.
+    *   Si el usuario existe, comprueba si ya está asociado al centro actual. Si no lo está, crea la nueva relación; si ya existe, devuelve un error de conflicto.
+    *   Si el usuario no existe, comprueba que el `email` no esté en uso por otra persona antes de crear el nuevo usuario y su relación con el centro.
+*   **Implementación - Feedback en Frontend (`FormNuevoUsuario.tsx`)**:
+    *   Se mejoró el formulario de creación de usuarios para manejar los estados de `loading`, `error` y `success`.
+    *   Se añadieron mensajes de feedback claros para el usuario, informando sobre el resultado de la operación.
+    *   Se implementó la recarga de la página tras una creación exitosa para mantener la lista de usuarios actualizada.
+*   **Implementación - Redirección por Rol (`middleware.ts`)**:
+    *   Se implementó una lógica en el middleware de Astro para redirigir automáticamente a los usuarios con el rol `recepcion`.
+    *   Se discutió la optimización de rendimiento, decidiendo finalmente leer el `rolEnCentro` desde la cookie `userData` (previamente guardada en el login) en lugar de hacer una consulta a la base de datos en cada petición, evitando así sobrecargar el sistema.
+

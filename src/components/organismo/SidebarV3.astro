@@ -23,36 +23,44 @@ const sections = [
     name: 'Dashboard',
     href: '/dashboard',
     icon: Home,
+    isRecepcion:false,
+    
   },
   {
     name: 'Agenda',
     href: '/dashboard/agenda',
     icon: CalendarDays,
-  },
+    isRecepcion:false,
+      },
   {
     name: 'Recepción',
     href: '/dashboard/recepcion',
     icon: ClipboardCheck,
-  },
+    isRecepcion:true,
+    },
   {
     name: 'Pacientes',
     href: '/dashboard/pacientes',
     icon: Users,
-  },
+    isRecepcion:true,
+    },
   {
     name: 'Facturación',
     href: '/dashboard/facturacion',
     icon: CreditCard,
-  },
+    isRecepcion:false,
+    },
   {
     name: 'Reportes',
     href: '/dashboard/reportes',
     icon: BarChart3,
-  },
+    isRecepcion:false,
+    },
   {
     name: 'Configuración',
     href: '/dashboard/ajustes',
     icon: Settings,
+    isRecepcion:true,
   },
 ];
 ---
@@ -90,7 +98,33 @@ const sections = [
         const isActive =
           currentPath === section.href ||
           (section.href !== '/dashboard' && currentPath.startsWith(section.href));
-        return (
+   
+    
+          if (section.isRecepcion && user.rolEnCentro == 'recepcion'){
+             return (
+          <a
+            href={section.href}
+            class:list={[
+              'flex items-center w-fit md:w-full group/item z-50 p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
+              {
+                'bg-gray-100 text-primary-100': isActive,
+                'text-white hover:bg-gray-100 hover:text-primary-100': !isActive,
+              },
+            ]}
+          >
+            <section.icon className="md:h-5 md:w-5 h-5 w-5 md:flex-shrink-0" />
+            <!-- Texto para el menú expandido -->
+            <span class="menu-text-inline hidden group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
+              {section.name}
+            </span>
+            <!-- Tooltip para el menú contraído -->
+            <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm  text-white z-[999]">
+              {section.name}
+            </span>
+          </a>
+        );
+          }
+          return (
           <a
             href={section.href}
             class:list={[

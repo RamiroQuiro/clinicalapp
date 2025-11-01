@@ -1,12 +1,18 @@
 ---
-import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+const { session, user } = Astro.locals;
+if (user.rolEnCentro !== 'recepcion') {
+  return Response.redirect(new URL('/dashboard', Astro.url));
+}
 ---
 
 <LayoutDash title="Ajustes de Facturación y Aranceles">
   <MainDashboard title="Ajustes de Facturación y Aranceles" h1="Ajustes de Facturación y Aranceles">
     <div class="p-4">
-      <h2 class="text-xl font-semibold">Aquí podrás configurar los ajustes de facturación y aranceles.</h2>
+      <h2 class="text-xl font-semibold">
+        Aquí podrás configurar los ajustes de facturación y aranceles.
+      </h2>
       <p>Selecciona una opción del menú lateral para empezar.</p>
     </div>
   </MainDashboard>

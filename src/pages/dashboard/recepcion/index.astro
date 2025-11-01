@@ -7,15 +7,12 @@ const { user } = Astro.locals;
 
 // Asumimos que el rol actual del usuario en el centro médico está disponible aquí.
 // Si la propiedad no está directamente en user, habría que obtenerla del store o locals correspondientes.
-const esRecepcionista = user.rolEnCentro === 'recepcionista';
+if (!user) {
+  return Response.redirect(new URL('/login', Astro.url));
+}
+const esRecepcionista = user.rolEnCentro === 'recepcion';
 ---
 
 <LayoutDash title="Recepción">
-  {
-    esRecepcionista ? (
-      <RecepcionParaRecepcionista />
-    ) : (
-      <Recepcion />
-    )
-  }
+  {esRecepcionista ? <RecepcionParaRecepcionista /> : <Recepcion />}
 </LayoutDash>
