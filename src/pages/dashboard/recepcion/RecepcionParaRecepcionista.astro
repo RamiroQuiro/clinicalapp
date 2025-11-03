@@ -6,12 +6,27 @@ import ContenedorSelectorProfesional from '@/components/organismo/recepcion/Cont
 import ConstendorStatsRec from '@/components/organismo/recepcion/ContenedorStatsRec';
 import { FormularioTurnoRecepcion } from '@/components/organismo/recepcion/FormularioTurnoRecepcion';
 import MenuPestañaRecepcionista from '@/components/organismo/recepcion/MenuPestaña.recepcionista';
-import { fetchDataProfesionalesEntidad } from '@/services/agenda.services';
+import db from '@/db';
+
+import { recepcionistaProfesional, users } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 const { user } = Astro.locals;
-let dataProfesionales;
+let dataProfesionales = [];
 try {
-  dataProfesionales = await fetchDataProfesionalesEntidad(user.id);
+  const profesionalesFetch = await db
+    .select({
+      id: recepcionistaProfesional.profesionalId,
+      nombre: users.nombre,
+      apellido: users.apellido,
+      especialidad: users.especialidad,
+      abreviatura: users.abreviatura,
+    })
+    .from(recepcionistaProfesional)
+    .innerJoin(users, eq(recepcionistaProfesional.profesionalId, users.id))
+    .where(eq(recepcionistaProfesional.recepcionistaId, user.id));
+  dataProfesionales = profesionalesFetch;
+  console.log('profesionales relacionados', dataProfesionales);
 } catch (error) {
   console.log(error);
 }

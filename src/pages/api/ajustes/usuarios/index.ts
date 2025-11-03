@@ -1,7 +1,7 @@
-import type { APIRoute } from 'astro';
 import db from '@/db';
-import { preferenciaPerfilUser, users, usersCentrosMedicos } from '@/db/schema';
+import { preferenciaPerfilUser, recepcionistaProfesional, users, usersCentrosMedicos } from '@/db/schema';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
+import type { APIRoute } from 'astro';
 import bcrypt from 'bcryptjs';
 import { and, eq, or } from 'drizzle-orm';
 
@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const formData = await request.json();
     console.log('1. Datos recibidos del formulario:', formData);
 
-    const { nombre, apellido, email, password, rol, especialidad, dni, mp, avatar } = formData;
+    const { nombre, apellido, email, password, rol, especialidad, dni, mp, avatar, profesionales } = formData;
 
     if (!dni || !email || !nombre || !apellido || !rol) {
         return createResponse(400, 'DNI, email, nombre, apellido y rol son obligatorios.', true);
@@ -89,6 +89,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                     dni,
                     mp,
                     avatar,
+                    rol,
                     password: hashedPassword,
                 }).returning();
 
@@ -112,8 +113,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
                         estado: 'activo',
                     });
                 }
-            });
 
+                if (rol === 'recepcion' && profesionales.length > 0) {
+                    console.log(`    -> Creando ${profesionales.length} relaciones en \`recepcionistaProfesional\``);
+                    const recepcionistaProfesionalInserts = profesionales.map((profesionalId: string) => {
+                        return tx.insert(recepcionistaProfesional).values({
+                            id: nanoIDNormalizador('rP'),
+                            centroMedicoId: centroMedicoId,
+                            nombreCentroMedico: centroMedicoId, // TODO: Obtener nombre real
+                            rolEnCentro: rol,
+                            recepcionistaId: newUserId,
+                            profesionalId: profesionalId,
+                            emailUser: email,
+                        });
+                    });
+                    await Promise.all(recepcionistaProfesionalInserts);
+                }
+            });
             console.log('5. Transacción completada. Usuario nuevo creado con éxito.');
             return createResponse(201, 'Usuario nuevo creado y añadido al centro con éxito.', false);
         }
@@ -123,13 +139,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
         // Manejo de errores de Drizzle por constraints únicos
         if (error.message.includes('UNIQUE constraint failed')) {
             if (error.message.includes('users.dni')) {
-                 return createResponse(500, 'Error de concurrencia: El DNI fue registrado por otro proceso. Intente de nuevo.', true);
+                return createResponse(500, 'Error de concurrencia: El DNI fue registrado por otro proceso. Intente de nuevo.', true);
             }
             if (error.message.includes('users.email')) {
-                 return createResponse(500, 'Error de concurrencia: El email fue registrado por otro proceso. Intente de nuevo.', true);
+                return createResponse(500, 'Error de concurrencia: El email fue registrado por otro proceso. Intente de nuevo.', true);
             }
-             if (error.message.includes('usersCentrosMedicos.userId, usersCentrosMedicos.centroMedicoId')) {
-                 return createResponse(500, 'Error de concurrencia: Este usuario ya fue añadido al centro por otro proceso. Intente de nuevo.', true);
+            if (error.message.includes('usersCentrosMedicos.userId, usersCentrosMedicos.centroMedicoId')) {
+                return createResponse(500, 'Error de concurrencia: Este usuario ya fue añadido al centro por otro proceso. Intente de nuevo.', true);
             }
         }
         return createResponse(500, 'Error interno del servidor.', true);

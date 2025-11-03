@@ -6,10 +6,10 @@ import { users } from './users';
 export const usersCentrosMedicos = sqliteTable('usersCentrosMedicos', {
   id: integer('id').primaryKey(),
   userId: text('userId')
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: 'cascade' })
     .notNull(),
   centroMedicoId: text('centroMedicoId')
-    .references(() => centrosMedicos.id)
+    .references(() => centrosMedicos.id, { onDelete: 'cascade' })
     .notNull(),
   emailUser: text('emailUser'),
   nombreCentroMedico: text('nombreCentroMedico').notNull(),

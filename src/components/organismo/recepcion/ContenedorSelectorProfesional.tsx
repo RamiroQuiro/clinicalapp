@@ -20,7 +20,7 @@ export default function ContenedorSelectorProfesional({ profesionales }: Props) 
   };
 
   return (
-    <SelectorProfesional 
+    <SelectorProfesional
       profesionales={profesionales}
       valorActual={medicoSeleccionadoId}
       onSeleccion={handleSelection}
