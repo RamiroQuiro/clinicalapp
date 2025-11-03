@@ -6,6 +6,14 @@ import type { AgendaSlot } from './agenda.store';
 
 
 // --- TIPOS ---
+export interface Profesional {
+  id: string;
+  nombre: string;
+  apellido: string;
+  especialidad?: string;
+  abreviatura?: string;
+}
+
 type Turno = {
   id: string;
   estado:
@@ -29,6 +37,9 @@ interface RecepcionStore {
   error: string | null;
   sseConectado: boolean;
   ultimaActualizacion: string | null;
+  profesionales: Profesional[];
+  isLoadingProfesionales: boolean;
+  errorProfesionales: string | null;
 }
 
 // --- STORE PRINCIPAL ---
@@ -40,6 +51,9 @@ export const recepcionStore = map<RecepcionStore>({
   error: null,
   sseConectado: false,
   ultimaActualizacion: null,
+  profesionales: [],
+  isLoadingProfesionales: true,
+  errorProfesionales: null,
 });
 
 // --- ACCIÓN PARA CAMBIAR MÉDICO ---
@@ -138,6 +152,23 @@ export function getEstadoSSE() {
 }
 
 // --- ACCIONES PRINCIPALES ---
+export async function fetchProfesionales() {
+  recepcionStore.setKey('isLoadingProfesionales', true);
+  try {
+    const response = await fetch('/api/recepcion/profesionales');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al obtener los profesionales');
+    }
+    const data = await response.json();
+    recepcionStore.setKey('profesionales', data.data);
+  } catch (error: any) {
+    recepcionStore.setKey('errorProfesionales', error.message);
+  } finally {
+    recepcionStore.setKey('isLoadingProfesionales', false);
+  }
+}
+
 export async function fetchTurnosDelDia(fecha: string, centroMedicoId?: string) {
   recepcionStore.setKey('isLoading', true);
   const medicoId = recepcionStore.get().medicoSeleccionadoId;

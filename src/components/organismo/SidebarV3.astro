@@ -1,154 +1,130 @@
 ---
-// 1. Importamos los iconos de lucide-react como si fueran componentes
 import {
-  PanelLeft,
+  BarChart3,
+  CalendarDays,
+  ClipboardCheck,
+  CreditCard,
+  Home,
   PanelLeftClose,
   PanelLeftOpen,
-  Home,
-  CalendarDays,
-  Users,
-  CreditCard,
-  BarChart3,
   Settings,
-  LogOut,
-  ClipboardCheck,
+  Users,
 } from 'lucide-react';
-// 2. Obtenemos los datos del usuario y la ruta actual
-const { session, user } = Astro.locals;
+
+// 1️⃣ Obtenemos los datos del usuario y ruta actual
+const { user } = Astro.locals;
 const { pathname } = Astro.url;
 const currentPath = pathname;
-// 3. Definimos las secciones y asignamos el componente del icono directamente
+
+// 2️⃣ Definimos secciones con los roles permitidos
 const sections = [
   {
     name: 'Dashboard',
     href: '/dashboard',
     icon: Home,
-    isRecepcion:false,
-    
+    rolesPermitidos: ['adminLocal', 'profesional'],
   },
   {
     name: 'Agenda',
     href: '/dashboard/agenda',
     icon: CalendarDays,
-    isRecepcion:false,
-      },
+    rolesPermitidos: ['adminLocal', 'profesional'],
+  },
   {
     name: 'Recepción',
     href: '/dashboard/recepcion',
     icon: ClipboardCheck,
-    isRecepcion:true,
-    },
+    rolesPermitidos: ['recepcion', 'adminLocal'],
+  },
   {
     name: 'Pacientes',
     href: '/dashboard/pacientes',
     icon: Users,
-    isRecepcion:true,
-    },
+    rolesPermitidos: ['recepcion', 'profesional', 'adminLocal'],
+  },
   {
     name: 'Facturación',
     href: '/dashboard/facturacion',
     icon: CreditCard,
-    isRecepcion:false,
-    },
+    rolesPermitidos: ['adminLocal'],
+  },
   {
     name: 'Reportes',
     href: '/dashboard/reportes',
     icon: BarChart3,
-    isRecepcion:false,
-    },
+    rolesPermitidos: ['adminLocal'],
+  },
   {
     name: 'Configuración',
     href: '/dashboard/ajustes',
     icon: Settings,
-    isRecepcion:true,
+    rolesPermitidos: ['adminLocal', 'recepcion'],
   },
 ];
 ---
 
-
 <aside
   id="aside"
-  class=" group/sidebar w-full fixed bottom-0 left-0 h-  z-20  md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:self-start md:w-16 md:border-r md:border-none border-t bg-gradient-to-b from-primary-100 to-primary-150 backdrop-blur-sm md:backdrop-blur-none text-primary-textoTitle transition-all duration-300 ease-in-out"
+  class="group/sidebar w-full fixed bottom-0 left-0 h- z-20 md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:self-start md:w-16 md:border-r md:border-none border-t bg-gradient-to-b from-primary-100 to-primary-150 backdrop-blur-sm md:backdrop-blur-none text-primary-textoTitle transition-all duration-300 ease-in-out"
 >
-  <div class="w-full hidden md:flex px-4 mx-auto  items-center justify-end">
+  <div class="w-full hidden md:flex px-4 mx-auto items-center justify-end">
     <PanelLeftOpen
       id="openMenu"
       size={35}
       className="cursor-pointer stroke-white hover:bg-primary-200 p-1 rounded-full duration-300"
     />
     <PanelLeftClose
-    
       id="closeMenu"
       size={35}
       className="cursor-pointer hidden stroke-white hover:bg-primary-200 p-1 rounded-full duration-300"
     />
   </div>
-  <!-- logo ramaCode -->
+
+  <!-- Logo -->
   <div id="logo" class="items-center justify-center h-20 hidden">
     <a href="/dashboard" class="transition-transform duration-300 group-hover:scale-110">
       <img src="/ramaCodeBlanco.png" alt="Logo Completo" class="w-24 h-24 -aparecer" />
     </a>
   </div>
 
+  <!-- Menú lateral -->
   <nav
     class="flex-1 flex md:flex-col w-full duration-300 px-1 md:px-3 items-center md:justify-start justify-evenly md:items-start md:mt-10 -aparecer space-y-2"
   >
     {
-      sections.map(section => {
-        const isActive =
-          currentPath === section.href ||
-          (section.href !== '/dashboard' && currentPath.startsWith(section.href));
-   
-    
-          if (section.isRecepcion && user.rolEnCentro == 'recepcion'){
-             return (
-          <a
-            href={section.href}
-            class:list={[
-              'flex items-center w-fit md:w-full group/item z-50 p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
-              {
-                'bg-gray-100 text-primary-100': isActive,
-                'text-white hover:bg-gray-100 hover:text-primary-100': !isActive,
-              },
-            ]}
-          >
-            <section.icon className="md:h-5 md:w-5 h-5 w-5 md:flex-shrink-0" />
-            <!-- Texto para el menú expandido -->
-            <span class="menu-text-inline hidden group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
-              {section.name}
-            </span>
-            <!-- Tooltip para el menú contraído -->
-            <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm  text-white z-[999]">
-              {section.name}
-            </span>
-          </a>
-        );
-          }
+      sections
+        // 🔹 Filtrar según los roles permitidos
+        .filter(section => section.rolesPermitidos.includes(user.rolEnCentro))
+        .map(section => {
+          const isActive =
+            currentPath === section.href ||
+            (section.href !== '/dashboard' && currentPath.startsWith(section.href));
+
           return (
-          <a
-            href={section.href}
-            class:list={[
-              'flex items-center w-fit md:w-full group/item z-50 p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
-              {
-                'bg-gray-100 text-primary-100': isActive,
-                'text-white hover:bg-gray-100 hover:text-primary-100': !isActive,
-              },
-            ]}
-          >
-            <section.icon className="md:h-5 md:w-5 h-5 w-5 md:flex-shrink-0" />
-            <!-- Texto para el menú expandido -->
-            <span class="menu-text-inline hidden group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
-              {section.name}
-            </span>
-            <!-- Tooltip para el menú contraído -->
-            <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm  text-white z-[999]">
-              {section.name}
-            </span>
-          </a>
-        );
-      })
+            <a
+              href={section.href}
+              class:list={[
+                'flex items-center w-fit md:w-full group/item z-50 p-2 md:px-2.5 md:py-2.5 text-sm font-medium rounded-lg transition-colors',
+                {
+                  'bg-gray-100 text-primary-100': isActive,
+                  'text-white hover:bg-gray-100 hover:text-primary-100': !isActive,
+                },
+              ]}
+            >
+              <section.icon className="md:h-5 md:w-5 h-5 w-5 md:flex-shrink-0" />
+              <span class="menu-text-inline hidden group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
+                {section.name}
+              </span>
+              <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm text-white z-[999]">
+                {section.name}
+              </span>
+            </a>
+          );
+        })
     }
   </nav>
+
+  <!-- Footer -->
   <div class="px-2 py-4 border-t w-full hidden md:block border-gray-200">
     <div class="flex items-center w-full justify-center group-hover:justify-start group-hover:px-2">
       <img
@@ -161,40 +137,5 @@ const sections = [
         <p class="text-xs text-primary-texto whitespace-nowrap">www.ramacode.com</p>
       </div>
     </div>
-    <!-- <a
-      href="/api/auth/signout"
-      class="flex items-center justify-center group-hover:justify-start w-full group-hover:px-4 px-2 py-2.5 mt-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-red-800 hover:text-white transition-colors"
-    >
-      <LogOut size={20} className="h-6 w-6 flex-shrink-0" />
-      <span class="hidden group-hover:md:inline ml-3 whitespace-nowrap">Cerrar Sesión</span>
-    </a> -->
   </div>
 </aside>
-
-<script>
-  const btnOpen = document.getElementById('openMenu');
-  const btnClose = document.getElementById('closeMenu');
-  const sidebar = document.getElementById('aside');
-  const logo = document.getElementById('logo');
-  const spanRamacode = document.getElementById('spanRamacode');
-
-  const toggleMenu = () => {
-    // Toggle a state class on the sidebar
-    sidebar.classList.toggle('is-open');
-
-    // Toggle sidebar width
-    sidebar.classList.toggle('md:w-16');
-    sidebar.classList.toggle('md:w-64');
-
-    // Toggle button visibility
-    btnOpen.classList.toggle('hidden');
-    btnClose.classList.toggle('hidden');
-
-    // Toggle logo and other elements
-    logo.classList.toggle('hidden');
-    spanRamacode.classList.toggle('hidden');
-  };
-
-  btnOpen?.addEventListener('click', toggleMenu);
-  btnClose?.addEventListener('click', toggleMenu);
-</script>

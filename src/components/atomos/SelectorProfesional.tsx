@@ -13,11 +13,11 @@ interface Props {
   incluirOpcionTodos?: boolean; // Prop para decidir si se muestra la opción "Todos"
 }
 
-export default function SelectorProfesional({ 
-  profesionales, 
-  valorActual, 
-  onSeleccion, 
-  incluirOpcionTodos = true 
+export default function SelectorProfesional({
+  profesionales,
+  valorActual,
+  onSeleccion,
+  incluirOpcionTodos = true
 }: Props) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -40,7 +40,7 @@ export default function SelectorProfesional({
         {incluirOpcionTodos && <option value="todos">Todos</option>}
         {profesionales?.map(profesional => (
           <option key={profesional.id} value={profesional.id}>
-            {profesional.nombre} {profesional.apellido}
+            {profesional.nombreApellido ? profesional.nombreApellido : profesional.nombre}  {profesional.apellido}
           </option>
         ))}
       </select>

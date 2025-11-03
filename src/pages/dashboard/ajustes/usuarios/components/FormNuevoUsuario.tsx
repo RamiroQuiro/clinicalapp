@@ -1,12 +1,14 @@
 import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
+import Select from '@/components/atomos/Select';
 import React, { useState } from 'react';
 
 interface FormNuevoUsuarioProps {
   onClose: () => void;
+  profesionales: any[];
 }
 
-export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
+export default function FormNuevoUsuario({ onClose, profesionales }: FormNuevoUsuarioProps) {
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -21,7 +23,7 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
+  console.log('profesionales', profesionales);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
@@ -156,6 +158,23 @@ export default function FormNuevoUsuario({ onClose }: FormNuevoUsuarioProps) {
           />
         </div>
       )}
+
+      {
+        formData.rol === 'recepcion' && (
+          <div className="space-y-4 mt-4 border-t pt-4">
+            <Select
+              label="Relacionar con profesional"
+              name="profesional"
+              value={formData.profesional}
+              onChange={handleChange}
+              options={profesionales.map(profesional => ({
+                value: profesional.id,
+                label: `${profesional.nombreApellido}`,
+              }))}
+            />
+          </div>
+        )
+      }
 
       {/* --- Mensajes de Estado --- */}
       <div className="mt-4 text-center">

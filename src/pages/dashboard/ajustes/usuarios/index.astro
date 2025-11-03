@@ -4,11 +4,46 @@ import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import ContenedorDiv1 from '@/components/moleculas/ContenedorDiv1.astro';
 import ContenedorModal from '@/components/organismo/ContenedeorModal.astro';
+import db from '@/db';
+import { users, usersCentrosMedicos } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import ContenedorTablaUsuarios from './components/ContenedorTablaUsuarios.astro';
 import FormNuevoUsuario from './components/FormNuevoUsuario';
 
 const { user } = Astro.locals;
-// console.log('estoy en paciente.astro', user);
+let usersData = [];
+try {
+  const dataDB = await db
+    .select({
+      id: users.id,
+      nombre: users.nombre,
+      apellido: users.apellido,
+      email: users.email,
+      especialidad: users.especialidad,
+      mp: users.mp,
+      rol: users.rol,
+      celular: users.celular,
+    })
+    .from(usersCentrosMedicos)
+    .innerJoin(users, eq(users.id, usersCentrosMedicos.userId))
+    .where(eq(usersCentrosMedicos.centroMedicoId, user?.centroMedicoId));
+
+  usersData = dataDB.map(user => {
+    return {
+      href: `/dashboard/ajustes/usuarios/${user.id}`,
+      id: user.id,
+      nombreApellido: `${user.nombre}  ${user.apellido} `,
+      email: user.email,
+      especialidad: user.especialidad,
+      mp: user.mp,
+      rol: user.rol,
+      celular: user.celular,
+    };
+  });
+} catch (error) {
+  console.log(error);
+}
+console.log('usersData', usersData);
 ---
 
 <LayoutDash title="Usuarios">
@@ -20,14 +55,18 @@ const { user } = Astro.locals;
         id="dialogUsuario"
         title="Crear Usuario"
       >
-        <FormNuevoUsuario onClose={() => {}} client:load />
+        <FormNuevoUsuario
+          onClose={() => {}}
+          client:load
+          profesionales={usersData?.filter(user => user.rol === 'profesional')}
+        />
       </ContenedorModal>
       <div>
         <Button variant="outline">pdf</Button>
       </div>
     </div>
     <ContenedorDiv1>
-      <ContenedorTablaUsuarios />
+      <ContenedorTablaUsuarios usersData={usersData} />
     </ContenedorDiv1>
   </MainDashboard>
 </LayoutDash>
