@@ -1,12 +1,13 @@
+import Section from '@/components/moleculas/Section';
 import { useStore } from '@nanostores/react';
 import type { User } from 'lucia';
 import { useEffect } from 'react';
 import { fetchTurnosDelDia, recepcionStore } from '../../../context/recepcion.recepcionista.store';
 import Calendario from '../agenda/Calendario';
 import HorariosDisponibles from '../agenda/HorariosDisponibles';
+import TurnosDelDia from '../agenda/TurnosDelDia';
 import PacientesRecepcion from './PacientesRecepcion';
 import RecepcionPacientes from './RecepcionPacientes';
-import SalaDeEspera from './SalaDeEspera';
 
 type Props = {
   user: User;
@@ -14,7 +15,7 @@ type Props = {
 
 export default function ContenedorRenderizdoPantallaRecepcionista({ user }: Props) {
   const { pestanaActiva, medicoSeleccionadoId } = useStore(recepcionStore);
-
+  console.log('pestaña activa ->', user);
   useEffect(() => {
     const toYYYYMMDD = (date: Date) => {
       const year = date.getFullYear();
@@ -30,21 +31,28 @@ export default function ContenedorRenderizdoPantallaRecepcionista({ user }: Prop
 
   const renderContent = () => {
     switch (pestanaActiva) {
-      case 'agendaDelDia':
+      case 'recepcion':
         return <RecepcionPacientes userId={user.id} />;
-      case 'salaDeEspera':
-        return <SalaDeEspera />;
-      case 'agendaSemanal':
+      case 'agenda':
         return (
           <div className="w-full flex gap-2 items-start justify-between h-full">
-            <Calendario />
-            <HorariosDisponibles />
+            <Section title="Seleccionar Fecha" className="px- py-4 w-fit">
+              <Calendario />
+            </Section>
+
+            <Section title="Turnos del Día" className="px- py-4 md:w-[40vw]">
+              <TurnosDelDia user={user} />
+            </Section>
+
+            <Section title="Horarios Disponibles" className="px- py-4 md:w-[30vw]">
+              <HorariosDisponibles />
+            </Section>
           </div>
         );
       case 'pacientes':
         return <PacientesRecepcion />;
       default:
-        return <SalaDeEspera />;
+        return <RecepcionPacientes userId={user.id} />;
     }
   };
 

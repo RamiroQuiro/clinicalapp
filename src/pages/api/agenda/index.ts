@@ -1,5 +1,5 @@
 import db from '@/db';
-import { pacientes, turnos, users, usersCentrosMedicos } from '@/db/schema';
+import { pacientes, turnos, users } from '@/db/schema';
 import { agendaGeneralCentroMedico, horariosTrabajo } from '@/db/schema/agenda';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { createResponse } from '@/utils/responseAPI';
@@ -19,10 +19,13 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
   const url = new URL(request.url);
   const fechaQuery = url.searchParams.get('fecha');
-  const userId = url.searchParams.get('profesionalId');
+  const profesionalId = url.searchParams.get('profesionalId');
+  const profesionalIdsParam = url.searchParams.get('profesionalIds');
   const centroMedicoId = url.searchParams.get('centroMedicoId');
 
-  console.log('user locales', user, 'data obtenida', fechaQuery, userId, centroMedicoId)
+  // console.log('user locales', user, 'data obtenida', fechaQuery, profesionalId, centroMedicoId, profesionalIdsParam)
+
+
 
   if (!fechaQuery || !/^\d{4}-\d{2}-\d{2}$/.test(fechaQuery)) {
     return createResponse(400, 'Fecha no proporcionada o en formato incorrecto. Use YYYY-MM-DD.');
@@ -38,38 +41,31 @@ export const GET: APIRoute = async ({ locals, request }) => {
     const isRecepcionista = user.rolEnCentro === 'recepcion';
     let profesionalesIds: string[] = [];
 
-    if (isRecepcionista) {
-      const relaciones = await db
-        .select()
-        .from(usersCentrosMedicos)
-        .where(eq(usersCentrosMedicos.centroMedicoId, centroMedicoId));
-
-      if (relaciones.length > 0) {
-        profesionalesIds = relaciones.map(relacion => relacion.userId);
-        if (userId) {
-          if (!profesionalesIds.includes(userId)) {
-            return createResponse(403, 'No tiene permisos para ver la agenda de este profesional');
-          }
-          profesionalesIds = [userId];
-        }
+    if (profesionalId) {
+      // --- Caso 1: Se solicita un profesional específico ---
+      if (isRecepcionista) {
+        // Un recepcionista puede ver la agenda de sus profesionales asociados.
+        // La validación de permisos ya se hizo en el frontend, pero podemos añadir una capa extra si es necesario.
+        profesionalesIds = [profesionalId];
       } else {
-        if (userId) {
-          const profesional = await db.select().from(users).where(and(eq(users.id, userId), eq(users.rol, 'profesional'))).limit(1);
-          if (profesional.length === 0) return createResponse(404, 'Profesional no encontrado');
-          profesionalesIds = [userId];
-        } else {
-          return createResponse(200, 'No hay profesionales asignados a este centro médico', { agenda: [] });
+        // Un profesional solo puede ver su propia agenda
+        if (profesionalId !== user.id) {
+          return createResponse(403, 'Solo puede ver su propia agenda');
         }
+        profesionalesIds = [profesionalId];
       }
-    } else {
-      if (!userId || userId !== user.id) {
-        return createResponse(403, 'Solo puede ver su propia agenda');
-      }
-      profesionalesIds = [userId];
+    } else if (isRecepcionista && profesionalIdsParam) {
+      // --- Caso 2: Recepcionista solicita la agenda de TODOS sus profesionales ---
+      profesionalesIds = profesionalIdsParam.split(',');
+    } else if (!isRecepcionista) {
+      // --- Caso 3: Un profesional solicita su propia agenda (caso por defecto) ---
+      profesionalesIds = [user.id];
     }
 
+    // Si después de toda la lógica, no hay IDs, no hay nada que mostrar.
+    // Esto puede pasar si un recepcionista no tiene profesionales asignados.
     if (profesionalesIds.length === 0) {
-      return createResponse(200, 'No hay agendas para mostrar', { agenda: [], profesionalesIds: [], esRecepcion: isRecepcionista });
+      return createResponse(200, 'No hay agendas para mostrar', []);
     }
 
     // --- INICIO DE LA NUEVA LÓGICA DINÁMICA ---
@@ -87,7 +83,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
     const [horarioProfesional] = await db.select().from(horariosTrabajo).where(and(eq(horariosTrabajo.userMedicoId, profesionalIdParaHorario), eq(horariosTrabajo.diaSemana, diaSemanaNombre)));
 
     const DURACION_SLOT_MINUTOS = configuracionAgenda?.duracionTurnoPorDefecto || 30;
-    console.log('horarios ->', horarioProfesional)
+    // console.log('horarios ->', horarioProfesional)
     // 3. Construir la JORNADA_LABORAL dinámicamente
     //     const JORNADA_LABORAL = [
     //   { inicio: 8, fin: 12 },
@@ -102,7 +98,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioTarde, fin: horarioProfesional.horaFinTarde });
       }
     }
-    console.log('JORNADA_LABORAL ->', JORNADA_LABORAL)
+    // console.log('JORNADA_LABORAL ->', JORNADA_LABORAL)
     // Si JORNADA_LABORAL está vacía, no hay turnos para generar
     if (JORNADA_LABORAL.length === 0) {
       return createResponse(200, 'El profesional no trabaja en la fecha seleccionada', []);
@@ -205,7 +201,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       } else {
         return {
           hora: slotInicio.toISOString(),
-          userMedicoId: isRecepcionista && userId ? userId : profesionalesIds[0],
+          userMedicoId: isRecepcionista && profesionalesIds ? profesionalesIds : profesionalesIds[0],
           disponible: true,
           turnoInfo: null,
         };

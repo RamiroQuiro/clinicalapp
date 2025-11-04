@@ -84,10 +84,10 @@ export default function RecepcionPacientes({ userId }: Props) {
                 <CardTurnoRecepcion
                   key={turno.turnoInfo.id}
                   slot={turno}
-                  onVerDetalles={() => {}}
-                  onReagendar={() => {}}
-                  onCancelar={() => {}}
-                  onLlamar={() => {}}
+                  onVerDetalles={() => { }}
+                  onReagendar={() => { }}
+                  onCancelar={() => { }}
+                  onLlamar={() => { }}
                   onRecibirPaciente={handleRecepcion}
                 />
               ))
@@ -112,11 +112,11 @@ export default function RecepcionPacientes({ userId }: Props) {
                 key={i}
                 turno={turno}
                 index={i}
-                onAtender={() => {}}
-                onSubir={() => {}}
-                onBajar={() => {}}
-                onNotificar={() => {}}
-                onLlamar={() => {}}
+                onAtender={() => { }}
+                onSubir={() => { }}
+                onBajar={() => { }}
+                onNotificar={() => { }}
+                onLlamar={() => { }}
               />
             ))
           )}

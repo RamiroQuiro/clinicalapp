@@ -1,4 +1,3 @@
-import type { AgendaSlot } from '@/context/agenda.store';
 import { useStore } from '@nanostores/react';
 import { CheckCheck } from 'lucide-react';
 import { useMemo } from 'react';
@@ -56,6 +55,7 @@ export default function SalaDeEspera() {
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
             <CheckCheck className="w-10 h-10 text-gray-400" />
           </div>
+
           <h3 className="text-lg font-semibold text-gray-700">Sala de espera vacía</h3>
           <p className="text-gray-500 mt-1">Cuando un paciente sea recepcionado, aparecerá aquí.</p>
         </div>

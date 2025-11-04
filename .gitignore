@@ -20,6 +20,9 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
+
+# gemini
+GEMINI.md
 # database
 db.sqlite
 # jetbrains setting folder

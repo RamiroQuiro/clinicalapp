@@ -32,7 +32,7 @@ type Turno = {
 interface RecepcionStore {
   turnosDelDia: AgendaSlot[];
   isLoading: boolean;
-  pestanaActiva: 'pacientes' | 'agendaDelDia' | 'salaDeEspera' | 'agendaSemanal';
+  pestanaActiva: 'pacientes' | 'recepcion' | 'agenda';
   medicoSeleccionadoId: string | null; // null para 'Todos'
   error: string | null;
   sseConectado: boolean;
@@ -44,7 +44,7 @@ interface RecepcionStore {
 export const recepcionStore = map<RecepcionStore>({
   turnosDelDia: [],
   isLoading: true,
-  pestanaActiva: 'salaDeEspera', // El default ahora es la sala de espera
+  pestanaActiva: 'recepcion', // El default ahora es la sala de espera
   medicoSeleccionadoId: null, // Por defecto se muestran todos
   error: null,
   sseConectado: false,
@@ -172,7 +172,6 @@ export async function fetchTurnosDelDia(fecha: string, centroMedicoId?: string) 
     } else {
       // Si no, se usan los IDs de todos los profesionales asociados
       const ids = profesionales.map(p => p.id);
-      console.log('apiURL para agenda', apiUrl)
       if (ids.length > 0) {
         apiUrl += `&profesionalIds=${ids.join(',')}`;
       }
