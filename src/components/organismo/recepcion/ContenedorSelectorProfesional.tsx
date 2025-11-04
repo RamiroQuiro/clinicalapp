@@ -1,6 +1,7 @@
 import SelectorProfesional from '@/components/atomos/SelectorProfesional';
-import { recepcionStore, setMedicoSeleccionado } from '@/context/recepcion.recepcionista.store';
+import { recepcionStore, setMedicoSeleccionado, setProfesionales } from '@/context/recepcion.recepcionista.store';
 import { useStore } from '@nanostores/react';
+import { useEffect } from 'react';
 
 interface Profesional {
   id: string;
@@ -14,6 +15,12 @@ interface Props {
 
 export default function ContenedorSelectorProfesional({ profesionales }: Props) {
   const { medicoSeleccionadoId } = useStore(recepcionStore);
+
+  useEffect(() => {
+    if (profesionales) {
+      setProfesionales(profesionales);
+    }
+  }, [profesionales]);
 
   const handleSelection = (id: string | null) => {
     setMedicoSeleccionado(id);

@@ -17,14 +17,14 @@ export interface Profesional {
 type Turno = {
   id: string;
   estado:
-    | 'pendiente'
-    | 'confirmado'
-    | 'en_consulta'
-    | 'sala_de_espera'
-    | 'finalizado'
-    | 'cancelado'
-    | 'ausente'
-    | 'demorado';
+  | 'pendiente'
+  | 'confirmado'
+  | 'en_consulta'
+  | 'sala_de_espera'
+  | 'finalizado'
+  | 'cancelado'
+  | 'ausente'
+  | 'demorado';
   horaLlegadaPaciente?: string;
   [key: string]: any;
 };
@@ -38,8 +38,6 @@ interface RecepcionStore {
   sseConectado: boolean;
   ultimaActualizacion: string | null;
   profesionales: Profesional[];
-  isLoadingProfesionales: boolean;
-  errorProfesionales: string | null;
 }
 
 // --- STORE PRINCIPAL ---
@@ -52,13 +50,16 @@ export const recepcionStore = map<RecepcionStore>({
   sseConectado: false,
   ultimaActualizacion: null,
   profesionales: [],
-  isLoadingProfesionales: true,
-  errorProfesionales: null,
 });
 
 // --- ACCIÓN PARA CAMBIAR MÉDICO ---
 export function setMedicoSeleccionado(id: string | null) {
   recepcionStore.setKey('medicoSeleccionadoId', id);
+}
+
+// --- ACCIÓN PARA INICIALIZAR PROFESIONALES ---
+export function setProfesionales(profesionales: Profesional[]) {
+  recepcionStore.setKey('profesionales', profesionales);
 }
 
 
@@ -133,7 +134,7 @@ export function manejarEventoSSE(evento: any) {
 
     recepcionStore.setKey('turnosDelDia', turnosNuevos);
     console.log(`🗑️ Turno eliminado de recepción via SSE: ${turnoId}`);
-}
+  }
 }
 // --- GESTIÓN DE CONEXIÓN SSE ---
 export function iniciarConexionSSE(userId?: string) {
@@ -152,32 +153,29 @@ export function getEstadoSSE() {
 }
 
 // --- ACCIONES PRINCIPALES ---
-export async function fetchProfesionales() {
-  recepcionStore.setKey('isLoadingProfesionales', true);
-  try {
-    const response = await fetch('/api/recepcion/profesionales');
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al obtener los profesionales');
-    }
-    const data = await response.json();
-    recepcionStore.setKey('profesionales', data.data);
-  } catch (error: any) {
-    recepcionStore.setKey('errorProfesionales', error.message);
-  } finally {
-    recepcionStore.setKey('isLoadingProfesionales', false);
-  }
-}
+
 
 export async function fetchTurnosDelDia(fecha: string, centroMedicoId?: string) {
   recepcionStore.setKey('isLoading', true);
-  const medicoId = recepcionStore.get().medicoSeleccionadoId;
+  const { medicoSeleccionadoId, profesionales } = recepcionStore.get();
 
   try {
     // Construir la URL dinámicamente
-    let apiUrl = `/api/agenda?fecha=${fecha}&centroMedicoId=${centroMedicoId}`;
-    if (medicoId) {
-      apiUrl += `&profesionalId=${medicoId}`;
+    let apiUrl = `/api/agenda?fecha=${fecha}`;
+    if (centroMedicoId) {
+      apiUrl += `&centroMedicoId=${centroMedicoId}`;
+    }
+
+    if (medicoSeleccionadoId) {
+      // Si hay un médico específico seleccionado, se usa su ID
+      apiUrl += `&profesionalId=${medicoSeleccionadoId}`;
+    } else {
+      // Si no, se usan los IDs de todos los profesionales asociados
+      const ids = profesionales.map(p => p.id);
+      console.log('apiURL para agenda', apiUrl)
+      if (ids.length > 0) {
+        apiUrl += `&profesionalIds=${ids.join(',')}`;
+      }
     }
 
     const response = await fetch(apiUrl);
@@ -186,7 +184,7 @@ export async function fetchTurnosDelDia(fecha: string, centroMedicoId?: string) 
     recepcionStore.setKey('turnosDelDia', data.data);
 
     // La conexión SSE se mantiene para recibir actualizaciones de todos modos
-    iniciarConexionSSE(); 
+    iniciarConexionSSE();
   } catch (error: any) {
     recepcionStore.setKey('error', error.message);
   } finally {
