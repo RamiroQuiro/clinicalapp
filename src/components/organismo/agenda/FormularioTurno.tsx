@@ -38,13 +38,13 @@ interface Props {
 }
 
 // --- Componente ---
-export const FormularioTurno: React.FC<Props> = ({ user, turnoDelStore, agenda, datosNuevoTurno, onClickSeleccionarFecha, setPaciente, resetNuevoTurno, handleDatosNuevoTurno }) => {
-  const [form, setForm] = useState({ ...turnoDelStore });
+export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno, onClickSeleccionarFecha, setPaciente, resetNuevoTurno, handleDatosNuevoTurno }) => {
+  const [form, setForm] = useState({ ...datosNuevoTurno });
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const horariosDisponibles = useMemo(() => agenda?.filter(slot => slot.disponible), [agenda]);
-  console.log('props entrantws :', agenda, datosNuevoTurno, turnoDelStore)
+  console.log('props entrantws :', agenda, datosNuevoTurno)
   const horariosAgrupados = useMemo(
     () => ({
       mañana: horariosDisponibles?.filter(
@@ -66,8 +66,8 @@ export const FormularioTurno: React.FC<Props> = ({ user, turnoDelStore, agenda, 
     };
   }, []);
   useEffect(() => {
-    setForm(prevForm => ({ ...prevForm, ...turnoDelStore }));
-  }, [turnoDelStore]);
+    setForm(prevForm => ({ ...prevForm, ...datosNuevoTurno }));
+  }, [datosNuevoTurno]);
 
   useEffect(() => {
     return () => {

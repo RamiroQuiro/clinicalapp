@@ -1,7 +1,6 @@
 ---
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import Modal from '@/components/moleculas/Modal.astro';
-import { FormularioTurno } from '@/components/organismo/agenda/FormularioTurno';
 import ContenedeorModal from '@/components/organismo/ContenedeorModal.astro';
 import ContenedorRenderizdoPantallaRecepcionista from '@/components/organismo/recepcion/ContenedorRenderizdoPantalla.recepcionista';
 import ContenedorSelectorProfesional from '@/components/organismo/recepcion/ContenedorSelectorProfesional';
@@ -11,6 +10,7 @@ import MenuPestañaRecepcionista from '@/components/organismo/recepcion/MenuPest
 import db from '@/db';
 import { recepcionistaProfesional, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import ContenedorFormularioTurnoRecepcionista from './RecepcionRecepsionista/ContenedorFormularioTurnoRecepcionista';
 
 const { user } = Astro.locals;
 let dataProfesionales = [];
@@ -37,11 +37,13 @@ try {
 <MainDashboard h1="Recepción - Panel de Asistente">
   <div slot="botonera" class="flex gap-4 items-center">
     <ContenedeorModal label="➕ Turno Rápido" title="Crear Turno Rápido" id="modal-agregar">
+      <!-- fromaulario turnos esponateos -->
       <FormularioTurnoRecepcion client:load profesionalesRelacionados={dataProfesionales} />
     </ContenedeorModal>
     <ContenedorSelectorProfesional client:load profesionales={dataProfesionales} />
+    <!-- fromaulario turnos programados -->
     <Modal id="modalNuevoTurno" title="Nuevo Turno">
-      <FormularioTurno client:load user={user} isRecepcionista={true} />
+      <ContenedorFormularioTurnoRecepcionista user={user} client:load />
     </Modal>
   </div>
 
