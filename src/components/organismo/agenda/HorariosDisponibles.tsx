@@ -1,21 +1,11 @@
-import {
-  agendaDelDia,
-  fechaSeleccionada,
-  profesionalSeleccionado,
-  setFechaYHora,
-  setPaciente,
-} from '@/context/agenda.store';
+
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
-import { useStore } from '@nanostores/react';
 import { Calendar, Clock, Moon, Sun } from 'lucide-react';
 import { useMemo } from 'react';
 import BotonHora from './BotonHora';
 
-export default function HorariosDisponibles() {
-  const agenda = useStore(agendaDelDia);
-  const dia = useStore(fechaSeleccionada);
-  const profesional = useStore(profesionalSeleccionado);
-  console.log('profesional', profesional);
+export default function HorariosDisponibles({ agenda, dia, profesional, hangleAgendar }: { agenda: any, dia: Date, profesional: any, hangleAgendar: (hora: string) => void }) {
+
   const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
 
   const horariosAgrupados = useMemo(
@@ -31,11 +21,7 @@ export default function HorariosDisponibles() {
   );
 
   const handleAgendarClick = (hora: string) => {
-    if (!dia) return;
-    setPaciente({ id: '', nombre: '' });
-
-    setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm', profesional?.id));
-    document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
+    hangleAgendar(hora)
   };
 
   if (agenda.length === 0) {

@@ -1,5 +1,7 @@
 ---
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import Modal from '@/components/moleculas/Modal.astro';
+import { FormularioTurno } from '@/components/organismo/agenda/FormularioTurno';
 import ContenedeorModal from '@/components/organismo/ContenedeorModal.astro';
 import ContenedorRenderizdoPantallaRecepcionista from '@/components/organismo/recepcion/ContenedorRenderizdoPantalla.recepcionista';
 import ContenedorSelectorProfesional from '@/components/organismo/recepcion/ContenedorSelectorProfesional';
@@ -38,6 +40,9 @@ try {
       <FormularioTurnoRecepcion client:load profesionalesRelacionados={dataProfesionales} />
     </ContenedeorModal>
     <ContenedorSelectorProfesional client:load profesionales={dataProfesionales} />
+    <Modal id="modalNuevoTurno" title="Nuevo Turno">
+      <FormularioTurno client:load user={user} isRecepcionista={true} />
+    </Modal>
   </div>
 
   <ConstendorStatsRec client:load />

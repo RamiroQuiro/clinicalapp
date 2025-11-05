@@ -1,5 +1,3 @@
-import { fechaSeleccionada } from '@/context/agenda.store';
-import { useStore } from '@nanostores/react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
@@ -27,11 +25,11 @@ const formatMonthCaption = (month: Date) => {
   return `${meses[month.getMonth()]} ${month.getFullYear()}`;
 };
 
-export default function Calendario() {
-  const selectedDay = useStore(fechaSeleccionada);
+export default function Calendario({ onSelect, selectedDay }: { onSelect: (date: Date | undefined) => void, selectedDay: Date }) {
+
 
   const handleSelect = (date: Date | undefined) => {
-    fechaSeleccionada.set(date);
+    onSelect(date);
   };
 
   return (

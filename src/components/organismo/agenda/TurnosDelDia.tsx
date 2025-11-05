@@ -1,25 +1,11 @@
-import {
-  agendaDelDia,
-  fechaSeleccionada,
-  setFechaYHora,
-  setPaciente
-} from '@/context/agenda.store';
 
-import { useSSE } from '@/hook/useSSE';
-import { showToast } from '@/utils/toast/toastShow';
-import { useStore } from '@nanostores/react';
 import { Calendar, Clock } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import TurnoCard from './TurnoCard';
 
-export default function TurnosDelDia({ userId }: { userId: string }) {
-  const agenda = useStore(agendaDelDia);
-  const diaSeleccionado = useStore(fechaSeleccionada);
+export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagendar, handleCancelarTurno }: { agenda: any, diaSeleccionado: Date, onChangeReagendar: (slot: any) => void, handleCancelarTurno: (slot: any) => void }) {
+
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<any>(null);
-  const { sseConectado } = useSSE(userId);
-
-
-  console.log('esta es e stpre de la agenda', sseConectado)
 
   const turnosOcupados = useMemo(() => {
     return agenda.filter(slot => !slot.disponible).sort((a, b) => a.hora.localeCompare(b.hora));
@@ -33,32 +19,12 @@ export default function TurnosDelDia({ userId }: { userId: string }) {
   };
 
   const handleReagendar = (slot: any) => {
-    if (!diaSeleccionado) return;
-    setPaciente({
-      id: slot.turnoInfo.pacienteId,
-      nombre: `${slot.turnoInfo.pacienteNombre} ${slot.turnoInfo.pacienteApellido}`,
-    });
-    setFechaYHora();
-    document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
+    onChangeReagendar(slot);
+
   };
 
   const handleCancelar = async (slot: any) => {
-    try {
-      const responseFetch = await fetch(`/api/agenda/turnos/cancelar?id=${slot.turnoInfo.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!responseFetch.ok) {
-        showToast('Error al cancelar el turno', { background: 'bg-red-500' });
-        throw new Error('Error al cancelar el turno');
-      }
-
-      // La actualización del store agendaDelDia ahora se maneja a través de SSE
-      showToast('Turno cancelado exitosamente', { background: 'bg-green-500' });
-    } catch (error) {
-      console.error('Error al cancelar el turno:', error);
-      showToast('Error al cancelar el turno', { background: 'bg-red-500' });
-    }
+    handleCancelarTurno(slot)
   };
 
   const handleLlamar = (slot: any) => {

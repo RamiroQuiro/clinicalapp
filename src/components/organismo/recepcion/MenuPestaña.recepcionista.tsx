@@ -12,7 +12,7 @@ const tabs = [
 export default function MenuPestañaRecepcionista({ }: Props) {
   const { pestanaActiva: activeTab } = useStore(recepcionStore);
 
-  console.log('activeTab ->', activeTab);
+  // console.log('activeTab ->', activeTab);
   return (
     <div className="border-b border-gray-200 w-full flex-1">
       <nav

@@ -20,11 +20,10 @@ function BotonHora({ slot, onClick }: BotonHoraProps) {
           w-fit px-2 py-2 text-sm font-semibold rounded-md transition-all duration-200
           border-2 relative overflow-hidden
           ${pulsado ? 'scale-95' : 'scale-100'}
-          ${
-            pulsado
-              ? 'bg-primary-100 border-[#cccccc70] shadow-md text-white'
-              : 'bg-white border-[#cccccc50] shadow-xs text-primary-600 hover:text-primary-textoTitle hover:bg-primary-200/10 hover:border-primary-200'
-          }
+          ${pulsado
+          ? 'bg-primary-100 border-[#cccccc70] shadow-md text-white'
+          : 'bg-white border-[#cccccc50] shadow-xs text-primary-600 hover:text-primary-textoTitle hover:bg-primary-200/10 hover:border-primary-200'
+        }
         `}
     >
       {formatUtcToAppTime(slot.hora, 'HH:mm')}

@@ -1,8 +1,7 @@
 import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
-import { computed, map } from 'nanostores';
+import { atom, computed, map } from 'nanostores';
 
-import type { AgendaSlot } from './agenda.store';
 
 
 // --- TIPOS ---
@@ -38,7 +37,10 @@ interface RecepcionStore {
   sseConectado: boolean;
   ultimaActualizacion: string | null;
   profesionales: Profesional[];
+  pacienteSeleccionado: any;
 }
+
+
 
 // --- STORE PRINCIPAL ---
 export const recepcionStore = map<RecepcionStore>({
@@ -50,11 +52,31 @@ export const recepcionStore = map<RecepcionStore>({
   sseConectado: false,
   ultimaActualizacion: null,
   profesionales: [],
+  pacienteSeleccionado: null,
 });
+
+// DAR TUNRO NUEVO
+// Mapa para almacenar los datos del formulario de un nuevo turno
+export const datosNuevoTurnoRecepcionista = map({
+  pacienteId: '' as string | undefined,
+  pacienteNombre: '' as string,
+  userMedicoId: '' as string | undefined,
+  fechaTurno: undefined as Date | undefined,
+  horaTurno: '' as string, // formato "HH:mm"
+  duracion: 30, // en minutos, valor por defecto
+  tipoConsulta: 'presencial' as string,
+  motivoConsulta: '' as string,
+});
+
 
 // --- ACCIÓN PARA CAMBIAR MÉDICO ---
 export function setMedicoSeleccionado(id: string | null) {
   recepcionStore.setKey('medicoSeleccionadoId', id);
+}
+
+// --- ACCIÓN PARA CAMBIAR PACIENTE SELECCIONADO ---
+export function setPacienteSeleccionado(paciente: any) {
+  recepcionStore.setKey('pacienteSeleccionado', paciente);
 }
 
 // --- ACCIÓN PARA INICIALIZAR PROFESIONALES ---
@@ -68,17 +90,46 @@ export function setPestanaActiva(pestana: RecepcionStore['pestanaActiva']) {
   recepcionStore.setKey('pestanaActiva', pestana);
 }
 
+// Atom para la fecha actualmente seleccionada en el calendario
+export const fechaSeleccionada = atom<Date | undefined>(new Date());
+
+// --- ACCIÓN PARA CAMBIAR FECHA SELECCIONADA ---
+// seccion para dar turnos en la agenda
+export const setFechaYHoraRecepcionista = (fecha: Date, hora: string, medicoId: string) => {
+  datosNuevoTurnoRecepcionista.setKey('fechaTurno', fecha);
+  datosNuevoTurnoRecepcionista.setKey('horaTurno', hora);
+  datosNuevoTurnoRecepcionista.setKey('userMedicoId', medicoId);
+};
+export const setPacienteRecepcionista = (paciente: { id: string; nombre: string }) => {
+  datosNuevoTurnoRecepcionista.setKey('pacienteId', paciente.id);
+  datosNuevoTurnoRecepcionista.setKey('pacienteNombre', paciente.nombre);
+};
+
+export const resetNuevoTurnoRecepcionista = () => {
+  datosNuevoTurnoRecepcionista.set({
+    pacienteId: undefined,
+    pacienteNombre: '',
+    userMedicoId: '', // Mantiene el médico seleccionado
+    fechaTurno: undefined,
+    horaTurno: '',
+    duracion: 30,
+    tipoConsulta: 'presencial',
+    motivoConsulta: '',
+  });
+};
+
+
 // --- STORES COMPUTADOS ---
 export const pacientesEnEspera = computed(recepcionStore, $store =>
-  $store.turnosDelDia.filter(t => t.estado === 'sala_de_espera')
+  $store.turnosDelDia.filter(t => t.turnoInfo?.estado === 'sala_de_espera')
 );
 
 export const turnosPendientes = computed(recepcionStore, $store =>
-  $store.turnosDelDia.filter(t => t.estado === 'pendiente' || t.estado === 'confirmado')
+  $store.turnosDelDia.filter(t => t.turnoInfo?.estado === 'pendiente' || t.turnoInfo?.estado === 'confirmado')
 );
 
 export const turnosEnConsulta = computed(recepcionStore, $store =>
-  $store.turnosDelDia.filter(t => t.estado === 'en_consulta')
+  $store.turnosDelDia.filter(t => t.turnoInfo?.estado === 'en_consulta')
 );
 
 // --- MANEJADOR DE EVENTOS SSE ---

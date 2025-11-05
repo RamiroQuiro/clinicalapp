@@ -1,16 +1,9 @@
 import Button from '@/components/atomos/Button';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
-import {
-  agendaDelDia,
-  datosNuevoTurno,
-  fechaSeleccionada,
-  resetNuevoTurno,
-  setPaciente,
-} from '@/context/agenda.store';
+
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { showToast } from '@/utils/toast/toastShow';
-import { useStore } from '@nanostores/react';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { Moon, Sun } from 'lucide-react';
@@ -35,24 +28,29 @@ interface User {
 
 interface Props {
   user: User;
+  turnoDelStore: any;
+  agenda: any;
+  datosNuevoTurno: any;
+  onClickSeleccionarFecha: (date: Date | undefined) => void;
+  setPaciente: (paciente: any) => void;
+  resetNuevoTurno: () => void;
+  handleDatosNuevoTurno: (user: any) => void;
 }
 
 // --- Componente ---
-export const FormularioTurno: React.FC<Props> = ({ user }) => {
-  const turnoDelStore = useStore(datosNuevoTurno);
+export const FormularioTurno: React.FC<Props> = ({ user, turnoDelStore, agenda, datosNuevoTurno, onClickSeleccionarFecha, setPaciente, resetNuevoTurno, handleDatosNuevoTurno }) => {
   const [form, setForm] = useState({ ...turnoDelStore });
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
-  const agenda = useStore(agendaDelDia);
 
-  const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
-
+  const horariosDisponibles = useMemo(() => agenda?.filter(slot => slot.disponible), [agenda]);
+  console.log('props entrantws :', agenda, datosNuevoTurno, turnoDelStore)
   const horariosAgrupados = useMemo(
     () => ({
-      mañana: horariosDisponibles.filter(
+      mañana: horariosDisponibles?.filter(
         slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) < 12
       ),
-      tarde: horariosDisponibles.filter(
+      tarde: horariosDisponibles?.filter(
         slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) >= 12
       ),
     }),
@@ -61,7 +59,7 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (!form.userMedicoId) {
-      datosNuevoTurno.setKey('userMedicoId', user.id);
+      handleDatosNuevoTurno(user);
     }
     return () => {
       resetNuevoTurno();
@@ -96,6 +94,7 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
       pacienteNombre: `${paciente.nombre} ${paciente.apellido}`,
     }));
     setPaciente({ id: paciente.id, nombre: `${paciente.nombre} ${paciente.apellido}` });
+
     setIsSearchingPaciente(false);
   };
 
@@ -179,7 +178,8 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
   };
 
   const handleSelect = (date: Date | undefined) => {
-    fechaSeleccionada.set(date);
+    onClickSeleccionarFecha(date);
+
   };
   return (
     <form onSubmit={handleSubmit} className="p-4 space-y-4">
@@ -213,7 +213,7 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
       {/* --- SELECTOR DE PROFESIONAL -- */}
 
       {/* para reagendar */}
-      {!datosNuevoTurno.get().fechaTurno && !datosNuevoTurno.get().horaTurno ? (
+      {!datosNuevoTurno?.fechaTurno && !datosNuevoTurno?.horaTurno ? (
         <div>
           <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
             Fecha y Hora del Turno
@@ -239,32 +239,32 @@ export const FormularioTurno: React.FC<Props> = ({ user }) => {
           />
         </div>
       )}
-      {horariosAgrupados.mañana.length > 0 &&
-        !datosNuevoTurno.get().fechaTurno &&
-        !datosNuevoTurno.get().horaTurno ? (
+      {horariosAgrupados?.mañana?.length > 0 &&
+        !datosNuevoTurno?.fechaTurno &&
+        !datosNuevoTurno?.horaTurno ? (
         <div className="w-full space-y-2">
-          {horariosAgrupados.mañana.length > 0 && (
+          {horariosAgrupados?.mañana?.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                 <Sun className="w-4 h-4 mr-2 text-yellow-500" />
                 Turno Mañana
               </h3>
               <div className="flex flex-wrap gap-2">
-                {horariosAgrupados.mañana.map(slot => (
+                {horariosAgrupados?.mañana?.map(slot => (
                   <BotonHora key={slot.hora} slot={slot} />
                 ))}
               </div>
             </div>
           )}
 
-          {horariosAgrupados.tarde.length > 0 && (
+          {horariosAgrupados?.tarde?.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                 <Moon className="w-4 h-4 mr-2 text-blue-500" />
                 Turno Tarde
               </h3>
               <div className="flex flex-wrap gap-2">
-                {horariosAgrupados.tarde.map(slot => (
+                {horariosAgrupados?.tarde?.map(slot => (
                   <BotonHora key={slot.hora} slot={slot} />
                 ))}
               </div>
