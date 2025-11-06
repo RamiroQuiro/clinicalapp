@@ -24,6 +24,8 @@ export default function HorariosDisponibles({ agenda, dia, profesional, hangleAg
     hangleAgendar(hora)
   };
 
+
+  console.log(' agenda', agenda)
   if (agenda.length === 0) {
     return (
       <div className="text-center py-8">

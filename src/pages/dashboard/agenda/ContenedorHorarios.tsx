@@ -18,7 +18,7 @@ export default function ContenedorHorarios({ }: Props) {
         if (!dia) return;
         setPaciente({ id: '', nombre: '' });
 
-        setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm', profesional?.id));
+        setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm'), profesional?.id);
         document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
     }
     return (

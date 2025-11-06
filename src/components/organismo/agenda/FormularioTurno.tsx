@@ -44,7 +44,6 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
   const [loading, setLoading] = useState(false);
 
   const horariosDisponibles = useMemo(() => agenda?.filter(slot => slot.disponible), [agenda]);
-  console.log('props entrantws :', agenda, datosNuevoTurno)
   const horariosAgrupados = useMemo(
     () => ({
       mañana: horariosDisponibles?.filter(

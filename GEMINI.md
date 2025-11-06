@@ -466,3 +466,16 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
     *   Se implementó una lógica en el middleware de Astro para redirigir automáticamente a los usuarios con el rol `recepcion`.
     *   Se discutió la optimización de rendimiento, decidiendo finalmente leer el `rolEnCentro` desde la cookie `userData` (previamente guardada en el login) en lugar de hacer una consulta a la base de datos en cada petición, evitando así sobrecargar el sistema.
 
+---
+
+## Sesión 21: viernes, 5 de noviembre de 2025
+
+*   **Objetivo**: Refactorizar el flujo de creación de turnos para que sea reutilizable tanto por el perfil "Profesional" como por el "Recepcionista", desacoplando la lógica del estado de la UI.
+*   **Decisión de Arquitectura Clave**: Se migró de un formulario monolítico a un patrón de "Componente Tonto / Contenedor Inteligente".
+    *   **Componente Tonto**: `FormularioTurno.tsx` se refactorizó para ser puramente presentacional, sin conexiones directas a ningún store, recibiendo todos los datos y funciones a través de `props`.
+    *   **Contenedores Inteligentes**: Se crearon dos contenedores para orquestar el formulario:
+        1.  `ContenedorFormularioTurno.tsx`: Conecta el formulario con el `agenda.store.ts` para el uso del profesional.
+        2.  `ContenedorFormularioTurnoRecepcionista.tsx`: Conecta el mismo formulario con el `recepcion.recepcionista.store.ts` para el uso de la recepcionista.
+*   **Mejora de UX (Recepcionista)**: Se implementó el componente `ContenedorHorariosRecepsionista.tsx`, que muestra tarjetas de horarios disponibles para cada médico, permitiendo a la recepcionista seleccionar al profesional de forma implícita al elegir un horario.
+*   **Depuración y Solución**: Se resolvió un bug donde el formulario de la recepcionista no captaba los datos del paciente y del profesional. El usuario identificó correctamente que el problema no estaba en el formulario en sí, sino en los contenedores, que no estaban pasando el `medicoId` correctamente a las acciones del store (`setFechaYHora...`) al momento de la selección del horario.
+*   **Próximos Pasos**: Continuar con el desarrollo de las funcionalidades específicas de la sección de Recepción.

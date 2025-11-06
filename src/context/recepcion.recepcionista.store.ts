@@ -105,6 +105,7 @@ export const setPacienteRecepcionista = (paciente: { id: string; nombre: string 
   datosNuevoTurnoRecepcionista.setKey('pacienteNombre', paciente.nombre);
 };
 
+
 export const resetNuevoTurnoRecepcionista = () => {
   datosNuevoTurnoRecepcionista.set({
     pacienteId: undefined,

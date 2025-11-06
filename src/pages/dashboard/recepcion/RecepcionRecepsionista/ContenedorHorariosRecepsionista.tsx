@@ -25,8 +25,7 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
                     const handleAgendar = (hora: string) => {
                         if (!dia) return;
                         setPacienteSeleccionado({ id: '', nombre: '' });
-
-                        setFechaYHoraRecepcionista(dia, formatUtcToAppTime(hora, 'HH:mm', profesional?.id));
+                        setFechaYHoraRecepcionista(dia, formatUtcToAppTime(hora, 'HH:mm'), profesional?.id);
                         document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
                     }
                     return (
