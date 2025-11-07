@@ -3,9 +3,7 @@ import { useStore } from '@nanostores/react';
 import React, { useEffect } from 'react';
 import { fetchTurnosDelDia, recepcionStore } from '../../../context/recepcion.store';
 import MenuPestaña from './MenuPestaña';
-import PacientesRecepcion from './PacientesRecepcion';
 import SalaDeEspera from './SalaDeEspera';
-import TurnosDelDia from './TurnosDelDia';
 
 const ContenedorRecepcion: React.FC = () => {
   const { pestanaActiva } = useStore(recepcionStore);
@@ -17,12 +15,8 @@ const ContenedorRecepcion: React.FC = () => {
 
   const renderContent = () => {
     switch (pestanaActiva) {
-      case 'recepcion':
-        return <TurnosDelDia />;
       case 'salaDeEspera':
         return <SalaDeEspera />;
-      case 'pacientes':
-        return <PacientesRecepcion />;
       default:
         return null;
     }

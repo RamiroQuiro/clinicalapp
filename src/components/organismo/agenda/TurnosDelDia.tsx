@@ -6,7 +6,7 @@ import TurnoCard from './TurnoCard';
 export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagendar, handleCancelarTurno }: { agenda: any, diaSeleccionado: Date, onChangeReagendar: (slot: any) => void, handleCancelarTurno: (slot: any) => void }) {
 
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<any>(null);
-
+  console.log('fecha seleciconada ->', diaSeleccionado)
   const turnosOcupados = useMemo(() => {
     return agenda.filter(slot => !slot.disponible).sort((a, b) => a.hora.localeCompare(b.hora));
   }, [agenda]);
@@ -97,7 +97,7 @@ export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagenda
     );
   }
   if (turnosOcupados.length > 0) {
-    console.log('turnosOcupados', turnosOcupados);
+
     return (
       <div className="w-full">
         {/* Header con contador */}

@@ -232,6 +232,7 @@ export async function fetchTurnosDelDia(fecha: string, centroMedicoId?: string) 
     const response = await fetch(apiUrl);
     if (!response.ok) throw new Error('Respuesta de red no fue ok');
     const data = await response.json();
+
     recepcionStore.setKey('turnosDelDia', data.data);
 
     // La conexión SSE se mantiene para recibir actualizaciones de todos modos
