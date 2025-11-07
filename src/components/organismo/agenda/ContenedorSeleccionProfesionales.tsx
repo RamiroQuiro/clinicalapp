@@ -1,4 +1,4 @@
-import { agendaDelDia, fechaSeleccionada, profesionalSeleccionado } from '@/context/agenda.store';
+import { agendaDelDia, fechaSeleccionada, fetchAgenda, profesionalSeleccionado } from '@/context/agenda.store';
 import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 type Props = {
@@ -33,23 +33,7 @@ export default function ContenedorSeleccionProfesionales({ profesionales, centro
       console.log('userSeleccionado', userSeleccionado.id);
       console.log('centroMedicoId', centroMedicoId);
 
-      const fetchAgenda = async () => {
-        try {
-          const response = await fetch(
-            `/api/agenda?fecha=${fechaFormateada}&profesionalId=${userSeleccionado.id}&centroMedicoId=${centroMedicoId}`
-          );
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json();
-          agendaDelDia.set(data.data); // Actualiza el store global
-        } catch (error) {
-          console.error('Error al obtener la agenda:', error);
-          agendaDelDia.set([]); // Limpiar la agenda en caso de error
-        }
-      };
-
-      fetchAgenda();
+      fetchAgenda(fechaFormateada, userSeleccionado.id, centroMedicoId);
     }
   }, [diaSeleccionado, userSeleccionado]);
   const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

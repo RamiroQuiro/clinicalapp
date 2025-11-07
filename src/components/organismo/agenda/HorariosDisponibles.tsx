@@ -1,10 +1,28 @@
 
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
-import { Calendar, Clock, Moon, Sun } from 'lucide-react';
+import { Clock, Moon, Sun } from 'lucide-react';
 import { useMemo } from 'react';
 import BotonHora from './BotonHora';
 
-export default function HorariosDisponibles({ agenda, dia, profesional, hangleAgendar }: { agenda: any, dia: Date, profesional: any, hangleAgendar: (hora: string) => void }) {
+function HorariosSkeletonLoader() {
+  return (
+    <div className="space-y-6">
+      {[1, 2].map((i) => (
+        <div key={i} className="p-4 border border-primary-border rounded-lg animate-pulse">
+          <div className="h-5 bg-primary-texto/30 rounded w-1/2 mb-4"></div>
+          <div className="flex flex-wrap gap-2">
+            <div className="h-10 w-20 bg-primary-texto/30 rounded"></div>
+            <div className="h-10 w-20 bg-primary-texto/30 rounded"></div>
+            <div className="h-10 w-20 bg-primary-texto/30 rounded"></div>
+            <div className="h-10 w-20 bg-primary-texto/30 rounded"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function HorariosDisponibles({ agenda, dia, profesional, hangleAgendar, isLoading }: { agenda: any, dia: Date, profesional: any, hangleAgendar: (hora: string) => void, isLoading: boolean }) {
 
   const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
 
@@ -25,12 +43,9 @@ export default function HorariosDisponibles({ agenda, dia, profesional, hangleAg
   };
 
 
-  if (agenda.length === 0) {
+  if (isLoading) {
     return (
-      <div className="text-center py-8">
-        <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500 text-sm">Selecciona una fecha</p>
-      </div>
+      <HorariosSkeletonLoader />
     );
   }
 

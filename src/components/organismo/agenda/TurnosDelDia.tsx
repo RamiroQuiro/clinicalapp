@@ -3,10 +3,27 @@ import { Calendar, Clock } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import TurnoCard from './TurnoCard';
 
-export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagendar, handleCancelarTurno }: { agenda: any, diaSeleccionado: Date, onChangeReagendar: (slot: any) => void, handleCancelarTurno: (slot: any) => void }) {
+
+
+function TurnosSkeletonLoader() {
+  return (
+    <div className="space-y-3">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="p-4 border border-primary-border rounded-lg animate-pulse">
+          <div className="flex justify-between items-center">
+            <div className="h-5 bg-primary-texto/30 rounded w-1/4"></div>
+            <div className="h-4 bg-primary-texto/30 rounded w-1/6"></div>
+          </div>
+          <div className="h-4 bg-primary-texto/30 rounded w-1/2 mt-3"></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagendar, handleCancelarTurno, isLoading }: { agenda: any, diaSeleccionado: Date, onChangeReagendar: (slot: any) => void, handleCancelarTurno: (slot: any) => void, isLoading: boolean }) {
 
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<any>(null);
-  console.log('fecha seleciconada ->', diaSeleccionado)
   const turnosOcupados = useMemo(() => {
     return agenda.filter(slot => !slot.disponible).sort((a, b) => a.hora.localeCompare(b.hora));
   }, [agenda]);
@@ -86,13 +103,19 @@ export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagenda
           <h4 className="text-lg font-semibold text-primary-100 capitalize">{formattedDate}</h4>
         </div>
 
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-700/50 flex items-center justify-center">
-            <Clock className="w-8 h-8 text-gray-500" />
-          </div>
-          <p className="text-gray-400 font-medium mb-1">No hay turnos agendados</p>
-          <p className="text-gray-500 text-sm">Los turnos aparecerán aquí cuando se agenden</p>
-        </div>
+        {
+          isLoading ? (
+            <TurnosSkeletonLoader />
+          ) :
+
+
+            (<div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-700/50 flex items-center justify-center">
+                <Clock className="w-8 h-8 text-gray-500" />
+              </div>
+              <p className="text-gray-400 font-medium mb-1">No hay turnos agendados</p>
+              <p className="text-gray-500 text-sm">Los turnos aparecerán aquí cuando se agenden</p>
+            </div>)}
       </div>
     );
   }
@@ -112,17 +135,22 @@ export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagenda
         </div>
         {/* Lista de turnos */}
         <div className="space-y-2">
-          {turnosOcupados.map((slot, index) => (
-            <TurnoCard
-              key={`${slot.hora}-${index}`}
-              slot={slot}
-              onVerDetalles={handleVerDetalles}
-              onReagendar={handleReagendar}
-              onCancelar={handleCancelar}
-              onLlamar={handleLlamar}
-              onWhatsApp={handleWhatsApp}
-            />
-          ))}
+          {
+            isLoading ? (
+              <TurnosSkeletonLoader />
+            ) :
+              turnosOcupados.map((slot: any, index: string) => (
+                <TurnoCard
+                  key={`${slot.hora}-${index}`}
+                  slot={slot}
+                  onVerDetalles={handleVerDetalles}
+                  onReagendar={handleReagendar}
+                  onCancelar={handleCancelar}
+                  onLlamar={handleLlamar}
+                  onWhatsApp={handleWhatsApp}
+                />
+              ))
+          }
         </div>
       </div>
     );

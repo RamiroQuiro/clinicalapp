@@ -1,5 +1,5 @@
 import TurnosDelDia from "@/components/organismo/agenda/TurnosDelDia";
-import { agendaDelDia, fechaSeleccionada, setFechaYHora, setPaciente } from "@/context/agenda.store";
+import { dataStoreAgenda, fechaSeleccionada, setFechaYHora, setPaciente } from "@/context/agenda.store";
 import { useSSE } from "@/hook/useSSE";
 import { showToast } from "@/utils/toast/toastShow";
 import { useStore } from "@nanostores/react";
@@ -11,13 +11,13 @@ type Props = {
 
 export default function ContenedorTurnosDia({ user }: Props) {
 
-    const agenda = useStore(agendaDelDia);
+    const { data: agenda, isLoading } = useStore(dataStoreAgenda);
     const diaSeleccionado = useStore(fechaSeleccionada);
 
     const { sseConectado } = useSSE(user.id);
 
 
-    console.log('esta es e stpre de la agenda', sseConectado)
+
 
     const onChangeReagendar = (slot: any) => {
         if (!diaSeleccionado) return;
@@ -48,6 +48,6 @@ export default function ContenedorTurnosDia({ user }: Props) {
     }
 
     return (
-        <TurnosDelDia agenda={agenda} diaSeleccionado={diaSeleccionado || new Date()} onChangeReagendar={onChangeReagendar} handleCancelarTurno={handleCancelarTurno} />
+        <TurnosDelDia agenda={agenda} diaSeleccionado={diaSeleccionado || new Date()} onChangeReagendar={onChangeReagendar} handleCancelarTurno={handleCancelarTurno} isLoading={isLoading} />
     )
 }

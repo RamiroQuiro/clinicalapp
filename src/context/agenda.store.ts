@@ -47,8 +47,41 @@ interface AgendaStore {
 // Atom para la fecha actualmente seleccionada en el calendario
 export const fechaSeleccionada = atom<Date | undefined>(new Date());
 
+
+export const dataStoreAgenda = map({
+  isLoading: false,
+  error: null,
+  data: []
+})
 // Atom para almacenar la agenda completa del día seleccionado
 export const agendaDelDia = atom<AgendaSlot[]>([]);
+
+
+export const setCargarAgenda = (agenda: AgendaSlot[]) => {
+  dataStoreAgenda.setKey('data', agenda);
+}
+
+export const fetchAgenda = async (fechaFormateada: string, userSeleccionadoId: string, centroMedicoId: string) => {
+  dataStoreAgenda.setKey('isLoading', true);
+  try {
+    const response = await fetch(
+      `/api/agenda?fecha=${fechaFormateada}&profesionalId=${userSeleccionadoId}&centroMedicoId=${centroMedicoId}`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    setCargarAgenda(data.data); // Actualiza el store global
+    dataStoreAgenda.setKey('isLoading', false);
+  } catch (error) {
+    console.error('Error al obtener la agenda:', error);
+
+    agendaDelDia.set([]); // Limpiar la agenda en caso de error
+    dataStoreAgenda.setKey('isLoading', false);
+  }
+};
+
+
 
 // Atom para el profesional actualmente seleccionado en la agenda
 export const profesionalSeleccionado = atom<Profesional | undefined>();

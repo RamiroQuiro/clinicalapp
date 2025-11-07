@@ -1,6 +1,6 @@
 import HorariosDisponibles from "@/components/organismo/agenda/HorariosDisponibles";
 import {
-    agendaDelDia,
+    dataStoreAgenda,
     fechaSeleccionada,
     profesionalSeleccionado,
     setFechaYHora,
@@ -11,7 +11,7 @@ import { useStore } from "@nanostores/react";
 type Props = {}
 
 export default function ContenedorHorarios({ }: Props) {
-    const agenda = useStore(agendaDelDia);
+    const { data: agenda, isLoading, error } = useStore(dataStoreAgenda);
     const dia = useStore(fechaSeleccionada);
     const profesional = useStore(profesionalSeleccionado);
     const handleAgendar = (hora: string) => {
@@ -22,6 +22,6 @@ export default function ContenedorHorarios({ }: Props) {
         document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
     }
     return (
-        <HorariosDisponibles agenda={agenda} dia={dia || new Date()} profesional={profesional} hangleAgendar={handleAgendar} />
+        <HorariosDisponibles agenda={agenda} dia={dia || new Date()} profesional={profesional} hangleAgendar={handleAgendar} isLoading={isLoading} />
     )
 }

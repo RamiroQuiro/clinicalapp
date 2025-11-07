@@ -102,9 +102,9 @@ function TurnoCard({
             </span>
           </div>
           <div
-            className={`text-xs text-primary-texto border font-medium absolute bottom-2 rounded-full px-2 py-0.5 bg-white right-2 ${getStatusInfo(slot.turnoInfo?.estado).colorClass}`}
+            className={`text-xs text-primary-texto border font-medium absolute bottom-2 rounded-full px-2 py-0.5 bg-white right-2 ${slot.turnoInfo?.estado === 'cancelado' ? 'text-red-500' : slot.turnoInfo?.estado === 'confirmado' ? 'text-green-500' : 'text-yellow-500'}`}
           >
-            {getStatusInfo(slot.turnoInfo?.estado).text}
+            {slot.turnoInfo?.estado}
           </div>
 
           {/* Información adicional del turno */}
