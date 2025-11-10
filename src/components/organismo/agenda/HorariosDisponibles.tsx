@@ -23,15 +23,16 @@ function HorariosSkeletonLoader() {
 }
 
 export default function HorariosDisponibles({ agenda, dia, profesional, hangleAgendar, isLoading }: { agenda: any, dia: Date, profesional: any, hangleAgendar: (hora: string) => void, isLoading: boolean }) {
-
-  const horariosDisponibles = useMemo(() => agenda.filter(slot => slot.disponible), [agenda]);
+  const horariosDisponibles = useMemo(() => {
+    return agenda?.filter((slot: any) => slot.disponible)
+  }, [agenda]);
 
   const horariosAgrupados = useMemo(
     () => ({
-      mañana: horariosDisponibles.filter(
+      mañana: horariosDisponibles?.filter(
         slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) < 12
       ),
-      tarde: horariosDisponibles.filter(
+      tarde: horariosDisponibles?.filter(
         slot => parseInt(formatUtcToAppTime(slot.hora, 'HH')) >= 12
       ),
     }),
@@ -49,7 +50,7 @@ export default function HorariosDisponibles({ agenda, dia, profesional, hangleAg
     );
   }
 
-  if (horariosDisponibles.length === 0) {
+  if (horariosDisponibles?.length === 0) {
     return (
       <div className="text-center py-6">
         <Clock className="w-10 h-10 text-orange-300 mx-auto mb-2" />
@@ -61,28 +62,28 @@ export default function HorariosDisponibles({ agenda, dia, profesional, hangleAg
 
   return (
     <div className="w-full space-y-6">
-      {horariosAgrupados.mañana.length > 0 && (
+      {horariosAgrupados?.mañana?.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
             <Sun className="w-4 h-4 mr-2 text-yellow-500" />
             Turno Mañana
           </h3>
           <div className="flex flex-wrap gap-2">
-            {horariosAgrupados.mañana.map(slot => (
+            {horariosAgrupados?.mañana?.map(slot => (
               <BotonHora key={slot.hora} slot={slot} onClick={handleAgendarClick} />
             ))}
           </div>
         </div>
       )}
 
-      {horariosAgrupados.tarde.length > 0 && (
+      {horariosAgrupados?.tarde?.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
             <Moon className="w-4 h-4 mr-2 text-blue-500" />
             Turno Tarde
           </h3>
           <div className="flex flex-wrap gap-2">
-            {horariosAgrupados.tarde.map(slot => (
+            {horariosAgrupados?.tarde?.map(slot => (
               <BotonHora key={slot.hora} slot={slot} onClick={handleAgendarClick} />
             ))}
           </div>

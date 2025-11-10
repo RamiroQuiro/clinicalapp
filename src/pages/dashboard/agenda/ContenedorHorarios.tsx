@@ -21,7 +21,8 @@ export default function ContenedorHorarios({ }: Props) {
         setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm'), profesional?.id);
         document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
     }
+    console.log('agenda en contenedor horarios profesional->', agenda)
     return (
-        <HorariosDisponibles agenda={agenda} dia={dia || new Date()} profesional={profesional} hangleAgendar={handleAgendar} isLoading={isLoading} />
+        <HorariosDisponibles agenda={agenda?.[0]?.agenda} dia={dia || new Date()} profesional={profesional} hangleAgendar={handleAgendar} isLoading={isLoading} />
     )
 }

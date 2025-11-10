@@ -20,9 +20,7 @@ export default function ContenedorSelectorProfesional({ profesionales }: Props) 
     if (profesionales) {
       setProfesionales(profesionales);
     }
-    console.log('profesionales', profesionales)
   }, [profesionales]);
-  console.log('medicoSeleccionadoId', medicoSeleccionadoId)
   const handleSelection = (id: string | null) => {
     setMedicoSeleccionado(id);
   };

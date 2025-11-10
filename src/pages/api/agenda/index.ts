@@ -75,40 +75,18 @@ export const GET: APIRoute = async ({ locals, request }) => {
     const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
     const diaSemanaNombre = diasSemana[fecha.getDay()];
 
-    // 2. Obtener la configuración de la agenda y el horario del profesional para ese día
-    // (Asumimos que si hay varios profesionales, todos usan la misma config de duración de turno del centro)
-    const profesionalIdParaHorario = profesionalesIds[0]; // Tomamos el primer (y a menudo único) profesional para buscar su horario
-
+    // 2. Obtener la configuración de la agenda y los horarios de TODOS los profesionales para ese día
     const [configuracionAgenda] = await db.select().from(agendaGeneralCentroMedico).where(eq(agendaGeneralCentroMedico.centroMedicoId, centroMedicoId));
-    const [horarioProfesional] = await db.select().from(horariosTrabajo).where(and(eq(horariosTrabajo.userMedicoId, profesionalIdParaHorario), eq(horariosTrabajo.diaSemana, diaSemanaNombre)));
-
     const DURACION_SLOT_MINUTOS = configuracionAgenda?.duracionTurnoPorDefecto || 30;
-    // console.log('horarios ->', horarioProfesional)
-    // 3. Construir la JORNADA_LABORAL dinámicamente
-    //     const JORNADA_LABORAL = [
-    //   { inicio: 8, fin: 12 },
-    //   { inicio: 18, fin: 22 },
-    // ];
-    const JORNADA_LABORAL = [];
-    if (horarioProfesional && horarioProfesional.activo) {
-      if (horarioProfesional.horaInicioManana && horarioProfesional.horaFinManana) {
-        JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioManana, fin: horarioProfesional.horaFinManana });
-      }
-      if (horarioProfesional.horaInicioTarde && horarioProfesional.horaFinTarde) {
-        JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioTarde, fin: horarioProfesional.horaFinTarde });
-      }
-    }
-    // console.log('JORNADA_LABORAL ->', JORNADA_LABORAL)
-    // Si JORNADA_LABORAL está vacía, no hay turnos para generar
-    if (JORNADA_LABORAL.length === 0) {
-      return createResponse(200, 'El profesional no trabaja en la fecha seleccionada', []);
-    }
 
-    // --- FIN DE LA NUEVA LÓGICA DINÁMICA ---
+    const todosLosHorarios = await db.select().from(horariosTrabajo).where(and(
+      inArray(horariosTrabajo.userMedicoId, profesionalesIds),
+      eq(horariosTrabajo.diaSemana, diaSemanaNombre)
+    ));
 
+    // 3. Obtener TODOS los turnos del día para los profesionales solicitados
     const inicioDelDia = toZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
     const finDelDia = toZonedTime(`${fechaQuery}T23:59:59`, APP_TIME_ZONE);
-
 
     const turnosDelDia = await db
       .select({
@@ -142,90 +120,98 @@ export const GET: APIRoute = async ({ locals, request }) => {
         )
       );
 
-    console.log('turnosDelDia', turnosDelDia)
-    // Generar slots y construir agenda...
-    const slotsDelDia = [];
-    JORNADA_LABORAL.forEach(rango => {
-      let currentSlotUtc = toZonedTime(
-        `${fechaQuery}T${rango.inicio}:00`,
-        APP_TIME_ZONE
-      );
+    const agendasPorProfesional: { [key: string]: any[] } = {};
 
-      const endSlotUtc = toZonedTime(
-        `${fechaQuery}T${rango.fin}:00`,
-        APP_TIME_ZONE
-      );
+    // 4. Iterar sobre cada profesional para construir su agenda individual
+    for (const profId of profesionalesIds) {
+      console.log('Processing professional:', profId);
 
-      while (currentSlotUtc < endSlotUtc) {
-        slotsDelDia.push(new Date(currentSlotUtc));
-        currentSlotUtc = addMinutes(currentSlotUtc, DURACION_SLOT_MINUTOS);
+      const horarioProfesional = todosLosHorarios.find(h => h.userMedicoId === profId);
+      console.log('Horario profesional:', horarioProfesional);
+
+      const JORNADA_LABORAL = [];
+      if (horarioProfesional && horarioProfesional.activo) {
+        if (horarioProfesional.horaInicioManana && horarioProfesional.horaFinManana) {
+          JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioManana, fin: horarioProfesional.horaFinManana });
+        }
+        if (horarioProfesional.horaInicioTarde && horarioProfesional.horaFinTarde) {
+          JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioTarde, fin: horarioProfesional.horaFinTarde });
+        }
       }
-    });
-    // console.log('turnos del dia->', turnosDelDia)
+      console.log('JORNADA_LABORAL for', profId, ':', JORNADA_LABORAL);
 
-    const agendaCompleta = slotsDelDia.map(slotInicio => {
-      const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MINUTOS * 60000);
-      const turnoOcupante = turnosDelDia.find(turno => {
-        const turnoInicio = new Date(turno.fechaTurno);
-        const turnoFin = new Date(
-          turnoInicio.getTime() + (turno.duracion || DURACION_SLOT_MINUTOS) * 60000
-        );
-        return slotInicio < turnoFin && slotFin > turnoInicio && turno.estado !== 'cancelado';
+      if (JORNADA_LABORAL.length === 0) {
+        agendasPorProfesional[profId] = [];
+        continue;
+      }
+
+      const slotsDelDia = [];
+      JORNADA_LABORAL.forEach(rango => {
+        let currentSlotUtc = toZonedTime(`${fechaQuery}T${rango.inicio}:00`, APP_TIME_ZONE);
+        const endSlotUtc = toZonedTime(`${fechaQuery}T${rango.fin}:00`, APP_TIME_ZONE);
+        while (currentSlotUtc < endSlotUtc) {
+          slotsDelDia.push(new Date(currentSlotUtc));
+          currentSlotUtc = addMinutes(currentSlotUtc, DURACION_SLOT_MINUTOS);
+        }
       });
 
-      if (turnoOcupante) {
-        return {
-          hora: slotInicio.toISOString(),
-          disponible: false,
-          userMedicoId: turnoOcupante.userMedicoId,
-          turnoInfo: {
-            id: turnoOcupante.id,
-            pacienteId: turnoOcupante.pacienteId,
-            pacienteCelular: turnoOcupante.pacienteCelular,
-            pacienteNombre: turnoOcupante.pacienteNombre,
-            horaLlegadaPaciente: turnoOcupante.horaLlegadaPaciente,
+      const turnosDelProfesionalActual = turnosDelDia.filter(turno => turno.userMedicoId === profId);
+      console.log('Turnos del profesional actual:', turnosDelProfesionalActual);
 
-            pacienteApellido: turnoOcupante.pacienteApellido,
-            pacienteDocumento: turnoOcupante.pacienteDocumento,
-            userMedicoId: turnoOcupante.userMedicoId,
-            profesionalNombre: turnoOcupante.profesionalNombre,
-            especialidadProfesional: turnoOcupante.especialidadProfesional,
-            tipoDeTurno: turnoOcupante.tipoDeTurno,
-            profesionalApellido: turnoOcupante.profesionalApellido,
-            motivoConsulta: turnoOcupante.motivoConsulta,
-            horaTurno: turnoOcupante.horaTurno,
-            duracion: turnoOcupante.duracion,
-            estado: turnoOcupante.estado,
-          },
-        };
-      } else {
-        return {
-          hora: slotInicio.toISOString(),
-          userMedicoId: isRecepcionista && profesionalesIds ? profesionalesIds : profesionalesIds[0],
-          disponible: true,
-          turnoInfo: null,
-        };
-      }
-    });
+      const agendaCompleta = slotsDelDia.map(slotInicio => {
+        const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MINUTOS * 60000);
+        const turnoOcupante = turnosDelProfesionalActual.find(turno => {
+          const turnoInicio = new Date(turno.fechaTurno);
+          const turnoFin = new Date(turnoInicio.getTime() + (turno.duracion || DURACION_SLOT_MINUTOS) * 60000);
+          return slotInicio < turnoFin && slotFin > turnoInicio && turno.estado !== 'cancelado';
+        });
 
-    // Identificar los turnos que ya fueron asignados a un slot para no duplicarlos.
-    const turnosAsignadosEnSlots = agendaCompleta.reduce((acc, slot) => {
-      if (slot.turnoInfo) {
-        acc.add(slot.turnoInfo.id);
-      }
-      return acc;
-    }, new Set());
+        if (turnoOcupante) {
+          return {
+            hora: slotInicio.toISOString(),
+            disponible: false,
+            userMedicoId: profId,
+            turnoInfo: {
+              id: turnoOcupante.id,
+              pacienteId: turnoOcupante.pacienteId,
+              pacienteCelular: turnoOcupante.pacienteCelular,
+              pacienteNombre: turnoOcupante.pacienteNombre,
+              horaLlegadaPaciente: turnoOcupante.horaLlegadaPaciente,
+              pacienteApellido: turnoOcupante.pacienteApellido,
+              pacienteDocumento: turnoOcupante.pacienteDocumento,
+              userMedicoId: turnoOcupante.userMedicoId,
+              profesionalNombre: turnoOcupante.profesionalNombre,
+              especialidadProfesional: turnoOcupante.especialidadProfesional,
+              tipoDeTurno: turnoOcupante.tipoDeTurno,
+              profesionalApellido: turnoOcupante.profesionalApellido,
+              motivoConsulta: turnoOcupante.motivoConsulta,
+              horaTurno: turnoOcupante.horaTurno,
+              duracion: turnoOcupante.duracion,
+              estado: turnoOcupante.estado,
+            },
+          };
+        } else {
+          return {
+            hora: slotInicio.toISOString(),
+            userMedicoId: profId,
+            disponible: true,
+            turnoInfo: null,
+          };
+        }
+      });
 
-    // Filtrar solo los turnos espontáneos o sobreturnos que NO han sido ya asignados.
-    const turnosExtraNoAsignados = turnosDelDia.filter(
-      (turno) =>
-        (turno.tipoDeTurno === 'espontaneo' || turno.tipoDeTurno === 'sobreturno') &&
-        !turnosAsignadosEnSlots.has(turno.id)
-    );
+      const turnosAsignadosEnSlots = agendaCompleta.reduce((acc, slot) => {
+        if (slot.turnoInfo) acc.add(slot.turnoInfo.id);
+        return acc;
+      }, new Set());
 
-    // Mapear esos turnos extra a la estructura de la agenda.
-    const estruturaTurnosExtra = turnosExtraNoAsignados.map((turno) => {
-      return {
+      const turnosExtraNoAsignados = turnosDelProfesionalActual.filter(
+        (turno) =>
+          (turno.tipoDeTurno === 'espontaneo' || turno.tipoDeTurno === 'sobreturno') &&
+          !turnosAsignadosEnSlots.has(turno.id)
+      );
+
+      const estruturaTurnosExtra = turnosExtraNoAsignados.map((turno) => ({
         hora: turno.fechaTurno.toISOString(),
         disponible: false,
         userMedicoId: turno.userMedicoId,
@@ -247,14 +233,20 @@ export const GET: APIRoute = async ({ locals, request }) => {
           duracion: turno.duracion,
           estado: turno.estado,
         },
-      };
-    });
+      }));
 
-    // Combinar la agenda de slots con los turnos extra y ordenar cronológicamente.
-    const agendaCompletisima = [...agendaCompleta, ...estruturaTurnosExtra];
-    agendaCompletisima.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
+      const agendaCompletisima = [...agendaCompleta, ...estruturaTurnosExtra];
+      agendaCompletisima.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
+      
+      agendasPorProfesional[profId] = agendaCompletisima;
+    }
 
-    return createResponse(200, 'Agenda del día obtenida exitosamente', agendaCompletisima);
+    const finalResponseArray = Object.entries(agendasPorProfesional).map(([profesionalId, agenda]) => ({
+      profesionalId,
+      agenda,
+    }));
+
+    return createResponse(200, 'Agendas obtenidas exitosamente', finalResponseArray);
   } catch (error) {
     console.error('Error al obtener la agenda del día:', error);
     return createResponse(500, 'Error interno del servidor');

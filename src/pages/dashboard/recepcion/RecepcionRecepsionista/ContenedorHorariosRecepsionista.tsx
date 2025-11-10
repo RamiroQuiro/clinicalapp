@@ -12,17 +12,39 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
     const dia = useStore(fechaSeleccionada);
     const { profesionales, turnosDelDia, isLoading, medicoSeleccionadoId } = useStore(recepcionStore);
 
-    console.log('profesionales ->', profesionales)
+    console.log('turnosDelDia ->', turnosDelDia)
 
 
     if (medicoSeleccionadoId) {
+        const handleAgendar = (hora: string) => {
+            if (!dia) return;
+            setPacienteSeleccionado({ id: '', nombre: '' });
+            setFechaYHoraRecepcionista(dia, formatUtcToAppTime(hora, 'HH:mm'), medicoSeleccionadoId);
+            document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
+        };
+
+
+        const [turnosDelProfesional] = turnosDelDia.filter((turno) => turno.profesionalId === medicoSeleccionadoId)
+
+
         return (
             <div>
                 <Card>
-                    <CardTitle>Profesional Seleccionado</CardTitle>
-                    <CardContent>
-                        <p>Profesional Seleccionado</p>
-                    </CardContent>
+                    <CardTitle className="mb-2 text-lg font-normal">
+                        Profesional: {profesionales?.find((profesional) => profesional?.id === medicoSeleccionadoId)?.nombre} {profesionales?.find((profesional) => profesional?.id === medicoSeleccionadoId)?.apellido}
+                    </CardTitle>
+                    {
+
+                        <CardContent className="animate-aparecer">
+                            <HorariosDisponibles
+                                isLoading={isLoading}
+                                agenda={turnosDelProfesional?.agenda}
+                                dia={dia || new Date()}
+                                profesional={profesionales?.find((profesional) => profesional?.id === medicoSeleccionadoId)}
+                                hangleAgendar={handleAgendar}
+                            />
+                        </CardContent>
+                    }
                 </Card>
             </div>
         )
@@ -37,6 +59,12 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
                     setFechaYHoraRecepcionista(dia, formatUtcToAppTime(hora, 'HH:mm'), profesional?.id);
                     document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
                 };
+
+
+                const [turnosDelProfesional] = turnosDelDia.filter((turno) => turno.profesionalId === profesional.id)
+
+
+
                 return (
                     <Card key={profesional?.id} className="mb-4">
                         <CardTitle className="mb-2 text-lg font-normal">
@@ -47,7 +75,7 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
                             <CardContent className="animate-aparecer">
                                 <HorariosDisponibles
                                     isLoading={isLoading}
-                                    agenda={turnosDelDia}
+                                    agenda={turnosDelProfesional?.agenda}
                                     dia={dia || new Date()}
                                     profesional={profesional}
                                     hangleAgendar={handleAgendar}

@@ -24,10 +24,12 @@ function TurnosSkeletonLoader() {
 export default function TurnosDelDia({ agenda, diaSeleccionado, onChangeReagendar, handleCancelarTurno, isLoading }: { agenda: any, diaSeleccionado: Date, onChangeReagendar: (slot: any) => void, handleCancelarTurno: (slot: any) => void, isLoading: boolean }) {
 
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<any>(null);
+  // console.log('agenda, dentro de TurnosDia', agenda)
   const turnosOcupados = useMemo(() => {
-    return agenda.filter(slot => !slot.disponible).sort((a, b) => a.hora.localeCompare(b.hora));
+    return agenda.map((agendaProf: any) => {
+      return agendaProf.agenda.filter((slot: any) => !slot.disponible).sort((a: any, b: any) => a.hora.localeCompare(b.hora));
+    }).flat();
   }, [agenda]);
-
   // Handlers para las acciones del menú
   const handleVerDetalles = (slot: any) => {
     setTurnoSeleccionado(slot);
