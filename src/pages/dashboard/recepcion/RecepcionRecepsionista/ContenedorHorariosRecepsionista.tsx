@@ -10,8 +10,23 @@ interface Props { }
 
 export default function ContenedorHorariosRecepsionista({ }: Props) {
     const dia = useStore(fechaSeleccionada);
-    const { profesionales, turnosDelDia, isLoading } = useStore(recepcionStore);
+    const { profesionales, turnosDelDia, isLoading, medicoSeleccionadoId } = useStore(recepcionStore);
 
+    console.log('profesionales ->', profesionales)
+
+
+    if (medicoSeleccionadoId) {
+        return (
+            <div>
+                <Card>
+                    <CardTitle>Profesional Seleccionado</CardTitle>
+                    <CardContent>
+                        <p>Profesional Seleccionado</p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
     return (
         <div>
