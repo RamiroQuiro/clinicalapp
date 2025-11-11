@@ -46,7 +46,9 @@ try {
   </div>
   <ConstendorStats client:load userId={user.id} />
 
-  <div class="w-full flex gap-2 items-start justify-between h-full">
+  <div
+    class="w-full flex gap-2 flex-wrap lg:flex-nowrap lg:items-start items-strecth justify-between h-full"
+  >
     <!-- Columna 1: Calendario -->
     <Section title="Seleccionar Fecha" classContent="px- py-4 w-fit">
       <ContenedorAgenda client:load />

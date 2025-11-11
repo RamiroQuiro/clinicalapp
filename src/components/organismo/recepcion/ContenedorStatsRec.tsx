@@ -79,7 +79,7 @@ export default function ContendorStats({ userId }: Props) {
   }, [turnosDelDia]);
 
   return (
-    <div className="flex gap-2 w-full items-center justify-between mb">
+    <div className="flex gap-2 w-full flex-wrap lg:items-center items-strecth justify-between mb">
       <StatsCardV2
         title="Turnos Disponibles"
         value={animatedValues.turnoDisponibles}

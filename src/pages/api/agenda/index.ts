@@ -124,10 +124,10 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
     // 4. Iterar sobre cada profesional para construir su agenda individual
     for (const profId of profesionalesIds) {
-      console.log('Processing professional:', profId);
+      // console.log('Processing professional:', profId);
 
       const horarioProfesional = todosLosHorarios.find(h => h.userMedicoId === profId);
-      console.log('Horario profesional:', horarioProfesional);
+      // console.log('Horario profesional:', horarioProfesional);
 
       const JORNADA_LABORAL = [];
       if (horarioProfesional && horarioProfesional.activo) {
@@ -138,7 +138,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
           JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioTarde, fin: horarioProfesional.horaFinTarde });
         }
       }
-      console.log('JORNADA_LABORAL for', profId, ':', JORNADA_LABORAL);
+      // console.log('JORNADA_LABORAL for', profId, ':', JORNADA_LABORAL);
 
       if (JORNADA_LABORAL.length === 0) {
         agendasPorProfesional[profId] = [];
@@ -156,7 +156,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       });
 
       const turnosDelProfesionalActual = turnosDelDia.filter(turno => turno.userMedicoId === profId);
-      console.log('Turnos del profesional actual:', turnosDelProfesionalActual);
+      // console.log('Turnos del profesional actual:', turnosDelProfesionalActual);
 
       const agendaCompleta = slotsDelDia.map(slotInicio => {
         const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MINUTOS * 60000);
@@ -237,7 +237,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
       const agendaCompletisima = [...agendaCompleta, ...estruturaTurnosExtra];
       agendaCompletisima.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
-      
+
       agendasPorProfesional[profId] = agendaCompletisima;
     }
 

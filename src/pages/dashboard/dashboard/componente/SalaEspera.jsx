@@ -7,7 +7,7 @@ import {
 } from '@/context/recepcion.store';
 import { useStore } from '@nanostores/react';
 import { CheckCheck, ClipboardCopy } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { showToast } from '../../../../utils/toast/toastShow';
 
 const SalaEspera = ({ user }) => {
@@ -26,7 +26,14 @@ const SalaEspera = ({ user }) => {
       [name]: value,
     }));
   };
+  const agendaDelDia=turnosDelDia?.[0]?.agenda||null
+ const colaDeEspera = useMemo(() => {
+    // Si no hay turno, devolvemos un array vacío
+    if (!agendaDelDia) return [];
 
+    // Verificamos el estado del turno
+    return agendaDelDia.filter((turno)=> turno.turnoInfo?.estado === 'sala_de_espera')
+  }, [agendaDelDia]);
   useEffect(() => {
     const toYYYYMMDD = date => {
       const year = date.getFullYear();
@@ -46,7 +53,7 @@ const SalaEspera = ({ user }) => {
 
   const handleCopy = () => {
     navigator.clipboard
-      .writeText(`http://localhost:4321/publicSite/salaDeEspera/${user?.id}`)
+      .writeText(`http://localhost:4322/publicSite/salaDeEspera/${user?.id}`)
       .then(() => {
         showToast('Link copiado', {
           background: 'bg-green-600',
@@ -72,7 +79,7 @@ const SalaEspera = ({ user }) => {
 
         <div className="flex flex-col w-full  items-start 500 justify-between gap-2  p-2 ">
           <ul className="flex w-full items-start justify-normal gap-2 flex-col">
-            {turnosDelDia?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')?.length === 0 ? (
+            {colaDeEspera?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')?.length === 0 ? (
               <div className="w-full">
                 <div className="text-center py-5">
                   <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-700/50 flex items-center justify-center">
@@ -83,7 +90,7 @@ const SalaEspera = ({ user }) => {
                 </div>
               </div>
             ) : (
-              turnosDelDia
+              colaDeEspera
                 ?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')
                 .map((turno, i) => <CardSalaEspera key={i} turno={turno} index={i} />)
             )}

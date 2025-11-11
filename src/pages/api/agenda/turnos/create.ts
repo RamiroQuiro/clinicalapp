@@ -1,10 +1,11 @@
 import db from '@/db';
 import { pacientes, turnos, users } from '@/db/schema';
+import { pacienteProfesional } from '@/db/schema/pacienteProfesional';
 import { logAuditEvent } from '@/lib/audit';
 import { emitEvent } from '@/lib/sse/sse';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const data = await request.json();
@@ -42,6 +43,38 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         estado: 'pendiente',
       })
       .returning();
+
+    // --- Lógica para pacienteProfesional ---
+    const { pacienteId, userMedicoId } = newTurno;
+    const centroMedicoId = user?.centroMedicoId;
+
+    // Verificar si la relación ya existe
+    const existingRelationship = await db
+      .select()
+      .from(pacienteProfesional)
+      .where(
+        and(
+          eq(pacienteProfesional.pacienteId, pacienteId),
+          eq(pacienteProfesional.userId, userMedicoId),
+          eq(pacienteProfesional.centroMedicoId, centroMedicoId)
+        )
+      );
+
+    if (existingRelationship.length === 0) {
+      // Si no existe, crear una nueva relación
+      await db.insert(pacienteProfesional).values({
+        id: nanoIDNormalizador('PacProf', 15),
+        pacienteId: pacienteId,
+        userId: userMedicoId,
+        centroMedicoId: centroMedicoId,
+        fechaAsignacion: new Date(),
+        estado: 'activo',
+      });
+      console.log(`[API /agenda/turnos/create] Nueva relación paciente-profesional creada: Paciente ${pacienteId} con Profesional ${userMedicoId}`);
+    } else {
+      console.log(`[API /agenda/turnos/create] Relación paciente-profesional ya existe para Paciente ${pacienteId} con Profesional ${userMedicoId}`);
+    }
+    // --- Fin Lógica para pacienteProfesional ---
 
     const [dataProfesional] = await db
       .select()

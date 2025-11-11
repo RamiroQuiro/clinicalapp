@@ -15,7 +15,7 @@ export default function ConstendorStats({ userId }: Props) {
   const turnosCancelados = agenda.filter(slot => slot.turnoInfo?.estado == 'cancelado').length;
   console.log('agenda ->', agenda);
   return (
-    <div className="flex gap-2 w-full items-center justify-between mb-4">
+    <div className="flex flex-wrap lg:flex-nowrap items-strecth gap-2 w-full lg:items-center justify-between mb-4">
       <StatsCardV2
         title="Turnos Disponibles"
         value={turnoDisponibles}

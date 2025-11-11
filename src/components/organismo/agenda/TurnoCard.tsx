@@ -1,5 +1,5 @@
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
-import { CalendarDays, Clock, MessageCircle, MoreVertical, Phone, User, X } from 'lucide-react';
+import { CalendarDays, CheckCircle, Clock, MessageCircle, MoreVertical, Phone, User, X } from 'lucide-react';
 import type { MenuItem } from '../MenuDropbox';
 import MenuDropbox from '../MenuDropbox';
 
@@ -61,14 +61,14 @@ function TurnoCard({
       type: 'button',
     },
   ];
-
+  console.log('slot en la tarjeta ', slot)
   return (
     <div className="group relative">
-      <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-200/50 bg-primary-bg-componentes hover:bg-white/10 transition-all duration-300 hover:border-primary-100/30 hover:shadow-lg">
+      <div className="flex items-start justify-center  gap-3 p-3 rounded-lg border border-gray-200/50 bg-primary-bg-componentes hover:bg-white/10 transition-all duration-300 hover:border-primary-100/30 hover:shadow-lg">
         {/* Indicador de tiempo */}
         <div className="flex-shrink-0">
           <div className="w-12 h-12 rounded-lg bg-white border-primary-100/30 font-bold shadow-sm  border br flex flex-col items-center justify-center text-wite">
-            <Clock className="w-3 h-3 mb-1" />
+            <Clock className="w-5 h-5 mb-1 " />
             <span className="text-xs font-bold leading-none">
               {formatUtcToAppTime(slot.hora, 'HH:mm')}
             </span>
@@ -76,36 +76,52 @@ function TurnoCard({
         </div>
 
         {/* Información del paciente */}
-        <div className="flex-grow min-w-0">
-          <div className="flex items-start justify-between mb-1">
-            <p className="font-semibold text-primary-textoTitle truncate text-sm">
-              {slot.turnoInfo?.pacienteNombre + ' ' + slot.turnoInfo?.pacienteApellido ||
-                'Paciente no asignado'}
-            </p>
-            <MenuDropbox
-              items={itemsMenuTurno}
-              triggerIcon={<MoreVertical className="w-4 h-4" />}
-              triggerTitle="Acciones del turno"
-              buttonClassName="!p-1 border-0 rounded-full !min-h-0 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-              closeOnSelect={true}
-            />
+        <div className="flex-grow min-w-0 gap-2 flex flex-col items-start ">
+          <div className="flex items-start justify-between  w-full">
+            <div className='flex gap-2 items-center justify-start'>
+
+              <p className="font-semibold text-primary-textoTitle  capitalize truncate text-lg">
+                {slot.turnoInfo?.pacienteNombre + ' ' + slot.turnoInfo?.pacienteApellido ||
+                  'Paciente no asignado'}
+              </p>
+              <p className="text-xs text-primary-texto">
+                {slot.turnoInfo?.pacienteDocumento}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+
+              <MenuDropbox
+                items={itemsMenuTurno}
+                triggerIcon={<MoreVertical className="w-4 h-4" />}
+                triggerTitle="Acciones del turno"
+                buttonClassName="!p-1 border-0 rounded-full !min-h-0 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                closeOnSelect={true}
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-primary-texto">
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {slot.turnoInfo?.duracion || 30} min
-            </span>
-            <span className="flex items-center gap-1">
-              <User className="w-3 h-3" />
-              Consulta
-            </span>
+          <div className="flex items-end flex-wrap justify-between w-full gap-3 text-sm text-primary-texto">
+            <div className="flex items-end  justify-start flex-1 gap-3 text-sm text-primary-texto">
+              <span className="flex items-center gap-1 text- uppercase">
+                <User className="w-5 h-5 font-semibold text-primary-100 " />
+                {slot.turnoInfo?.pacienteNombre} {slot.turnoInfo?.pacienteApellido}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-4 h-4 text-primary-100" />
+                {slot.turnoInfo?.duracion || 30} min
+              </span>
+              <span className="flex items-center gap-1">
+                <CheckCircle className="w-4 h-4 text-primary-100" />
+                {slot.turnoInfo?.tipoDeTurno}
+              </span>
+            </div>
+            <div
+              className={`text-xs text-primary-texto border font-medium  bottom-2 rounded-full px-2 py-0.5 bg-white right-2 ${getStatusInfo(slot.turnoInfo?.estado).colorClass}`}
+            >
+              {slot.turnoInfo?.estado}
+            </div>
           </div>
-          <div
-            className={`text-xs text-primary-texto border font-medium absolute bottom-2 rounded-full px-2 py-0.5 bg-white right-2 ${slot.turnoInfo?.estado === 'cancelado' ? 'text-red-500' : slot.turnoInfo?.estado === 'confirmado' ? 'text-green-500' : 'text-yellow-500'}`}
-          >
-            {slot.turnoInfo?.estado}
-          </div>
+
 
           {/* Información adicional del turno */}
           {slot.turnoInfo?.motivoConsulta && (

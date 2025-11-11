@@ -32,7 +32,7 @@ interface RecepcionStore {
   turnosDelDia: AgendaSlot[];
   isLoading: boolean;
   pestanaActiva: 'pacientes' | 'recepcion' | 'agenda';
-  medicoSeleccionadoId: string | null; // null para 'Todos'
+  medicoSeleccionadoId: string[]; // null para 'Todos'
   error: string | null;
   sseConectado: boolean;
   ultimaActualizacion: string | null;
@@ -47,7 +47,7 @@ export const recepcionStore = map<RecepcionStore>({
   turnosDelDia: [],
   isLoading: true,
   pestanaActiva: 'recepcion', // El default ahora es la sala de espera
-  medicoSeleccionadoId: null, // Por defecto se muestran todos
+  medicoSeleccionadoId: [],
   error: null,
   sseConectado: false,
   ultimaActualizacion: null,
@@ -70,8 +70,14 @@ export const datosNuevoTurnoRecepcionista = map({
 
 
 // --- ACCIÓN PARA CAMBIAR MÉDICO ---
-export function setMedicoSeleccionado(id: string | null) {
-  recepcionStore.setKey('medicoSeleccionadoId', id);
+// Si recibe un string, lo convierte a array. Si recibe un array, lo usa directamente
+export function setMedicoSeleccionado(id: string | string[]) {
+  // Si es un array, lo usamos directamente, si no, creamos un array con el id
+  const nuevosIds = Array.isArray(id) ? [...id] : [id];
+
+  // Actualizamos el store con los nuevos IDs
+  recepcionStore.setKey('medicoSeleccionadoId', nuevosIds);
+
 }
 
 // --- ACCIÓN PARA CAMBIAR PACIENTE SELECCIONADO ---
@@ -212,33 +218,47 @@ export async function fetchTurnosDelDia(fecha: string, centroMedicoId?: string) 
   const { medicoSeleccionadoId, profesionales } = recepcionStore.get();
 
   try {
-    // Construir la URL dinámicamente
+    // Construir la URL base con la fecha
     let apiUrl = `/api/agenda?fecha=${fecha}`;
+
+    // Agregar centro médico si está especificado
     if (centroMedicoId) {
       apiUrl += `&centroMedicoId=${centroMedicoId}`;
     }
 
-    if (medicoSeleccionadoId) {
-      // Si hay un médico específico seleccionado, se usa su ID
-      apiUrl += `&profesionalId=${medicoSeleccionadoId}`;
-    } else {
-      // Si no, se usan los IDs de todos los profesionales asociados
-      const ids = profesionales.map(p => p.id);
-      if (ids.length > 0) {
-        apiUrl += `&profesionalIds=${ids.join(',')}`;
-      }
+    // Obtener los IDs de los profesionales a consultar
+    let idsAconsultar: string[] = [];
+
+    if (medicoSeleccionadoId && medicoSeleccionadoId.length > 0) {
+      // Usar los IDs de los médicos seleccionados
+      idsAconsultar = [...medicoSeleccionadoId];
+    } else if (profesionales && profesionales.length > 0) {
+      // Si no hay selección, usar todos los profesionales disponibles
+      idsAconsultar = profesionales.map(p => p.id);
     }
 
+    // Agregar los IDs a la URL si hay profesionales para consultar
+    if (idsAconsultar.length > 0) {
+      apiUrl += `&profesionalIds=${idsAconsultar.join(',')}`;
+    }
+
+    console.log('Solicitando turnos con URL:', apiUrl);
+
     const response = await fetch(apiUrl);
-    if (!response.ok) throw new Error('Respuesta de red no fue ok');
+    if (!response.ok) throw new Error('Error al obtener los turnos');
+
     const data = await response.json();
+    recepcionStore.setKey('turnosDelDia', data.data || []);
+    recepcionStore.setKey('error', null);
 
-    recepcionStore.setKey('turnosDelDia', data.data);
-
-    // La conexión SSE se mantiene para recibir actualizaciones de todos modos
+    // Iniciar conexión SSE para recibir actualizaciones
     iniciarConexionSSE();
+
+    return data.data;
   } catch (error: any) {
-    recepcionStore.setKey('error', error.message);
+    console.error('Error al cargar los turnos:', error);
+    recepcionStore.setKey('error', error.message || 'No se pudieron cargar los turnos');
+    return [];
   } finally {
     recepcionStore.setKey('isLoading', false);
   }

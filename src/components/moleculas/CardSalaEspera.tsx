@@ -1,6 +1,7 @@
 import type { AgendaSlot } from '@/context/agenda.store';
 import extraerHora from '@/utils/extraerHora';
-import { Clock, Menu, View } from 'lucide-react';
+import { SquareArrowOutUpRight } from 'lucide-react';
+import { Card } from '../organismo/Card';
 
 type Props = {
   turno: AgendaSlot;
@@ -12,26 +13,38 @@ export default function CardSalaEspera({ turno, index }: Props) {
     window.location.href = `/api/atencion/nueva?pacienteId=${turno.turnoInfo?.pacienteId}&turnoId=${turno.turnoInfo?.id}`;
   };
   return (
-    <div className="flex items-center gap-3 p-3 w-full bg-white border border-gray-200 rounded-lg">
-      <Menu className="w-6 h-6 active:cursor-grabbing text-primary-texto/50 -ml-2 cursor-grab" />
-      <div className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">
-        {index + 1}
+    <Card className="flex items-center justify-between p-3 gap-3 border rounded-lg">
+
+      <div className="flex items-center gap-2">
+
+        <div className="bg-primary-100/20 border-primary-100 border text-primary-100 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+          {index + 1}
+        </div>
+
+        <p className="text-xs font-semibold text-gray-500">{extraerHora(turno.turnoInfo?.horaLlegadaPaciente)}</p>
+
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col items-start">
         <p className="font-medium text-sm capitalize">
           {turno.turnoInfo?.pacienteNombre} {turno.turnoInfo?.pacienteApellido}
         </p>
-        <p className="text-xs text-gray-500">
-          {extraerHora(turno.turnoInfo?.horaTurno)} • DNI: {turno.turnoInfo?.pacienteDocumento}
+        <p className="text-xs font-semibold text-gray-500">
+          DNI: {turno.turnoInfo?.pacienteDocumento}
         </p>
       </div>
+      <div className="flex-1 flex flex-col items-start">
+        <p className="text-xs font-semibold text-gray-500">
+          {turno.turnoInfo?.tipoDeTurno} {turno.turnoInfo?.motivoConsulta}
+        </p>
+      </div>
+      <div title="Atender" className="bg-primary-100/20 p-2 border-primary-100 border text-primary-100 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+        <SquareArrowOutUpRight
+          onClick={() => handleAtender(turno)}
 
-      <View
-        onClick={() => handleAtender(turno)}
-        className="w-6 h-6 cursor-pointer text-primary-texto"
-      />
-      <Clock className="w-6 h-6 text-primary-texto cursor-pointer" />
-    </div>
+          className="w-6 h-6 cursor-pointer text-primary-100"
+        />
+      </div>
+    </Card>
   );
 }

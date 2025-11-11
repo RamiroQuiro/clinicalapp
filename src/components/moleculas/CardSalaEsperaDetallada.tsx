@@ -50,7 +50,7 @@ export default function CardSalaEsperaDetallada({
       </div>
 
       {/* Sección de Tiempos */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-50 p-3 rounded-lg">
+      <div className="flex flex-col md:flex-row gap-4 text-center bg-50 p-3 rounded-lg">
         <div>
           <p className="text-xs text-gray-500">Turno</p>
           <p className="font-semibold text-gray-800">{extraerHora(turno.hora)}</p>
@@ -68,8 +68,8 @@ export default function CardSalaEsperaDetallada({
       </div>
 
       {/* Sección de Acciones */}
-      <div className="flex items-center justify-between gap-2 pt-2">
-        <div className="flex gap-2">
+      <div className="flex items-center xl:items-start xl:justify-start xl:flex-row flex-col justify-between gap-2 pt-2">
+        <div className="flex gap-2 ">
           <button
             onClick={() => onSubir(turno.turnoInfo.id)}
             className="flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md transition-colors"

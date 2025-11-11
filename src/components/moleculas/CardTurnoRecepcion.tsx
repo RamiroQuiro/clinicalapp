@@ -39,6 +39,9 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // console.log('slot en la tarjeta ', slot)
+
+
   const handleStatusChange = (nuevoEstado: string) => {
     console.log(`Cambiando estado del turno ${slot.turnoInfo?.id} a ${nuevoEstado}`);
     // Aquí iría la llamada a la API para actualizar el estado del turno

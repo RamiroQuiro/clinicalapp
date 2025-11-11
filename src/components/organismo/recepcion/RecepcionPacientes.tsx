@@ -18,25 +18,25 @@ export default function RecepcionPacientes({ userId }: Props) {
   const { turnosDelDia, isLoading, ultimaActualizacion } = useStore(recepcionStore);
   const { sseConectado } = useSSE(userId);
 
-  // ✅ USAREMOS useMemo para derivar el estado de forma eficiente
-  const turnosAgendadosDia = useMemo(() => {
-    return turnosDelDia
-      .filter(turno => !turno.disponible)
-      .sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
-  }, [turnosDelDia]);
+  // Verificamos si hay turnos y tomamos solo el primero
+  const agendaDelDia = turnosDelDia?.[0]?.agenda || null;
 
+  console.log('agendaDelDia', agendaDelDia)
+  const turnosAgendadosDia = useMemo(() => {
+    // Si no hay turno, devolvemos un array vacío
+
+    if (!agendaDelDia) return [];
+    return agendaDelDia.filter((turno): AgendaSlot => turno.disponible === false)
+  }, [agendaDelDia]);
+
+  console.log('turnosAgendadosDia', turnosAgendadosDia)
   const colaDeEspera = useMemo(() => {
-    return (
-      turnosDelDia
-        .filter(turno => turno.turnoInfo?.estado === 'sala_de_espera')
-        // Opcional: ordenar la cola de espera también, por ejemplo por hora de llegada
-        .sort(
-          (a, b) =>
-            new Date(a.turnoInfo.horaLlegadaPaciente).getTime() -
-            new Date(b.turnoInfo.horaLlegadaPaciente).getTime()
-        )
-    );
-  }, [turnosDelDia]);
+    // Si no hay turno, devolvemos un array vacío
+    if (!agendaDelDia) return [];
+
+    // Verificamos el estado del turno
+    return agendaDelDia.filter((turno): AgendaSlot => turno.turnoInfo?.estado === 'sala_de_espera')
+  }, [agendaDelDia]);
 
   console.log('🔌 Estado SSE:', sseConectado ? '🟢 Conectado' : '🔴 Desconectado');
   console.log('Ultima actualizacion ->', ultimaActualizacion);
@@ -59,8 +59,8 @@ export default function RecepcionPacientes({ userId }: Props) {
     window.location.href = `/api/atencion/nueva?pacienteId=${slot.turnoInfo?.pacienteId}&turnoId=${slot.turnoInfo?.id}`;
   };
   return (
-    <div className="flex flex-  gap-2 items-start justify-between">
-      <Section title="🤒 Recepcion de Pacientes" className="flex  flex-1 min-w-[50%]  flex-col">
+    <div className="flex flex-col md:flex-row  gap-4 items-start justify-between">
+      <Section title="🤒 Recepcion de Pacientes" className="flex  flex-1 min-w-[70%]  flex-col">
         <Input type="search" placeholder="Buscar paciente" />
         <div key={1} className="flex flex-col mt-4 gap-2">
           {turnosAgendadosDia.length === 0 ? (
@@ -80,9 +80,9 @@ export default function RecepcionPacientes({ userId }: Props) {
               .sort((a, b) => {
                 return a.turnoInfo?.estado === 'sala_de_espera' ? 1 : -1;
               })
-              .map((turno: AgendaSlot) => (
+              .map((turno: AgendaSlot, i) => (
                 <CardTurnoRecepcion
-                  key={turno.turnoInfo.id}
+                  key={i}
                   slot={turno}
                   onVerDetalles={() => { }}
                   onReagendar={() => { }}
@@ -94,7 +94,7 @@ export default function RecepcionPacientes({ userId }: Props) {
           )}
         </div>
       </Section>
-      <Section title="🚀 Proximos turnos" classContent="flex flex-1 min-w-[50%]  flex-col ">
+      <Section title={`${turnosAgendadosDia.length} En Sala de Espera`} classContent="flex flex-1 min-w-[30%]  flex-col ">
         <div key={2} className="flex flex-col gap-2  w-full">
           {colaDeEspera.length === 0 ? (
             <div className="w-full">

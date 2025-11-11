@@ -1,3 +1,4 @@
+--- Context from: GEMINI.md ---
 Eres **DevArchitect**, un asistente de desarrollo full-stack altamente especializado en el ecosistema JavaScript moderno. Tu expertise abarca:
 
 ## 🎯 ESPECIALIDADES TÉCNICAS
@@ -391,6 +392,8 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
   - **Creación de Rutas y Archivos Astro**: Se creó la estructura de directorios (`src/pages/dashboard/ajustes/[categoria]/`) y los archivos Astro (`index.astro`, así como sub-rutas específicas como `horarios.astro`, `campos.astro`, `recetas.astro`, etc.) para cada una de las nuevas categorías y sub-secciones.
 - **Problema Identificado (Iconos de Lucide-React)**: Se detectó un error `Warning: React.jsx: type is invalid -- expected a string... but got: object.` al intentar renderizar los iconos de `lucide-react` en `index.astro` (después de que el usuario inlinó la lógica de `CardAjustes.tsx`). Esto ocurre porque los componentes de React (`lucide-react` icons) no se deserializan correctamente al pasarlos directamente en un Astro componente sin un `client:` directiva o un wrapper adecuado.
 
+---
+
 ## Sesión 17: martes, 28 de octubre de 2025
 
 - **Objetivo**: Expandir la sección de "Ajustes" del Dashboard, creando nuevas categorías, estructuras de datos (schemas de Drizzle ORM) y las rutas de navegación correspondientes.
@@ -445,8 +448,6 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
   - Se eliminó la `JORNADA_LABORAL` hardcodeada y ahora la API consulta la tabla `horariosTrabajo` para generar los slots de turnos disponibles basándose en la configuración guardada para cada profesional.
 --- End of Context from: GEMINI.md ---
 
----
-
 ## Sesión 20: viernes, 31 de octubre de 2025
 
 *   **Objetivo**: Implementar una lógica de creación de usuarios multi-tenant robusta y configurar la redirección de roles para el personal de recepción.
@@ -479,3 +480,22 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Mejora de UX (Recepcionista)**: Se implementó el componente `ContenedorHorariosRecepsionista.tsx`, que muestra tarjetas de horarios disponibles para cada médico, permitiendo a la recepcionista seleccionar al profesional de forma implícita al elegir un horario.
 *   **Depuración y Solución**: Se resolvió un bug donde el formulario de la recepcionista no captaba los datos del paciente y del profesional. El usuario identificó correctamente que el problema no estaba en el formulario en sí, sino en los contenedores, que no estaban pasando el `medicoId` correctamente a las acciones del store (`setFechaYHora...`) al momento de la selección del horario.
 *   **Próximos Pasos**: Continuar con el desarrollo de las funcionalidades específicas de la sección de Recepción.
+--- End of Context from: GEMINI.md ---
+
+## Sesión 22: 2025-11-10
+
+- **Objetivo**: Refactorizar la API de agenda para soportar múltiples profesionales y optimizar la estructura de la respuesta para el consumo del frontend.
+- **Problema Identificado**: El endpoint original (`GET /api/agenda/index.ts`) devolvía incorrectamente una lista plana de todos los slots de tiempo, incluso cuando se solicitaban múltiples IDs de profesionales, lo que resultaba en una agenda mezclada e inutilizable. También presentaba un bug donde `horarioProfesional` no estaba definido debido a un alcance incorrecto de la variable.
+- **Decisión Arquitectónica**:
+  - La API fue refactorizada para devolver una agenda agrupada.
+  - Inicialmente, se propuso una estructura de objeto (`{ profId: agenda[] }`), pero tras la discusión, se decidió cambiar el formato de respuesta final a un **array de objetos** (`[{ profesionalId: string, agenda: agenda[] }]`) para facilitar la iteración y el mapeo en componentes de frontend (ej. `ContenedorHorariosRecepcionista.tsx`).
+- **Implementación**:
+  - La lógica de la API fue refactorizada para iterar sobre cada `profesionalId` solicitado.
+  - Para cada profesional, sus horas de trabajo específicas (`JORNADA_LABORAL`) ahora se calculan dinámicamente basándose en sus `horariosTrabajo`.
+  - Los turnos (`turnosDelDia`) se filtran por profesional.
+  - La respuesta final es un array de objetos, cada uno conteniendo un `profesionalId` y su `agenda` correspondiente.
+  - Se añadieron `console.log` para depuración durante el proceso.
+- **Corrección de Errores**:
+  - Se resolvió el error `horarioProfesional is not defined` al definir correctamente el alcance de la variable y mover su cálculo dentro del bucle de iteración de profesionales.
+  - Se aseguró que `JORNADA_LABORAL` se calcule individualmente para cada profesional.
+- **Estado Actual**: El endpoint de la API ahora devuelve correctamente las agendas agrupadas en formato de array, listo para el consumo del frontend. El usuario ha confirmado que ha manejado los cambios en el frontend.
