@@ -1,5 +1,5 @@
-import { atom, map } from 'nanostores';
-import { persistent } from '@nanostores/persistent';
+import { persistentAtom as persistent } from '@nanostores/persistent';
+import { map } from 'nanostores';
 
 // --- NOTA: Asegúrate de haber instalado la dependencia ---
 // npm install @nanostores/persistent
@@ -8,7 +8,7 @@ import { persistent } from '@nanostores/persistent';
  * @description Guarda el ID del perfil activo en localStorage para persistir entre recargas.
  * La clave en localStorage será 'perfilActivoId'.
  */
-export const perfilActivoId = persistent<string | null>('perfilActivoId', null);
+export const perfilActivoId = persistent<string | undefined>('perfilActivoId', undefined);
 
 /**
  * @description Almacena en memoria la lista completa de perfiles y el objeto del perfil activo.
@@ -16,7 +16,7 @@ export const perfilActivoId = persistent<string | null>('perfilActivoId', null);
 export const perfilesStore = map<{
   perfiles: any[]; // Deberías reemplazar 'any' con el tipo de tu perfil
   perfilActivo: any | null; // Deberías reemplazar 'any' con el tipo de tu perfil
-}> ({
+}>({
   perfiles: [],
   perfilActivo: null,
 });

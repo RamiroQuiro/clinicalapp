@@ -29,9 +29,6 @@ export default function ContenedorSeleccionProfesionales({ profesionales, centro
 
       const fechaFormateada = toYYYYMMDD(diaSeleccionado);
 
-      console.log('fechaFormateada', fechaFormateada);
-      console.log('userSeleccionado', userSeleccionado.id);
-      console.log('centroMedicoId', centroMedicoId);
 
       fetchAgenda(fechaFormateada, userSeleccionado.id, centroMedicoId);
     }

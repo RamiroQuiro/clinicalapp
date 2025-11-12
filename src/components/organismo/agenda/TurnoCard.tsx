@@ -61,7 +61,6 @@ function TurnoCard({
       type: 'button',
     },
   ];
-  console.log('slot en la tarjeta ', slot)
   return (
     <div className="group relative">
       <div className="flex items-start justify-center  gap-3 p-3 rounded-lg border border-gray-200/50 bg-primary-bg-componentes hover:bg-white/10 transition-all duration-300 hover:border-primary-100/30 hover:shadow-lg">

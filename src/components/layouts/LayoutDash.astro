@@ -75,7 +75,18 @@ const { user } = Astro.locals;
 </script>
 
 <style is:global>
-  /* Registra tu font family personalizada y le indicamos al navegador dónde encontrarla. */
+  /* Registra tu font family personalizada y le indicamos al navegador dónde encontrarl
+  a. */
+  .rdp {
+    overflow: visible !important;
+  }
+
+  .rdp-table,
+  .rdp-tbody,
+  .rdp-row,
+  .rdp-cell {
+    overflow: visible !important;
+  }
 
   @font-face {
     font-family: 'IndieFlower';

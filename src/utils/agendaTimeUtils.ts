@@ -1,7 +1,7 @@
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { format, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { es } from 'date-fns/locale';
-
+import { startOfDay, endOfDay } from 'date-fns';
 
 
 /**
@@ -48,3 +48,44 @@ export const formatUtcToAppTime = (
   const appDate = convertUtcToAppTime(utcDateOrString);
   return formatAppTime(appDate, formatString);
 };
+
+/**
+ * Retorna el nombre del día de la semana en español para una fecha dada.
+ * @param date La fecha.
+ * @returns El nombre del día de la semana (ej. 'lunes').
+ */
+export const getDayOfWeek = (date: Date): string => {
+  const days = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+  return days[date.getDay()];
+};
+
+/**
+ * Retorna un objeto Date representando el inicio del día (00:00:00) en la zona horaria de la aplicación.
+ * @param date La fecha.
+ * @returns Un objeto Date al inicio del día.
+ */
+export const getStartOfDay = (date: Date): Date => {
+  return toZonedTime(startOfDay(date), APP_TIME_ZONE);
+};
+
+/**
+ * Retorna un objeto Date representando el final del día (23:59:59) en la zona horaria de la aplicación.
+ * @param date La fecha.
+ * @returns Un objeto Date al final del día.
+ */
+export const getEndOfDay = (date: Date): Date => {
+  return toZonedTime(endOfDay(date), APP_TIME_ZONE);
+};
+
+/**
+ * Formatea una fecha a 'YYYY-MM-DD'.
+ * @param date La fecha.
+ * @returns Un string con la fecha formateada.
+ */
+export const formatDateToYYYYMMDD = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+

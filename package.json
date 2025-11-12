@@ -17,7 +17,7 @@
     "@google/generative-ai": "^0.24.1",
     "@libsql/client": "^0.14.0",
     "@lucia-auth/adapter-drizzle": "^1.1.0",
-    "@nanostores/persistent": "^1.1.0",
+    "@nanostores/persistent": "^1.2.0",
     "@nanostores/react": "^0.8.4",
     "astro": "^5.13.2",
     "bcryptjs": "^2.4.3",

@@ -26,9 +26,6 @@ export default function ContenedorFormularioTurno({ user }: Props) {
         datosNuevoTurno.setKey('userMedicoId', user.id)
     }
 
-    console.log('agenda ->', agenda);
-    console.log('turnoDelStore ->', turnoDelStore);
-    console.log('datosNuevoTurno ->', datosNuevoTurno.get());
     return (
         <div>
             <FormularioTurno agenda={agenda} turnoDelStore={turnoDelStore} datosNuevoTurno={datosNuevoTurno.get()} handleDatosNuevoTurno={handleDatosNuevoTurno} onClickSeleccionarFecha={onSeleccionarFecha} setPaciente={setPaciente} resetNuevoTurno={handleResetNuevoTurno} user={user} />

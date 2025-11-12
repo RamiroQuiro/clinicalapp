@@ -50,8 +50,48 @@ try {
     class="w-full flex gap-2 flex-wrap lg:flex-nowrap lg:items-start items-strecth justify-between h-full"
   >
     <!-- Columna 1: Calendario -->
-    <Section title="Seleccionar Fecha" classContent="px- py-4 w-fit">
-      <ContenedorAgenda client:load />
+    <Section title="Seleccionar Fecha" classContent="px- py-4 lg:w-1/4 w-full">
+      <ContenedorAgenda
+        client:load
+        userId={user.id}
+        centroMedicoId={user.centroMedicoId}
+        rol={user.rolEnCentro}
+      />
+      <div class="flex justify-center mt-4 gap-4 flex-wrap">
+        <div class="flex items-center gap-1">
+          <div
+            class="w-4 h-4 rounded"
+            style={{ backgroundColor: '#bbf7d0', border: '1px solid #16a34a' }}
+          >
+          </div>
+          <span class="text-xs">Disponible (0-9%)</span>
+        </div>
+
+        <div class="flex items-center gap-1">
+          <div
+            class="w-4 h-4 rounded"
+            style={{ backgroundColor: '#fef08a', border: '1px solid #ca8a04' }}
+          >
+          </div>
+          <span class="text-xs">Moderado (10-39%)</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div
+            class="w-4 h-4 rounded"
+            style={{ backgroundColor: '#fed7aa', border: '1px solid #ea580c' }}
+          >
+          </div>
+          <span class="text-xs">Ocupado (40-79%)</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div
+            class="w-4 h-4 rounded"
+            style={{ backgroundColor: '#fecaca', border: '1px solid #dc2626' }}
+          >
+          </div>
+          <span class="text-xs">Muy Ocupado (80-100%)</span>
+        </div>
+      </div>
     </Section>
 
     <!-- Columna 2: Turnos Agendados -->

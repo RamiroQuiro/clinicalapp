@@ -174,34 +174,55 @@ export default function PerfilHorarios({ userId }: PerfilHorariosProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Horarios de Atención</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Object.keys(horarios).map(dayKey => {
-          const day = dayKey as keyof HorariosData;
-          const daySchedule = horarios[day];
-          return (
-            <div key={day} className="rounded-lg flex-1">
-              <Card className="py-2 px-4 border-primary-100/20 h-full flex flex-col justify-between">
-                <Switch label={day.toUpperCase()} className="w-fit font-bold" checked={daySchedule.isLaboral} onChange={() => handleCheckHorarios(day)} />
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <Input type="time" label="Inicio" disabled={!daySchedule.isLaboral} value={daySchedule.rangoAtencion.start} onChange={e => handleTimeChange(day, 'rangoAtencion', 'start', e.target.value)} />
-                  <Input type="time" label="Fin" disabled={!daySchedule.isLaboral} value={daySchedule.rangoAtencion.end} onChange={e => handleTimeChange(day, 'rangoAtencion', 'end', e.target.value)} />
-                  <Input type="time" label="Inicio Descanso" disabled={!daySchedule.isLaboral} value={daySchedule.rangoDescanso.start} onChange={e => handleTimeChange(day, 'rangoDescanso', 'start', e.target.value)} />
-                  <Input type="time" label="Fin Descanso" disabled={!daySchedule.isLaboral} value={daySchedule.rangoDescanso.end} onChange={e => handleTimeChange(day, 'rangoDescanso', 'end', e.target.value)} />
-                </div>
-              </Card>
-            </div>
-          );
-        })}
-      </CardContent>
+    <div className='flex flex-col gap-3 items-start w-full'>
+      <Card>
+        <CardHeader>
+          <CardTitle>Horarios de Atención</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Object.keys(horarios).map(dayKey => {
+            const day = dayKey as keyof HorariosData;
+            const daySchedule = horarios[day];
+            return (
+              <div key={day} className="rounded-lg flex-1">
+                <Card className="py-2 px-4 border-primary-100/20 h-full flex flex-col justify-between">
+                  <Switch label={day.toUpperCase()} className="w-fit font-bold" checked={daySchedule.isLaboral} onChange={() => handleCheckHorarios(day)} />
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Input type="time" label="Inicio" disabled={!daySchedule.isLaboral} value={daySchedule.rangoAtencion.start} onChange={e => handleTimeChange(day, 'rangoAtencion', 'start', e.target.value)} />
+                    <Input type="time" label="Fin" disabled={!daySchedule.isLaboral} value={daySchedule.rangoAtencion.end} onChange={e => handleTimeChange(day, 'rangoAtencion', 'end', e.target.value)} />
+                    <Input type="time" label="Inicio Descanso" disabled={!daySchedule.isLaboral} value={daySchedule.rangoDescanso.start} onChange={e => handleTimeChange(day, 'rangoDescanso', 'start', e.target.value)} />
+                    <Input type="time" label="Fin Descanso" disabled={!daySchedule.isLaboral} value={daySchedule.rangoDescanso.end} onChange={e => handleTimeChange(day, 'rangoDescanso', 'end', e.target.value)} />
+                  </div>
+                </Card>
+              </div>
+            );
+          })}
+        </CardContent>
+        <CardHeader>
+          <CardTitle>Duración de Atención</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-2">
+            <Input type="number" label="Duración de Atención" />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Fecha de Licencia</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-2">
+            <Input type="date" label="Fecha de Inicio de Licencia" />
+            <Input type="date" label="Fecha de Fin de Licencia" />
+          </div>
+        </CardContent>
+      </Card>
       <div className="p-6 border-t w-full flex items-end justify-end">
         <Button variant="primary" onClick={handleSave}>
           <Save className="mr-2 h-4 w-4" /> Guardar Cambios
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }
