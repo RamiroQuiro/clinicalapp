@@ -30,7 +30,7 @@ export default function AgendaDeRecpcion({ user }: Props) {
     return (
         <div className="w-full flex gap-2 items-start justify-between h-full">
             <Section title="Seleccionar Fecha" className="px- py-4 w-fit">
-                <ContenedorCalendarioRecepcionista />
+                <ContenedorCalendarioRecepcionista user={user} />
             </Section>
 
             <Section title="Turnos del Día" className="px- py-4 md:w-[40vw]">

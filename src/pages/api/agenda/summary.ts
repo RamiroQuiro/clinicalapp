@@ -78,7 +78,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     if (!startDateParam || !endDateParam || !professionalIdsParam || !centroMedicoId) {
       return createResponse(400, 'Faltan parámetros requeridos (startDate, endDate, professionalIds, centroMedicoId)');
     }
-
+    console.log('consultas a esta api syummay')
     const ID_PROFESIONALES = professionalIdsParam.split(',');
     const FECHA_INICIO = new Date(startDateParam);
     const FECHA_FIN = new Date(endDateParam);

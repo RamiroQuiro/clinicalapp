@@ -23,7 +23,7 @@ export default function ContenedorRenderizdoPantallaRecepcionista({ user }: Prop
     const fechaFormateada = toYYYYMMDD(new Date());
     // La función ahora obtiene el medicoId desde el store
     fetchTurnosDelDia(fechaFormateada, user.centroMedicoId);
-  }, [user, medicoSeleccionadoId]); // Se añade medicoSeleccionadoId a las dependencias
+  }, [user, medicoSeleccionadoId]);
 
   const renderContent = () => {
     switch (pestanaActiva) {
