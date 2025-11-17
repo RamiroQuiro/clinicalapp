@@ -4,7 +4,7 @@ import { Clock, Moon, Sun } from 'lucide-react';
 import { useMemo } from 'react';
 import BotonHora from './BotonHora';
 
-function HorariosSkeletonLoader() {
+export function HorariosSkeletonLoader() {
   return (
     <div className="space-y-6">
       {[1, 2].map((i) => (

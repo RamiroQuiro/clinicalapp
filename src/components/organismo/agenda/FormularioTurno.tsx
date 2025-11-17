@@ -1,7 +1,7 @@
 import Button from '@/components/atomos/Button';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
 
-import type { DatosTurno } from '@/context/agenda.store';
+import type { AgendaSlot, DatosTurno } from '@/context/agenda.store';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { showToast } from '@/utils/toast/toastShow';
@@ -10,6 +10,7 @@ import { toZonedTime } from 'date-fns-tz';
 import { Moon, Sun } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import BotonHora from './BotonHora';
+import { HorariosSkeletonLoader } from './HorariosDisponibles';
 
 
 // --- Interfaces ---
@@ -31,14 +32,16 @@ interface Props {
 
   agenda: any;
   datosNuevoTurno: DatosTurno;
-  onClickSeleccionarFecha: (date: Date | undefined) => void;
+  onSeleccionarHorario: (slot: AgendaSlot) => void;
   setPaciente: (paciente: any) => void;
   resetNuevoTurno: () => void;
+  seleccionarFecha: (date: Date | undefined) => void;
   handleDatosNuevoTurno: (user: any) => void;
+  isLoading: boolean;
 }
 
 // --- Componente ---
-export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno, onClickSeleccionarFecha, setPaciente, resetNuevoTurno, handleDatosNuevoTurno }) => {
+export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno, seleccionarFecha, onSeleccionarHorario, setPaciente, resetNuevoTurno, handleDatosNuevoTurno, isLoading }) => {
   const [form, setForm] = useState({ ...datosNuevoTurno });
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -228,7 +231,8 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
   };
 
   const handleSelect = (date: Date | undefined) => {
-    onClickSeleccionarFecha(date);
+
+    seleccionarFecha(date);
 
   };
   return (
@@ -271,7 +275,7 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
             type="date"
             id="fechaTurno"
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
-            onChange={e => handleSelect(new Date(e.target.value))}
+            onChange={e => handleSelect(e.target.value)}
           />
         </div>
       ) : (
@@ -288,38 +292,47 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
           />
         </div>
       )}
-      {
-        isReagendar ? (
-          <div className="w-full space-y-2">
-            {horariosAgrupados?.mañana?.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  <Sun className="w-4 h-4 mr-2 text-yellow-500" />
-                  Turno Mañana
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {horariosAgrupados?.mañana?.map(slot => (
-                    <BotonHora onClick={onClickSeleccionarFecha} key={slot.hora} slot={slot} />
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {horariosAgrupados?.tarde?.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  <Moon className="w-4 h-4 mr-2 text-blue-500" />
-                  Turno Tarde
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {horariosAgrupados?.tarde?.map(slot => (
-                    <BotonHora onClick={onClickSeleccionarFecha} key={slot.hora} slot={slot} />
-                  ))}
+      {
+
+
+        isReagendar ?
+
+          (
+            <div className="w-full space-y-2">
+
+              {isLoading && (
+                <HorariosSkeletonLoader />
+              )}
+              {!isLoading && horariosAgrupados?.mañana?.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <Sun className="w-4 h-4 mr-2 text-yellow-500" />
+                    Turno Mañana
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {horariosAgrupados?.mañana?.map(slot => (
+                      <BotonHora onClick={onSeleccionarHorario} key={slot.hora} slot={slot} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ) : null}
+              )}
+
+              {!isLoading && horariosAgrupados?.tarde?.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <Moon className="w-4 h-4 mr-2 text-blue-500" />
+                    Turno Tarde
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {horariosAgrupados?.tarde?.map(slot => (
+                      <BotonHora onClick={onSeleccionarHorario} key={slot.hora} slot={slot} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
       <div>
         <label htmlFor="duracion" className="block text-sm font-medium text-gray-700 mb-1">
           Duración (minutos)

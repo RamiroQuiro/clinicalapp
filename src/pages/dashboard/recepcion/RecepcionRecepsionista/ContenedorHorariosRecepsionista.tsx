@@ -1,5 +1,6 @@
 import HorariosDisponibles from '@/components/organismo/agenda/HorariosDisponibles';
 import { Card, CardContent, CardTitle } from '@/components/organismo/Card';
+import type { AgendaSlot } from '@/context/agenda.store';
 import { fechaSeleccionada, recepcionStore, setFechaYHoraRecepcionista, setPacienteSeleccionado } from '@/context/recepcion.recepcionista.store';
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { useStore } from '@nanostores/react';
@@ -60,10 +61,10 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
     return (
         <div>
             {profesionales?.map((profesional) => {
-                const handleAgendar = (hora: string) => {
+                const handleAgendar = (slot: AgendaSlot) => {
                     if (!dia) return;
                     setPacienteSeleccionado({ id: '', nombre: '' });
-                    setFechaYHoraRecepcionista(dia, formatUtcToAppTime(hora, 'HH:mm'), profesional?.id);
+                    setFechaYHoraRecepcionista(dia, formatUtcToAppTime(slot.hora, 'HH:mm'), profesional?.id);
                     document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
                 };
 

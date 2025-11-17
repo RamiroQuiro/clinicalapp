@@ -1,6 +1,8 @@
 import {
     agendaDelDia,
+    dataStoreAgenda,
     datosNuevoTurno,
+    fetchAgenda,
     resetNuevoTurno,
     setFechaYHora,
     setPaciente,
@@ -17,9 +19,13 @@ export default function ContenedorFormularioTurno({ user }: Props) {
 
     const agenda = useStore(agendaDelDia);
     const turnoDelStore = useStore(datosNuevoTurno);
-    const onSeleccionarFecha = (slot: AgendaSlot) => {
-
+    const { isLoading } = useStore(dataStoreAgenda);
+    const onSeleccionarHorario = (slot: AgendaSlot) => {
         setFechaYHora(slot.hora, formatUtcToAppTime(slot.hora, 'HH:mm'), slot.userMedicoId);
+    }
+
+    const pedirAgenda = (date: Date) => {
+        fetchAgenda(formatUtcToAppTime(date, 'yyyy-MM-dd'), user.id, user.centroMedicoId);
     }
 
     const handleResetNuevoTurno = () => {
@@ -29,9 +35,11 @@ export default function ContenedorFormularioTurno({ user }: Props) {
         datosNuevoTurno.setKey('userMedicoId', user.id)
     }
 
+
+
     return (
         <div>
-            <FormularioTurno agenda={agenda[0]?.agenda} datosNuevoTurno={turnoDelStore} handleDatosNuevoTurno={handleDatosNuevoTurno} onClickSeleccionarFecha={onSeleccionarFecha} setPaciente={setPaciente} resetNuevoTurno={handleResetNuevoTurno} user={user} />
+            <FormularioTurno agenda={agenda[0]?.agenda} datosNuevoTurno={turnoDelStore} seleccionarFecha={pedirAgenda} handleDatosNuevoTurno={handleDatosNuevoTurno} onSeleccionarHorario={onSeleccionarHorario} setPaciente={setPaciente} resetNuevoTurno={handleResetNuevoTurno} user={user} isLoading={isLoading} />
         </div>
     )
 }

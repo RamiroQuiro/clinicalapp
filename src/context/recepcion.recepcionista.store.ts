@@ -1,6 +1,7 @@
 import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { atom, computed, map } from 'nanostores';
+import type { AgendaSlot } from './agenda.store';
 
 
 
@@ -40,7 +41,29 @@ interface RecepcionStore {
   pacienteSeleccionado: any;
 }
 
-
+export interface DatosTurno {
+  id: string;
+  pacienteId: string;
+  pacienteCelular: string;
+  fechaTurno: string;
+  pacienteNombre: string;
+  pacienteApellido: string;
+  pacienteDocumento: string;
+  userMedicoId: string;
+  profesionalNombre: string;
+  profesionalApellido: string;
+  motivoConsulta: string;
+  horaTurno: string;
+  horaLlegadaPaciente: string;
+  duracion: number;
+  estado:
+  | 'confirmado'
+  | 'pendiente'
+  | 'cancelado'
+  | 'sala_de_espera'
+  | 'en_consulta'
+  | 'finalizado';
+}
 
 // --- STORE PRINCIPAL ---
 export const recepcionStore = map<RecepcionStore>({
@@ -57,16 +80,18 @@ export const recepcionStore = map<RecepcionStore>({
 
 // DAR TUNRO NUEVO
 // Mapa para almacenar los datos del formulario de un nuevo turno
-export const datosNuevoTurnoRecepcionista = map({
-  pacienteId: '' as string | undefined,
+export const datosNuevoTurnoRecepcionista = map<DatosTurno>({
+  pacienteId: '' as string,
   pacienteNombre: '' as string,
-  userMedicoId: '' as string | undefined,
-  fechaTurno: undefined as Date | undefined,
-  horaTurno: '' as string, // formato "HH:mm"
-  duracion: 30, // en minutos, valor por defecto
-  tipoConsulta: 'presencial' as string,
+  userMedicoId: '' as string,
+  fechaTurno: '' as string,
+  horaTurno: '' as string,
+  duracion: 30,
   motivoConsulta: '' as string,
+  horaLlegadaPaciente: '' as string,
+  estado: 'pendiente' as string,
 });
+
 
 
 // --- ACCIÓN PARA CAMBIAR MÉDICO ---
@@ -101,10 +126,11 @@ export const fechaSeleccionada = atom<Date | undefined>(new Date());
 
 // --- ACCIÓN PARA CAMBIAR FECHA SELECCIONADA ---
 // seccion para dar turnos en la agenda
-export const setFechaYHoraRecepcionista = (fecha: Date, hora: string, medicoId: string) => {
+export const setFechaYHoraRecepcionista = (fecha: Date, hora: string, medicoId: string, id?: string) => {
   datosNuevoTurnoRecepcionista.setKey('fechaTurno', fecha);
   datosNuevoTurnoRecepcionista.setKey('horaTurno', hora);
   datosNuevoTurnoRecepcionista.setKey('userMedicoId', medicoId);
+  datosNuevoTurnoRecepcionista.setKey('id', id);
 };
 export const setPacienteRecepcionista = (paciente: { id: string; nombre: string }) => {
   datosNuevoTurnoRecepcionista.setKey('pacienteId', paciente.id);
@@ -114,7 +140,8 @@ export const setPacienteRecepcionista = (paciente: { id: string; nombre: string 
 
 export const resetNuevoTurnoRecepcionista = () => {
   datosNuevoTurnoRecepcionista.set({
-    pacienteId: undefined,
+    id: '',
+    pacienteId: '',
     pacienteNombre: '',
     userMedicoId: '', // Mantiene el médico seleccionado
     fechaTurno: undefined,
