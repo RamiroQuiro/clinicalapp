@@ -6,7 +6,7 @@ type Props = {}
 
 export default function ContenedorFormularioTurnoRecepcionista({ user }: Props) {
 
-
+  const datosNuevoTurno = useStore(datosNuevoTurnoRecepcionista);
   const { turnosDelDia } = useStore(recepcionStore);
   const onSeleccionarFecha = (date: Date | undefined) => {
     fechaSeleccionada.set(date);
@@ -19,9 +19,10 @@ export default function ContenedorFormularioTurnoRecepcionista({ user }: Props) 
     datosNuevoTurnoRecepcionista.setKey('userMedicoId', user.id)
   }
 
+  console.log('agenda del dia ->', turnosDelDia)
   return (
     <div>
-      <FormularioTurno agenda={turnosDelDia} datosNuevoTurno={datosNuevoTurnoRecepcionista.get()} handleDatosNuevoTurno={handleDatosNuevoTurno} onClickSeleccionarFecha={onSeleccionarFecha} setPaciente={setPacienteRecepcionista} resetNuevoTurno={handleResetNuevoTurno} user={user} />
+      <FormularioTurno agenda={turnosDelDia[0]?.agenda} datosNuevoTurno={datosNuevoTurno} handleDatosNuevoTurno={handleDatosNuevoTurno} onClickSeleccionarFecha={onSeleccionarFecha} setPaciente={setPacienteRecepcionista} resetNuevoTurno={handleResetNuevoTurno} user={user} />
     </div>
   )
 

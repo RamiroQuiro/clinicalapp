@@ -3,17 +3,17 @@ import { useState } from 'react';
 
 interface BotonHoraProps {
   slot: any;
-  onClick: (hora: string) => void;
+  onClick: (slot: any) => void;
 }
 
 function BotonHora({ slot, onClick }: BotonHoraProps) {
   const [pulsado, setPulsado] = useState(false);
-
   return (
     <button
-      onClick={() => {
+      onClick={(e) => {
+        e.preventDefault();
         setPulsado(true);
-        onClick(slot.hora);
+        onClick(slot);
         setTimeout(() => setPulsado(false), 300);
       }}
       className={`

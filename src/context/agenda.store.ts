@@ -10,31 +10,34 @@ export interface Profesional {
 
 export interface AgendaSlot {
   hora: string; // ISO string
+  id?: string;
   disponible: boolean;
   userMedicoId: string;
-  turnoInfo: {
-    id: string;
-    pacienteId: string;
-    pacienteCelular: string;
-    fechaTurno: string;
-    pacienteNombre: string;
-    pacienteApellido: string;
-    pacienteDocumento: string;
-    userMedicoId: string;
-    profesionalNombre: string;
-    profesionalApellido: string;
-    motivoConsulta: string;
-    horaTurno: string;
-    horaLlegadaPaciente: string;
-    duracion: number;
-    estado:
-    | 'confirmado'
-    | 'pendiente'
-    | 'cancelado'
-    | 'sala_de_espera'
-    | 'en_consulta'
-    | 'finalizado';
-  } | null;
+  turnoInfo: DatosTurno | null;
+}
+
+export interface DatosTurno {
+  id: string;
+  pacienteId: string;
+  pacienteCelular: string;
+  fechaTurno: string;
+  pacienteNombre: string;
+  pacienteApellido: string;
+  pacienteDocumento: string;
+  userMedicoId: string;
+  profesionalNombre: string;
+  profesionalApellido: string;
+  motivoConsulta: string;
+  horaTurno: string;
+  horaLlegadaPaciente: string;
+  duracion: number;
+  estado:
+  | 'confirmado'
+  | 'pendiente'
+  | 'cancelado'
+  | 'sala_de_espera'
+  | 'en_consulta'
+  | 'finalizado';
 }
 
 interface AgendaStore {
@@ -71,6 +74,7 @@ export const fetchAgenda = async (fechaFormateada: string, userSeleccionadoId: s
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
+    agendaDelDia.set(data.data);
     setCargarAgenda(data.data); // Actualiza el store global
     dataStoreAgenda.setKey('isLoading', false);
   } catch (error) {
@@ -87,15 +91,16 @@ export const fetchAgenda = async (fechaFormateada: string, userSeleccionadoId: s
 export const profesionalSeleccionado = atom<Profesional | undefined>();
 
 // Mapa para almacenar los datos del formulario de un nuevo turno
-export const datosNuevoTurno = map({
-  pacienteId: '' as string | undefined,
+export const datosNuevoTurno = map<DatosTurno>({
+  pacienteId: '' as string,
   pacienteNombre: '' as string,
-  userMedicoId: '' as string | undefined,
-  fechaTurno: undefined as Date | undefined,
-  horaTurno: '' as string, // formato "HH:mm"
-  duracion: 30, // en minutos, valor por defecto
-  tipoConsulta: 'presencial' as string,
+  userMedicoId: '' as string,
+  fechaTurno: '' as string,
+  horaTurno: '' as string,
+  duracion: 30,
   motivoConsulta: '' as string,
+  horaLlegadaPaciente: '' as string,
+  estado: 'pendiente' as string,
 });
 
 export const agendaStore = map<AgendaStore>({
@@ -196,7 +201,9 @@ export const setPaciente = (paciente: { id: string; nombre: string }) => {
 };
 
 // MODIFICADO: Ahora también acepta y guarda el medicoId
-export const setFechaYHora = (fecha: Date, hora: string, medicoId: string) => {
+export const setFechaYHora = (fecha: Date, hora: string, medicoId: string, turnoId?: string) => {
+  console.log('estan entrando los datos?', fecha, hora, medicoId, turnoId);
+  datosNuevoTurno.setKey('id', turnoId);
   datosNuevoTurno.setKey('fechaTurno', fecha);
   datosNuevoTurno.setKey('horaTurno', hora);
   datosNuevoTurno.setKey('userMedicoId', medicoId);

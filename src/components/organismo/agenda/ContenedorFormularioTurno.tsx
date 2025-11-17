@@ -1,10 +1,12 @@
 import {
     agendaDelDia,
     datosNuevoTurno,
-    fechaSeleccionada,
     resetNuevoTurno,
-    setPaciente
+    setFechaYHora,
+    setPaciente,
+    type AgendaSlot
 } from '@/context/agenda.store';
+import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { useStore } from "@nanostores/react";
 import { FormularioTurno } from "./FormularioTurno";
 type Props = {
@@ -15,8 +17,9 @@ export default function ContenedorFormularioTurno({ user }: Props) {
 
     const agenda = useStore(agendaDelDia);
     const turnoDelStore = useStore(datosNuevoTurno);
-    const onSeleccionarFecha = (date: Date | undefined) => {
-        fechaSeleccionada.set(date);
+    const onSeleccionarFecha = (slot: AgendaSlot) => {
+
+        setFechaYHora(slot.hora, formatUtcToAppTime(slot.hora, 'HH:mm'), slot.userMedicoId);
     }
 
     const handleResetNuevoTurno = () => {
@@ -28,7 +31,7 @@ export default function ContenedorFormularioTurno({ user }: Props) {
 
     return (
         <div>
-            <FormularioTurno agenda={agenda} turnoDelStore={turnoDelStore} datosNuevoTurno={datosNuevoTurno.get()} handleDatosNuevoTurno={handleDatosNuevoTurno} onClickSeleccionarFecha={onSeleccionarFecha} setPaciente={setPaciente} resetNuevoTurno={handleResetNuevoTurno} user={user} />
+            <FormularioTurno agenda={agenda[0]?.agenda} datosNuevoTurno={turnoDelStore} handleDatosNuevoTurno={handleDatosNuevoTurno} onClickSeleccionarFecha={onSeleccionarFecha} setPaciente={setPaciente} resetNuevoTurno={handleResetNuevoTurno} user={user} />
         </div>
     )
 }

@@ -1,6 +1,7 @@
 import TurnosDelDia from "@/components/organismo/agenda/TurnosDelDia";
 import { fechaSeleccionada, recepcionStore, setFechaYHoraRecepcionista, setPacienteRecepcionista } from "@/context/recepcion.recepcionista.store";
 import { useSSE } from "@/hook/useSSE";
+import { formatUtcToAppTime } from "@/utils/agendaTimeUtils";
 import { showToast } from "@/utils/toast/toastShow";
 import { useStore } from "@nanostores/react";
 import type { User } from "lucia";
@@ -21,8 +22,7 @@ export default function ContenedorTurnosDelDiaRecepcionista({ user }: Props) {
             id: slot.turnoInfo.pacienteId,
             nombre: `${slot.turnoInfo.pacienteNombre} ${slot.turnoInfo.pacienteApellido}`,
         });
-        // This still needs to be fixed with correct arguments
-        setFechaYHoraRecepcionista();
+        setFechaYHoraRecepcionista(diaSeleccionado, formatUtcToAppTime(slot.hora, 'HH:mm'), slot.profesionalId);
         document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
     };
 

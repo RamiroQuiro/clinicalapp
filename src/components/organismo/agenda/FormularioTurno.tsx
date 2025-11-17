@@ -1,6 +1,7 @@
 import Button from '@/components/atomos/Button';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
 
+import type { DatosTurno } from '@/context/agenda.store';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
 import { showToast } from '@/utils/toast/toastShow';
@@ -9,7 +10,6 @@ import { toZonedTime } from 'date-fns-tz';
 import { Moon, Sun } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import BotonHora from './BotonHora';
-
 
 
 // --- Interfaces ---
@@ -28,9 +28,9 @@ interface User {
 
 interface Props {
   user: User;
-  turnoDelStore: any;
+
   agenda: any;
-  datosNuevoTurno: any;
+  datosNuevoTurno: DatosTurno;
   onClickSeleccionarFecha: (date: Date | undefined) => void;
   setPaciente: (paciente: any) => void;
   resetNuevoTurno: () => void;
@@ -42,6 +42,7 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
   const [form, setForm] = useState({ ...datosNuevoTurno });
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
+  const isReagendar = Boolean(form?.id);
 
   const horariosDisponibles = useMemo(() => agenda?.filter(slot => slot.disponible), [agenda]);
   const horariosAgrupados = useMemo(
@@ -56,6 +57,8 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
     [horariosDisponibles]
   );
 
+  console.log('antes del useEfect form..', form);
+
   useEffect(() => {
     if (!form.userMedicoId) {
       handleDatosNuevoTurno(user);
@@ -68,6 +71,7 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
     setForm(prevForm => ({ ...prevForm, ...datosNuevoTurno }));
   }, [datosNuevoTurno]);
 
+  console.log('despues del useEfect form..', form);
   useEffect(() => {
     return () => {
       resetNuevoTurno();
@@ -112,8 +116,7 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
 
     setLoading(true);
     try {
-      console.log('fechaTurno', form.fechaTurno);
-      console.log('horaTurno', form.horaTurno);
+
       const fechaTurnoUtc = toZonedTime(
         `${format(new Date(form.fechaTurno!), 'yyyy-MM-dd')}T${form.horaTurno}`,
         APP_TIME_ZONE
@@ -155,6 +158,54 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
     }
   };
 
+  const handleReagendar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.pacienteId || !form.fechaTurno || !form.duracion || !form.userMedicoId) {
+      showToast('Por favor, complete los campos obligatorios.', { background: 'bg-red-600' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+
+      const fechaTurnoUtc = toZonedTime(
+        `${format(new Date(form.fechaTurno!), 'yyyy-MM-dd')}T${form.horaTurno}`,
+        APP_TIME_ZONE
+      );
+
+      const payload = {
+        ...form,
+        fechaTurno: fechaTurnoUtc.toISOString(),
+      };
+
+      const response = await fetch('/api/agenda/turnos/reagendar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.msg || 'Error al crear el turno');
+      }
+
+      showToast('Turno reagendado con éxito', { background: 'bg-green-600' });
+
+      const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
+      if (modal) {
+        modal.close();
+      }
+      resetNuevoTurno();
+    } catch (error: any) {
+      showToast(`Error: ${error.message}`, { background: 'bg-red-600' });
+      console.error('Error al crear el turno:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const handleCancel = () => {
     const modal = document.getElementById('dialog-modal-modalNuevoTurno') as HTMLDialogElement;
     if (modal) {
@@ -181,7 +232,7 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
 
   };
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4">
+    <form className="p-4 space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
         {form.pacienteId && form.pacienteNombre && !isSearchingPaciente ? (
@@ -209,10 +260,9 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
         )}
       </div>
 
-      {/* --- SELECTOR DE PROFESIONAL -- */}
 
       {/* para reagendar */}
-      {!datosNuevoTurno?.fechaTurno && !datosNuevoTurno?.horaTurno ? (
+      {datosNuevoTurno.id ? (
         <div>
           <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
             Fecha y Hora del Turno
@@ -238,39 +288,38 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
           />
         </div>
       )}
-      {horariosAgrupados?.mañana?.length > 0 &&
-        !datosNuevoTurno?.fechaTurno &&
-        !datosNuevoTurno?.horaTurno ? (
-        <div className="w-full space-y-2">
-          {horariosAgrupados?.mañana?.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                <Sun className="w-4 h-4 mr-2 text-yellow-500" />
-                Turno Mañana
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {horariosAgrupados?.mañana?.map(slot => (
-                  <BotonHora key={slot.hora} slot={slot} />
-                ))}
+      {
+        isReagendar ? (
+          <div className="w-full space-y-2">
+            {horariosAgrupados?.mañana?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <Sun className="w-4 h-4 mr-2 text-yellow-500" />
+                  Turno Mañana
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {horariosAgrupados?.mañana?.map(slot => (
+                    <BotonHora onClick={onClickSeleccionarFecha} key={slot.hora} slot={slot} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {horariosAgrupados?.tarde?.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                <Moon className="w-4 h-4 mr-2 text-blue-500" />
-                Turno Tarde
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {horariosAgrupados?.tarde?.map(slot => (
-                  <BotonHora key={slot.hora} slot={slot} />
-                ))}
+            {horariosAgrupados?.tarde?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <Moon className="w-4 h-4 mr-2 text-blue-500" />
+                  Turno Tarde
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {horariosAgrupados?.tarde?.map(slot => (
+                    <BotonHora onClick={onClickSeleccionarFecha} key={slot.hora} slot={slot} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      ) : null}
+            )}
+          </div>
+        ) : null}
       <div>
         <label htmlFor="duracion" className="block text-sm font-medium text-gray-700 mb-1">
           Duración (minutos)
@@ -302,8 +351,8 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
         <Button type="button" variant="secondary" onClick={handleCancel}>
           Cancelar
         </Button>
-        <Button disabled={loading} type="submit" variant="primary">
-          Guardar Turno
+        <Button onClick={isReagendar ? handleReagendar : handleSubmit} disabled={loading} variant="primary">
+          {isReagendar ? 'Reagendar' : 'Guardar Turno'}
         </Button>
       </div>
     </form>

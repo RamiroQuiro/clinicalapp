@@ -1,6 +1,7 @@
 import TurnosDelDia from "@/components/organismo/agenda/TurnosDelDia";
 import { dataStoreAgenda, fechaSeleccionada, setFechaYHora, setPaciente } from "@/context/agenda.store";
 import { useSSE } from "@/hook/useSSE";
+import { formatUtcToAppTime } from "@/utils/agendaTimeUtils";
 import { showToast } from "@/utils/toast/toastShow";
 import { useStore } from "@nanostores/react";
 import type { User } from "lucia";
@@ -21,11 +22,12 @@ export default function ContenedorTurnosDia({ user }: Props) {
 
     const onChangeReagendar = (slot: any) => {
         if (!diaSeleccionado) return;
+        console.log('slot', slot)
         setPaciente({
             id: slot.turnoInfo.pacienteId,
             nombre: `${slot.turnoInfo.pacienteNombre} ${slot.turnoInfo.pacienteApellido}`,
         });
-        setFechaYHora();
+        setFechaYHora(diaSeleccionado, formatUtcToAppTime(slot.hora, 'HH:mm'), slot.profesionalId, slot.turnoInfo.id);
         document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
     }
     const handleCancelarTurno = async (slot: any) => {

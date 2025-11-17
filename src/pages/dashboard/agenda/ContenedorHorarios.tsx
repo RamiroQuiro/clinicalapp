@@ -4,7 +4,8 @@ import {
     fechaSeleccionada,
     profesionalSeleccionado,
     setFechaYHora,
-    setPaciente
+    setPaciente,
+    type AgendaSlot,
 } from '@/context/agenda.store';
 import { formatUtcToAppTime } from "@/utils/agendaTimeUtils";
 import { useStore } from "@nanostores/react";
@@ -14,14 +15,15 @@ export default function ContenedorHorarios({ }: Props) {
     const { data: agenda, isLoading, error } = useStore(dataStoreAgenda);
     const dia = useStore(fechaSeleccionada);
     const profesional = useStore(profesionalSeleccionado);
-    const handleAgendar = (hora: string) => {
+
+    const handleAgendar = (slot: AgendaSlot) => {
         if (!dia) return;
         setPaciente({ id: '', nombre: '' });
 
-        setFechaYHora(dia, formatUtcToAppTime(hora, 'HH:mm'), profesional?.id);
+        setFechaYHora(dia, formatUtcToAppTime(slot.hora, 'HH:mm'), profesional?.id, '');
         document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
     }
-    console.log('agenda en contenedor horarios profesional->', agenda)
+
     return (
         <HorariosDisponibles agenda={agenda?.[0]?.agenda} dia={dia || new Date()} profesional={profesional} hangleAgendar={handleAgendar} isLoading={isLoading} />
     )
