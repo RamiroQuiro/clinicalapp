@@ -60,7 +60,6 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
     [horariosDisponibles]
   );
 
-  console.log('antes del useEfect form..', form);
 
   useEffect(() => {
     if (!form.userMedicoId) {
@@ -74,7 +73,6 @@ export const FormularioTurno: React.FC<Props> = ({ user, agenda, datosNuevoTurno
     setForm(prevForm => ({ ...prevForm, ...datosNuevoTurno }));
   }, [datosNuevoTurno]);
 
-  console.log('despues del useEfect form..', form);
   useEffect(() => {
     return () => {
       resetNuevoTurno();

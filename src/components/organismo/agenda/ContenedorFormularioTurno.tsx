@@ -39,7 +39,7 @@ export default function ContenedorFormularioTurno({ user }: Props) {
 
     return (
         <div>
-            <FormularioTurno agenda={agenda[0]?.agenda} datosNuevoTurno={turnoDelStore} seleccionarFecha={pedirAgenda} handleDatosNuevoTurno={handleDatosNuevoTurno} onSeleccionarHorario={onSeleccionarHorario} setPaciente={setPaciente} resetNuevoTurno={handleResetNuevoTurno} user={user} isLoading={isLoading} />
+            <FormularioTurno agenda={agenda?.agenda} datosNuevoTurno={turnoDelStore} seleccionarFecha={pedirAgenda} handleDatosNuevoTurno={handleDatosNuevoTurno} onSeleccionarHorario={onSeleccionarHorario} setPaciente={setPaciente} resetNuevoTurno={handleResetNuevoTurno} user={user} isLoading={isLoading} />
         </div>
     )
 }

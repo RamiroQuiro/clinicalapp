@@ -30,7 +30,6 @@ export default function ContenedorFormularioTurnoRecepcionista({ user }: Props) 
     datosNuevoTurnoRecepcionista.setKey('userMedicoId', user.id)
   }
 
-  console.log('agenda del dia ->', turnosDelDia)
   return (
     <div>
       <FormularioTurno

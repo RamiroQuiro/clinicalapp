@@ -13,7 +13,6 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
     const dia = useStore(fechaSeleccionada);
     const { profesionales, turnosDelDia, isLoading, medicoSeleccionadoId } = useStore(recepcionStore);
 
-    console.log('turnosDelDia ->', medicoSeleccionadoId)
 
 
     if (medicoSeleccionadoId.length > 0) {

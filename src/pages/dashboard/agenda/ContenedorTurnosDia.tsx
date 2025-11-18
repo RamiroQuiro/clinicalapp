@@ -18,7 +18,7 @@ export default function ContenedorTurnosDia({ user }: Props) {
     const { sseConectado } = useSSE(user.id);
 
 
-
+    console.log('agenda en contenedor turnos del dia', agenda)
 
     const onChangeReagendar = (slot: any) => {
         if (!diaSeleccionado) return;

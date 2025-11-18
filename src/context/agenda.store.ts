@@ -1,4 +1,5 @@
 import { sseService } from '@/services/sse.services';
+import { isEqual, parseISO } from 'date-fns';
 import { atom, map } from 'nanostores';
 
 // --- INTERFACES Y TIPOS ---
@@ -45,6 +46,10 @@ interface AgendaStore {
   ultimaActualizacion: string | null;
 }
 
+interface Agenda {
+  profesionalId: string;
+  agenda: AgendaSlot[];
+}
 // --- STORES ---
 
 // Atom para la fecha actualmente seleccionada en el calendario
@@ -56,11 +61,17 @@ export const dataStoreAgenda = map({
   error: null,
   data: []
 })
+
 // Atom para almacenar la agenda completa del día seleccionado
-export const agendaDelDia = atom<AgendaSlot[]>([]);
+export const agendaDelDia = atom<Agenda[]>([
+  {
+    profesionalId: '',
+    agenda: []
+  }
+]);
 
 
-export const setCargarAgenda = (agenda: AgendaSlot[]) => {
+export const setCargarAgenda = (agenda: Agenda[]) => {
   dataStoreAgenda.setKey('data', agenda);
 }
 
@@ -114,16 +125,18 @@ export function manejarEventoSSEAgenda(evento: any) {
 
   if (evento.type === 'turno-actualizado') {
     const turnoActualizado = evento.data;
-    const agendaActual = agendaDelDia.get();
+    const agendaActual = agendaDelDia.get()
+
+    console.log('agendaActual en el store de agneda', agendaActual[0].agenda)
 
     const nuevaAgenda = agendaActual.map(slot => {
-      if (slot.turnoInfo?.id === turnoActualizado.id) {
+      if (slot.agenda.turnoInfo?.id === turnoActualizado.id) {
         const turnoInfoNuevo = {
-          ...slot.turnoInfo,
+          ...slot.agenda.turnoInfo,
           estado: turnoActualizado.estado,
           horaLlegadaPaciente: turnoActualizado.horaLlegadaPaciente,
         };
-        return { ...slot, turnoInfo: turnoInfoNuevo };
+        return { ...slot, agenda: { ...slot.agenda, turnoInfo: turnoInfoNuevo } };
       }
       return slot;
     });
@@ -131,41 +144,49 @@ export function manejarEventoSSEAgenda(evento: any) {
     console.log(`🔄 Agenda actualizada via SSE: ${turnoActualizado.id}`);
     agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   } else if (evento.type === 'turno-agendado') {
-    const turnoAgendado: AgendaSlot = evento.data;
-    const agendaActual = agendaDelDia.get();
+    const turnoAgendado = evento.data;
+    const agendaCompleta = dataStoreAgenda.get().data
+    if (!agendaCompleta.length) return;
 
-    // Comprobamos si el turno ya existe para evitar duplicados
-    const yaExiste = agendaActual.some(
-      slot => slot.turnoInfo?.id === turnoAgendado.turnoInfo?.id
+    console.log('Turno recibido:', turnoAgendado);
+    console.log('Agenda actual:', agendaCompleta);
+
+
+    // Creamos una copia profunda del estado actual
+    const nuevaAgenda = JSON.parse(JSON.stringify(agendaCompleta));
+    const profesionalIndex = 0; // Asumiendo que trabajamos con el primer profesional
+
+    // Buscamos si ya existe un turno a la misma hora
+    const turnoIndex = nuevaAgenda[profesionalIndex].agenda.findIndex(slot =>
+      isEqual(parseISO(slot.hora), parseISO(turnoAgendado.hora))
     );
-    if (yaExiste) {
-      console.log('🔄 Turno agendado ya existe en el store de agenda. Omitiendo.');
-      return;
+
+    if (turnoIndex !== -1) {
+      // Si existe, actualizamos el turno
+      nuevaAgenda[profesionalIndex].agenda[turnoIndex] = turnoAgendado;
+    } else {
+      // Si no existe, lo agregamos
+      nuevaAgenda[profesionalIndex].agenda.push(turnoAgendado);
     }
 
-    const fechaFormateada = new Date(turnoAgendado.hora);
-
-    console.log('fechaFormateada', fechaFormateada);
-
-    // Añadimos el nuevo turno al array
-    const nuevaAgenda = [...agendaActual, turnoAgendado];
-
-    // Ordenamos la agenda por hora, convirtiendo la fecha ISO a un valor numérico
-    const agendaOrdenada = nuevaAgenda.sort(
-      (a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime()
+    // Ordenamos la agenda por hora
+    nuevaAgenda[profesionalIndex].agenda.sort((a, b) =>
+      parseISO(a.hora).getTime() - parseISO(b.hora).getTime()
     );
 
-    console.log('esta es la agenda ordenada en el AstroConfigRefinedSchema.store', agendaOrdenada);
-    agendaDelDia.set(agendaOrdenada);
+    console.log('Agenda actualizada:', nuevaAgenda);
+
+    dataStoreAgenda.setKey('data', nuevaAgenda);
     console.log(`✅ Turno agendado añadido a la agenda via SSE: ${turnoAgendado.turnoInfo?.id}`);
     agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   } else if (evento.type === 'turno-eliminado') {
     const turnoId = evento.data.id;
-    const agendaActual = agendaDelDia.get();
+    const agendaCompleta = dataStoreAgenda.get().data;
+    const agendaActual = agendaCompleta[0].agenda
 
     const nuevaAgenda = agendaActual.map(slot => {
       if (slot.turnoInfo?.id === turnoId) {
-        return { ...slot, disponible: true, turnoInfo: null };
+        return { ...slot, disponible: true, agenda: { ...slot.agenda, turnoInfo: null } };
       }
       return slot;
     });

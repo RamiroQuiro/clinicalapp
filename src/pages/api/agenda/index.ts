@@ -98,6 +98,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         pacienteApellido: pacientes.apellido,
         pacienteDocumento: pacientes.dni,
         pacienteCelular: pacientes.celular,
+        centroMedicoId: turnos.centroMedicoId,
         especialidadProfesional: users.especialidad,
         horaLlegadaPaciente: turnos.horaLlegadaPaciente,
         tipoDeTurno: turnos.tipoDeTurno,
@@ -170,10 +171,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
           return {
             hora: slotInicio.toISOString(),
             disponible: false,
+            centroMedicoId: turnoOcupante.centroMedicoId,
             userMedicoId: profId,
             turnoInfo: {
               id: turnoOcupante.id,
               pacienteId: turnoOcupante.pacienteId,
+              centroMedicoId: turnoOcupante.centroMedicoId,
               pacienteCelular: turnoOcupante.pacienteCelular,
               pacienteNombre: turnoOcupante.pacienteNombre,
               horaLlegadaPaciente: turnoOcupante.horaLlegadaPaciente,
@@ -195,6 +198,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             hora: slotInicio.toISOString(),
             userMedicoId: profId,
             disponible: true,
+            centroMedicoId: centroMedicoId,
             turnoInfo: null,
           };
         }
@@ -214,10 +218,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
       const estruturaTurnosExtra = turnosExtraNoAsignados.map((turno) => ({
         hora: turno.fechaTurno.toISOString(),
         disponible: false,
+        centroMedicoId: centroMedicoId,
         userMedicoId: turno.userMedicoId,
         turnoInfo: {
           id: turno.id,
           pacienteId: turno.pacienteId,
+          centroMedicoId: turno.centroMedicoId,
           pacienteCelular: turno.pacienteCelular,
           pacienteNombre: turno.pacienteNombre,
           horaLlegadaPaciente: turno.horaLlegadaPaciente,
