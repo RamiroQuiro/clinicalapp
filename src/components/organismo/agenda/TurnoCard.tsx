@@ -61,6 +61,8 @@ function TurnoCard({
       type: 'button',
     },
   ];
+  const statusInfo = getStatusInfo(slot.turnoInfo?.estado);
+
 
   return (
     <div className="group relative">
@@ -115,10 +117,8 @@ function TurnoCard({
                 {slot.turnoInfo?.tipoDeTurno}
               </span>
             </div>
-            <div
-              className={`text-xs text-primary-texto border font-medium  bottom-2 rounded-full px-2 py-0.5 bg-white right-2 ${getStatusInfo(slot.turnoInfo?.estado).colorClass}`}
-            >
-              {slot.turnoInfo?.estado}
+            <div className={`text-xs font-medium border rounded-full px-3 py-1 ${statusInfo.colorClass}`}>
+              {statusInfo.text}
             </div>
           </div>
 

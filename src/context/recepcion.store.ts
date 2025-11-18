@@ -2,6 +2,7 @@ import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { computed, map } from 'nanostores';
 
+import { isEqual, parseISO } from 'date-fns';
 import type { AgendaSlot } from './agenda.store';
 
 
@@ -65,52 +66,96 @@ export const turnosEnConsulta = computed(recepcionStore, $store =>
  */
 export function manejarEventoSSE(evento: any) {
   console.log('📥 Evento SSE recibido:', evento);
-
   if (evento.type === 'turno-actualizado') {
     const turnoActualizado = evento.data;
+    const { turnosDelDia } = recepcionStore.get();
 
-    const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
+    if (!turnosDelDia.length) return;
 
-    const agendaSlotsNuevos = agendaSlotsActuales.map(slot => {
-      // Comparamos el ID que está dentro del objeto turnoInfo
-      if (slot.turnoInfo?.id === turnoActualizado.id) {
-        // Creamos un objeto turnoInfo nuevo e inmutable
-        const turnoInfoNuevo = {
-          ...slot.turnoInfo,
-          estado: turnoActualizado.estado,
-          horaLlegadaPaciente: turnoActualizado.horaLlegadaPaciente,
+    console.log('Turno actualizado recibido:', turnoActualizado);
+    console.log('Agenda actual:', turnosDelDia);
+
+    // Actualizamos la estructura de la agenda
+    const agendaActualizada = turnosDelDia.map(profesional => {
+      // Buscamos si hay un turno con el mismo ID en la agenda del profesional
+      const agendaActualizada = profesional.agenda.map(slot => {
+        if (slot.turnoInfo?.id === turnoActualizado.id) {
+          // Mantenemos los datos existentes del slot y actualizamos solo el turnoInfo
+          return {
+            ...slot,
+            turnoInfo: {
+              ...slot.turnoInfo,  // Mantenemos los datos existentes del turno
+              ...turnoActualizado, // Sobrescribimos con los datos actualizados
+            },
+            disponible: turnoActualizado.estado !== 'cancelado' ? false : true
+          };
+        }
+        return slot;
+      });
+
+      // Si no encontramos el turno en la agenda, lo agregamos
+      const turnoExiste = agendaActualizada.some(slot =>
+        slot.turnoInfo?.id === turnoActualizado.id
+      );
+
+      if (!turnoExiste) {
+        // Creamos un nuevo slot para el turno
+        const nuevoSlot: AgendaSlot = {
+          hora: turnoActualizado.fechaTurno,
+          disponible: false,
+          turnoInfo: turnoActualizado,
+          // Agregar otras propiedades necesarias según tu interfaz AgendaSlot
         };
-        // Creamos un AgendaSlot nuevo que contiene el turnoInfo actualizado
-        return { ...slot, turnoInfo: turnoInfoNuevo };
+        agendaActualizada.push(nuevoSlot);
       }
-      return slot; // Devolvemos el slot sin cambios si no coincide
+
+      return {
+        ...profesional,
+        agenda: agendaActualizada.sort((a, b) =>
+          new Date(a.hora).getTime() - new Date(b.hora).getTime()
+        )
+      };
     });
 
-    recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
-    console.log(`🔄 Store actualizado via SSE: ${turnoActualizado.id}`);
+    console.log('Agenda actualizada:', agendaActualizada);
+    recepcionStore.setKey('turnosDelDia', agendaActualizada);
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
-
-  // manejar turnos agendados recientes
   else if (evento.type === 'turno-agendado') {
-    const turnoAgendado: AgendaSlot = evento.data;
-    const turnosActuales = recepcionStore.get().turnosDelDia;
+    const turnoAgendado = evento.data;
+    const { turnosDelDia } = recepcionStore.get();
+    if (!turnosDelDia.length) return;
 
-    // Prevenir duplicados
-    const yaExiste = turnosActuales.some(
-      slot => slot.turnoInfo?.id === turnoAgendado.turnoInfo?.id
+    console.log('Turno recibido:', turnoAgendado);
+    console.log('Agenda actual:', turnosDelDia);
+
+
+    // Creamos una copia profunda del estado actual
+    const nuevaAgenda = JSON.parse(JSON.stringify(turnosDelDia));
+    const profesionalIndex = 0; // Asumiendo que trabajamos con el primer profesional
+
+    // Buscamos si ya existe un turno a la misma hora
+    const turnoIndex = nuevaAgenda[profesionalIndex].agenda.findIndex(slot =>
+      isEqual(parseISO(slot.hora), parseISO(turnoAgendado.hora))
     );
-    if (yaExiste) {
-      console.log('🔄 Turno agendado ya existe en el store de recepción. Omitiendo.');
-      return;
+
+    if (turnoIndex !== -1) {
+      // Si existe, actualizamos el turno
+      nuevaAgenda[profesionalIndex].agenda[turnoIndex] = turnoAgendado;
+    } else {
+      // Si no existe, lo agregamos
+      nuevaAgenda[profesionalIndex].agenda.push(turnoAgendado);
     }
 
-    const turnosNuevos = [...turnosActuales, turnoAgendado];
-    // Opcional: Ordenar si es necesario
-    turnosNuevos.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
+    // Ordenamos la agenda por hora
+    nuevaAgenda[profesionalIndex].agenda.sort((a, b) =>
+      parseISO(a.hora).getTime() - parseISO(b.hora).getTime()
+    );
 
-    recepcionStore.setKey('turnosDelDia', turnosNuevos);
-    console.log(`✅ Turno agendado añadido a recepción via SSE: ${turnoAgendado.turnoInfo?.id}`);
+    console.log('Agenda actualizada:', nuevaAgenda);
+
+    recepcionStore.setKey('turnosDelDia', nuevaAgenda);
+    console.log(`✅ Turno agendado añadido a la agenda via SSE: ${turnoAgendado.turnoInfo?.id}`);
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
 

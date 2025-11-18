@@ -94,7 +94,7 @@ export default function RecepcionPacientes({ userId }: Props) {
           )}
         </div>
       </Section>
-      <Section title={`${turnosAgendadosDia.length} En Sala de Espera`} classContent="flex flex-1 min-w-[30%]  flex-col ">
+      <Section title={`${colaDeEspera.length} En Sala de Espera`} classContent="flex flex-1 min-w-[30%]  flex-col ">
         <div key={2} className="flex flex-col gap-2  w-full">
           {colaDeEspera.length === 0 ? (
             <div className="w-full">

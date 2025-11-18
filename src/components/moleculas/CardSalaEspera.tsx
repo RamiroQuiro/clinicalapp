@@ -12,38 +12,75 @@ export default function CardSalaEspera({ turno, index }: Props) {
   const handleAtender = (turno: AgendaSlot) => {
     window.location.href = `/api/atencion/nueva?pacienteId=${turno.turnoInfo?.pacienteId}&turnoId=${turno.turnoInfo?.id}`;
   };
+
+  const esEspontaneo = turno.turnoInfo?.tipoDeTurno?.toLowerCase() === 'espontaneo';
+
   return (
-    <Card className="flex items-center justify-between p-3 gap-3 border rounded-lg">
+    <Card className={`flex items-center justify-between p-3 gap-3 border-l-4 rounded-lg ${esEspontaneo
+        ? 'border-l-orange-500 bg-white hover:bg-orange-50'
+        : 'border-l-blue-500 bg-white hover:bg-blue-50'
+      }`}>
 
-      <div className="flex items-center gap-2">
-
-        <div className="bg-primary-100/20 border-primary-100 border text-primary-100 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+      {/* Número y badge */}
+      <div className="flex items-center gap-2 min-w-[90px]">
+        <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${esEspontaneo ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-blue-100 text-blue-800 border border-blue-300'
+          }`}>
           {index + 1}
         </div>
 
-        <p className="text-xs font-semibold text-gray-500">{extraerHora(turno.turnoInfo?.horaLlegadaPaciente)}</p>
-
+        <div className={`text-xs font-semibold px-2 py-1 rounded-full ${esEspontaneo
+            ? 'bg-orange-100 text-orange-800 border border-orange-200'
+            : 'bg-blue-100 text-blue-800 border border-blue-200'
+          }`}>
+          {esEspontaneo ? 'Hoy' : 'Program.'}
+        </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-start">
-        <p className="font-medium text-sm capitalize">
-          {turno.turnoInfo?.pacienteNombre} {turno.turnoInfo?.pacienteApellido}
-        </p>
-        <p className="text-xs font-semibold text-gray-500">
-          DNI: {turno.turnoInfo?.pacienteDocumento}
-        </p>
+      {/* Información del paciente */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-sm capitalize truncate">
+            {turno.turnoInfo?.pacienteNombre} {turno.turnoInfo?.pacienteApellido}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <span>DNI: {turno.turnoInfo?.pacienteDocumento}</span>
+          <span>•</span>
+          <span className="truncate">{turno.turnoInfo?.motivoConsulta || 'Sin motivo'}</span>
+        </div>
       </div>
-      <div className="flex-1 flex flex-col items-start">
-        <p className="text-xs font-semibold text-gray-500">
-          {turno.turnoInfo?.tipoDeTurno} {turno.turnoInfo?.motivoConsulta}
-        </p>
-      </div>
-      <div title="Atender" className="bg-primary-100/20 p-2 border-primary-100 border text-primary-100 w-8 h-8 rounded-full flex items-center justify-center font-bold">
-        <SquareArrowOutUpRight
+
+      {/* HORAS - Diferente según tipo de turno */}
+      <div className="flex items-center gap-4">
+        {!esEspontaneo && (
+          <div className="text-right">
+            <p className="text-xs font-semibold text-gray-600">
+              {extraerHora(turno.hora)} {/* Hora del turno programado */}
+            </p>
+            <p className="text-xs text-gray-400">Turno</p>
+          </div>
+        )}
+
+        <div className="text-right">
+          <p className="text-xs font-semibold text-gray-600">
+            {extraerHora(turno.turnoInfo?.horaLlegadaPaciente) || '--:--'}
+          </p>
+          <p className="text-xs text-gray-400">
+            {esEspontaneo ? 'Ingreso' : 'Llegada'}
+          </p>
+        </div>
+
+        <button
           onClick={() => handleAtender(turno)}
-
-          className="w-6 h-6 cursor-pointer text-primary-100"
-        />
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${esEspontaneo
+              ? 'bg-orange-500 hover:bg-orange-600 text-white'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
+            }`}
+          title="Atender paciente"
+        >
+          <SquareArrowOutUpRight className="w-4 h-4" />
+          Atender
+        </button>
       </div>
     </Card>
   );

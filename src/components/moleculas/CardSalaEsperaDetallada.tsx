@@ -4,7 +4,6 @@ import extraerHora from '@/utils/extraerHora';
 import { ArrowDown, ArrowUp, Bell, Clock, Megaphone } from 'lucide-react';
 import BotonIndigo from './BotonIndigo';
 
-// Props para la nueva tarjeta detallada
 type Props = {
   turno: AgendaSlot;
   index: number;
@@ -24,80 +23,101 @@ export default function CardSalaEsperaDetallada({
   onNotificar,
   onLlamar,
 }: Props) {
-  // Usamos el hook para calcular el tiempo de espera desde la hora de llegada
   const tiempoEnEspera = useElapsedTime(turno.turnoInfo?.horaLlegadaPaciente);
 
   return (
-    <div key={turno.turnoInfo?.id} className="border bg-white rounded-lg p-4 space-y-1">
-      <div className="flex items-center justify-between">
+    <div className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 p-4 space-y-3">
+      {/* Header con número y información del paciente */}
+      <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">
+          <div className="w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center font-bold text-sm">
             {index + 1}
           </div>
 
           <div>
-            <p className="font-bold text-lg capitalize text-gray-800">
+            <h3 className="font-bold text-gray-900 capitalize">
               {turno.turnoInfo?.pacienteNombre || ''} {turno.turnoInfo?.pacienteApellido || ''}
+            </h3>
+            <p className="text-sm text-gray-600 mt-0.5">
+              DNI: <span className="font-mono">{turno.turnoInfo?.pacienteDocumento || ''}</span>
             </p>
-            <p className="text-sm text-gray-500">DNI: {turno.turnoInfo?.pacienteDocumento || ''}</p>
           </div>
         </div>
-        <div className="capitalize">
-          <BotonIndigo className="capitalize">
+
+        <div className="text-right">
+          <BotonIndigo className="capitalize text-sm bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border border-indigo-200">
             Dr. {turno?.turnoInfo?.profesionalNombre} {turno?.turnoInfo?.profesionalApellido}
           </BotonIndigo>
         </div>
       </div>
 
-      {/* Sección de Tiempos */}
-      <div className="flex flex-col md:flex-row gap-4 text-center bg-50 p-3 rounded-lg">
-        <div>
-          <p className="text-xs text-gray-500">Turno</p>
-          <p className="font-semibold text-gray-800">{extraerHora(turno.hora)}</p>
+      {/* Sección de Tiempos - Versión sobria */}
+      <div className="grid grid-cols-3 gap-2 bg-gray-50 p-3 rounded-lg">
+        <div className="text-center">
+          <p className="text-xs text-gray-600 font-medium">Turno</p>
+          <p className="font-semibold text-gray-900 text-sm">{extraerHora(turno.hora)}</p>
         </div>
-        <div>
-          <p className="text-xs text-gray-500">Llegada</p>
-          <p className="font-semibold text-gray-800">
-            {extraerHora(turno.turnoInfo?.horaLlegadaPaciente)}
+
+        <div className="text-center">
+          <p className="text-xs text-gray-600 font-medium">Llegada</p>
+          <p className="font-semibold text-gray-900 text-sm">
+            {turno.turnoInfo?.horaLlegadaPaciente ? extraerHora(turno.turnoInfo.horaLlegadaPaciente) : '--:--'}
           </p>
         </div>
-        <div className="col-span-2 md:col-span-2 flex items-center justify-center gap-2 text-orange-600">
-          <Clock className="w-5 h-5" />
-          <p className="font-bold text-lg">{tiempoEnEspera}</p>
+
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 text-amber-600">
+            <Clock className="w-4 h-4" />
+            <p className="text-xs font-medium">Espera</p>
+          </div>
+          <p className="font-semibold text-amber-700 text-sm">{tiempoEnEspera}</p>
         </div>
       </div>
 
-      {/* Sección de Acciones */}
-      <div className="flex items-center xl:items-start xl:justify-start xl:flex-row flex-col justify-between gap-2 pt-2">
-        <div className="flex gap-2 ">
+      {/* Sección de Acciones - Versión sobria */}
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-2 pt-1">
+        <div className="flex gap-1">
           <button
             onClick={() => onSubir(turno.turnoInfo.id)}
-            className="flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md transition-colors"
+            className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md transition-colors border border-gray-300"
           >
-            <ArrowUp className="w-4 h-4" /> Subir
+            <ArrowUp className="w-4 h-4" />
+            <span>Subir</span>
           </button>
           <button
             onClick={() => onBajar(turno.turnoInfo.id)}
-            className="flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md transition-colors"
+            className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md transition-colors border border-gray-300"
           >
-            <ArrowDown className="w-4 h-4" /> Bajar
+            <ArrowDown className="w-4 h-4" />
+            <span>Bajar</span>
           </button>
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex gap-1">
           <button
             onClick={() => onLlamar(turno.turnoInfo.id)}
-            className="flex items-center gap-2 text-sm bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-md transition-colors"
+            className="flex items-center gap-1 text-sm bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-md transition-colors border border-green-300"
           >
-            <Megaphone className="w-4 h-4" /> Llamar ahora
+            <Megaphone className="w-4 h-4" />
+            <span>Llamar</span>
           </button>
           <button
             onClick={() => onNotificar(turno.turnoInfo.id)}
-            className="flex items-center gap-2 text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-3 py-2 rounded-md transition-colors"
+            className="flex items-center gap-1 text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-2 rounded-md transition-colors border border-amber-300"
           >
-            <Bell className="w-4 h-4" /> Notificar
+            <Bell className="w-4 h-4" />
+            <span>Notificar</span>
           </button>
         </div>
       </div>
+
+      {/* Indicador sutil para el próximo turno */}
+      {index === 0 && (
+        <div className="flex items-center gap-2 text-green-700 bg-green-50 px-2 py-1 rounded text-xs font-medium w-fit border border-green-200">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+          Próximo a atender
+        </div>
+      )}
     </div>
   );
 }

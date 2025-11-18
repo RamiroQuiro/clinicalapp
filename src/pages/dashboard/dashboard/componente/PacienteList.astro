@@ -1,5 +1,4 @@
 ---
-import BotonIndigo from '@/components/moleculas/BotonIndigo.astro';
 import { Calendar, CheckCheck, Clock, UserCheck } from 'lucide-react';
 import extraerHora from '../../../../utils/extraerHora';
 import formatDate from '../../../../utils/formatDate';
@@ -10,6 +9,7 @@ interface Atencion {
   nombrePaciente: string;
   inicioAtencion: string;
   obraSocial: string;
+  estado?: string;
 }
 interface Props {
   ultimasAtenciones: Atencion[];
@@ -17,7 +17,7 @@ interface Props {
 const { ultimasAtenciones } = Astro.props as Props;
 ---
 
-<div class="grid gap-3 w-full">
+<div class="grid gap-2 w-full">
   {
     ultimasAtenciones?.length === 0 ? (
       <div class="w-full">
@@ -33,30 +33,38 @@ const { ultimasAtenciones } = Astro.props as Props;
       ultimasAtenciones?.map(aten => (
         <a
           href={`/dashboard/consultas/aperturaPaciente/${aten.pacienteId}/${aten.id}`}
-          class="block rounded-lg bg-white border  shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-1 p-4 w-full"
+          class="block rounded-lg bg-white border border-gray-200 hover:border-gray-300 transition-all duration-200 hover:shadow-sm p-3 w-full group"
         >
-          <div class="flex justify-between items-center">
-            {/* Información principal */}
-            <div class="w-2/3">
-              <div class="flex items-center gap-2">
-                <UserCheck className="w-6 h-6 stroke-indigo-600" />
-                <h3 class="text-lg font-semibold text-gray-800">{aten.nombrePaciente}</h3>
+          <div class="flex justify-between items-center gap-3">
+            {/* Información principal - Más compacta */}
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <UserCheck className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <h3 class="font-semibold text-gray-900 text-sm truncate">{aten.nombrePaciente}</h3>
               </div>
-              <div class="text-sm text-gray-500 mt-1 flex items-start gap-1 flex-col w-full">
-                <p class="flex items-center gap-1">
-                  <Calendar className="w-4 h-4 stroke-indigo-600" />
-                  {formatDate(aten.inicioAtencion)}{' '}
-                </p>
-                <span class="text-sm flex items-center gap-1 text-primary-textoTitle font-semibold">
-                  <Clock className="w-4 h-4 stroke-indigo-600" />
+
+              <div class="flex items-center gap-3 text-xs text-gray-600">
+                <span class="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-blue-600" />
+                  {formatDate(aten.inicioAtencion)}
+                </span>
+                <span class="flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-blue-600" />
                   {extraerHora(aten.inicioAtencion)}
                 </span>
               </div>
             </div>
-            <div class="flex flex-col items-center gap-2">
-              {/* Obra social */}
-              <BotonIndigo>{aten.obraSocial || 'Sin obra social'}</BotonIndigo>
-              {aten.estado && <BotonIndigo>{aten.estado}</BotonIndigo>}
+
+            {/* Obra social y estado - Más compactos */}
+            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+              <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                {aten.obraSocial || 'Particular'}
+              </span>
+              {aten.estado && (
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-medium">
+                  {aten.estado}
+                </span>
+              )}
             </div>
           </div>
         </a>
@@ -64,3 +72,9 @@ const { ultimasAtenciones } = Astro.props as Props;
     )
   }
 </div>
+
+<style>
+  .group:hover h3 {
+    color: #2563eb; /* Azul para indicar que es clickeable */
+  }
+</style>
