@@ -1,5 +1,6 @@
 import Section from '@/components/moleculas/Section';
 import { fechaSeleccionada, fetchTurnosDelDia } from '@/context/recepcion.recepcionista.store';
+import { useSSERecepcionista } from '@/hook/useSSERecepcionista';
 import ContenedorCalendarioRecepcionista from '@/pages/dashboard/recepcion/RecepcionRecepsionista/ContenedorCalendarioRecepcionista';
 import ContenedorHorariosRecepsionista from '@/pages/dashboard/recepcion/RecepcionRecepsionista/ContenedorHorariosRecepsionista';
 import ContenedorTurnosDelDiaRecepcionista from '@/pages/dashboard/recepcion/RecepcionRecepsionista/ContenedorTurnosDelDiaRecepcionista';
@@ -13,7 +14,12 @@ type Props = {
 
 export default function AgendaDeRecpcion({ user }: Props) {
     const fecha = useStore(fechaSeleccionada)
-    // 1. La lógica de fetch ahora vive en el contenedor principal
+
+    const { sseConectado, ultimaActualizacion } = useSSERecepcionista(user.id);
+
+
+console.log('SSE CONECTADO EN AGENDA RECPCIONISRTA ',sseConectado, ultimaActualizacion)
+
     useEffect(() => {
         const toYYYYMMDD = (date: Date) => {
             const year = date.getFullYear();

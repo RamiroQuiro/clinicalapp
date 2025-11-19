@@ -1,7 +1,9 @@
 import { sseService } from '@/services/sse.services';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
+import { isEqual, parseISO } from 'date-fns';
 import { atom, computed, map } from 'nanostores';
 import type { AgendaSlot } from './agenda.store';
+import { sseHandlerRegistry } from './sse.handler';
 
 
 
@@ -167,49 +169,92 @@ export const turnosEnConsulta = computed(recepcionStore, $store =>
 );
 
 // --- MANEJADOR DE EVENTOS SSE ---
-export function manejarEventoSSE(evento: any) {
+export function manejarEventoSSERecepcionista(evento: any) {
   console.log('📥 Evento SSE recibido:', evento);
+  const { profesionales } = recepcionStore.get();
+  const idsProfesionales = (profesionales || []).map((p: any) => p.id);
+  const medicoId = evento.data?.profesionalId ?? evento.data?.userMedicoId;
 
+
+  if (!idsProfesionales.includes(medicoId)) return;
   if (evento.type === 'turno-actualizado') {
-    const turnoActualizado = evento.data;
+    const t = evento.data;
+    const medicoId = t.profesionalId ?? t.userMedicoId;
+    if (!medicoId) return;
 
-    const agendaSlotsActuales = recepcionStore.get().turnosDelDia;
+    const actual = recepcionStore.get().turnosDelDia;
+    const nueva = JSON.parse(JSON.stringify(actual));
 
-    const agendaSlotsNuevos = agendaSlotsActuales.map(slot => {
-      if (slot.turnoInfo?.id === turnoActualizado.id) {
-        const turnoInfoNuevo = {
-          ...slot.turnoInfo,
-          estado: turnoActualizado.estado,
-          horaLlegadaPaciente: turnoActualizado.horaLlegadaPaciente,
-        };
-        return { ...slot, turnoInfo: turnoInfoNuevo };
-      }
-      return slot;
-    });
+    const profIdx = nueva.findIndex((p: any) => p.profesionalId === medicoId);
+    if (profIdx === -1) return;
 
-    recepcionStore.setKey('turnosDelDia', agendaSlotsNuevos);
-    console.log(`🔄 Store actualizado via SSE: ${turnoActualizado.id}`);
+    const agendaProf = nueva[profIdx].agenda as any[];
+    const slotIdx = agendaProf.findIndex((slot: any) => slot.turnoInfo?.id === t.id);
+    if (slotIdx === -1) {
+      // Si por alguna razón no lo encuentra, no tocamos nada
+      return;
+    }
+
+    const slot = agendaProf[slotIdx];
+    const turnoInfoNuevo = {
+      ...slot.turnoInfo,
+      estado: t.estado,
+      horaLlegadaPaciente: t.horaLlegadaPaciente,
+    };
+
+    agendaProf[slotIdx] = {
+      ...slot,
+      disponible: false,
+      turnoInfo: turnoInfoNuevo,
+    };
+
+    recepcionStore.setKey('turnosDelDia', nueva);
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
 
   else if (evento.type === 'turno-agendado') {
-    const turnoAgendado: AgendaSlot = evento.data;
+    const turnoAgendado = evento.data;
     const turnosActuales = recepcionStore.get().turnosDelDia;
 
-    const yaExiste = turnosActuales.some(
-      slot => slot.turnoInfo?.id === turnoAgendado.turnoInfo?.id
-    );
-    if (yaExiste) {
-      console.log('🔄 Turno agendado ya existe en el store de recepción. Omitiendo.');
+    // 1) Determinar el profesional del evento
+    const medicoId = turnoAgendado.profesionalId ?? turnoAgendado.userMedicoId;
+    if (!medicoId) {
+      console.warn('turno-agendado sin profesionalId/userMedicoId, se ignora');
       return;
     }
 
-    const turnosNuevos = [...turnosActuales, turnoAgendado];
-    turnosNuevos.sort((a, b) => new Date(a.hora).getTime() - new Date(b.hora).getTime());
+    // 2) Clonar estado actual (evitar mutaciones)
+    const nuevaAgenda = JSON.parse(JSON.stringify(turnosActuales));
 
-    recepcionStore.setKey('turnosDelDia', turnosNuevos);
-    console.log(`✅ Turno agendado añadido a recepción via SSE: ${turnoAgendado.turnoInfo?.id}`);
+    // 3) Ubicar el bloque del profesional
+    const profesionalIndex = nuevaAgenda.findIndex((p: any) => p.profesionalId === medicoId);
+    if (profesionalIndex === -1) {
+      console.warn('No se encontró bloque de profesional en turnosDelDia para', medicoId);
+      return;
+    }
+
+    // 4) Buscar la hora dentro de la agenda del profesional
+    const agendaProf = nuevaAgenda[profesionalIndex].agenda as AgendaSlot[];
+    const turnoIndex = agendaProf.findIndex(slot =>
+      isEqual(parseISO(slot.hora), parseISO(turnoAgendado.hora))
+    );
+    console.log('turnoIndex', turnoIndex);
+
+    // 5) Actualizar o insertar
+    if (turnoIndex !== -1) {
+      // Reemplazar el slot entero por el turnoAgendado (tienen misma forma)
+      agendaProf[turnoIndex] = turnoAgendado;
+    } else {
+      agendaProf.push(turnoAgendado);
+    }
+
+    // 6) Orden por hora dentro del profesional
+    agendaProf.sort((a, b) => parseISO(a.hora).getTime() - parseISO(b.hora).getTime());
+
+    // 7) Guardar
+    recepcionStore.setKey('turnosDelDia', nuevaAgenda);
     recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
+    console.log(`✅ Turno agendado aplicado en recepcionista: ${turnoAgendado.turnoInfo?.id}`);
   }
 
   else if (evento.type === 'turno-eliminado') {
@@ -221,6 +266,25 @@ export function manejarEventoSSE(evento: any) {
     console.log(`🗑️ Turno eliminado de recepción via SSE: ${turnoId}`);
   }
 }
+
+sseHandlerRegistry.registrar('turno-actualizado', {
+  id: 'recepcionista-turno-actualizado',
+  handler: manejarEventoSSERecepcionista,
+  stores: [recepcionStore],
+});
+
+sseHandlerRegistry.registrar('turno-agendado', {
+  id: 'recepcionista-turno-agendado',
+  handler: manejarEventoSSERecepcionista,
+  stores: [recepcionStore],
+});
+
+sseHandlerRegistry.registrar('turno-eliminado', {
+  id: 'recepcionista-turno-eliminado',
+  handler: manejarEventoSSERecepcionista,
+  stores: [recepcionStore],
+});
+
 // --- GESTIÓN DE CONEXIÓN SSE ---
 export function iniciarConexionSSE(userId?: string) {
   if (userId) {

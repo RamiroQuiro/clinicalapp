@@ -106,7 +106,7 @@ function TurnoCard({
             <div className="flex items-end  justify-start flex-1 gap-3 text-sm text-primary-texto">
               <span className="flex items-center gap-1 text- uppercase">
                 <User className="w-5 h-5 font-semibold text-primary-100 " />
-                {slot.turnoInfo?.pacienteNombre} {slot.turnoInfo?.pacienteApellido}
+                {slot.turnoInfo?.profesionalNombre} {slot.turnoInfo?.profesionalApellido}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4 text-primary-100" />

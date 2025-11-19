@@ -1,6 +1,5 @@
 import TurnosDelDia from "@/components/organismo/agenda/TurnosDelDia";
 import { fechaSeleccionada, recepcionStore, setFechaYHoraRecepcionista, setPacienteRecepcionista } from "@/context/recepcion.recepcionista.store";
-import { useSSE } from "@/hook/useSSE";
 import { formatUtcToAppTime } from "@/utils/agendaTimeUtils";
 import { showToast } from "@/utils/toast/toastShow";
 import { useStore } from "@nanostores/react";
@@ -14,7 +13,7 @@ interface Props {
 export default function ContenedorTurnosDelDiaRecepcionista({ user }: Props) {
     const { turnosDelDia: agenda, isLoading } = useStore(recepcionStore);
     const diaSeleccionado = useStore(fechaSeleccionada);
-    const { sseConectado } = useSSE(user.id);
+
 
     const onChangeReagendar = (slot: any) => {
         if (!diaSeleccionado) return;

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { atenciones } from './atenciones';
 import { centrosMedicos } from './centrosMedicos';
 import { pacientes } from './pacientes';
@@ -57,7 +57,9 @@ export const turnos = sqliteTable(
     deleted_at: integer('deleted_at', { mode: 'timestamp' }),
   },
   t => [
-    [unique().on(t.fechaTurno, t.userMedicoId, t.pacienteId)],
+    uniqueIndex('uniq_turno_activo')
+      .on(t.fechaTurno, t.userMedicoId, t.pacienteId)
+      .where(sql`${t.estado} NOT IN ('cancelado', 'ausente', 'finalizado') AND ${t.deleted_at} IS NULL`),
     {
       idx_turnos_centro_fecha: index('idx_turnos_centro_fecha').on(t.centroMedicoId, t.fechaTurno),
       idx_turnos_fecha: index('idx_turnos_fecha').on(t.fechaTurno),
