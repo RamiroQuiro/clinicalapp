@@ -1,5 +1,5 @@
 // services/sse.service.ts
-import { agendaStore, manejarEventoSSEAgenda } from '@/context/agenda.store';
+import { agendaStore } from '@/context/agenda.store';
 import { manejarEventoSSE, recepcionStore } from '@/context/recepcion.store';
 
 import { recepcionStore as recepcionistaStore } from '@/context/recepcion.recepcionista.store';
@@ -39,10 +39,6 @@ class SSEService {
             type: 'turno-actualizado',
             data: data,
           });
-          manejarEventoSSEAgenda({
-            type: 'turno-actualizado',
-            data: data,
-          });
           sseHandlerRegistry.ejecutar('turno-actualizado', {
             type: 'turno-actualizado',
             data,
@@ -59,10 +55,6 @@ class SSEService {
             type: 'turno-agendado',
             data: data,
           });
-          manejarEventoSSEAgenda({
-            type: 'turno-agendado',
-            data: data,
-          });
           sseHandlerRegistry.ejecutar('turno-agendado', {
             type: 'turno-agendado',
             data,
@@ -73,19 +65,16 @@ class SSEService {
       });
 
       this.eventSource.addEventListener('turno-eliminado', (event: MessageEvent) => {
+
         try {
           const data = JSON.parse(event.data);
           manejarEventoSSE({
             type: 'turno-eliminado',
             data: data,
           });
-          manejarEventoSSEAgenda({
-            type: 'turno-eliminado',
-            data: data,
-          });
           sseHandlerRegistry.ejecutar('turno-eliminado', {
             type: 'turno-eliminado',
-            data,
+            data: data,
           });
         } catch (error) {
           console.error('❌ Error parsing turno-eliminado:', error);
@@ -95,14 +84,12 @@ class SSEService {
       this.eventSource.onerror = error => {
         console.error('❌ Error en conexión SSE:', error);
         recepcionStore.setKey('sseConectado', false);
-        agendaStore.setKey('sseConectado', false);
         recepcionistaStore.setKey('sseConectado', false);
         this.handleReconnection();
       };
     } catch (error) {
       console.error('❌ Error al inicializar SSE:', error);
       recepcionStore.setKey('sseConectado', false);
-      agendaStore.setKey('sseConectado', false);
       recepcionistaStore.setKey('sseConectado', false);
     }
   }
@@ -119,7 +106,7 @@ class SSEService {
       this.eventSource.close();
       this.eventSource = null;
       recepcionStore.setKey('sseConectado', false);
-      agendaStore.setKey('sseConectado', false);
+
       recepcionistaStore.setKey('sseConectado', false);
     }
   }

@@ -31,7 +31,6 @@ export default function ContenedorCalendarioRecepcionista({ user }: Props) {
         fechaSeleccionada.set(date || new Date());
     };
 
-    console.log('profesionales seleccionados', medicoSeleccionadoId)
 
     useEffect(() => {
 

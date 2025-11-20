@@ -1,6 +1,7 @@
 import { sseService } from '@/services/sse.services';
 import { isEqual, parseISO } from 'date-fns';
 import { atom, map } from 'nanostores';
+import { sseHandlerRegistry } from './sse.handler';
 
 // --- INTERFACES Y TIPOS ---
 export interface Profesional {
@@ -180,35 +181,99 @@ export function manejarEventoSSEAgenda(evento: any) {
     console.log(`✅ Turno agendado añadido a la agenda via SSE: ${turnoAgendado.turnoInfo?.id}`);
     agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   } else if (evento.type === 'turno-eliminado') {
-    const turnoId = evento.data.id;
-    const agendaCompleta = dataStoreAgenda.get().data;
-    const agendaActual = agendaCompleta[0].agenda
+    const t = evento.data; // { id, userMedicoId, fechaTurno (ISO), ... }
+    console.log('turno eliminado, dato desde sse ->', t);
 
-    const nuevaAgenda = agendaActual.map(slot => {
-      if (slot.turnoInfo?.id === turnoId) {
-        return { ...slot, disponible: true, agenda: { ...slot.agenda, turnoInfo: null } };
+    const profId = t.profesionalId ?? t.userMedicoId;
+    if (!profId) return;
+
+    // 1) Obtener estructura completa agrupada por profesional
+    const fullData = dataStoreAgenda.get().data as Array<{ profesionalId: string; agenda: any[] }>;
+    if (!Array.isArray(fullData) || fullData.length === 0) return;
+
+    // 2) Ubicar bloque del profesional
+    const profIdx = fullData.findIndex(p => p.profesionalId === profId);
+    if (profIdx === -1) {
+      console.warn('No se encontró bloque de profesional para', profId);
+      return;
+    }
+
+    const agendaActual = fullData[profIdx].agenda || [];
+
+    // 3) Buscar por id de turno (preferido)
+    let updated = agendaActual.map(slot => {
+      if (slot?.turnoInfo?.id === t.id) {
+        return { ...slot, disponible: true, turnoInfo: null };
       }
       return slot;
     });
-    agendaDelDia.set(nuevaAgenda);
-    console.log(`🗑️ Turno eliminado via SSE: ${turnoId}`);
+
+    // 4) Fallback por hora ISO si no se encontró por id
+    const foundById = agendaActual.some(slot => slot?.turnoInfo?.id === t.id);
+    if (!foundById && t.fechaTurno) {
+      updated = agendaActual.map(slot => {
+        const sameTime =
+          slot?.hora && new Date(slot.hora).getTime() === new Date(t.fechaTurno).getTime();
+        if (sameTime) {
+          return { ...slot, disponible: true, turnoInfo: null };
+        }
+        return slot;
+      });
+    }
+
+    // 5) Persistir en dataStoreAgenda
+    const newFull = [...fullData];
+    newFull[profIdx] = { ...newFull[profIdx], agenda: updated };
+    dataStoreAgenda.setKey('data', newFull);
+
+    console.log(`🗑️ Turno eliminado via SSE (agenda): ${t.id}`);
     agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   }
 }
 
 // --- GESTIÓN DE CONEXIÓN SSE ---
-export function iniciarConexionSSEAgenda(userId?: string) {
+
+let agendaHandlersRegistrados = false;
+
+export function registrarHandlersAgenda() {
+  if (agendaHandlersRegistrados) return;
+
+  sseHandlerRegistry.registrar('turno-actualizado', {
+    id: 'agenda-turno-actualizado',
+    handler: manejarEventoSSEAgenda,
+    stores: [agendaStore],
+  });
+
+  sseHandlerRegistry.registrar('turno-agendado', {
+    id: 'agenda-turno-agendado',
+    handler: manejarEventoSSEAgenda,
+    stores: [agendaStore],
+  });
+
+  sseHandlerRegistry.registrar('turno-eliminado', {
+    id: 'agenda-turno-eliminado',
+    handler: manejarEventoSSEAgenda,
+    stores: [agendaStore],
+  });
+
+  agendaHandlersRegistrados = true;
+}
+// --- GESTIÓN DE CONEXIÓN SSE ---
+export function iniciarConexionSSE(userId?: string) {
   if (userId) {
     sseService.setUserId(userId);
   }
   sseService.connect();
-  agendaStore.setKey('sseConectado', true); // Asumimos que la conexión se intentará
 }
 
-export function detenerConexionSSEAgenda() {
+export function detenerConexionSSE() {
   sseService.disconnect();
-  agendaStore.setKey('sseConectado', false);
 }
+
+export function getEstadoSSE() {
+  return agendaStore.get().sseConectado;
+}
+
 
 // --- ACCIONES (SETTERS) ---
 

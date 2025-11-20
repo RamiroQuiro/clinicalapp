@@ -1,6 +1,6 @@
 import TurnosDelDia from "@/components/organismo/agenda/TurnosDelDia";
 import { dataStoreAgenda, fechaSeleccionada, setFechaYHora, setPaciente } from "@/context/agenda.store";
-import { useSSE } from "@/hook/useSSE";
+import { useSSRAgendaProfesional } from "@/hook/useSSRAgendaProfesional";
 import { formatUtcToAppTime } from "@/utils/agendaTimeUtils";
 import { showToast } from "@/utils/toast/toastShow";
 import { useStore } from "@nanostores/react";
@@ -15,7 +15,8 @@ export default function ContenedorTurnosDia({ user }: Props) {
     const { data: agenda, isLoading } = useStore(dataStoreAgenda);
     const diaSeleccionado = useStore(fechaSeleccionada);
 
-    const { sseConectado } = useSSE(user.id);
+    const { sseConectado, ultimaActualizacion } = useSSRAgendaProfesional(user.id);
+    console.log('SSE Conectado en Agenda Profesional ->', sseConectado, 'Ultima Actualizacion ->', ultimaActualizacion)
 
 
     console.log('agenda en contenedor turnos del dia', agenda)

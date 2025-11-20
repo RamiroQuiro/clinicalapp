@@ -1,5 +1,6 @@
 import db from '@/db';
 import { turnos } from '@/db/schema';
+import { emitEvent } from '@/lib/sse/sse';
 import { createResponse } from '@/utils/responseAPI';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
@@ -7,8 +8,8 @@ import { eq } from 'drizzle-orm';
 
 // POST /api/turnos/[id]/cancelar
 export const DELETE: APIRoute = async ({ request, locals }) => {
-  // 1. Validar sesion
-  if (!locals.session) {
+  const { user, session } = locals
+  if (!session) {
     return createResponse(401, 'No autorizado');
   }
   const urlQuery = new URL(request.url);
@@ -26,6 +27,7 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
       .returning();
 
     console.log('turno a cancelar', updatedTurno);
+    emitEvent('turno-eliminado', updatedTurno, { centroMedicoId: user?.centroMedicoId });
     if (!updatedTurno) {
       return createResponse(404, 'Turno no encontrado');
     }

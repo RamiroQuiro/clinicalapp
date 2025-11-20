@@ -444,7 +444,7 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
   - Se creó un endpoint `POST /api/ajustes/horarios` para guardar la configuración de horarios de un profesional usando una estrategia de "upsert".
   - Se creó un endpoint `GET /api/ajustes/horarios` para leer la configuración existente de un usuario.
 - **Integración con Agenda**:
-  - Se refactorizó la API principal de la agenda (`GET /api/agenda`) para que sea 100% dinámica.
+  - Se refactorizó la API principal de la agenda (`GET /api/agenda`) para que sea 100% dinámico.
   - Se eliminó la `JORNADA_LABORAL` hardcodeada y ahora la API consulta la tabla `horariosTrabajo` para generar los slots de turnos disponibles basándose en la configuración guardada para cada profesional.
 --- End of Context from: GEMINI.md ---
 
@@ -478,7 +478,7 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
         1.  `ContenedorFormularioTurno.tsx`: Conecta el formulario con el `agenda.store.ts` para el uso del profesional.
         2.  `ContenedorFormularioTurnoRecepcionista.tsx`: Conecta el mismo formulario con el `recepcion.recepcionista.store.ts` para el uso de la recepcionista.
 *   **Mejora de UX (Recepcionista)**: Se implementó el componente `ContenedorHorariosRecepsionista.tsx`, que muestra tarjetas de horarios disponibles para cada médico, permitiendo a la recepcionista seleccionar al profesional de forma implícita al elegir un horario.
-*   **Depuración y Solución**: Se resolvió un bug donde el formulario de la recepcionista no captaba los datos del paciente y del profesional. El usuario identificó correctamente que el problema no estaba en el formulario en sí, sino en los contenedores, que no estaban pasando el `medicoId` correctamente a las acciones del store (`setFechaYHora...`) al momento de la selección del horario.
+*   **DepuraciÃ³n y SoluciÃ³n**: Se resolviÃ³ un bug donde el formulario de la recepcionista no captaba los datos del paciente y del profesional. El usuario identificÃ³ correctamente que el problema no estaba en el formulario en sÃ­, sino en los contenedores, que no estaban pasando el `medicoId` correctamente a las acciones del store (`setFechaYHora...`) al momento de la selecciÃ³n del horario.
 *   **Próximos Pasos**: Continuar con el desarrollo de las funcionalidades específicas de la sección de Recepción.
 --- End of Context from: GEMINI.md ---
 
@@ -510,3 +510,13 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 *   **Lógica Condicional (Recepción)**:
     *   En la vista de recepción, esta funcionalidad de colores y tooltips se activa únicamente cuando se ha seleccionado **un solo profesional**. Si se seleccionan múltiples profesionales, la funcionalidad se desactiva para evitar una representación de datos confusa.
 *   **Próximos Pasos**: Revisar el flujo de la recepcionista para la selección de profesionales y la visualización de sus agendas.
+---
+
+## Sesión 24: 2025-11-20
+
+*   **Objetivo**: Sincronizar en tiempo real la agenda y los estados de los turnos entre el perfil del profesional y el de la recepcionista.
+*   **Implementación (SSE)**:
+    *   Se extendió el sistema de Server-Sent Events (SSE) para notificar cambios en los turnos (nuevos, modificados, cambio de estado).
+    *   La vista de la agenda del profesional ahora se actualiza en tiempo real sin necesidad de recargar la página.
+    *   La "Sala de Espera" de la recepcionista refleja instantáneamente cuando un profesional llama a un paciente o cambia el estado de un turno.
+*   **Resultado**: Se logró una experiencia de usuario fluida y colaborativa, donde las acciones de un rol (médico) son visibles de inmediato para otro rol (recepcionista), mejorando la coordinación del consultorio.

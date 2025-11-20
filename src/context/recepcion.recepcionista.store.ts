@@ -170,7 +170,7 @@ export const turnosEnConsulta = computed(recepcionStore, $store =>
 
 // --- MANEJADOR DE EVENTOS SSE ---
 export function manejarEventoSSERecepcionista(evento: any) {
-  console.log('📥 Evento SSE recibido:', evento);
+  console.log('✅ --- Evento SSE en [Recepcionista] --- ✅:', evento);
   const { profesionales } = recepcionStore.get();
   const idsProfesionales = (profesionales || []).map((p: any) => p.id);
   const medicoId = evento.data?.profesionalId ?? evento.data?.userMedicoId;
@@ -258,32 +258,67 @@ export function manejarEventoSSERecepcionista(evento: any) {
   }
 
   else if (evento.type === 'turno-eliminado') {
-    const turnoId = evento.data.id;
-    const turnosActuales = recepcionStore.get().turnosDelDia;
-    const turnosNuevos = turnosActuales.filter(t => t.turnoInfo?.id !== turnoId);
+    const t = evento.data; // { id, userMedicoId, hora }
+    const medicoId = t.userMedicoId || ''
 
-    recepcionStore.setKey('turnosDelDia', turnosNuevos);
-    console.log(`🗑️ Turno eliminado de recepción via SSE: ${turnoId}`);
+
+    const actual = recepcionStore.get().turnosDelDia;
+    const nueva = JSON.parse(JSON.stringify(actual));
+    const profIdx = nueva.findIndex((p: any) => p.profesionalId === medicoId);
+    if (profIdx === -1) return;
+    const agendaProf = nueva[profIdx].agenda as any[];
+    // 1) Preferir por id
+    let slotIdx = agendaProf.findIndex((slot: any) => slot.turnoInfo?.id === t.id);
+    // 2) Fallback por hora ISO (por si el turnoInfo ya fue null en memoria)
+    if (slotIdx === -1 && t.hora) {
+      slotIdx = agendaProf.findIndex((slot: any) => isEqual(parseISO(slot.hora), parseISO(t.hora)));
+    }
+    if (slotIdx === -1) return;
+    const slot = agendaProf[slotIdx];
+    agendaProf[slotIdx] = { ...slot, disponible: true, turnoInfo: null };
+    recepcionStore.setKey('turnosDelDia', nueva);
+    recepcionStore.setKey('ultimaActualizacion', new Date().toISOString());
+    console.log(`🗑️ Turno eliminado en recepcionista: ${t.id}`);
   }
 }
 
-sseHandlerRegistry.registrar('turno-actualizado', {
-  id: 'recepcionista-turno-actualizado',
-  handler: manejarEventoSSERecepcionista,
-  stores: [recepcionStore],
-});
+let recepHandlersRegistrados = false;
+export function registrarHandlersRecepcionista() {
+  if (recepHandlersRegistrados) return;
+  sseHandlerRegistry.registrar('turno-actualizado', {
+    id: 'recepcionista-turno-actualizado',
+    handler: manejarEventoSSERecepcionista,
+    stores: [recepcionStore],
+  });
+  sseHandlerRegistry.registrar('turno-agendado', {
+    id: 'recepcionista-turno-agendado',
+    handler: manejarEventoSSERecepcionista,
+    stores: [recepcionStore],
+  });
+  sseHandlerRegistry.registrar('turno-eliminado', {
+    id: 'recepcionista-turno-eliminado',
+    handler: manejarEventoSSERecepcionista,
+    stores: [recepcionStore],
+  });
+  recepHandlersRegistrados = true;
+}
+// sseHandlerRegistry.registrar('turno-actualizado', {
+//   id: 'recepcionista-turno-actualizado',
+//   handler: manejarEventoSSERecepcionista,
+//   stores: [recepcionStore],
+// });
 
-sseHandlerRegistry.registrar('turno-agendado', {
-  id: 'recepcionista-turno-agendado',
-  handler: manejarEventoSSERecepcionista,
-  stores: [recepcionStore],
-});
+// sseHandlerRegistry.registrar('turno-agendado', {
+//   id: 'recepcionista-turno-agendado',
+//   handler: manejarEventoSSERecepcionista,
+//   stores: [recepcionStore],
+// });
 
-sseHandlerRegistry.registrar('turno-eliminado', {
-  id: 'recepcionista-turno-eliminado',
-  handler: manejarEventoSSERecepcionista,
-  stores: [recepcionStore],
-});
+// sseHandlerRegistry.registrar('turno-eliminado', {
+//   id: 'recepcionista-turno-eliminado',
+//   handler: manejarEventoSSERecepcionista,
+//   stores: [recepcionStore],
+// });
 
 // --- GESTIÓN DE CONEXIÓN SSE ---
 export function iniciarConexionSSE(userId?: string) {
