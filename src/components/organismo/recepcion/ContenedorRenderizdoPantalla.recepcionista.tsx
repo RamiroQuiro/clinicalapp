@@ -3,8 +3,8 @@ import type { User } from 'lucia';
 import { useEffect } from 'react';
 import { fetchTurnosDelDia, recepcionStore } from '../../../context/recepcion.recepcionista.store';
 import AgendaDeRecpcion from './AgendaDeRecpcion';
-import PacientesRecepcion from './PacientesRecepcion';
-import RecepcionPacientes from './RecepcionPacientes';
+import ContenedorRecepcionRecepcionista from './ContenedorRecepcionRecepcionista';
+import PacientesRecepcion from './PacientesRecepcionista';
 
 type Props = {
   user: User;
@@ -28,13 +28,13 @@ export default function ContenedorRenderizdoPantallaRecepcionista({ user }: Prop
   const renderContent = () => {
     switch (pestanaActiva) {
       case 'recepcion':
-        return <RecepcionPacientes userId={user.id} />;
+        return <ContenedorRecepcionRecepcionista userId={user.id} />;
       case 'agenda':
         return <AgendaDeRecpcion user={user} />;
       case 'pacientes':
         return <PacientesRecepcion />;
       default:
-        return <RecepcionPacientes userId={user.id} />;
+        return <ContenedorRecepcionRecepcionista userId={user.id} />;
     }
   };
 

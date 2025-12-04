@@ -2,9 +2,7 @@ import { useStore } from '@nanostores/react';
 import type { User } from 'lucia';
 import { useEffect } from 'react';
 import { fetchTurnosDelDia, recepcionStore } from '../../../context/recepcion.store';
-import PacientesRecepcion from './PacientesRecepcion';
-import RecepcionPacientes from './RecepcionPacientes';
-import SalaDeEspera from './SalaDeEspera';
+import ContenedorRecepcionProfesional from './ContenedorRecepcionProfesional';
 
 type Props = {
   user: User;
@@ -27,16 +25,14 @@ export default function ContenedorRenderizdoPantalla({ user }: Props) {
     fetchTurnosDelDia(fechaFormateada, user.id, user.centroMedicoId);
   }, [user]);
 
+  // a diferencia del perfil recepcionista, aqui tendremos solo la recepcion, siendo la agenda y los pacientes en su respectiva seccion
   const renderContent = () => {
     switch (pestanaActiva) {
       case 'recepcion':
-        return <RecepcionPacientes userId={user.id} />;
-      case 'salaDeEspera':
-        return <SalaDeEspera />;
-      case 'pacientes':
-        return <PacientesRecepcion />;
+        return <ContenedorRecepcionProfesional userId={user.id} />;
+
       default:
-        return <RecepcionPacientes userId={user.id} />;
+        return <ContenedorRecepcionProfesional userId={user.id} />;
     }
   };
 
