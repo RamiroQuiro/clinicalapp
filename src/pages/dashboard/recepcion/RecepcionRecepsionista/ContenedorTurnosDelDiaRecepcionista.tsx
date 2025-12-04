@@ -14,7 +14,6 @@ export default function ContenedorTurnosDelDiaRecepcionista({ user }: Props) {
     const { turnosDelDia: agenda, isLoading } = useStore(recepcionStore);
     const diaSeleccionado = useStore(fechaSeleccionada);
 
-
     const onChangeReagendar = (slot: any) => {
         if (!diaSeleccionado) return;
         console.log('slot', slot)

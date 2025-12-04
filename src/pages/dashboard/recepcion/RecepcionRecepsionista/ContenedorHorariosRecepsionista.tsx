@@ -22,10 +22,10 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
             <div>
                 {
                     medicoSeleccionadoId.map((id) => {
-                        const handleAgendar = (hora: string) => {
+                        const handleAgendar = (slot: AgendaSlot) => {
                             if (!dia) return;
                             setPacienteSeleccionado({ id: '', nombre: '' });
-                            setFechaYHoraRecepcionista(dia, formatUtcToAppTime(hora, 'HH:mm'), id);
+                            setFechaYHoraRecepcionista(dia, formatUtcToAppTime(slot.hora, 'HH:mm'), id);
                             document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
                         };
 
@@ -45,7 +45,7 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
                                             agenda={turnosDelProfesional?.agenda}
                                             dia={dia || new Date()}
                                             profesional={profesional}
-                                            hangleAgendar={handleAgendar}
+                                            handleAgendar={handleAgendar}
                                         />
                                     </CardContent>
                                 }
@@ -85,7 +85,7 @@ export default function ContenedorHorariosRecepsionista({ }: Props) {
                                     agenda={turnosDelProfesional?.agenda}
                                     dia={dia || new Date()}
                                     profesional={profesional}
-                                    hangleAgendar={handleAgendar}
+                                    handleAgendar={handleAgendar}
                                 />
                             </CardContent>
                         }

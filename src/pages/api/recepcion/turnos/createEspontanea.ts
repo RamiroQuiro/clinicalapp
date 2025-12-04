@@ -54,7 +54,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   if (!userCentro) {
     return createResponse(403, 'El usuario no tiene un centro médico activo asignado.');
   }
-  const centroMedicoId = userCentro.centroMedicoId;
+  const centroMedicoId = user?.centroMedicoId;
 
   const isPaciente = await db.select().from(pacientes).where(eq(pacientes.id, pacienteId));
   if (!isPaciente.length) {
@@ -115,6 +115,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const creandoResponse = {
       hora: newTurno.fechaTurno.toISOString(),
       disponible: false,
+      centroMedicoId: user?.centroMedicoId,
+      userMedicoId: newTurno?.userMedicoId,
       turnoInfo: {
         id: newTurno.id,
         pacienteDocumento: isPaciente[0].dni,

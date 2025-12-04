@@ -216,6 +216,7 @@ export function manejarEventoSSERecepcionista(evento: any) {
     const turnoAgendado = evento.data;
     const turnosActuales = recepcionStore.get().turnosDelDia;
 
+    console.log('turno-agendado', turnoAgendado);
     // 1) Determinar el profesional del evento
     const medicoId = turnoAgendado.profesionalId ?? turnoAgendado.userMedicoId;
     if (!medicoId) {
@@ -302,23 +303,7 @@ export function registrarHandlersRecepcionista() {
   });
   recepHandlersRegistrados = true;
 }
-// sseHandlerRegistry.registrar('turno-actualizado', {
-//   id: 'recepcionista-turno-actualizado',
-//   handler: manejarEventoSSERecepcionista,
-//   stores: [recepcionStore],
-// });
 
-// sseHandlerRegistry.registrar('turno-agendado', {
-//   id: 'recepcionista-turno-agendado',
-//   handler: manejarEventoSSERecepcionista,
-//   stores: [recepcionStore],
-// });
-
-// sseHandlerRegistry.registrar('turno-eliminado', {
-//   id: 'recepcionista-turno-eliminado',
-//   handler: manejarEventoSSERecepcionista,
-//   stores: [recepcionStore],
-// });
 
 // --- GESTIÓN DE CONEXIÓN SSE ---
 export function iniciarConexionSSE(userId?: string) {

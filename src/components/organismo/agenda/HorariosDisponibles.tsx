@@ -22,7 +22,7 @@ export function HorariosSkeletonLoader() {
   );
 }
 
-export default function HorariosDisponibles({ agenda, dia, profesional, hangleAgendar, isLoading }: { agenda: any, dia: Date, profesional: any, hangleAgendar: (slot: any) => void, isLoading: boolean }) {
+export default function HorariosDisponibles({ agenda, dia, profesional, handleAgendar, isLoading }: { agenda: any, dia: Date, profesional: any, handleAgendar: (slot: any) => void, isLoading: boolean }) {
   const horariosDisponibles = useMemo(() => {
     return agenda?.filter((slot: any) => slot.disponible)
   }, [agenda]);
@@ -40,7 +40,7 @@ export default function HorariosDisponibles({ agenda, dia, profesional, hangleAg
   );
 
   const handleAgendarClick = (slot: any) => {
-    hangleAgendar(slot)
+    handleAgendar(slot)
   };
 
 
