@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { RenderActionsPacientes } from '../../../components/tablaComponentes/RenderBotonesActions';
 import Table from '../../../components/tablaComponentes/Table';
 
-export default function ConfeccionTablaPaciente({ pacientesData }) {
+export default function ConfeccionTablaPaciente({ pacientesData, onEdit, onDelete, onAtender }) {
   const [pacientesFiltrados, setPacientesFiltrados] = useState(pacientesData); // Estado inicial igual a los datos completos
   const $filtro = useStore(filtroBusqueda).filtro;
 
@@ -35,20 +35,23 @@ export default function ConfeccionTablaPaciente({ pacientesData }) {
       selector: row => (
         <div className="flex gap-x-2">
           <button
-            className="bg-blue-500 text-white px-2 py-1 rounded"
-            onClick={() => handleEdit(row.id)}
+            className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors"
+            onClick={() => onEdit && onEdit(row.id)}
           >
             Editar
           </button>
+          {/* 
           <button
-            className="bg-red-500 text-white px-2 py-1 rounded"
-            onClick={() => handleDelete(row.id)}
+            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors"
+            onClick={() => onDelete && onDelete(row.id)}
           >
             Eliminar
           </button>
+           */}
+           {/* El botón atender redirige o ejecuta acción */}
           <button
-            className="bg-green-500 text-white px-2 py-1 rounded"
-            onClick={() => handleAtender(row.id)}
+            className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors"
+            onClick={() => onAtender ? onAtender(row.id) : (window.location.href = `/api/atencion/nueva?pacienteId=${row.id}`)}
           >
             Atender
           </button>

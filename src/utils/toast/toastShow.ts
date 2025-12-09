@@ -10,9 +10,24 @@ const showToast = (text: string, opciones: OpcionesToast = {}) => {
   let defaultOpciones = {
     time: 2500,
     color: false,
-    background: 'bg-gray-700',
+    background: 'bg-green-600',
     size: false,
     status: 200,
+  };
+  const toastSuccess = {
+    time: 2500,
+    color: false,
+    background: 'bg-green-600',
+    size: false,
+    status: 200,
+  }
+
+  const toastError = {
+    time: 2500,
+    color: false,
+    background: 'bg-red-600',
+    size: false,
+    status: 500,
   };
 
   opciones = {
@@ -51,3 +66,4 @@ const showToast = (text: string, opciones: OpcionesToast = {}) => {
 };
 
 export { showToast };
+

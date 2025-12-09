@@ -2,12 +2,15 @@
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import PerfilUsuario from '@/pages/dashboard/ajustes/usuarios/components/PerfilUsuario';
+import type { User } from 'lucia';
 
 const { id } = Astro.params;
+const { user } = Astro.locals;
+console.log('user constante local', user);
 ---
 
 <LayoutDash title="Perfil de Usuario">
   <MainDashboard title="Perfil de Usuario" h1="Perfil de Usuario" isBack={true}>
-    <PerfilUsuario userId={id} client:load />
+    <PerfilUsuario userId={id as string} client:load dataUser={user as User} />
   </MainDashboard>
 </LayoutDash>

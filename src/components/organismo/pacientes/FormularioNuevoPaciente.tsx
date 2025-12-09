@@ -7,7 +7,7 @@ import { showToast } from '@/utils/toast/toastShow';
 import React, { useState } from 'react';
 
 interface FormularioNuevoPacienteProps {
-  isStoreAgenda: boolean;
+  isStoreAgenda?: boolean;
   pacienteData?: {
     id?: string;
     nombre: string;
@@ -26,13 +26,17 @@ interface FormularioNuevoPacienteProps {
     userId: string;
   };
   userId: string;
-  session: any;
+  session?: any;
+  onSuccess?: (paciente: any) => void;
+  onCancel?: () => void;
 }
 
 export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = ({
   isStoreAgenda = true,
   userId,
   pacienteData,
+  onSuccess,
+  onCancel,
 }) => {
   const [formData, setFormData] = useState(
     pacienteData || {
@@ -58,16 +62,17 @@ export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = (
     message: '',
     code: 0,
   });
+
   const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
     if (!formData.nombre || !formData.apellido || !formData.dni) {
       alert('Nombre, Apellido y DNI son obligatorios.');
+      setLoading(false);
       return;
     }
     formData.userId = userId;
 
-    setLoading(true);
     let isUpdate = formData.id ? true : false;
     try {
       const response = await fetch(
@@ -90,18 +95,29 @@ export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = (
         throw new Error(errorData.message || 'Error al crear paciente');
       }
 
-      showToast('Paciente creado con éxito', { background: 'bg-green-600' });
-      window.location.reload();
+      const result = await response.json();
+      showToast(`Paciente ${isUpdate ? 'actualizado' : 'creado'} con éxito`, { background: 'bg-green-600' });
+
+      if (onSuccess) {
+        onSuccess(result.paciente || result.data?.paciente || formData);
+      } else {
+        window.location.reload();
+      }
+
     } catch (error: any) {
       setError({
         message: error.message,
         code: error.code,
       });
-      showToast(`Error al crear paciente: ${error.message}`, { background: 'bg-red-600' });
+      showToast(`Error al ${isUpdate ? 'actualizar' : 'crear'} paciente: ${error.message}`, { background: 'bg-red-600' });
       console.error('Error al crear paciente:', error);
     } finally {
       setLoading(false);
-      document.getElementById('dialog-modal-modalNuevoPaciente')?.showModal();
+      // Solo cerramos el modal automágicamente si no hay callback de éxito, 
+      // o dejamos que el padre decida.
+      if (!onSuccess) {
+        document.getElementById('dialog-modal-modalNuevoPaciente')?.showModal();
+      }
     }
   };
 
@@ -244,7 +260,7 @@ export const FormularioNuevoPaciente: React.FC<FormularioNuevoPacienteProps> = (
         />
       </div>
       <div className="flex w-full gap-3 items-center justify-end">
-        <Button variant="cancel">Cancelar</Button>
+        <Button variant="cancel" type="button" onClick={onCancel}>Cancelar</Button>
         <Button variant="primary" type="submit" disabled={loading}>
           {loading ? 'Cargando...' : 'Actualizar'}
         </Button>

@@ -29,7 +29,7 @@ export default function ContenedorRecepcionProfesional({ userId }: Props) {
 
     const turnosAgendadosDia = useMemo(() => {
         if (!agendaDelDia) return [];
-        return agendaDelDia.filter((turno): AgendaSlot =>
+        return agendaDelDia.filter((turno) =>
             !turno.disponible &&
             (turno.turnoInfo?.estado === 'pendiente' || turno.turnoInfo?.estado === 'confirmado')
         ).sort((a, b) => a.hora.localeCompare(b.hora));
@@ -37,7 +37,7 @@ export default function ContenedorRecepcionProfesional({ userId }: Props) {
 
     const colaDeEspera = useMemo(() => {
         if (!agendaDelDia) return [];
-        return agendaDelDia.filter((turno): AgendaSlot =>
+        return agendaDelDia.filter((turno) =>
             turno.turnoInfo?.estado === 'sala_de_espera'
         ).sort((a, b) => {
             const horaA = a.turnoInfo?.horaLlegadaPaciente || a.hora;
