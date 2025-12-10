@@ -56,7 +56,7 @@ export default function PerfilUsuario({ userId, dataUser }: PerfilUsuarioProps) 
       case 'documentos':
         return esPerfilRecepcionista ? <PerfilInformacion user={user} /> : <PerfilDocumentos />;
       case 'seguridad':
-        return <PerfilSeguridad />;
+        return <PerfilSeguridad userId={userId} />;
       default:
         return <PerfilInformacion user={user} />;
     }

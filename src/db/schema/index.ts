@@ -12,6 +12,7 @@ export { diagnostico } from './diagnostico';
 export { doctoresPacientes } from './doctoresPacientes';
 export { fichaPaciente } from './fichaPaciente';
 export { historiaClinica } from './historiaClinica';
+export { licenciasProfesional } from './licencias';
 export { medicamento } from './medicamento';
 export { motivosIniciales } from './motivoInicial';
 export { notasMedicas } from './notasMedicas';
@@ -28,3 +29,4 @@ export { tratamiento } from './tratamiento';
 export { turnos } from './turnos';
 export { users } from './users';
 export { usersCentrosMedicos } from './usersCentrosMedicos';
+

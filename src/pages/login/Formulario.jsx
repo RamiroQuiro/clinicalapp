@@ -46,15 +46,15 @@ export default function FormularioLogin() {
         loader(false);
       }
       if (dataRes.code == 400) {
-        showToast(dataRes.data, { background: 'bg-red-600' });
+        showToast(dataRes.msg, { background: 'bg-red-600' });
         loader(false);
       }
       if (dataRes.code == 401) {
-        showToast(dataRes.data, { background: 'bg-red-600' });
+        showToast(dataRes.msg, { background: 'bg-red-600' });
         loader(false);
       }
       if (dataRes.code == 402) {
-        showToast(dataRes.data, {
+        showToast(dataRes.msg, {
           background: 'bg-red-600',
         });
         loader(false);
