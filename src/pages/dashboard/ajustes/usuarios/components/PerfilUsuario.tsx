@@ -51,7 +51,10 @@ export default function PerfilUsuario({ userId, dataUser }: PerfilUsuarioProps) 
         return esPerfilRecepcionista ? (
           <PerfilInformacion user={user} />
         ) : (
-          <PerfilHorarios userId={(user as any)?.id} horarios={(user as any)?.horarios} />
+          <PerfilHorarios
+            userId={(user as any)?.id}
+            centroMedicoId={(user as any)?.centroMedicoId}
+          />
         );
       case 'documentos':
         return esPerfilRecepcionista ? <PerfilInformacion user={user} /> : <PerfilDocumentos />;
