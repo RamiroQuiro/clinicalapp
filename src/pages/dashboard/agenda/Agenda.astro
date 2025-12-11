@@ -6,7 +6,7 @@ import Section from '@/components/moleculas/Section';
 import ConstendorStats from '@/components/organismo/agenda/ConstendorStats';
 import ContenedorFormularioTurno from '@/components/organismo/agenda/ContenedorFormularioTurno';
 import ContenedorSeleccionProfesionales from '@/components/organismo/agenda/ContenedorSeleccionProfesionales';
-import { FormularioRapicoCargaPaciente } from '@/components/organismo/pacientes/FormularioRapicoCargaPaciente';
+import { FormularioRapidoCargaPaciente } from '@/components/organismo/pacientes/FormularioRapidoCargaPaciente';
 import { fetchDataProfesionalesEntidad } from '@/services/agenda.services';
 import ContenedorAgenda from './ContenedorAgenda';
 import ContenedorHorarios from './ContenedorHorarios';
@@ -35,7 +35,7 @@ try {
       <ContenedorFormularioTurno client:load user={user} />
     </Modal>
     <Modal id="modalNuevoPaciente" title="Nuevo Paciente">
-      <FormularioRapicoCargaPaciente client:load userId={user.id} />
+      <FormularioRapidoCargaPaciente client:load userId={user.id} />
     </Modal>
 
     <ContenedorSeleccionProfesionales

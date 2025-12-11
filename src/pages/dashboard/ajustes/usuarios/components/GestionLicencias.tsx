@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/organismo
 import { showToast } from '@/utils/toast/toastShow';
 import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ModalReagendarTurnos from './ModalReagendarTurnos';
 
 interface Licencia {
   id: string;
@@ -23,6 +24,10 @@ export default function GestionLicencias({ userId, centroMedicoId }: GestionLice
   const [licencias, setLicencias] = useState<Licencia[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+
+  // Estado del modal de turnos en conflicto
+  const [showModalTurnos, setShowModalTurnos] = useState(false);
+  const [turnosConflicto, setTurnosConflicto] = useState<any[]>([]);
 
   // Estado del formulario
   const [formData, setFormData] = useState({
@@ -82,7 +87,19 @@ export default function GestionLicencias({ userId, centroMedicoId }: GestionLice
         }),
       });
 
-      if (!response.ok) throw new Error('Error al guardar licencia');
+      const result = await response.json();
+
+      // Si hay turnos en conflicto (error 400), mostrar modal
+      if (response.status === 400 && result.data?.turnos) {
+        setTurnosConflicto(result.data.turnos);
+        setShowModalTurnos(true);
+        return;
+      }
+
+      if (!response.ok) {
+        showToast(result.msg || 'Error al guardar licencia', { background: 'bg-red-600' });
+        return;
+      }
 
       showToast('Licencia guardada correctamente', { background: 'bg-green-600' });
 
@@ -133,6 +150,12 @@ export default function GestionLicencias({ userId, centroMedicoId }: GestionLice
     return labels[tipo] || tipo;
   };
 
+  const onTurnoCancelado = (turnoCancelado: any) => {
+    console.log('Turno cancelado:', turnoCancelado);
+    const actualizarTurnos = turnosConflicto.filter((t: any) => t.id !== turnoCancelado.id);
+    setTurnosConflicto(actualizarTurnos);
+  };
+
   if (loading) {
     return (
       <Card>
@@ -150,115 +173,130 @@ export default function GestionLicencias({ userId, centroMedicoId }: GestionLice
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gestión de Licencias y Vacaciones</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {showForm ? 'Cancelar' : 'Nueva Licencia'}
-        </Button>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Gestión de Licencias y Vacaciones</CardTitle>
+          <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {showForm ? 'Cancelar' : 'Nueva Licencia'}
+          </Button>
+        </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Formulario para nueva licencia */}
-        {showForm && (
-          <div className="border border-primary-100 rounded-lg p-4 bg-primary-50/10 space-y-3">
-            <h3 className="font-semibold text-sm">Nueva Licencia</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                type="date"
-                label="Fecha Inicio"
-                name="fechaInicio"
-                value={formData.fechaInicio}
-                onChange={handleInputChange}
-              />
-              <Input
-                type="date"
-                label="Fecha Fin"
-                name="fechaFin"
-                value={formData.fechaFin}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col w-full">
-                <label className="mb-1 text-sm font-semibold text-primary-texto">Tipo</label>
-                <select
-                  name="tipo"
-                  value={formData.tipo}
+        <CardContent className="space-y-4">
+          {/* Formulario para nueva licencia */}
+          {showForm && (
+            <div className="border border-primary-100 rounded-lg p-4 bg-primary-50/10 space-y-3">
+              <h3 className="font-semibold text-sm">Nueva Licencia</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  type="date"
+                  label="Fecha Inicio"
+                  name="fechaInicio"
+                  value={formData.fechaInicio}
                   onChange={handleInputChange}
-                  className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-offset-2 focus:ring-primary-100 focus:border-primary-100"
-                >
-                  <option value="vacaciones">Vacaciones</option>
-                  <option value="enfermedad">Enfermedad</option>
-                  <option value="personal">Personal</option>
-                  <option value="capacitacion">Capacitación</option>
-                  <option value="otro">Otro</option>
-                </select>
+                />
+                <Input
+                  type="date"
+                  label="Fecha Fin"
+                  name="fechaFin"
+                  value={formData.fechaFin}
+                  onChange={handleInputChange}
+                />
               </div>
-              <Input
-                type="text"
-                label="Motivo (opcional)"
-                name="motivo"
-                value={formData.motivo}
-                onChange={handleInputChange}
-                placeholder="Ej: Vacaciones de verano"
-              />
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={handleGuardarLicencia}>Guardar Licencia</Button>
-            </div>
-          </div>
-        )}
-
-        {/* Lista de licencias */}
-        {licencias.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <p>No hay licencias registradas</p>
-            <p className="text-sm">Haz clic en "Nueva Licencia" para agregar una</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {licencias.map(licencia => (
-              <div
-                key={licencia.id}
-                className="border border-gray-200 rounded-lg p-3 flex items-center justify-between hover:bg-gray-50 transition"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{getTipoLabel(licencia.tipo)}</span>
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        licencia.estado === 'activa'
-                          ? 'bg-green-100 text-green-700'
-                          : licencia.estado === 'cancelada'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {licencia.estado}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {formatDate(licencia.fechaInicio)} - {formatDate(licencia.fechaFin)}
-                  </p>
-                  {licencia.motivo && (
-                    <p className="text-sm text-gray-500 italic mt-1">{licencia.motivo}</p>
-                  )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col w-full">
+                  <label className="mb-1 text-sm font-semibold text-primary-texto">Tipo</label>
+                  <select
+                    name="tipo"
+                    value={formData.tipo}
+                    onChange={handleInputChange}
+                    className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-offset-2 focus:ring-primary-100 focus:border-primary-100"
+                  >
+                    <option value="vacaciones">Vacaciones</option>
+                    <option value="enfermedad">Enfermedad</option>
+                    <option value="personal">Personal</option>
+                    <option value="capacitacion">Capacitación</option>
+                    <option value="otro">Otro</option>
+                  </select>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEliminarLicencia(licencia.id)}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <Input
+                  type="text"
+                  label="Motivo (opcional)"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleInputChange}
+                  placeholder="Ej: Vacaciones de verano"
+                />
               </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              <div className="flex justify-end">
+                <Button onClick={handleGuardarLicencia}>Guardar Licencia</Button>
+              </div>
+            </div>
+          )}
+
+          {/* Lista de licencias */}
+          {licencias.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>No hay licencias registradas</p>
+              <p className="text-sm">Haz clic en "Nueva Licencia" para agregar una</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {licencias.map(licencia => (
+                <div
+                  key={licencia.id}
+                  className="border border-gray-200 rounded-lg p-3 flex items-center justify-between hover:bg-gray-50 transition"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{getTipoLabel(licencia.tipo)}</span>
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          licencia.estado === 'activa'
+                            ? 'bg-green-100 text-green-700'
+                            : licencia.estado === 'cancelada'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {licencia.estado}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {formatDate(licencia.fechaInicio)} - {formatDate(licencia.fechaFin)}
+                    </p>
+                    {licencia.motivo && (
+                      <p className="text-sm text-gray-500 italic mt-1">{licencia.motivo}</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEliminarLicencia(licencia.id)}
+                    className="text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal de turnos en conflicto */}
+      <ModalReagendarTurnos
+        isOpen={showModalTurnos}
+        onClose={() => setShowModalTurnos(false)}
+        turnos={turnosConflicto}
+        onTurnoCancelado={onTurnoCancelado}
+        onCancelarLicencia={() => {
+          setShowModalTurnos(false);
+          setShowForm(false);
+          setFormData({ fechaInicio: '', fechaFin: '', motivo: '', tipo: 'vacaciones' });
+        }}
+      />
+    </>
   );
 }

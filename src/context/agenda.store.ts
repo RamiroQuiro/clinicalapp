@@ -10,12 +10,22 @@ export interface Profesional {
   apellido: string;
 }
 
+export interface LicenciaInfo {
+  id: string;
+  tipo: 'vacaciones' | 'enfermedad' | 'personal' | 'capacitacion' | 'otro';
+  motivo: string;
+  fechaInicio: Date;
+  fechaFin: Date;
+  estado: 'activa' | 'cancelada' | 'finalizada';
+}
+
 export interface AgendaSlot {
   hora: string; // ISO string
   id?: string;
   disponible: boolean;
   userMedicoId: string;
   turnoInfo: DatosTurno | null;
+  licenciaInfo?: LicenciaInfo | null; // 👈 NUEVO
 }
 
 export interface DatosTurno {

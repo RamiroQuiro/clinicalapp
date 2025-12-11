@@ -1,56 +1,73 @@
-import TurnosDelDia from "@/components/organismo/agenda/TurnosDelDia";
-import { dataStoreAgenda, fechaSeleccionada, setFechaYHora, setPaciente } from "@/context/agenda.store";
-import { useSSRAgendaProfesional } from "@/hook/useSSRAgendaProfesional";
-import { formatUtcToAppTime } from "@/utils/agendaTimeUtils";
-import { showToast } from "@/utils/toast/toastShow";
-import { useStore } from "@nanostores/react";
-import type { User } from "lucia";
+import TurnosDelDia from '@/components/organismo/agenda/TurnosDelDia';
+import {
+  dataStoreAgenda,
+  fechaSeleccionada,
+  setFechaYHora,
+  setPaciente,
+} from '@/context/agenda.store';
+import { useSSRAgendaProfesional } from '@/hook/useSSRAgendaProfesional';
+import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
+import { showToast } from '@/utils/toast/toastShow';
+import { useStore } from '@nanostores/react';
+import type { User } from 'lucia';
 
 type Props = {
-    user: User;
-}
+  user: User;
+};
 
 export default function ContenedorTurnosDia({ user }: Props) {
+  const { data: agenda, isLoading } = useStore(dataStoreAgenda);
+  const diaSeleccionado = useStore(fechaSeleccionada);
 
-    const { data: agenda, isLoading } = useStore(dataStoreAgenda);
-    const diaSeleccionado = useStore(fechaSeleccionada);
+  const { sseConectado, ultimaActualizacion } = useSSRAgendaProfesional(user.id);
+  console.log(
+    'SSE Conectado en Agenda Profesional ->',
+    sseConectado,
+    'Ultima Actualizacion ->',
+    ultimaActualizacion
+  );
 
-    const { sseConectado, ultimaActualizacion } = useSSRAgendaProfesional(user.id);
-    console.log('SSE Conectado en Agenda Profesional ->', sseConectado, 'Ultima Actualizacion ->', ultimaActualizacion)
+  const onChangeReagendar = (slot: any) => {
+    if (!diaSeleccionado) return;
+    console.log('slot', slot);
+    setPaciente({
+      id: slot.turnoInfo.pacienteId,
+      nombre: `${slot.turnoInfo.pacienteNombre} ${slot.turnoInfo.pacienteApellido}`,
+    });
+    setFechaYHora(
+      diaSeleccionado,
+      formatUtcToAppTime(slot.hora, 'HH:mm'),
+      slot.profesionalId,
+      slot.turnoInfo.id
+    );
+    document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
+  };
+  const handleCancelarTurno = async (slot: any) => {
+    try {
+      const responseFetch = await fetch(`/api/agenda/turnos/cancelar?id=${slot.turnoInfo.id}`, {
+        method: 'DELETE',
+      });
 
+      if (!responseFetch.ok) {
+        showToast('Error al cancelar el turno', { background: 'bg-red-500' });
+        throw new Error('Error al cancelar el turno');
+      }
 
-    console.log('agenda en contenedor turnos del dia', agenda)
-
-    const onChangeReagendar = (slot: any) => {
-        if (!diaSeleccionado) return;
-        console.log('slot', slot)
-        setPaciente({
-            id: slot.turnoInfo.pacienteId,
-            nombre: `${slot.turnoInfo.pacienteNombre} ${slot.turnoInfo.pacienteApellido}`,
-        });
-        setFechaYHora(diaSeleccionado, formatUtcToAppTime(slot.hora, 'HH:mm'), slot.profesionalId, slot.turnoInfo.id);
-        document.getElementById('dialog-modal-modalNuevoTurno')?.showModal();
+      // La actualización del store agendaDelDia ahora se maneja a través de SSE
+      showToast('Turno cancelado exitosamente', { background: 'bg-green-500' });
+    } catch (error) {
+      console.error('Error al cancelar el turno:', error);
+      showToast('Error al cancelar el turno', { background: 'bg-red-500' });
     }
-    const handleCancelarTurno = async (slot: any) => {
-        try {
-            const responseFetch = await fetch(`/api/agenda/turnos/cancelar?id=${slot.turnoInfo.id}`, {
-                method: 'DELETE',
-            });
+  };
 
-            if (!responseFetch.ok) {
-                showToast('Error al cancelar el turno', { background: 'bg-red-500' });
-                throw new Error('Error al cancelar el turno');
-            }
-
-            // La actualización del store agendaDelDia ahora se maneja a través de SSE
-            showToast('Turno cancelado exitosamente', { background: 'bg-green-500' });
-        } catch (error) {
-            console.error('Error al cancelar el turno:', error);
-            showToast('Error al cancelar el turno', { background: 'bg-red-500' });
-        }
-    }
-
-    return (
-        <TurnosDelDia agenda={agenda} diaSeleccionado={diaSeleccionado || new Date()} onChangeReagendar={onChangeReagendar} handleCancelarTurno={handleCancelarTurno} isLoading={isLoading} />
-    )
+  return (
+    <TurnosDelDia
+      agenda={agenda}
+      diaSeleccionado={diaSeleccionado || new Date()}
+      onChangeReagendar={onChangeReagendar}
+      handleCancelarTurno={handleCancelarTurno}
+      isLoading={isLoading}
+    />
+  );
 }

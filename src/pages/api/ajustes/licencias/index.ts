@@ -1,8 +1,8 @@
 import db from '@/db';
-import { licenciasProfesional } from '@/db/schema'; // Necesitarás crear esta tabla
+import { licenciasProfesional, pacientes, turnos } from '@/db/schema';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, eq, gte, lte } from 'drizzle-orm';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 // GET - Obtener licencias de un profesional
 export const GET: APIRoute = async ({ request, locals }) => {
@@ -66,6 +66,48 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     try {
+        // 🔍 VALIDACIÓN: Verificar si hay turnos agendados en el rango de fechas
+        const turnosEnRango = await db
+            .select({
+                id: turnos.id,
+                fechaTurno: turnos.fechaTurno,
+                horaAtencion: turnos.horaAtencion,
+                pacienteNombre: pacientes.nombre,
+                pacienteApellido: pacientes.apellido,
+                motivoConsulta: turnos.motivoConsulta,
+                estado: turnos.estado,
+            })
+            .from(turnos)
+            .leftJoin(pacientes, eq(turnos.pacienteId, pacientes.id))
+            .where(
+                and(
+                    eq(turnos.userMedicoId, userId),
+                    eq(turnos.centroMedicoId, centroMedicoId),
+                    gte(turnos.fechaTurno, inicio),
+                    lte(turnos.fechaTurno, fin),
+                    inArray(turnos.estado, ['pendiente', 'confirmado'])
+                )
+            );
+
+        // Si hay turnos, retornar error con la lista
+        if (turnosEnRango.length > 0) {
+            return createResponse(
+                400,
+                `No se puede crear la licencia. Hay ${turnosEnRango.length} turno(s) agendado(s) en ese período.`,
+                {
+                    turnos: turnosEnRango.map((t) => ({
+                        id: t.id,
+                        fecha: t.fechaTurno,
+                        hora: t.horaAtencion,
+                        paciente: `${t.pacienteNombre} ${t.pacienteApellido}`,
+                        motivo: t.motivoConsulta,
+                        estado: t.estado,
+                    })),
+                }
+            );
+        }
+
+        // Si no hay turnos, crear la licencia
         const nuevaLicencia = await db.insert(licenciasProfesional).values({
             id: nanoIDNormalizador('lic'),
             userId,
@@ -73,7 +115,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             fechaInicio: inicio,
             fechaFin: fin,
             motivo: motivo || 'Sin especificar',
-            tipo: tipo || 'vacaciones', // vacaciones, enfermedad, personal, etc.
+            tipo: tipo || 'vacaciones',
             estado: 'activa',
         }).returning();
 
