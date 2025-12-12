@@ -1,5 +1,5 @@
 import db from '@/db';
-import { pacientes, turnos, users } from '@/db/schema';
+import { licenciasProfesional, pacientes, turnos, users } from '@/db/schema';
 import { agendaGeneralCentroMedico, horariosTrabajo } from '@/db/schema/agenda';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { createResponse } from '@/utils/responseAPI';
@@ -68,12 +68,15 @@ export const GET: APIRoute = async ({ locals, request }) => {
       return createResponse(200, 'No hay agendas para mostrar', []);
     }
 
-    // --- INICIO DE LA NUEVA LÓGICA DINÁMICA ---
+
 
     // 1. Calcular el día de la semana a partir de la fecha
     const fecha = toZonedTime(`${fechaQuery}T12:00:00`, APP_TIME_ZONE); // Usar mediodía para evitar problemas de timezone
     const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
     const diaSemanaNombre = diasSemana[fecha.getDay()];
+
+
+
 
     // 2. Obtener la configuración de la agenda y los horarios de TODOS los profesionales para ese día
     const [configuracionAgenda] = await db.select().from(agendaGeneralCentroMedico).where(eq(agendaGeneralCentroMedico.centroMedicoId, centroMedicoId));
@@ -126,6 +129,40 @@ export const GET: APIRoute = async ({ locals, request }) => {
     // 4. Iterar sobre cada profesional para construir su agenda individual
     for (const profId of profesionalesIds) {
       // console.log('Processing professional:', profId);
+
+      // 🔍 VALIDACIÓN: Verificar si el profesional tiene licencia activa en esta fecha
+      const licenciaActiva = await db.select()
+        .from(licenciasProfesional)
+        .where(
+          and(
+            eq(licenciasProfesional.userId, profId),
+            eq(licenciasProfesional.centroMedicoId, centroMedicoId),
+            eq(licenciasProfesional.estado, 'activa'),
+            lte(licenciasProfesional.fechaInicio, fecha),
+            gte(licenciasProfesional.fechaFin, fecha)
+          )
+        )
+        .limit(1);
+
+      // Si hay licencia activa, retornar slot bloqueado con info de licencia
+      if (licenciaActiva.length > 0) {
+        agendasPorProfesional[profId] = [{
+          hora: inicioDelDia.toISOString(),
+          disponible: false,
+          userMedicoId: profId,
+          centroMedicoId: centroMedicoId,
+          turnoInfo: null,
+          licenciaInfo: {
+            id: licenciaActiva[0].id,
+            tipo: licenciaActiva[0].tipo,
+            motivo: licenciaActiva[0].motivo,
+            fechaInicio: licenciaActiva[0].fechaInicio,
+            fechaFin: licenciaActiva[0].fechaFin,
+            estado: licenciaActiva[0].estado,
+          }
+        }];
+        continue;
+      }
 
       const horarioProfesional = todosLosHorarios.find(h => h.userMedicoId === profId);
       // console.log('Horario profesional:', horarioProfesional);

@@ -1,6 +1,6 @@
 // src/pages/api/agenda/summary.ts
 import db from '@/db';
-import { turnos } from '@/db/schema';
+import { licenciasProfesional, turnos } from '@/db/schema';
 import { agendaGeneralCentroMedico, horariosTrabajo } from '@/db/schema/agenda';
 import { formatDateToYYYYMMDD, getDayOfWeek, getEndOfDay, getStartOfDay } from '@/utils/agendaTimeUtils';
 import { createResponse } from '@/utils/responseAPI';
@@ -12,6 +12,7 @@ import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 const UMBRAL_OCUPACION_ALTA = 80; // %
 const UMBRAL_OCUPACION_MEDIA = 40; // %
 const UMBRAL_OCUPACION_BAJA = 10; // %
+const UMBRAL_LICENCIA = 100; // %
 
 // Helper para convertir hora (HH:MM) a minutos desde la medianoche
 const convertirHoraAMinutos = (hora: string | null | undefined): number => {
@@ -45,21 +46,28 @@ const obtenerEstadoOcupacion = (porcentajeOcupacion: number) => {
     };
   } else if (porcentajeOcupacion >= UMBRAL_OCUPACION_MEDIA) {
     return {
-      estado: 'busy',
+      estado: 'ocupacionAlta',
       color: '#ea580c', // Naranja - Ocupado
       colorClaro: '#fed7aa', // Naranja claro
       porcentaje: porcentajeOcupacion
     };
   } else if (porcentajeOcupacion >= UMBRAL_OCUPACION_BAJA) {
     return {
-      estado: 'moderate',
+      estado: 'ocupacionMedia',
       color: '#ca8a04', // Amarillo - Moderado
       colorClaro: '#fef08a', // Amarillo claro
       porcentaje: porcentajeOcupacion
     };
+  } else if (porcentajeOcupacion >= UMBRAL_LICENCIA) {
+    return {
+      estado: 'licencia',
+      color: '#6b7280', // Gris - No disponible
+      colorClaro: '#e5e7eb', // Gris claro
+      porcentaje: porcentajeOcupacion
+    };
   } else {
     return {
-      estado: 'free',
+      estado: 'disponible',
       color: '#16a34a', // Verde - Disponible
       colorClaro: '#bbf7d0', // Verde claro
       porcentaje: porcentajeOcupacion
@@ -89,9 +97,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
         estado: string;
         color: string;
         colorClaro: string;
-        numeroTurnos: number;
+        numeroTurnos?: number; // Optional if not returned by obtainEstadoOcupacion, but we assign it
         porcentaje: number;
         profesionales: { [profId: string]: number }; // % por profesional
+        totalTurnos: number;
+        turnosPorProfesional: { [profId: string]: number };
+        hayAgenda: boolean;
+        esLicencia: boolean;
       }
     } = {};
 
@@ -127,6 +139,19 @@ export const GET: APIRoute = async ({ request, locals }) => {
         )
       );
 
+    // Obtener licencias en el rango
+    const licenciasEnRango = await db.select()
+      .from(licenciasProfesional)
+      .where(
+        and(
+          inArray(licenciasProfesional.userId, ID_PROFESIONALES),
+          eq(licenciasProfesional.centroMedicoId, centroMedicoId),
+          eq(licenciasProfesional.estado, 'activa'),
+          // Superposición de fechas: (StartA <= EndB) and (EndA >= StartB)
+          lte(licenciasProfesional.fechaInicio, FECHA_FIN),
+          gte(licenciasProfesional.fechaFin, FECHA_INICIO)
+        )
+      );
 
     let fechaActual = new Date(FECHA_INICIO);
     while (fechaActual <= FECHA_FIN) {
@@ -141,9 +166,26 @@ export const GET: APIRoute = async ({ request, locals }) => {
       let porcentajeTotalDia = 0;
       let profesionalesQueTrabajan = 0;
       let totalTurnosDia = 0;
-      let hayAgendaEsteDia = false; // NUEVO: para detectar si hay agenda
+      let hayAgendaEsteDia = false;
+
+      // Verificar licencias para este día
+      let profesionalesDeLicencia = 0;
 
       for (const idProf of ID_PROFESIONALES) {
+        // Chequear si este profesional tiene licencia HOY
+        const tieneLicencia = licenciasEnRango.some(lic =>
+          lic.userId === idProf &&
+          lic.fechaInicio <= FIN_DIA_ACTUAL &&
+          lic.fechaFin >= INICIO_DIA_ACTUAL
+        );
+
+        if (tieneLicencia) {
+          profesionalesDeLicencia++;
+          porcentajesProfesionales[idProf] = 100; // Ocupado (licencia)
+          turnosPorProfesional[idProf] = 0;
+          continue; // No procesar agenda si tiene licencia
+        }
+
         const horarioDelProfesional = todosLosHorariosProfesionales.find(
           (h) => h.userMedicoId === idProf && h.diaSemana === NOMBRE_DIA_SEMANA
         );
@@ -191,7 +233,16 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
       // Determinar el estado final
       let estadoOcupacion;
-      if (!hayAgendaEsteDia) {
+
+      // Si TODOS los profesionales seleccionados tienen licencia
+      if (profesionalesDeLicencia === ID_PROFESIONALES.length && ID_PROFESIONALES.length > 0) {
+        estadoOcupacion = {
+          estado: 'licencia',
+          color: '#3b82f6',
+          colorClaro: '#f3f4f6',
+          porcentaje: 100
+        };
+      } else if (!hayAgendaEsteDia) {
         // No hay agenda este día
         estadoOcupacion = {
           estado: 'no-agenda',
@@ -211,7 +262,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
         profesionales: porcentajesProfesionales,
         totalTurnos: totalTurnosDia,
         turnosPorProfesional: turnosPorProfesional,
-        hayAgenda: hayAgendaEsteDia // NUEVO: flag para saber si hay agenda
+        hayAgenda: hayAgendaEsteDia,
+        esLicencia: estadoOcupacion.estado === 'licencia'
       };
 
       fechaActual = addDays(fechaActual, 1);
