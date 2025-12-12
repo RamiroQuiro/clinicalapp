@@ -1,11 +1,11 @@
 import db from '@/db';
-import { pacientes, turnos, users } from '@/db/schema';
+import { licenciasProfesional, pacientes, turnos, users } from '@/db/schema';
 import { pacienteProfesional } from '@/db/schema/pacienteProfesional';
 import { logAuditEvent } from '@/lib/audit';
 import { emitEvent } from '@/lib/sse/sse';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte, lte } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const data = await request.json();
@@ -19,6 +19,29 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   if (!session) {
     return createResponse(401, 'No autorizado');
   }
+
+  const fechaTurnoDate = new Date(data.fechaTurno);
+
+  // Validar Licencia Profesional
+  if (data.userMedicoId) {
+    const licenciasActivas = await db
+      .select()
+      .from(licenciasProfesional)
+      .where(
+        and(
+          eq(licenciasProfesional.userId, data.userMedicoId),
+          eq(licenciasProfesional.estado, 'activa'),
+          lte(licenciasProfesional.fechaInicio, fechaTurnoDate),
+          gte(licenciasProfesional.fechaFin, fechaTurnoDate)
+        )
+      )
+      .limit(1);
+
+    if (licenciasActivas.length > 0) {
+      return createResponse(400, 'El profesional se encuentra de licencia médica en la fecha seleccionada.');
+    }
+  }
+
 
   const isPaciente = await db.select().from(pacientes).where(eq(pacientes.id, data.pacienteId));
   if (!isPaciente.length) {

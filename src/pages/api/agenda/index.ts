@@ -138,8 +138,8 @@ export const GET: APIRoute = async ({ locals, request }) => {
             eq(licenciasProfesional.userId, profId),
             eq(licenciasProfesional.centroMedicoId, centroMedicoId),
             eq(licenciasProfesional.estado, 'activa'),
-            lte(licenciasProfesional.fechaInicio, fecha),
-            gte(licenciasProfesional.fechaFin, fecha)
+            lte(licenciasProfesional.fechaInicio, finDelDia),
+            gte(licenciasProfesional.fechaFin, inicioDelDia)
           )
         )
         .limit(1);
