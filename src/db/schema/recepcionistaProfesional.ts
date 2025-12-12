@@ -19,7 +19,7 @@ export const recepcionistaProfesional = sqliteTable(
       .notNull(),
 
     // Medical center where this relationship is valid
-    centroMedicoId: integer('centroMedicoId')
+    centroMedicoId: text('centroMedicoId')
       .references(() => centrosMedicos.id)
       .notNull(),
 

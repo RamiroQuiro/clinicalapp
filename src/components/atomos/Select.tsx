@@ -13,16 +13,17 @@ export default function Select({ label, name, value, onChange, options, isMulti 
   // Función para manejar la selección múltiple
   const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
-    // Crear un evento sintético con los valores seleccionados
+    // Crear un evento sintético con los valores seleccionados (simplificado para evitar errores de tipo)
+    // Nota: Esto es un hack para que funcione con el manejador de eventos estándar
     const syntheticEvent = {
       ...e,
       target: {
         ...e.target,
         name,
-        value: selectedOptions
-      }
+        value: selectedOptions,
+      },
     };
-    onChange(syntheticEvent as React.ChangeEvent<HTMLSelectElement>);
+    onChange(syntheticEvent as unknown as React.ChangeEvent<HTMLSelectElement>);
   };
 
   return (
@@ -36,26 +37,15 @@ export default function Select({ label, name, value, onChange, options, isMulti 
         value={value}
         onChange={isMulti ? handleMultiSelectChange : onChange}
         multiple={isMulti}
-        size={isMulti ? 4 : 1} // Mejor visualización para múltiple
-        className="p-2 border border-gray-300 rounded-md  select:focus:outline-none select:focus:ring-2 select:focus:ring-offset-2 select:focus:ring-primary-100 select:focus:border-primary-100 placeholder:text-gray-400 transition h-auto"
+        size={isMulti ? 4 : 1}
+        className="p-2 border border-gray-300 rounded-md select:focus:outline-none select:focus:ring-2 select:focus:ring-offset-2 select:focus:ring-primary-100 select:focus:border-primary-100 placeholder:text-gray-400 transition h-auto"
       >
         {options.map(option => (
-          <option key={option.value} className='select:bg-gray-50 select:rounded-xl select:border-gray-300 select:focus:outline-none select:focus:ring-2 select:focus:ring-offset-2 select:focus:ring-primary-100 select:focus:border-primary-100' value={option.value}>
+          <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
-
-      {/* Mostrar selecciones actuales en modo múltiple */}
-      {isMulti && Array.isArray(value) && value.length > 0 && (
-        <div className="mt-2 text-sm text-gray-600">
-          <span className="font-medium">Seleccionados: </span>
-          {value.map(selectedValue => {
-            const option = options.find(opt => opt.value === selectedValue);
-            return option ? option.label : selectedValue;
-          }).join(', ')}
-        </div>
-      )}
     </div>
   );
 }

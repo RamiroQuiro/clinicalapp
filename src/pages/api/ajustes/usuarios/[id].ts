@@ -70,6 +70,16 @@ export const GET: APIRoute = async ({ params, cookies, locals }) => {
             emailUser: userCentro?.emailUser || userData.email,
         };
 
+        // 5. Si es recepcionista, buscar profesionales vinculados (REVERTIDO)
+        /* if (userData.rol === 'recepcion' || userCentro?.rolEnCentro === 'recepcion') {
+             const vinculaciones = await db
+                 .select()
+                 .from(recepcionistaProfesional)
+                 .where(eq(recepcionistaProfesional.recepcionistaId, id));
+ 
+             (userComplete as any).profesionalesVinculados = vinculaciones.map(v => v.profesionalId);
+         } */
+
         return createResponse(200, 'OK', userComplete);
 
     } catch (error) {
@@ -112,8 +122,6 @@ export const PUT: APIRoute = async ({ params, request, cookies, locals }) => {
         // 3. Obtener datos del body
         const body = await request.json();
         const { nombre, apellido, email, documento, mp, especialidad, celular } = body;
-
-        console.log(body);
         // 4. Validaciones básicas
         if (!nombre || !apellido || !email) {
             return createResponse(400, 'Nombre, apellido y email son obligatorios');
@@ -127,6 +135,8 @@ export const PUT: APIRoute = async ({ params, request, cookies, locals }) => {
                 updated_at: new Date(),
             })
             .where(eq(users.id, id)).returning()
+
+
 
 
 
