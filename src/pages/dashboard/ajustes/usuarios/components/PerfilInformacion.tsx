@@ -1,10 +1,10 @@
 import Button from '@/components/atomos/Button';
 import Input from '@/components/atomos/Input';
 
-import BotonIndigo from '@/components/moleculas/BotonIndigo';
+import ModalReact from '@/components/moleculas/ModalReact';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/organismo/Card';
 import { showToast } from '@/utils/toast/toastShow';
-import { Check, CircleX } from 'lucide-react';
+import { CircleX } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import Select, { components } from 'react-select';
 
@@ -12,39 +12,46 @@ import Select, { components } from 'react-select';
 export default function PerfilInformacion({ user: initialUser }: { user: any }) {
   const [user, setUser] = useState(initialUser);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoadingProfesionalesRelacionados, setIsLoadingProfesionalesRelacionados] =
-    useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [profesionalesRelacionados, setProfesionalesRelacionados] = useState<any[]>([]);
+  const [profesionalesCentro, setProfesionalesCentro] = useState<any[]>([]);
+  const [openAddProfesional, setOpenAddProfesional] = useState(false);
 
-  // Sincronizar el estado local cuando cambia initialUser (cuando llega el fetch)
   useEffect(() => {
-    if (initialUser) {
-      setUser(initialUser);
+    if (initialUser) setUser(initialUser);
+    if (initialUser?.rol === 'recepcion') {
+      fetchRelaciones();
+      fetchProfesionalesCentro();
     }
-    if (user?.rol === 'recepcion') {
-      console.log('es recepcion?');
-      fetchProfesionalesRelacionados();
-    }
-  }, [initialUser, user]);
+  }, [initialUser]);
 
-  const fetchProfesionalesRelacionados = async () => {
+  const fetchRelaciones = async () => {
+    if (!initialUser?.id) return;
+
     try {
-      setIsLoadingProfesionalesRelacionados(true);
-      const response = await fetch(`/api/ajustes/usuarios/${user.id}/profesionales-relacionados`);
-      if (!response.ok) {
-        throw new Error('Error al obtener profesionales relacionados');
-      }
-      const result = await response.json();
-      setProfesionalesRelacionados(result.data);
-    } catch (error) {
-      setIsLoadingProfesionalesRelacionados(false);
-      console.error('Error al obtener profesionales relacionados:', error);
-    }
-    setIsLoadingProfesionalesRelacionados(false);
-  };
+      setIsLoading(true);
+      const res = await fetch(`/api/ajustes/usuarios/${initialUser.id}/profesionales-relacionados`);
+      const json = await res.json();
 
-  // Determinar si está cargando (cuando no hay datos del usuario)
-  const isLoading = !user || !user.nombre;
+      setProfesionalesRelacionados(json.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const fetchProfesionalesCentro = async () => {
+    if (!initialUser?.centroMedicoId) return;
+
+    try {
+      const res = await fetch(`/api/centroMedico/${initialUser.centroMedicoId}/profesionales`);
+      const json = await res.json();
+      setProfesionalesCentro(json.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -81,74 +88,69 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
     }
   };
 
-  const handleEliminarProfesional = async (id: string) => {
+  const handleEliminarProfesional = async (profesionalId: number) => {
+    if (!user?.id) return;
+
     try {
-      const response = await fetch(
-        `/api/ajustes/usuarios/${user.id}/profesionales-relacionados/${id}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar profesional relacionado');
-      }
-
-      const result = await response.json();
-      console.log('Profesional relacionado eliminado:', result);
-
-      // Actualizar el estado local con los datos frescos del servidor
-      if (result.data && result.data[0]) {
-        setUser(result.data[0]);
-      }
-
-      showToast('Profesional relacionado eliminado correctamente');
-    } catch (error) {
-      console.error('Error al eliminar profesional relacionado:', error);
-      showToast('Error al eliminar el profesional relacionado');
+      await fetch(`/api/ajustes/usuarios/${user.id}/profesionales-relacionados/${profesionalId}`, {
+        method: 'DELETE',
+      });
+      fetchRelaciones();
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  // Convertir profesionales a opciones para el Select
-  const opciones = useMemo(() => {
-    return profesionalesRelacionados.map(profesional => ({
-      value: profesional.id,
-      label: `${profesional.nombreProfesional} ${profesional.apellidoProfesional}`,
-    }));
-  }, [profesionalesRelacionados]);
+  const handleAgregarProfesional = async (option: any) => {
+    if (!option || !user?.id) return;
+    console.log('esta es la opcion q seleccionaste', option);
+    try {
+      await fetch(`/api/ajustes/usuarios/${user.id}/profesionales-relacionados`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profesionalId: option.value }),
+      });
 
-  // Obtener los valores seleccionados actuales
-  const valoresSeleccionados = useMemo(() => {
-    return opciones.filter(opcion => profesionalesRelacionados?.includes(opcion.value));
-  }, [opciones, profesionalesRelacionados]);
+      setOpenAddProfesional(false);
+      fetchRelaciones();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-  const Option = (props: any) => {
-    return (
-      <components.Option {...props}>
-        <div className="flex items-center">
-          <div
-            className={`flex items-center justify-center h-5 w-5 mr-2 rounded border ${
-              props.isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 bg-white'
-            }`}
-          >
-            {props.isSelected && <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />}
-          </div>
-          <span className={props.isSelected ? 'font-medium text-gray-900' : 'text-gray-700'}>
-            {props.label}
-          </span>
+  // Profesionales disponibles = centro - relacionados
+  const opcionesDisponibles = useMemo(() => {
+    const idsRelacionados = profesionalesRelacionados.map(r => r.profesionalId);
+    return profesionalesCentro
+      .filter(p => !idsRelacionados.includes(p.id))
+      .map(p => ({
+        value: p.profesionalId,
+        label: `${p.nombre} ${p.apellido}`,
+        dni: p.dni,
+        especialidad: p.especialidad,
+        srcPhoto: p.srcPhoto,
+      }));
+  }, [profesionalesCentro, profesionalesRelacionados]);
+
+  const Option = (props: any) => (
+    <components.Option {...props}>
+      <div className="flex items-center gap-3">
+        <div className="w-7 h-7 rounded-full overflow-hidden bg-gray-200">
+          {props.data.srcPhoto ? (
+            <img src={props.data.srcPhoto} className="w-full h-full object-cover" />
+          ) : null}
         </div>
-      </components.Option>
-    );
-  };
-
-  // Manejador de cambio de selección
-  const handleSelection = (opcionesSeleccionadas: readonly OptionType[]) => {
-    if (!opcionesSeleccionadas) {
-      return;
-    }
-  };
+        <div>
+          <p className="text-sm capitalize font-medium">{props.data.label}</p>
+          <p className="text-xs text-gray-500">{props.data.dni}</p>
+          <p className="text-xs text-gray-500">{props.data.especialidad || 'General'}</p>
+        </div>
+      </div>
+    </components.Option>
+  );
   return (
     <div className="space-y-4">
+      {/* Informacion personal */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Información Personal</CardTitle>
@@ -283,63 +285,76 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
         </CardContent>
         {isEditing && (
           <div className="p-6 border-t">
-            <Button onClick={handleSave}>Guardar Cambios</Button>
+            <Button variant="primary" onClick={handleSave}>
+              Guardar Cambios
+            </Button>
           </div>
         )}
       </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Profesionales Relacionados</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingProfesionalesRelacionados ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>Cargando profesionales...</p>
-            </div>
-          ) : profesionalesRelacionados.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No hay profesionales registrados</p>
-              <p className="text-sm">Haz clic en "Nueva Licencia" para agregar una</p>
-            </div>
-          ) : (
-            <div className="flex w-full flex-wrap gap-2 items-center justify-start">
-              {profesionalesRelacionados.map(profesional => (
-                <BotonIndigo
-                  key={profesional.id}
-                  onClick={() => handleEliminarProfesional(profesional.id)}
-                  className=" hover:bg-red-50"
-                >
-                  {profesional.nombreProfesional} {profesional.apellidoProfesional}
-                  <CircleX className="h-6 w-6 border ml-4 text-red-500   rounded-full" />
-                </BotonIndigo>
-              ))}
-            </div>
-          )}
-        </CardContent>
+      {/* PROFESIONALES RELACIONADOS */}
+      {user?.rol === 'recepcion' && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Profesionales relacionados</CardTitle>
+            <Button variant="primary" onClick={() => setOpenAddProfesional(true)}>
+              Agregar profesional
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <p className="text-sm text-gray-500">Cargando...</p>
+            ) : profesionalesRelacionados.length === 0 ? (
+              <p className="text-sm text-gray-500">No hay profesionales relacionados</p>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-3">
+                {profesionalesRelacionados.map(p => (
+                  <div
+                    key={p.profesionalId}
+                    className="flex justify-between capitalize items-center border rounded-lg p-3"
+                  >
+                    <div className="bg-gray-400 text-center flex items-center justify-center w-10 h-10 rounded-full">
+                      <span className="text-white text-xl -tracking-tight ">
+                        {p.nombre.charAt(0)} {p.apellido.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {p.nombre} {p.apellido}
+                      </p>
+                      <p className="text-xs text-gray-500">{p.especialidad}</p>
+                      <p className="text-xs text-gray-500">{p.mp}</p>
+                      <p className="text-xs text-gray-500">{p.dni}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleEliminarProfesional(p.profesionalId)}
+                    >
+                      <CircleX className="text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+      {/* MODAL AGREGAR PROFESIONAL */}
 
-        <div className="space-y-4 mt-4 border-t pt-4">
-          <div className="w-full">
+      {openAddProfesional && user?.rol === 'recepcion' && (
+        <ModalReact title="Vincular profesional" onClose={() => setOpenAddProfesional(false)}>
+          <div className="p-6 min-h-[75dvh] min-w-[75dvw]">
             <Select
+              autoFocus
               isSearchable
-              isMulti
-              options={opciones}
-              value={valoresSeleccionados}
-              onChange={handleSelection}
-              placeholder="Seleccione profesionales..."
-              noOptionsMessage={() => 'No hay opciones disponibles'}
-              className="text-sm"
-              classNamePrefix="select"
+              options={opcionesDisponibles}
+              placeholder="Buscar profesional..."
+              onChange={handleAgregarProfesional}
               components={{ Option }}
-              hideSelectedOptions={false}
-              closeMenuOnSelect={false}
-              controlShouldRenderValue={false}
             />
           </div>
-        </div>
-        <div className="p-6 border-t">
-          <Button onClick={handleSave}>Guardar Cambios</Button>
-        </div>
-      </Card>
+        </ModalReact>
+      )}
     </div>
   );
 }

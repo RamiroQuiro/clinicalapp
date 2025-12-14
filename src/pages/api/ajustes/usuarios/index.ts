@@ -1,9 +1,70 @@
 import db from '@/db';
 import { preferenciaPerfilUser, recepcionistaProfesional, users, usersCentrosMedicos } from '@/db/schema';
+import { lucia } from '@/lib/auth';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import bcrypt from 'bcryptjs';
 import { and, eq, or } from 'drizzle-orm';
+
+export const GET: APIRoute = async ({ request, cookies, locals }) => {
+    try {
+        const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
+        if (!sessionId) {
+            return createResponse(401, 'No autorizado');
+        }
+
+        const { user: currentUser } = locals;
+        const { session } = await lucia.validateSession(sessionId);
+
+        if (!session || !currentUser) {
+            return createResponse(401, 'No autorizado');
+        }
+
+        const url = new URL(request.url);
+        const search = url.searchParams.get('search') || '';
+        const rol = url.searchParams.get('rol') || '';
+
+        // Construir condiciones
+        const condiciones: any[] = [];
+
+        if (rol) {
+            condiciones.push(eq(users.rol, rol as any));
+        }
+
+        if (search) {
+            condiciones.push(
+                or(
+                    like(users.nombre, `%${search}%`),
+                    like(users.apellido, `%${search}%`),
+                    like(users.dni, `%${search}%`)
+                )
+            );
+        }
+
+        // Si es admin local, filtrar por su centro médico (opcional, pero recomendado)
+        // Por ahora listamos todos segun rol y busqueda para simplificar el select
+
+        const listaUsuarios = await db
+            .select({
+                id: users.id,
+                nombre: users.nombre,
+                apellido: users.apellido,
+                documento: users.documento,
+                srcPhoto: users.srcPhoto,
+                especialidad: users.especialidad,
+                rol: users.rol
+            })
+            .from(users)
+            .where(and(...condiciones))
+            .limit(50);
+
+        return createResponse(200, 'OK', listaUsuarios);
+
+    } catch (error) {
+        console.error('Error al buscar usuarios:', error);
+        return createResponse(500, 'Error interno del servidor');
+    }
+};
 
 export const POST: APIRoute = async ({ request, locals }) => {
     const { session, user: adminLocals } = locals;
