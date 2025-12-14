@@ -146,7 +146,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                     id: newUserId,
                     nombre,
                     apellido,
-                    email, // Email principal (puede ser el mismo que el de la relación)
+                    email,
                     dni,
                     mp,
                     avatar,
@@ -158,9 +158,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
                 await tx.insert(usersCentrosMedicos).values({
                     userId: newUserId,
                     centroMedicoId: centroMedicoId,
-                    nombreCentroMedico: centroMedicoId, // TODO: Obtener nombre real
+                    nombreCentroMedico: centroMedicoId,
                     rolEnCentro: rol,
-                    emailUser: email, // Email específico para este centro
+                    esProfesional: rol === 'profesional' ? true : false,
+                    emailUser: email,
                 });
 
                 if (rol === 'profesional') {

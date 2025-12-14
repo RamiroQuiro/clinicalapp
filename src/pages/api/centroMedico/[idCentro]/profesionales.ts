@@ -2,8 +2,7 @@ import db from '@/db';
 import { users, usersCentrosMedicos } from '@/db/schema';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
-import { and } from 'drizzle-orm/sql';
+import { and, eq } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ params }) => {
     try {
@@ -26,7 +25,7 @@ export const GET: APIRoute = async ({ params }) => {
             })
             .from(usersCentrosMedicos)
             .innerJoin(users, eq(usersCentrosMedicos.userId, users.id))
-            .where(and(eq(usersCentrosMedicos.centroMedicoId, idCentro), eq(usersCentrosMedicos.rolEnCentro, 'profesional')));
+            .where(and(eq(usersCentrosMedicos.centroMedicoId, idCentro), eq(usersCentrosMedicos.esProfesional, true), eq(users.activo, true)));
 
         return createResponse(200, 'OK', relaciones);
     } catch (error) {
