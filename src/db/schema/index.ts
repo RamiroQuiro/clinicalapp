@@ -30,3 +30,6 @@ export { turnos } from './turnos';
 export { users } from './users';
 export { usersCentrosMedicos } from './usersCentrosMedicos';
 
+export { planes } from './planes';
+export { suscripciones } from './suscripciones';
+
