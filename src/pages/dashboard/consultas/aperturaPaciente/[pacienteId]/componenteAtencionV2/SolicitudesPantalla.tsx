@@ -59,7 +59,6 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
     setItemParaBorrar(null); // Cerrar modal
   };
 
-  console.log('solicitudes', solicitudes);
   const handleSave = async (type: 'orden' | 'derivacion', formData: any) => {
     const atencionId = data?.atencion?.id;
     const url =

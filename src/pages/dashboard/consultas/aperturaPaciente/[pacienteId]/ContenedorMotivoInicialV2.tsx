@@ -6,14 +6,20 @@ import useBusquedaFiltros from '@/hook/useBusquedaFiltro';
 import { PlusCircle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-const ContenedorMotivoInicialV2 = () => {
+interface ContenedorMotivoInicialV2Props {
+  initialMotivos?: any[];
+}
+
+const ContenedorMotivoInicialV2 = ({ initialMotivos = [] }: ContenedorMotivoInicialV2Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [motivos, setMotivos] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [motivos, setMotivos] = useState<any[]>(initialMotivos);
+  const [isLoading, setIsLoading] = useState(initialMotivos.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [nuevoMotivoNombre, setNuevoMotivoNombre] = useState('');
 
   useEffect(() => {
+    if (initialMotivos.length > 0) return;
+
     const fetchMotivos = async () => {
       try {
         setIsLoading(true);
@@ -23,7 +29,7 @@ const ContenedorMotivoInicialV2 = () => {
         }
         const data = await response.json();
         setMotivos(data);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -31,7 +37,7 @@ const ContenedorMotivoInicialV2 = () => {
     };
 
     fetchMotivos();
-  }, []);
+  }, [initialMotivos]);
 
   const { search, handleSearch, encontrado, noResultados, setSearch } = useBusquedaFiltros(
     motivos,

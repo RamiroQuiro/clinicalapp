@@ -21,7 +21,7 @@ const Section = ({ title, children, rightContent, className, classContent }: Pro
       )}
     >
       <h3 className="w-full border-b border-gray-200 mb-1">{title}</h3>
-      {rightContent && <div>{rightContent}</div>}
+      {rightContent && <div className="ml-4">{rightContent}</div>}
     </div>
     {children}
   </DivReact>

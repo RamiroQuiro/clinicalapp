@@ -1,9 +1,11 @@
-import { getFechaEnMilisegundos } from '@/utils/timesUtils';
+import db from '@/db';
+import { motivosIniciales } from '@/db/schema';
+import { nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 // import { motivos } from '@/db/schema/motivos'; // Se necesitará importar el schema, hay que crearlo.
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
-  const { session } = locals;
+  const { session, user } = locals;
 
   if (!session) {
     return new Response('No autorizado', { status: 401 });
@@ -22,14 +24,17 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     //   creadoPor: session.user.userId, // Asociamos el motivo al doctor que lo crea
     // }).returning();
 
-    // Por ahora, devolvemos un mock hasta tener el schema
-    const nuevoMotivo = {
-      id: `mock_${Date.now()}`,
-      nombre: nombre.trim(),
-      creadoPor: session.userId,
-    };
+    const idMotivo = nanoIDNormalizador(`motInic-${session.userId}`, 5)
 
-    return new Response(JSON.stringify(nuevoMotivo), {
+    const nuevoMotivoDB = await db.insert(motivosIniciales).values({
+      id: idMotivo,
+      nombre: nombre.trim(),
+      creadoPorId: session.userId,
+      medicoId: session.userId,
+      centroMedicoId: user?.centroMedicoId,
+    }).returning();
+
+    return new Response(JSON.stringify(nuevoMotivoDB[0]), {
       status: 201, // 201 Created
       headers: {
         'Content-Type': 'application/json',

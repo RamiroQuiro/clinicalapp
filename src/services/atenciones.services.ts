@@ -7,6 +7,7 @@ import {
   diagnostico,
   historiaClinica,
   medicamento,
+  motivosIniciales,
   notasMedicas,
   pacientes,
   signosVitales,
@@ -15,6 +16,7 @@ import {
 import { antecedentes } from '@/db/schema/atecedentes';
 import { ordenesEstudio } from '@/db/schema/ordenesEstudio';
 import { preferenciaPerfilUser } from '@/db/schema/preferenciaPerfilUser';
+import { arrayMotivosIniciales } from '@/utils/arrayMotivosIniciales';
 import { and, desc, eq, not } from 'drizzle-orm';
 
 export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
@@ -135,6 +137,11 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     .where(eq(atencionAmendments.atencionId, atencionId))
     .orderBy(desc(atencionAmendments.created_at));
 
+  const motivoInicialPromise = db
+    .select()
+    .from(motivosIniciales)
+    .where(eq(motivosIniciales.creadoPorId, atencionData.userIdMedico));
+
   // 3. Si la atención está finalizada, ejecutamos solo las promesas esenciales.
   if (atencionData.estado === 'finalizada') {
     const [
@@ -144,11 +151,11 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       notasAtencion,
       archivosAtencion,
       signosVitalesAtencion,
-
       enmiendasAtencion,
       medicoAtencion,
       estudiosSolicitadosAtencion,
       derivacionesAtencion,
+      motivosDB,
     ] = await Promise.all([
       pacientePromise,
       diagnosticosPromise,
@@ -160,8 +167,16 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       medicoPromise,
       estudiosSolicitadosPromise,
       derivacionesPromise,
+      motivoInicialPromise,
     ]);
 
+    // Procesar hardcoded + DB
+    const todosHardcoded = arrayMotivosIniciales.flatMap(item => item.motivos);
+    const unicosHardcoded = [...new Set(todosHardcoded)].map((nombre, idx) => ({
+      id: `static_${idx}`,
+      nombre,
+    }));
+    const listadoMotivos = [...motivosDB, ...unicosHardcoded];
     const pacienteData = pacienteResult[0];
     if (!pacienteData) {
       return { error: true, message: 'Paciente no encontrado', data: null };
@@ -180,6 +195,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
           signosVitales: signosVitalesAtencion[0] || null,
           notas: notasAtencion,
           enmiendas: enmiendasAtencion,
+          listadoMotivos: listadoMotivos,
           solicitudes: {
             estudiosSolicitados: estudiosSolicitadosAtencion,
             derivaciones: derivacionesAtencion,
@@ -233,6 +249,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     preferenciasPerfilUserData,
     estudiosSolicitadosAtencion,
     derivacionesAtencion,
+    motivosDB,
   ] = await Promise.all([
     pacientePromise,
     diagnosticosPromise,
@@ -245,7 +262,16 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
     preferenciasPromise,
     estudiosSolicitadosPromise,
     derivacionesPromise,
+    motivoInicialPromise,
   ]);
+
+  // Procesar hardcoded + DB (misma logica)
+  const todosHardcoded = arrayMotivosIniciales.flatMap(item => item.motivos);
+  const unicosHardcoded = [...new Set(todosHardcoded)].map((nombre, idx) => ({
+    id: `static_${idx}`,
+    nombre,
+  }));
+  const listadoMotivos = [...motivosDB, ...unicosHardcoded];
 
   const pacienteData = pacienteResult[0];
   if (!pacienteData) {
@@ -287,6 +313,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
         archivosAdjuntos: archivosAtencion,
         signosVitales: signosVitalesAtencion[0] || null,
         notas: notasAtencion,
+        listadoMotivos: listadoMotivos,
         solicitudes: {
           estudiosSolicitados: estudiosSolicitadosAtencion,
           derivaciones: derivacionesAtencion,

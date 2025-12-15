@@ -14,11 +14,11 @@ export default function ModalReact({ onClose, children, className, title, id, ic
   return (
     <div
       style={{ margin: 0, position: 'fixed' }}
-      className="fixed top-0 left-0 mt-0 w-full h-screen z-[999] bg-black bg-opacity-70 flex items-center  justify-center backdrop-blur-sm"
+      className="fixed top-0 left-0 mt-0 w-full h-screen z-[999]  bg-black bg-opacity-70 flex items-center  justify-center backdrop-blur-sm"
       onClick={() => onClose(false)}
     >
       <div
-        className={`bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit max-h overflow-y-auto w-fit ${className}`}
+        className={`bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit max-h overflow-y-auto w-fit min-w-[75dvw] ${className}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Header Fijo */}

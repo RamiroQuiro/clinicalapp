@@ -1,8 +1,7 @@
 import { lucia } from '@/lib/auth';
-import { createResponse } from '@/utils/responseAPI';
+import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
 import db from '../../../../db';
 import { antecedentes } from '../../../../db/schema';
 
@@ -10,7 +9,7 @@ export const POST: APIRoute = async ({ request, params, cookies, locals }) => {
   const data = await request.json();
   const { pacienteId } = params;
   const { user } = locals;
-  console.log('enpoint de antecedentes', data);
+  console.log('datos de la consulta', data);
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     // if (user) {
@@ -23,12 +22,14 @@ export const POST: APIRoute = async ({ request, params, cookies, locals }) => {
     if (!session) {
       return createResponse(401, 'No autorizado');
     }
-    const id = `antec_${nanoid()}`;
+    const id = nanoIDNormalizador(`antec_${pacienteId.slice(0, 5)}`, 7);
+    const centroMedicoId = String(data.centroMedicoId);
     const insertAtecedentes = await db
       .insert(antecedentes)
       .values({
         id: id,
         antecedente: data.antecedente,
+        centroMedicoId: centroMedicoId,
         pacienteId,
         observaciones: data.observaciones,
         estado: data.estado,

@@ -21,13 +21,18 @@ export const RenderizacionPantalla = ({
   if (esFinalizada && activeTab === 'consultaActual') {
     return <AtencionExistenteV2 data={data} onClose={() => {}} />;
   }
-
   // Lógica original para las demás pestañas o si la consulta no está finalizada
   switch (activeTab) {
     case 'consultaActual':
       return <ConsultaActualPantalla data={data} />;
     case 'antecedentes':
-      return <AntecedentesPantalla data={data.antecedentes} pacienteId={data.paciente.id} />;
+      return (
+        <AntecedentesPantalla
+          data={data.antecedentes}
+          pacienteId={data.paciente.id}
+          centroMedicoId={data.atencion.centroMedicoId}
+        />
+      );
     case 'signos':
       return (
         <SignosVitalesPantalla

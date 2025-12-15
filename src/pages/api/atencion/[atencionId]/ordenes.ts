@@ -21,7 +21,6 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const data = await request.json();
 
   const { pacienteId, diagnosticoPresuntivo, estudiosSolicitados, userMedicoId } = data;
-  console.log('data del frontend ->', data);
   if (!userMedicoId || !pacienteId || !diagnosticoPresuntivo || !estudiosSolicitados) {
     return createResponse(
       400,

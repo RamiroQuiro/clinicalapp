@@ -231,7 +231,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           </div>
         </DivReact>
         <Section title="Motivo de Consulta">
-          <ContenedorMotivoInicialV2 />
+          <ContenedorMotivoInicialV2 initialMotivos={data.atencion.listadoMotivos || []} />
           {$consulta.motivoInicial && (
             <div className="mt-2 text-sm text-gray-600">
               <span className="font-semibold">Motivo Inicial Seleccionado:</span>{' '}

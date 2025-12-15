@@ -7,11 +7,16 @@ import React, { useEffect, useState } from 'react';
 import type { Antecedente } from '../../types'; // Adjust path as needed
 
 interface AntecedentesPantallaProps {
-  data: any; // You might want to define a more specific type for 'data'
+  data: any;
   pacienteId: string;
+  centroMedicoId: string;
 }
 
-export const AntecedentesPantalla: React.FC<AntecedentesPantallaProps> = ({ data, pacienteId }) => {
+export const AntecedentesPantalla: React.FC<AntecedentesPantallaProps> = ({
+  data,
+  pacienteId,
+  centroMedicoId,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAntecedente, setEditingAntecedente] = useState<Antecedente | null>(null);
   const [antedecentes, setAntedecentes] = useState({
@@ -48,15 +53,11 @@ export const AntecedentesPantalla: React.FC<AntecedentesPantallaProps> = ({ data
   };
 
   return (
-    <Section title="Antecedentes del Paciente" className="animate-pulse">
-      <div className="absolute right-4 top-2">
-        <Button
-          onClick={handleOpenNewAntecedenteModal}
-          className=" bg-blue-500 text-white rounded-md hover:bg-blue-600 mx-auto flex items-center justify-center"
-        >
-          <p>agregar</p>
-        </Button>
-      </div>
+    <Section
+      title="Antecedentes del Paciente"
+      className="relative"
+      rightContent={<Button onClick={handleOpenNewAntecedenteModal}>agregar</Button>}
+    >
       {isModalOpen && (
         <ModalReact
           title={editingAntecedente ? 'Editar Antecedente' : 'Agregar Antecedente'}
@@ -65,6 +66,7 @@ export const AntecedentesPantalla: React.FC<AntecedentesPantallaProps> = ({ data
         >
           <FormularioAntecedentes
             pacienteId={pacienteId}
+            centroMedicoId={centroMedicoId}
             onSuccess={handleFormSuccess}
             initialData={editingAntecedente}
           />
@@ -84,7 +86,12 @@ export const AntecedentesPantalla: React.FC<AntecedentesPantallaProps> = ({ data
           <h3 className="text-sm  mb-1.5">Antecedentes Familiares</h3>
           <div className="space-y-3">
             {antedecentes?.familiares?.map((diag: any, index: number) => (
-              <CardAntecedente key={index} data={diag} onEdit={handleEditAntecedente} />
+              <CardAntecedente
+                key={index}
+                data={diag}
+                onEdit={handleEditAntecedente}
+                setIsOpen={setIsModalOpen}
+              />
             ))}
           </div>
         </div>

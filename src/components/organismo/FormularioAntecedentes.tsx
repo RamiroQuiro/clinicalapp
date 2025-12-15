@@ -6,6 +6,7 @@ interface FormularioAntecedentesProps {
   pacienteId: string;
   onSuccess: () => void; // Callback to refresh data or close modal
   initialData?: Antecedente | null; // Optional: data to pre-populate for editing
+  centroMedicoId: string;
 }
 
 // Helper function to format dates for the input[type="date"]
@@ -18,6 +19,7 @@ const FormularioAntecedentes: React.FC<FormularioAntecedentesProps> = ({
   pacienteId,
   onSuccess,
   initialData,
+  centroMedicoId,
 }) => {
   const [antecedente, setAntecedente] = useState('');
   const [fechaDiagnostico, setFechaDiagnostico] = useState('');
@@ -62,6 +64,7 @@ const FormularioAntecedentes: React.FC<FormularioAntecedentesProps> = ({
       fechaDiagnostico,
       observaciones,
       tipo,
+      centroMedicoId,
       estado,
     };
 
@@ -69,14 +72,14 @@ const FormularioAntecedentes: React.FC<FormularioAntecedentesProps> = ({
     let method = '';
 
     if (initialData && initialData.id) {
-      // Assuming initialData has an 'id' for existing records
+      // asumiendo antecedente existete
       url = `/api/pacientes/antecedentes/${pacienteId}?id=${initialData.id}`;
-      method = 'PUT'; // Or 'PATCH' depending on your API
+      method = 'PUT';
     } else {
       url = `/api/pacientes/antecedentes/${pacienteId}`;
       method = 'POST';
     }
-
+    console.log('datos a enviar', formData);
     try {
       const response = await fetch(url, {
         method: method,
@@ -135,7 +138,7 @@ const FormularioAntecedentes: React.FC<FormularioAntecedentesProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col items-start gap-2 w-full justify-normal bg-primary-bg-componentes p-2 rounded mb-4">
+      <div className="flex flex-col items-start gap-2 w-full justify-normal  rounded mb-4">
         <label htmlFor="observaciones" className="text-xs text-primary-texto capitalize">
           Observaciones
         </label>

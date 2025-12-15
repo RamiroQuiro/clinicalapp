@@ -12,7 +12,6 @@ type Props = {
 
 export default function CardAntecentes({ data, isOpen, setIsOpen, onEdit }: Props) {
   const handleEdit = () => {
-    setIsOpen(true);
     onEdit(data);
   };
 
