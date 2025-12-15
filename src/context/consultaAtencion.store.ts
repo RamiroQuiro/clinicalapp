@@ -83,7 +83,7 @@ export interface Consulta {
     frecuencia: string;
     id: string;
   }[];
-  archivos: ArchivoAdjunto[]; // AÑADIDO PARA ARCHIVOS
+  archivosAdjuntos: ArchivoAdjunto[]; // AÑADIDO PARA ARCHIVOS
   solicitudes: {
     estudiosSolicitados: OrdenEstudio[];
     derivaciones: Derivacion[];
@@ -119,7 +119,7 @@ const initialConsulta: Consulta = {
   planSeguir: '',
   observaciones: '',
   notas: [],
-  archivos: [], // AÑADIDO PARA ARCHIVOS
+  archivosAdjuntos: [],
   solicitudes: {
     estudiosSolicitados: [],
     derivaciones: [],
@@ -224,10 +224,10 @@ export function removeMedicamento(index: number) {
 // Agregar Archivo
 export function addArchivo(archivo: ArchivoAdjunto) {
   const current = consultaStore.get();
-  const currentArchivos = current.archivos || []; // Ensure it's an array
+  const currentArchivos = current.archivosAdjuntos || []; // Ensure it's an array
   consultaStore.set({
     ...current,
-    archivos: [...currentArchivos, archivo],
+    archivosAdjuntos: [...currentArchivos, archivo],
   });
 }
 
@@ -236,7 +236,7 @@ export function removeArchivo(archivoId: string) {
   const current = consultaStore.get();
   consultaStore.set({
     ...current,
-    archivos: current.archivos.filter(a => a.id !== archivoId),
+    archivosAdjuntos: current.archivosAdjuntos.filter(a => a.id !== archivoId),
   });
 }
 

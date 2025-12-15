@@ -2,8 +2,8 @@ import { showToast } from '@/utils/toast/toastShow';
 import { Download, Eye } from 'lucide-react';
 import { useRef, useState } from 'react';
 import Button from '../atomos/Button';
+import Input from '../atomos/Input';
 import BotonIndigo from '../moleculas/BotonIndigo';
-import InputFormularioSolicitud from '../moleculas/InputFormularioSolicitud';
 
 const initialData = {
   id: null,
@@ -16,10 +16,11 @@ const initialData = {
 export default function FormularioArchivosAdjuntos({
   pacienteId,
   doc,
-  atencionId, // Prop para la consulta
-  onUploadComplete, // Callback para la consulta
-  isConsulta = false, // Flag para diferenciar contexto
+  atencionId,
+  onUploadComplete,
+  isConsulta = false,
 }) {
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [formData, setFormData] = useState(doc || initialData);
   const [isDragging, setIsDragging] = useState(false);
@@ -123,17 +124,20 @@ export default function FormularioArchivosAdjuntos({
 
   const handleSubmit = async e => {
     e.preventDefault();
-
+    setIsLoading(true);
     if (selectedFiles.length === 0 && !doc) {
       showToast('Por favor, selecciona al menos un archivo.', { background: 'bg-primary-400' });
+      setIsLoading(false);
       return;
     }
     if (!formData.nombre) {
       showToast('Por favor, ingresa el nombre del documento.', { background: 'bg-red-500' });
+      setIsLoading(false);
       return;
     }
     if (!formData.tipo) {
       showToast('Por favor, selecciona el tipo de estudio.', { background: 'bg-red-500' });
+      setIsLoading(false);
       return;
     }
 
@@ -170,16 +174,15 @@ export default function FormularioArchivosAdjuntos({
         showToast('Documentos subidos correctamente.', {
           background: 'bg-green-500',
         });
+        setIsLoading(false);
 
         // Limpiar formulario
         setSelectedFiles([]);
         setFormData(initialData);
 
         if (isConsulta && onUploadComplete) {
-          // En la consulta, usamos el callback para actualizar el estado en tiempo real
-          onUploadComplete(responseData.documento); // Asumiendo que la API devuelve el documento creado
+          onUploadComplete(responseData.data);
         } else {
-          // En el perfil del paciente, recargamos la página
           document.location.reload();
         }
       } else {
@@ -188,20 +191,22 @@ export default function FormularioArchivosAdjuntos({
         showToast(`Error al subir: ${errorData.message || 'Inténtalo de nuevo.'}`, {
           background: 'bg-red-500',
         });
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error de red:', error);
       showToast(`Error de red: ${error.message || 'Inténtalo de nuevo.'}`, {
         background: 'bg-red-500',
       });
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="w-full flex flex-col items-start justify-normal gap-2">
-      <InputFormularioSolicitud
+      <Input
         name={'nombre'}
-        onchange={handleChangeFormulario}
+        onChange={handleChangeFormulario}
         type="text"
         id="nombre"
         label="Nombre del documento"
@@ -363,7 +368,7 @@ export default function FormularioArchivosAdjuntos({
         </div>
       </div>
       <div className="w-full flex items-center justify-end mt-4">
-        <Button type="submit" onClick={handleSubmit}>
+        <Button type="submit" variant="primary" disabled={isLoading} onClick={handleSubmit}>
           {doc ? 'Actualizar' : 'Agregar'}
         </Button>
       </div>

@@ -1,5 +1,5 @@
 import { lucia } from '@/lib/auth';
-import { createResponse } from '@/utils/responseAPI';
+import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
@@ -8,16 +8,17 @@ import path from 'node:path';
 import db from '../../../../db';
 import { archivosAdjuntos } from '../../../../db/schema';
 
-export const POST: APIRoute = async ({ request, params, cookies }) => {
+export const POST: APIRoute = async ({ request, params, cookies, locals }) => {
   const formData = await request.formData();
   const { pacienteId } = params;
 
+  const { session, user } = locals
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
       return new Response('No autorizado', { status: 401 });
     }
-    const { session, user } = await lucia.validateSession(sessionId);
+
     if (!session) {
       return new Response('No autorizado', { status: 401 });
     }
@@ -40,9 +41,9 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
     }
 
     const uploadedFilesData = [];
-    // NEW: Define upload directory outside public, with patientId subfolder
-    const baseUploadDir = path.join(process.cwd(), 'documents'); // Project root /documents
-    const patientUploadDir = path.join(baseUploadDir, pacienteId); // /documents/patientId/
+
+    const baseUploadDir = path.join(process.cwd(), `documentos/${user?.centroMedicoId}`);
+    const patientUploadDir = path.join(baseUploadDir, pacienteId);
 
     // Ensure patient-specific upload directory exists
     await fs.mkdir(patientUploadDir, { recursive: true });
@@ -50,57 +51,44 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
     for (const file of files) {
       const uniqueFileName = `${generateId(10)}-${file.name}`; // Generate unique name
       const filePath = path.join(patientUploadDir, uniqueFileName);
-      // NEW: URL will be an internal path, not publicly accessible
+
       const fileInternalPath = path.relative(process.cwd(), filePath); // Store path relative to project root
 
       // Save file to disk
       await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
 
       uploadedFilesData.push({
-        id: generateId(13),
+        id: nanoIDNormalizador('archivosAdjuntos', 10),
         pacienteId,
-        atencionId: atencionId || null, // Add atencionId to the object
+        centroMedicoId: user?.centroMedicoId,
+        atencionId: atencionId || null,
         descripcion: descripcion || '',
-        nombre: nombre, // Use the single name for all files for now, or adjust frontend to send name per file
-        url: fileInternalPath, // Store the internal path
+        nombre: nombre,
+        url: fileInternalPath,
         estado: estado || 'revisar',
         tipo: tipo,
-        userId: user.id,
+        userMedicoId: user.id,
       });
     }
 
-    await db.insert(archivosAdjuntos).values(uploadedFilesData);
+    const [insert] = await db.insert(archivosAdjuntos).values(uploadedFilesData).returning();
 
-    return new Response(
-      JSON.stringify({
-        status: 200,
-        msg: 'Archivos guardados correctamente.',
-        uploadedCount: uploadedFilesData.length,
-      })
-    );
+    return createResponse(200, 'Archivos guardados correctamente.', insert);
   } catch (error) {
     console.error('Error al guardar archivos adjuntos:', error);
-    return new Response(
-      JSON.stringify({
-        status: 500,
-        msg: 'Error interno del servidor al guardar archivos.',
-        error: error.message,
-      }),
-      { status: 500 }
-    );
+    return createResponse(500, 'Error interno del servidor al guardar archivos.', error);
   }
 };
 
-export const PUT: APIRoute = async ({ request, params, cookies }) => {
+export const PUT: APIRoute = async ({ locals, request, params, cookies }) => {
   const formData = await request.formData();
   const { pacienteId } = params;
-  console.log('formData', formData);
   try {
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
       return new Response('No autorizado', { status: 401 });
     }
-    const { session, user } = await lucia.validateSession(sessionId);
+    const { session, user } = locals
     if (!session) {
       return new Response('No autorizado', { status: 401 });
     }
@@ -111,7 +99,7 @@ export const PUT: APIRoute = async ({ request, params, cookies }) => {
     const estado = formData.get('estado')?.toString();
     const tipo = formData.get('tipo')?.toString();
 
-    const update = await db
+    const [update] = await db
       .update(archivosAdjuntos)
       .set({
         atencionId,
@@ -123,7 +111,6 @@ export const PUT: APIRoute = async ({ request, params, cookies }) => {
       })
       .where(and(eq(archivosAdjuntos.id, id), eq(archivosAdjuntos.pacienteId, pacienteId)))
       .returning();
-    console.log('updateDate', update);
     return createResponse(200, 'Archivos actualizados correctamente.', update);
   } catch (error) {
     console.error('Error al actualizar archivos adjuntos:', error);

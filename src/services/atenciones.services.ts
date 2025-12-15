@@ -92,7 +92,9 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
   const archivosPromise = db
     .select()
     .from(archivosAdjuntos)
-    .where(eq(archivosAdjuntos.atencionId, atencionId));
+    .where(eq(archivosAdjuntos.atencionId, atencionId))
+    .orderBy(desc(archivosAdjuntos.created_at))
+    .limit(8);
 
   // Busca los últimos signos vitales registrados para la atención.
   const signosVitalesPromise = db

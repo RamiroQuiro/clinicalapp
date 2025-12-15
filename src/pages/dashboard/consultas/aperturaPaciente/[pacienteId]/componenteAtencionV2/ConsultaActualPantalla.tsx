@@ -36,7 +36,7 @@ const preferenciaPerdilProfesional = {
 };
 export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) => {
   const $consulta = useStore(consultaStore);
-  console.log('datos de la consulta, para ver las perferencias!', data.preferenciaPerfilUser);
+  // console.log('datos del contesto $consulta', $consulta);
   const [signosVitalesHistorial, setSignosVitalesHistorial] = useState([]);
   const [currentMedicamento, setCurrentMedicamento] = useState({
     dosis: '',

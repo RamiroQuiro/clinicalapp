@@ -10,14 +10,14 @@ const showToast = (text: string, opciones: OpcionesToast = {}) => {
   let defaultOpciones = {
     time: 2500,
     color: false,
-    background: 'bg-green-600',
+    background: 'bg-[#1B8755]',
     size: false,
     status: 200,
   };
   const toastSuccess = {
     time: 2500,
     color: false,
-    background: 'bg-green-600',
+    background: 'bg-[#1B8755]',
     size: false,
     status: 200,
   }
@@ -25,7 +25,7 @@ const showToast = (text: string, opciones: OpcionesToast = {}) => {
   const toastError = {
     time: 2500,
     color: false,
-    background: 'bg-red-600',
+    background: 'bg-[#D92638]',
     size: false,
     status: 500,
   };

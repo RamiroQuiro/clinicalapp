@@ -6,6 +6,7 @@ import FormularioArchivosAdjuntos from '@/components/organismo/FormularioArchivo
 import { addArchivo, removeArchivo } from '@/context/consultaAtencion.store';
 import type { Documentos } from '@/types';
 import formatDate from '@/utils/formatDate';
+import { showToast } from '@/utils/toast/toastShow';
 import { Download, Edit3, Eye, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,7 +24,7 @@ export default function SectionArchivosAtencion({ $consulta }: { $consulta: Cons
     setDoc(doc);
     setIsModalOpen(true);
   };
-  const handleDelete = archivoId => {
+  const handleDelete = async (archivoId: string) => {
     // TODO: Implementar llamada a la API para borrar el archivo del servidor
     if (
       window.confirm(
@@ -31,8 +32,20 @@ export default function SectionArchivosAtencion({ $consulta }: { $consulta: Cons
       )
     ) {
       removeArchivo(archivoId);
-      // Aquí iría la llamada a la API, por ejemplo:
-      // fetch(`/api/atencion/documentos/${archivoId}`, { method: 'DELETE' });
+
+      const res = await fetch(`/api/documentos/serve/${archivoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (res.ok) {
+        showToast('archivo eliminado');
+      }
+      if (!res.ok) {
+        showToast('error al eliminar un archivo');
+      }
     }
   };
   const getTypeIcon = (tipo: Documentos['tipo']) => {
@@ -84,7 +97,7 @@ export default function SectionArchivosAtencion({ $consulta }: { $consulta: Cons
             </tr>
           </thead>
           <tbody>
-            {$consulta.archivosAdjuntos?.slice(0, 5)?.map((doc, index) => {
+            {$consulta.archivosAdjuntos?.slice(0, 8)?.map((doc, index) => {
               const dateFormat = formatDate(doc.created_at);
               return (
                 <tr className="border-b last:border-0">
@@ -136,15 +149,13 @@ export default function SectionArchivosAtencion({ $consulta }: { $consulta: Cons
           id="modal-archivos"
           onClose={() => setIsModalOpen(false)}
         >
-          <div className="p-1 w-[80vw] md:w-[60vw] lg:w-[40vw]">
-            <FormularioArchivosAdjuntos
-              pacienteId={$consulta.pacienteId} // Necesario si la API lo requiere
-              atencionId={$consulta.id} // ID de la consulta actual
-              onUploadComplete={handleUploadComplete} // Callback para actualizar el estado
-              isConsulta={true} // Flag para diferenciar el contexto
-              doc={doc}
-            />
-          </div>
+          <FormularioArchivosAdjuntos
+            pacienteId={$consulta.pacienteId}
+            atencionId={$consulta.id}
+            onUploadComplete={handleUploadComplete}
+            isConsulta={true}
+            doc={doc}
+          />
         </ModalReact>
       )}
     </Section>
