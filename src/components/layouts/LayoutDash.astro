@@ -1,4 +1,5 @@
 ---
+import DownloadLoader from '@/utils/loader/DownloadLoader.astro';
 import Loader from '../../utils/loader/Loader.astro';
 import NavDash from '../organismo/NavDash.astro';
 import SidebarV3 from '../organismo/SidebarV3.astro';
@@ -26,7 +27,7 @@ const { user } = Astro.locals;
     >
       <SidebarV3 />
       <Loader />
-
+      <DownloadLoader />
       <!-- Contenido Principal -->
       <main class="w-full min-w-0 transition-all duration-300 ease-in-out h-fit">
         <NavDash title={title} />

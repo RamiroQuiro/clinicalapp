@@ -15,6 +15,7 @@ export const ordenesEstudio = sqliteTable('ordenesEstudio', {
   userMedicoId: text('userMedicoId')
     .notNull()
     .references(() => users.id),
+  estado: text('estado', { enum: ['pendiente', 'realizado', 'cancelado', 'eliminado'] }).notNull().default('pendiente'),
   created_at: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),

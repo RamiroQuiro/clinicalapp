@@ -2,8 +2,7 @@ import type { APIRoute } from 'astro';
 
 import db from '@/db';
 import { ordenesEstudio } from '@/db/schema/ordenesEstudio';
-import { createResponse } from '@/utils/responseAPI';
-import { nanoid } from 'nanoid';
+import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 
 // POST /api/atenciones/[atencionId]/ordenes
 export const POST: APIRoute = async ({ params, request, locals }) => {
@@ -33,8 +32,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   // 4. Insertar en la base de datos
   // revisar por estudios esta en formato json
   try {
-    const newOrdenId = nanoid();
-    const nuevaOrden = await db
+    const newOrdenId = nanoIDNormalizador(`oE-${atencionId.slice(-5)}`, 5);
+    const [nuevaOrden] = await db
       .insert(ordenesEstudio)
       .values({
         id: newOrdenId,

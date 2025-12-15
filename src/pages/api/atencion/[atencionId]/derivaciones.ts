@@ -3,8 +3,7 @@ import type { APIRoute } from 'astro';
 import db from '@/db';
 import { derivaciones } from '@/db/schema';
 
-import { createResponse } from '@/utils/responseAPI';
-import { nanoid } from 'nanoid';
+import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 
 // POST /api/atenciones/[atencionId]/derivaciones
 export const POST: APIRoute = async ({ params, request, locals }) => {
@@ -49,7 +48,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     const [derivacion] = await db
       .insert(derivaciones)
       .values({
-        id: nanoid(),
+        id: nanoIDNormalizador(`deri_${atencionId.slice(-5)}`, 5),
         atencionId: atencionId,
         pacienteId: pacienteId,
         userIdOrigen: user.id,

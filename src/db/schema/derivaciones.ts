@@ -18,7 +18,7 @@ export const derivaciones = sqliteTable('derivaciones', {
   nombreProfesionalExterno: text('nombreProfesionalExterno'),
   especialidadDestino: text('especialidadDestino'),
   motivoDerivacion: text('motivoDerivacion'),
-  estado: text('estado').default('pendiente'), // pendiente, aceptada, rechazada, completada
+  estado: text('estado', { enum: ['pendiente', 'aceptada', 'rechazada', 'completada', 'eliminado'] }).default('pendiente'), // pendiente, aceptada, rechazada, completada
   fecha: integer('fecha', { mode: 'timestamp' })
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),

@@ -1,0 +1,199 @@
+---
+import { Badge } from '@/components/atomos/Badge';
+import Button from '@/components/atomos/Button';
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import { Progress } from '@/components/atomos/Progress';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/organismo/Card';
+import db from '@/db';
+import { usersCentrosMedicos } from '@/db/schema';
+import { subscriptionService } from '@/services/suscripciones/SubscriptionService';
+import { and, count, eq, or } from 'drizzle-orm';
+import { ArrowUpCircle, CheckCircle2, Users, Zap } from 'lucide-react';
+
+const { user } = Astro.locals;
+if (!user) return Astro.redirect('/login');
+
+const [relacion] = await db
+  .select()
+  .from(usersCentrosMedicos)
+  .where(
+    and(
+      eq(usersCentrosMedicos.userId, user.id),
+      or(
+        eq(usersCentrosMedicos.rolEnCentro, 'admin'),
+        eq(usersCentrosMedicos.rolEnCentro, 'adminLocal')
+      )
+    )
+  )
+  .limit(1);
+
+if (!relacion) return Astro.redirect('/dashboard');
+
+const centroId = relacion.centroMedicoId;
+const planData = await subscriptionService.getPlanActual(centroId);
+
+if (!planData) {
+  // Manejo de error si no hay plan (no debería pasar con el seed)
+  return Astro.redirect('/dashboard');
+}
+
+// 3. Obtener Métricas de Uso Real
+const [profesionalesUsage] = await db
+  .select({ value: count() })
+  .from(usersCentrosMedicos)
+  .where(
+    and(
+      eq(usersCentrosMedicos.centroMedicoId, centroId),
+      eq(usersCentrosMedicos.rolEnCentro, 'profesional')
+    )
+  );
+
+const [recepcionistasUsage] = await db
+  .select({ value: count() })
+  .from(usersCentrosMedicos)
+  .where(
+    and(
+      eq(usersCentrosMedicos.centroMedicoId, centroId),
+      eq(usersCentrosMedicos.rolEnCentro, 'recepcion')
+    )
+  );
+
+// 4. Procesar Datos para la Vista
+const limits = planData.limites as any;
+const maxProfesionales =
+  limits.maxProfesionales === -1 || limits.maxProfesionales === 'unlimited'
+    ? 999
+    : limits.maxProfesionales;
+const maxSecretarias =
+  limits.maxSecretarias === -1 || limits.maxSecretarias === 'unlimited'
+    ? 999
+    : limits.maxSecretarias;
+
+const profPercentage = Math.min((profesionalesUsage.value / maxProfesionales) * 100, 100);
+const secPercentage = Math.min((recepcionistasUsage.value / maxSecretarias) * 100, 100);
+
+const iaEnabled = await subscriptionService.hasFeature(centroId, 'iaEnabled');
+---
+
+<LayoutDash title="Mi Suscripción">
+  <MainDashboard title="Mi Suscripción" h1="Detalles de tu Plan">
+    <div class="grid gap-6 md:grid-cols-2">
+      {/* Tarjeta Principal del Plan */}
+      <Card className="md:col-span-2 border-indigo-100 shadow-md">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle className="text-2xl text-indigo-700">Plan {planData.nombre}</CardTitle>
+            <CardDescription>
+              {planData.descripcion || 'Gestiona tu centro con las mejores herramientas.'}
+            </CardDescription>
+          </div>
+          <Badge
+            variant={planData.activo ? 'default' : 'destructive'}
+            className="text-sm px-3 py-1"
+          >
+            {planData.activo ? 'Activo' : 'Inactivo'}
+          </Badge>
+        </CardHeader>
+        <CardContent>
+          <div class="flex flex-col md:flex-row gap-8 mt-4">
+            <div class="flex-1">
+              <div class="test-3xl font-bold text-gray-900 mb-2">
+                ${planData.precioMensual?.toLocaleString('es-AR')}
+                <span class="text-sm font-normal text-muted-foreground">/mes</span>
+              </div>
+              <p class="text-sm text-gray-500 mb-6">Próxima renovación autoomática.</p>
+
+              <Button variant="indigo">
+                <ArrowUpCircle className="mr-2 h-4 w-4" />
+                Mejorar mi Plan
+              </Button>
+            </div>
+
+            <div class="flex-1 border-l pl-0 md:pl-8 border-gray-100">
+              <h4 class="font-semibold mb-4 flex items-center gap-2">
+                <Zap className="h-4 w-4 text-amber-500" />
+                Funcionalidades Incluidas
+              </h4>
+              <ul class="space-y-2 text-sm">
+                <li class="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span
+                    >Inteligencia Artificial: <strong
+                      >{iaEnabled ? 'Activada' : 'No incluida'}</strong
+                    ></span
+                  >
+                </li>
+                <li class="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>Soporte: <strong>{limits.soporte || 'Estándar'}</strong></span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>Almacenamiento: <strong>{limits.storageGB || 1} GB</strong></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Métricas de Uso */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Uso de Profesionales
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="font-medium">{profesionalesUsage.value} activos</span>
+              <span class="text-muted-foreground"
+                >de {maxProfesionales === 999 ? 'Ilimitados' : maxProfesionales}</span
+              >
+            </div>
+            <Progress value={profPercentage} className="h-2" />
+            <p class="text-xs text-muted-foreground pt-2">
+              {
+                profPercentage >= 100
+                  ? 'Has alcanzado el límite. Necesitas mejorar tu plan para agregar más.'
+                  : 'Tienes espacio para agregar más profesionales.'
+              }
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Uso de Secretarias/Recepción
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="font-medium">{recepcionistasUsage.value} activos</span>
+              <span class="text-muted-foreground"
+                >de {maxSecretarias === 999 ? 'Ilimitados' : maxSecretarias}</span
+              >
+            </div>
+            <Progress value={secPercentage} className="h-2" />
+            <p class="text-xs text-muted-foreground pt-2">
+              Personal administrativo para gestión de turnos y pacientes.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </MainDashboard>
+</LayoutDash>

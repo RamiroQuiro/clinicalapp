@@ -1,12 +1,14 @@
 import db from '@/db';
 import { preferenciaPerfilUser, recepcionistaProfesional, users, usersCentrosMedicos } from '@/db/schema';
 import { lucia } from '@/lib/auth';
+import { subscriptionService } from '@/services/suscripciones/SubscriptionService';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import bcrypt from 'bcryptjs';
-import { and, eq, or } from 'drizzle-orm';
+import { and, count, eq, or } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ request, cookies, locals }) => {
+    // ... existing GET implementation ...
     try {
         const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
         if (!sessionId) {
@@ -32,6 +34,7 @@ export const GET: APIRoute = async ({ request, cookies, locals }) => {
         }
 
         if (search) {
+            // ... existing search logic ...
             condiciones.push(
                 or(
                     like(users.nombre, `%${search}%`),
@@ -41,12 +44,10 @@ export const GET: APIRoute = async ({ request, cookies, locals }) => {
             );
         }
 
-        // Si es admin local, filtrar por su centro médico (opcional, pero recomendado)
-        // Por ahora listamos todos segun rol y busqueda para simplificar el select
-
         const listaUsuarios = await db
             .select({
                 id: users.id,
+                // ... fields
                 nombre: users.nombre,
                 apellido: users.apellido,
                 documento: users.documento,
@@ -91,6 +92,30 @@ export const POST: APIRoute = async ({ request, locals }) => {
         return createResponse(400, 'DNI, email, nombre, apellido y rol son obligatorios.', true);
     }
 
+    // --- VERIFICACIÓN DE LÍMITES DE SUSCRIPCIÓN ---
+    let resourceKey = '';
+    if (rol === 'profesional') resourceKey = 'maxProfesionales';
+    else if (rol === 'recepcion') resourceKey = 'maxSecretarias';
+
+    if (resourceKey) {
+        // Contamos cuántos usuarios de este rol ya existen en el centro
+        const [usage] = await db
+            .select({ count: count() })
+            .from(usersCentrosMedicos)
+            .where(and(
+                eq(usersCentrosMedicos.centroMedicoId, centroMedicoId),
+                eq(usersCentrosMedicos.rolEnCentro, rol)
+            ));
+
+        const currentCount = usage?.count || 0;
+        const check = await subscriptionService.checkLimit(centroMedicoId, resourceKey, currentCount);
+
+        if (!check.allowed) {
+            console.log(`❌ Límite excedido para ${resourceKey}: Actual ${currentCount} / Límite ${check.limit}`);
+            return createResponse(403, `Has alcanzado el límite de ${rol}s (${check.limit}) permitido por tu plan actual. Por favor, actualiza tu suscripción para agregar más.`, true);
+        }
+    }
+
     try {
         console.log(`2. Buscando usuario existente por DNI: ${dni}`);
         const [existingUserByDni] = await db.select().from(users).where(eq(users.dni, dni));
@@ -108,6 +133,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
             console.log('  -> El usuario existe pero no en este centro. Creando nueva relación...');
             await db.insert(usersCentrosMedicos).values({
+                id: nanoIDNormalizador('user_cm'),
                 userId: existingUserByDni.id,
                 centroMedicoId: centroMedicoId,
                 nombreCentroMedico: centroMedicoId, // TODO: Obtener el nombre real del centro
@@ -149,13 +175,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
                     email,
                     dni,
                     mp,
-                    avatar,
+                    srcPhoto: avatar,
                     rol,
                     password: hashedPassword,
                 }).returning();
 
                 console.log('    -> Creando relación en `usersCentrosMedicos`');
                 await tx.insert(usersCentrosMedicos).values({
+                    id: nanoIDNormalizador('user_cm'),
                     userId: newUserId,
                     centroMedicoId: centroMedicoId,
                     nombreCentroMedico: centroMedicoId,
@@ -180,17 +207,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
                     console.log(`    -> Creando ${profesionales.length} relaciones en \`recepcionistaProfesional\``);
                     const recepcionistaProfesionalInserts = profesionales.map((profesionalId: string) => {
                         return tx.insert(recepcionistaProfesional).values({
-                            id: nanoIDNormalizador('rP'),
-                            centroMedicoId: centroMedicoId,
-                            nombreCentroMedico: centroMedicoId, // TODO: Obtener nombre real
-                            rolEnCentro: rol,
-                            recepcionistaId: newUserId,
-                            profesionalId: profesionalId,
-                            emailUser: email,
+                            return tx.insert(recepcionistaProfesional).values({
+                                centroMedicoId: centroMedicoId,
+                                nombreCentroMedico: centroMedicoId, // TODO: Obtener nombre real
+                                rolEnCentro: rol,
+                                recepcionistaId: newUserId,
+                                profesionalId: profesionalId,
+                                emailUser: email,
+                            });
                         });
-                    });
-                    await Promise.all(recepcionistaProfesionalInserts);
-                }
+                        await Promise.all(recepcionistaProfesionalInserts);
+                    }
             });
             console.log('5. Transacción completada. Usuario nuevo creado con éxito.');
             return createResponse(201, 'Usuario nuevo creado y añadido al centro con éxito.', false);

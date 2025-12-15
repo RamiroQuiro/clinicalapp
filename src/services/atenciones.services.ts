@@ -15,7 +15,7 @@ import {
 import { antecedentes } from '@/db/schema/atecedentes';
 import { ordenesEstudio } from '@/db/schema/ordenesEstudio';
 import { preferenciaPerfilUser } from '@/db/schema/preferenciaPerfilUser';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, not } from 'drizzle-orm';
 
 export async function getDatosNuevaAtencion(pacienteId: string, atencionId: string) {
   // 1. Buscamos la atención para verificar su estado. Esta es la única consulta inicial.
@@ -119,12 +119,14 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
   const estudiosSolicitadosPromise = db
     .select()
     .from(ordenesEstudio)
-    .where(and(eq(ordenesEstudio.atencionId, atencionId), eq(ordenesEstudio.deleted_at, null)));
+    .where(and(eq(ordenesEstudio.atencionId, atencionId), not(eq(ordenesEstudio.estado, 'eliminado'))))
+    .orderBy(desc(ordenesEstudio.created_at));
 
   const derivacionesPromise = db
     .select()
     .from(derivaciones)
-    .where(and(eq(derivaciones.atencionId, atencionId), eq(derivaciones.deleted_at, null)));
+    .where(and(eq(derivaciones.atencionId, atencionId), not(eq(derivaciones.estado, 'eliminado'))))
+    .orderBy(desc(derivaciones.created_at));
 
   // Busca las enmiendas de la atención.
   const enmiendasPromise = db

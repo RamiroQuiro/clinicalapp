@@ -29,6 +29,7 @@ interface InfoCardProps {
   };
   bodyText?: string;
   onEdit?: () => void;
+  iconOnEdit?: React.ReactNode;
   onDelete?: () => void;
   icon?: React.ReactNode;
   onClick?: (atencion: Atencion) => void; // New optional onClick prop
@@ -43,6 +44,7 @@ export const InfoCard: React.FC<InfoCardProps> = ({
   status,
   bodyText,
   onEdit,
+  iconOnEdit,
   onDelete,
   icon,
   onClick,
@@ -82,7 +84,7 @@ export const InfoCard: React.FC<InfoCardProps> = ({
       {/* Edit Button (Optional) */}
       <div className="flex items-center gap-2 flex-col">
         <BotonIndigo onClick={onEdit} className="p-2" aria-label="Editar">
-          <Edit3 size={16} />
+          {iconOnEdit ? iconOnEdit : <Edit3 size={16} />}
         </BotonIndigo>
         <BotonIndigo onClick={onDelete} className="p-2" aria-label="Eliminar">
           <Trash2 size={16} />

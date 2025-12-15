@@ -1,8 +1,10 @@
 import Button from '@/components/atomos/Button';
-import BotonIndigo from '@/components/moleculas/BotonIndigo';
+import { InfoCard } from '@/components/moleculas';
 import ModalReact from '@/components/moleculas/ModalReact';
+import { formatDateToYYYYMMDD } from '@/utils/agendaTimeUtils';
+import { downloadLoader } from '@/utils/loader/showDownloadLoader';
 import { showToast } from '@/utils/toast/toastShow';
-import { Eye, File, Trash2 } from 'lucide-react';
+import { Download, File } from 'lucide-react';
 import { useState } from 'react';
 import { FormularioDerivacion } from './FormularioDerivacion';
 import { FormularioOrdenEstudio } from './FormularioOrdenEstudio';
@@ -106,6 +108,60 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
     handleCloseModal();
   };
 
+  const handleDescargarDerivacion = async (derivacion: any) => {
+    downloadLoader(true);
+    try {
+      const url = `/api/derivaciones/${derivacion.id}/pdf`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Error al descargar la derivación: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `derivacion_${derivacion.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+      showToast('Derivación descargada exitosamente', { background: 'bg-green-500' });
+      downloadLoader(false);
+    } catch (error: any) {
+      showToast(`Error: ${error.message}`, { background: 'bg-red-500' });
+      downloadLoader(false);
+    }
+  };
+
+  const handleDescargarEstudio = async (estudio: any) => {
+    downloadLoader(true);
+    try {
+      const url = `/api/ordenes-estudio/${estudio.id}/pdf`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Error al descargar la orden de estudio: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `estudio_${estudio.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+      showToast('Orden de estudio descargada exitosamente', { background: 'bg-green-500' });
+      downloadLoader(false);
+    } catch (error: any) {
+      showToast(`Error: ${error.message}`, { background: 'bg-red-500' });
+      downloadLoader(false);
+    }
+  };
+
   return (
     <div className="p-4 bg-white rounded-lg shadow">
       <h2 className="text-xl font-semibold mb-4">Gestión de Solicitudes</h2>
@@ -123,35 +179,19 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
           <h3 className="font-semibold text-lg mb-2">Órdenes de Estudio Creadas</h3>
           <div className="border rounded-lg p-4 min-h-[100px] bg-white space-y-2">
             {solicitudes.estudiosSolicitados?.length > 0 ? (
-              solicitudes.estudiosSolicitados.map((estudio: any) => (
-                <div className="flex items-center gap-4 p-2 border hover:border-primary-100/50 duration-300 border-gray-200/50 rounded-md bg-primary-bg-componentes">
-                  <div className=" rounded-full">
-                    <File className="w-6 h-6 stroke-primary-texto" />
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <p className="font-bold">{estudio.diagnosticoPresuntivo}</p>
-
-                    <p className="text-sm">{estudio.estudiosSolicitados.join(', ')}</p>
-                  </div>
-                  <a
-                    href={`/api/ordenes-estudio/${estudio.id}/pdf`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Imprimir/Descargar PDF"
-                  >
-                    <BotonIndigo className="p-2 rounded-full">
-                      <Eye className="w-6 h-6 stroke-indigo-600" />
-                    </BotonIndigo>
-                  </a>
-                  <button
-                    onClick={() => setItemParaBorrar({ id: estudio.id, type: 'orden' })}
-                    title="Cancelar Orden"
-                    className="p-2 rounded-full hover:bg-red-100 transition-colors"
-                  >
-                    <Trash2 className="w-6 h-6 stroke-red-600" />
-                  </button>
-                </div>
-              ))
+              solicitudes.estudiosSolicitados.map((estudio: any) => {
+                console.log(estudio);
+                return (
+                  <InfoCard
+                    key={estudio.id}
+                    subtitle={estudio.diagnosticoPresuntivo}
+                    title={estudio.estudiosSolicitados?.join(', ')}
+                    onDelete={() => setItemParaBorrar({ id: estudio.id, type: 'orden' })}
+                    onEdit={() => handleDescargarEstudio(estudio)}
+                    iconOnEdit={<Download className="w-5 h-5" />}
+                  />
+                );
+              })
             ) : (
               <p className="text-gray-500 text-sm">
                 Aún no se han creado órdenes de estudio en esta consulta.
@@ -163,37 +203,22 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
           <h3 className="font-semibold text-lg mb-2">Derivaciones Creadas</h3>
           <div className="border rounded-lg p-4 min-h-[100px] bg-white space-y-2">
             {solicitudes.derivaciones?.length > 0 ? (
-              solicitudes.derivaciones.map((derivacion: any) => (
-                <div
-                  key={derivacion.id}
-                  className="flex items-center gap-4 p-2 border hover:border-primary-100/50 duration-300 border-gray-200/50 rounded-md bg-primary-bg-componentes"
-                >
-                  <div className=" rounded-full">
-                    <File className="w-6 h-6 stroke-primary-texto" />
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <p className="font-bold">Especialidad: {derivacion.especialidadDestino}</p>
-                    <p className="text-sm">Motivo: {derivacion.motivoDerivacion}</p>
-                  </div>
-                  <a
-                    href={`/api/derivaciones/${derivacion.id}/pdf`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Imprimir/Descargar PDF"
-                  >
-                    <BotonIndigo className="p-2 rounded-full">
-                      <Eye className="w-6 h-6 stroke-indigo-600" />
-                    </BotonIndigo>
-                  </a>
-                  <button
-                    onClick={() => setItemParaBorrar({ id: derivacion.id, type: 'derivacion' })}
-                    title="Cancelar DerivaciÃ³n"
-                    className="p-2 rounded-full hover:bg-red-100 transition-colors"
-                  >
-                    <Trash2 className="w-6 h-6 stroke-red-600" />
-                  </button>
-                </div>
-              ))
+              solicitudes.derivaciones.map((derivacion: any) => {
+                const formateoFecha = formatDateToYYYYMMDD(new Date(derivacion.fecha));
+                return (
+                  <InfoCard
+                    key={derivacion.id}
+                    subtitle={`Dr./Dra. ${derivacion.nombreProfesionalExterno}`}
+                    title={`Especialidad: ${derivacion.especialidadDestino}`}
+                    bodyText={`Motivo: ${derivacion.motivoDerivacion}`}
+                    date={formateoFecha}
+                    icon={<File />}
+                    onEdit={() => handleDescargarDerivacion(derivacion)}
+                    iconOnEdit={<Download className="w-5 h-5" />}
+                    onDelete={() => setItemParaBorrar({ id: derivacion.id, type: 'derivacion' })}
+                  />
+                );
+              })
             ) : (
               <p className="text-gray-500 text-sm">
                 Aún no se han creado derivaciones en esta consulta.
