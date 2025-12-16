@@ -14,7 +14,7 @@ export default function ModalReact({ onClose, children, className, title, id, ic
   return (
     <div
       style={{ margin: 0, position: 'fixed' }}
-      className="fixed top-0 left-0 mt-0 w-full h-screen z-[999]  bg-black bg-opacity-70 flex items-center  justify-center backdrop-blur-sm"
+      className="top-0 left-0 z-[999] fixed flex justify-center items-center bg-black bg-opacity-70 backdrop-blur-sm mt-0 w-full h-screen"
       onClick={() => onClose(false)}
     >
       <div
@@ -22,20 +22,20 @@ export default function ModalReact({ onClose, children, className, title, id, ic
         onClick={e => e.stopPropagation()}
       >
         {/* Header Fijo */}
-        <div className="flex justify-between items-center p-4 border-b bg-primary-bg-componentes flex-shrink-0">
+        <div className="flex flex-shrink-0 justify-between items-center bg-primary-bg-componentes p-4 border-b">
           <div className="flex items-center gap-2">
             {icon}
-            <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
+            <h3 className="font-semibold text-gray-800 text-xl">{title}</h3>
           </div>
           <button
             id={`modal-close-${id}`}
-            className="text-gray-500 hover:text-primary-100 transition-colors rounded-full p-1"
+            className="p-1 rounded-full text-gray-500 hover:text-primary-100 transition-colors"
             onClick={() => onClose(false)}
           >
             <CircleX size={24} />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-grow max-h-[87vh]">{children}</div>
+        <div className="flex-grow p-6 max-h-[87vh] overflow-y-auto text-primary-texto">{children}</div>
       </div>
     </div>
   );

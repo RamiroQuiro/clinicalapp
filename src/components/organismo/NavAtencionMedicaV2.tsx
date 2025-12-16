@@ -58,6 +58,27 @@ export default function NavAtencionMedicaV2({
   turnoId,
 }: Props) {
   const $consulta = useStore(consultaStore);
+  const [waOpen, setWaOpen] = useState(false);
+  const [waUsarFicha, setWaUsarFicha] = useState<'ficha' | 'otro'>('ficha');
+  const [waCelular, setWaCelular] = useState('');
+  const [waMensaje, setWaMensaje] = useState('');
+  const [waSlot, setWaSlot] = useState<any>(null);
+  const onlyDigits = (s: string) => (s || '').replace(/\D+/g, '');
+
+  function formateoNumeroWhatsapp(raw: string, country: 'AR' = 'AR') {
+    const digits = onlyDigits(raw);
+    if (!digits) return '';
+    if (country === 'AR') {
+      let n = digits.replace(/^0+/, '').replace(/^15/, '');
+      if (!n.startsWith('54')) n = '54' + n;
+      return n;
+    }
+    return digits;
+  }
+
+  function buildWhatsAppLink(phone: string, message: string) {
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  }
 
   useEffect(() => {
     if (preferenciasPerfilUser) {
@@ -101,7 +122,18 @@ export default function NavAtencionMedicaV2({
       label: 'Enviar por WhatsApp',
       icon: <MessageSquare className="w-4 h-4" />,
       onClick: () => {
-        console.log('enviando por whatsapp...');
+        const nombre = [pacienteData?.nombre, pacienteData?.apellido].filter(Boolean).join(' ') || 'Paciente';
+        const urlPDF = `/api/pacientes/${pacienteId}/atenciones/${atencionId}/reporteAten`;
+        const msg = `Hola ${nombre} 👋
+
+Te compartimos el enlace de tu atención médica:
+${location.origin}${urlPDF}
+
+Cualquier duda, respondé este mensaje.`;
+        setWaCelular(pacienteData?.celular || '');
+        setWaMensaje(msg);
+        setWaUsarFicha(pacienteData?.celular ? 'ficha' : 'otro');
+        setWaOpen(true);
       },
       title: 'Enviar PDF de la atención completa por whatsapp',
     },
@@ -216,67 +248,67 @@ export default function NavAtencionMedicaV2({
       className={` p-4 duration-300 ${isFinalized ? 'bg-gradient-to-r text-white from-primary-100 to-primary-150 shadow-md rounded-b-lg sticky top-0 z-10 border-b border-x p-2 border-slate-700' : 'bg-white/90 shadow-sm rounded-b-lg sticky top-0 z-10 border-b border-x p-2 border-gray-200'}`}
     >
       {isAnimating && (
-        <div className="fixed w-full h-full inset-0 bg-slate-100/50 backdrop-blur-sm flex items-center justify-center z-50 rounded-b-lg">
+        <div className="z-50 fixed inset-0 flex justify-center items-center bg-slate-100/50 backdrop-blur-sm rounded-b-lg w-full h-full">
           <div className="text-center">
-            <Lock className="w-24 h-24 text-indigo-600 inline-block animate-bounce" />
-            <p className="text-lg font-semibold text-indigo-700 mt-2">Consulta Sellada</p>
+            <Lock className="inline-block w-24 h-24 text-indigo-600 animate-bounce" />
+            <p className="mt-2 font-semibold text-indigo-700 text-lg">Consulta Sellada</p>
           </div>
         </div>
       )}
 
-      <div className="flex md:items-center flex-col md:flex-row justify-between gap-2 w-full">
+      <div className="flex md:flex-row flex-col justify-between md:items-center gap-2 w-full">
         <div className="flex items-center gap-4">
           <img
             src={fotoUrl || avatarDefault}
             alt="Foto de perfil"
-            className="h-16 w-16 rounded-full object-cover hidden md:block"
+            className="hidden md:block rounded-full w-16 h-16 object-cover"
           />
           <div>
-            <h1 className="text-2xl capitalize font-semibold ">
+            <h1 className="font-semibold text-2xl capitalize">
               {nombre} {apellido}
             </h1>
-            <p className="text-lg ">DNI: {dni}</p>
+            <p className="text-lg">DNI: {dni}</p>
           </div>
         </div>
         {isFinalized ? (
-          <div className="flex-grow flex items-center justify-center">
-            <div className="px-4 py-1 bg-slate-700/50 text-sky-300 rounded-full text-sm font-semibold border border-sky-400/30">
+          <div className="flex flex-grow justify-center items-center">
+            <div className="bg-slate-700/50 px-4 py-1 border border-sky-400/30 rounded-full font-semibold text-sky-300 text-sm">
               CONSULTA FINALIZADA
             </div>
           </div>
         ) : (
-          <div className="hidden md:flex border- px-3 w-fit flex-1 md:items-center text-sm h-full font- justify-evenly flex-wrap gap-4">
-            <div className="flex items-start capitalize text-sm flex-col">
+          <div className="hidden md:flex flex-wrap flex-1 justify-evenly md:items-center gap-4 px-3 border- w-fit h-full font- text-sm">
+            <div className="flex flex-col items-start text-sm capitalize">
               <p>Sexo:</p>
               <span className="font-normal text-primary-textoTitle text-base">
                 {pacienteData.sexo}
               </span>
             </div>
-            <div className="flex items-start capitalize text-sm flex-col">
+            <div className="flex flex-col items-start text-sm capitalize">
               <p>Celular:</p>
               <span className="font-normal text-primary-textoTitle text-base">
                 {pacienteData.celular}
               </span>
             </div>
-            <div className="flex items-start capitalize text-sm flex-col">
+            <div className="flex flex-col items-start text-sm capitalize">
               <p>Email:</p>
               <span className="font-normal text-primary-textoTitle text-base">
                 {pacienteData.email}
               </span>
             </div>
-            <div className="flex items-start capitalize text-sm flex-col">
+            <div className="flex flex-col items-start text-sm capitalize">
               <p>Obra Social:</p>
               <span className="font-normal text-primary-textoTitle text-base">
                 {pacienteData.obraSocial}
               </span>
             </div>
-            <div className="flex items-start capitalize text-sm flex-col">
+            <div className="flex flex-col items-start text-sm capitalize">
               <p>Fecha de Nacimiento:</p>
               <span className="font-normal text-primary-textoTitle text-base">
                 {pacienteData.fNacimiento?.toLocaleDateString()}
               </span>
             </div>
-            <div className="flex items-start capitalize text-sm flex-col">
+            <div className="flex flex-col items-start text-sm capitalize">
               <p>Domicilio:</p>
               <span className="font-normal text-primary-textoTitle text-base">
                 {pacienteData.domicilio}
@@ -287,10 +319,10 @@ export default function NavAtencionMedicaV2({
 
         {/* BOTONERA */}
         {isFinalized ? (
-          <div className="flex items-center  flex-shrink-0">
+          <div className="flex flex-shrink-0 items-center">
             <a
               href={`/dashboard/pacientes/${pacienteId}`}
-              className="text-sm text-primary-textoTitle "
+              className="text-primary-textoTitle text-sm"
               title="Ver ficha completa del paciente"
             >
               <Button variant="blanco" className="rounded-r-none">
@@ -302,7 +334,7 @@ export default function NavAtencionMedicaV2({
             <Button
               id="crearEnmienda"
               variant="blanco"
-              className="rounded-none border-x text-primary-textoTitle"
+              className="border-x rounded-none text-primary-textoTitle"
               onClick={() => setIsEnmiendaModalOpen(true)}
               title="Crear Enmienda"
             >
@@ -313,9 +345,9 @@ export default function NavAtencionMedicaV2({
             <MenuDropbox items={menuItems} />
           </div>
         ) : (
-          <div className="flex md:flex-col flex-row w-full md:w-fit items-center gap-2">
-            <a href={`/dashboard/pacientes/${pacienteId}`} className="text-sm w-full">
-              <Button variant="primary" className="w-full ">
+          <div className="flex flex-row md:flex-col items-center gap-2 w-full md:w-fit">
+            <a href={`/dashboard/pacientes/${pacienteId}`} className="w-full text-sm">
+              <Button variant="primary" className="w-full">
                 <p className="inline-flex items-center gap-2">
                   <Table2 className="w-4 h-4" /> Ficha Paciente
                 </p>
@@ -345,10 +377,10 @@ export default function NavAtencionMedicaV2({
           id="confirmarFinalizacionModal"
           className="w-[60vw]"
         >
-          <div className="p-4 flex flex-col items-center text-center">
-            <TriangleAlert className="w-16 h-16 text-yellow-400 mb-4" />
-            <h2 className="text-lg font-semibold mb-2">Atención</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="flex flex-col items-center p-4 text-center">
+            <TriangleAlert className="mb-4 w-16 h-16 text-yellow-400" />
+            <h2 className="mb-2 font-semibold text-lg">Atención</h2>
+            <p className="mb-6 text-gray-600">
               Al finalizar la consulta, el registro se sellará y no podrá ser modificado
               directamente. Cualquier cambio futuro deberá realizarse mediante una enmienda.
             </p>
@@ -363,7 +395,7 @@ export default function NavAtencionMedicaV2({
       )}
       {isEnmiendaModalOpen && (
         <ModalReact
-          icon={<FileEdit className="h-6 w-6 text-primary-100" />}
+          icon={<FileEdit className="w-6 h-6 text-primary-100" />}
           title={'Formulario de Enmienda Médica'}
           onClose={() => setIsEnmiendaModalOpen(false)}
           id="enmiendaModal"
@@ -377,7 +409,7 @@ export default function NavAtencionMedicaV2({
       )}
       {isCertificadoModalOpen && (
         <ModalReact
-          icon={<FileText className="h-6 w-6 text-primary-100" />}
+          icon={<FileText className="w-6 h-6 text-primary-100" />}
           title={'Generar Certificado Médico'}
           onClose={() => setIsCertificadoModalOpen(false)}
           id="certificadoModal"
@@ -388,6 +420,78 @@ export default function NavAtencionMedicaV2({
           />
         </ModalReact>
       )}
+
+      {
+        waOpen &&
+        <ModalReact
+          title="Enviar WhatsApp"
+          onClose={() => setWaOpen(false)}
+        >
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-gray-600 text-sm">Número de teléfono</p>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value={waUsarFicha === 'ficha' ? (pacienteData?.celular || '') : waCelular}
+                    onChange={() => setWaUsarFicha('ficha')}
+                    disabled={!pacienteData?.celular}
+                  />
+                  <span>
+                    Usar ficha {pacienteData?.celular ? `(${pacienteData.celular})` : '(no disponible)'}
+                  </span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={waUsarFicha === 'otro'}
+                    onChange={() => setWaUsarFicha('otro')}
+                  />
+                  <span>Ingresar otro</span>
+                </label>
+              </div>
+              <input
+                type="tel"
+                className="p-2 border rounded w-full"
+                placeholder="Ej: 3815123456"
+                value={waUsarFicha === 'ficha' ? (waSlot?.turnoInfo?.pacienteCelular || '') : waCelular}
+                onChange={e => setWaCelular(e.target.value)}
+                disabled={waUsarFicha === 'ficha'}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-gray-600 text-sm">Mensaje</p>
+              <textarea
+                className="p-2 border rounded w-full min-h-[140px]"
+                value={waMensaje}
+                onChange={e => setWaMensaje(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant='cancel' onClick={() => setWaOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                variant='primary'
+                onClick={() => {
+                  const candidate = waUsarFicha === 'ficha' ? (waSlot?.turnoInfo?.pacienteCelular || '') : waCelular;
+                  const phone = formateoNumeroWhatsapp(candidate, 'AR');
+                  if (!phone) return;
+                  const link = buildWhatsAppLink(phone, waMensaje);
+                  window.open(link, '_blank');
+                  setWaOpen(false);
+                }}
+                disabled={(waUsarFicha === 'ficha' && !waSlot?.turnoInfo?.pacienteCelular) || (waUsarFicha === 'otro' && !waCelular)}
+              >
+                Enviar por WhatsApp
+              </Button>
+            </div>
+          </div>
+        </ModalReact>
+      }
     </div>
   );
 }
