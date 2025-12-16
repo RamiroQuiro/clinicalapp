@@ -11,6 +11,7 @@ import {
   Edit3,
   FileDown,
   FileEdit,
+  FileText,
   Lock,
   Mail,
   MessageSquare,
@@ -20,6 +21,7 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import FormularioCertificadoAtencion from './FormularioCertificadoAtencion';
 import MenuDropbox from './MenuDropbox';
 
 // Tipos de las props que el componente recibirá desde Astro
@@ -72,6 +74,7 @@ export default function NavAtencionMedicaV2({
   const [isAnimating, setIsAnimating] = useState(false); // <-- Nuevo estado para la animación
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnmiendaModalOpen, setIsEnmiendaModalOpen] = useState(false);
+  const [isCertificadoModalOpen, setIsCertificadoModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -109,6 +112,12 @@ export default function NavAtencionMedicaV2({
 
       target: '_blank',
       title: 'Imprimir receta de la atención',
+    },
+    {
+      label: 'Generar Certificado',
+      icon: <FileText className="w-4 h-4" />,
+      onClick: () => setIsCertificadoModalOpen(true),
+      title: 'Generar un certificado médico para el paciente',
     },
     {
       label: 'Facturar Consulta',
@@ -363,6 +372,19 @@ export default function NavAtencionMedicaV2({
             atencion={$consulta.atencion}
             paciente={$consulta.paciente}
             onClose={() => setIsEnmiendaModalOpen(false)}
+          />
+        </ModalReact>
+      )}
+      {isCertificadoModalOpen && (
+        <ModalReact
+          icon={<FileText className="h-6 w-6 text-primary-100" />}
+          title={'Generar Certificado Médico'}
+          onClose={() => setIsCertificadoModalOpen(false)}
+          id="certificadoModal"
+        >
+          <FormularioCertificadoAtencion
+            paciente={$consulta.paciente}
+            onClose={() => setIsCertificadoModalOpen(false)}
           />
         </ModalReact>
       )}
