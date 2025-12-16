@@ -6,10 +6,11 @@ import type { User } from 'lucia';
 
 const { id } = Astro.params;
 const { user } = Astro.locals;
+console.log('user ->', user);
 ---
 
 <LayoutDash title="Perfil de Usuario">
   <MainDashboard title="Perfil de Usuario" h1="Perfil de Usuario" isBack={true}>
-    <PerfilUsuario userId={id as string} client:load dataUser={user as User} />
+    <PerfilUsuario userId={id as string} client:load currentDataUser={user as User} />
   </MainDashboard>
 </LayoutDash>

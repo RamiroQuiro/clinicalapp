@@ -175,6 +175,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                     email,
                     dni,
                     mp,
+                    especialidad,
                     srcPhoto: avatar,
                     rol,
                     password: hashedPassword,
@@ -206,18 +207,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
                 if (rol === 'recepcion' && profesionales.length > 0) {
                     console.log(`    -> Creando ${profesionales.length} relaciones en \`recepcionistaProfesional\``);
                     const recepcionistaProfesionalInserts = profesionales.map((profesionalId: string) => {
+
                         return tx.insert(recepcionistaProfesional).values({
-                            return tx.insert(recepcionistaProfesional).values({
-                                centroMedicoId: centroMedicoId,
-                                nombreCentroMedico: centroMedicoId, // TODO: Obtener nombre real
-                                rolEnCentro: rol,
-                                recepcionistaId: newUserId,
-                                profesionalId: profesionalId,
-                                emailUser: email,
-                            });
+                            centroMedicoId: centroMedicoId,
+                            nombreCentroMedico: centroMedicoId, // TODO: Obtener nombre real
+                            rolEnCentro: rol,
+                            recepcionistaId: newUserId,
+                            profesionalId: profesionalId,
+                            emailUser: email,
                         });
-                        await Promise.all(recepcionistaProfesionalInserts);
-                    }
+                    });
+                    await Promise.all(recepcionistaProfesionalInserts);
+                }
             });
             console.log('5. Transacción completada. Usuario nuevo creado con éxito.');
             return createResponse(201, 'Usuario nuevo creado y añadido al centro con éxito.', false);

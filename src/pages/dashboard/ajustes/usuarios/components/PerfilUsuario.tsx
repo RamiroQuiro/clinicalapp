@@ -26,10 +26,10 @@ const fetchUserById = async (userId: string) => {
 
 interface PerfilUsuarioProps {
   userId: string;
-  dataUser: User | null;
+  currentDataUser: User | null;
 }
 
-export default function PerfilUsuario({ userId, dataUser }: PerfilUsuarioProps) {
+export default function PerfilUsuario({ userId, currentDataUser }: PerfilUsuarioProps) {
   const [user, setUser] = useState<User | null>(null);
   const { pestanaActiva } = useStore(perfilAjustesStore);
 
@@ -45,7 +45,7 @@ export default function PerfilUsuario({ userId, dataUser }: PerfilUsuarioProps) 
 
     switch (pestanaActiva) {
       case 'informacion':
-        return <PerfilInformacion user={user} />;
+        return <PerfilInformacion user={user} currentDataUser={currentDataUser} />;
       case 'horarios':
         // Si el perfil es de recepcionista, redirigir a información
         return esPerfilRecepcionista ? (
@@ -61,12 +61,12 @@ export default function PerfilUsuario({ userId, dataUser }: PerfilUsuarioProps) 
       case 'seguridad':
         return <PerfilSeguridad userId={userId} />;
       default:
-        return <PerfilInformacion user={user} />;
+        return <PerfilInformacion user={user} currentDataUser={currentDataUser} />;
     }
   };
 
   return (
-    <div className="p-4 space-y-4 w-full">
+    <div className="space-y-4 p-4 w-full">
       <PerfilNavegacion user={user} />
       <div>{renderContent()}</div>
     </div>

@@ -66,7 +66,7 @@ export default function NavAtencionMedicaV2({
         preferencias: preferenciasPerfilUser.preferencias,
       });
     }
-    console.log('preferenciasPerfilUser en el nav', preferenciasPerfilUser);
+    // console.log('preferenciasPerfilUser en el nav', preferenciasPerfilUser);
   }, [preferenciasPerfilUser]);
 
   // Estados para manejar la UI dinámica

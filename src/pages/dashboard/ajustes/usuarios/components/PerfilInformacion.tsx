@@ -4,12 +4,13 @@ import Input from '@/components/atomos/Input';
 import ModalReact from '@/components/moleculas/ModalReact';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/organismo/Card';
 import { showToast } from '@/utils/toast/toastShow';
+import type { User } from 'lucia';
 import { CircleX } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import Select, { components } from 'react-select';
 
 // Este componente recibirá los datos del usuario como props
-export default function PerfilInformacion({ user: initialUser }: { user: any }) {
+export default function PerfilInformacion({ user: initialUser, currentDataUser }: { user: any, currentDataUser: User }) {
   const [user, setUser] = useState(initialUser);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -57,7 +58,11 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
     const { name, value } = e.target;
     setUser((prev: any) => ({ ...prev, [name]: value }));
   };
-
+  // Manejo para select normal
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setUser((prev: any) => ({ ...prev, [name]: value }));
+  };
   const handleSave = async () => {
     try {
       const response = await fetch(`/api/ajustes/usuarios/${user.id}`, {
@@ -135,15 +140,15 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
   const Option = (props: any) => (
     <components.Option {...props}>
       <div className="flex items-center gap-3">
-        <div className="w-7 h-7 rounded-full overflow-hidden bg-gray-200">
+        <div className="bg-gray-200 rounded-full w-7 h-7 overflow-hidden">
           {props.data.srcPhoto ? (
             <img src={props.data.srcPhoto} className="w-full h-full object-cover" />
           ) : null}
         </div>
         <div>
-          <p className="text-sm capitalize font-medium">{props.data.label}</p>
-          <p className="text-xs text-gray-500">{props.data.dni}</p>
-          <p className="text-xs text-gray-500">{props.data.especialidad || 'General'}</p>
+          <p className="font-medium text-sm capitalize">{props.data.label}</p>
+          <p className="text-gray-500 text-xs">{props.data.dni}</p>
+          <p className="text-gray-500 text-xs">{props.data.especialidad || 'General'}</p>
         </div>
       </div>
     </components.Option>
@@ -152,18 +157,18 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
     <div className="space-y-4">
       {/* Informacion personal */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Información Personal</CardTitle>
           <Button variant="outline" onClick={() => setIsEditing(!isEditing)}>
             {isEditing ? 'Cancelar' : 'Editar'}
           </Button>
         </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-3">
-          <div className="flex flex-col  items-center gap-4 md:col-span-1">
+        <CardContent className="gap-6 grid md:grid-cols-3">
+          <div className="flex flex-col items-center gap-4 md:col-span-1">
             <img
               src={user?.srcPhoto || '/avatar-placeholder.png'}
               alt="Avatar"
-              className="w-32 h-32 rounded-full  border-primary-border border-2 object-cover"
+              className="border-2 border-primary-border rounded-full w-32 h-32 object-cover"
             />
             <Button variant="outline" size="sm">
               Cambiar Avatar
@@ -208,7 +213,7 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
                 isLoading={isLoading}
               />
             </div>
-            <div className="flex flex- justify-between items-center gap-4">
+            <div className="flex flex- justify-between items-center gap-4 w-full">
               <Input
                 label="DNI"
                 name="dni"
@@ -218,8 +223,8 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
                 disabled={!isEditing}
                 isLoading={isLoading}
               />
-              {user?.rol === 'profesional' ||
-                (user?.rol === 'admin' && (
+              {(user?.rol === 'profesional' ||
+                user?.rol === 'admin') && (
                   <Input
                     label="MP"
                     name="mp"
@@ -229,30 +234,58 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
                     disabled={!isEditing}
                     isLoading={isLoading}
                   />
-                ))}
+                )}
             </div>
-            <div className="flex flex- justify-between items-center gap-4">
-              {user?.rol === 'profesional' ||
-                (user?.rol === 'admin' && (
-                  <Input
-                    label="Especialidad"
-                    name="especialidad"
-                    type="text"
-                    value={user?.especialidad || ''}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    isLoading={isLoading}
-                  />
-                ))}
+            {
+              currentDataUser?.rol === 'admin' && isEditing ?
+                <select
+                  id="rol"
+                  className="shadow-sm p-2 border border-gray-300 focus:border-primary-100 rounded-md focus:ring-2 focus:ring-primary-100 focus:ring-offset-2 w-full placeholder:text-gray-400 transition"
+                  name="rol"
+                  value={user?.rol}
+                  onChange={handleSelectChange}
+                  required
+                >
+                  <option value="admin">Admin</option>
+                  <option value="recepcion">Recepcion</option>
+                  <option value="profesional">Profesional</option>
+                </select>
+                :
+                <Input
+                  label="Rol"
+                  name="rol"
+                  value={user?.rol || ''}
+                  disabled={currentDataUser?.rol !== 'admin'}
+                  isLoading={isLoading}
+                />}
+
+            {(user?.rol === 'profesional' || user?.rol === 'admin') && <div className="flex xl:flex-row flex-col justify-normal items-center gap-2 mt-4 pt-4 border-t w-full">
+
               <Input
-                label="Rol"
-                name="rol"
-                value={user?.rol || ''}
-                disabled
+                id="especialidad"
+                label="Especialidad"
+                name="especialidad"
+                type="text"
+                placeholder="Ej: Cardiología"
+                disabled={!isEditing}
                 isLoading={isLoading}
+                value={user?.especialidad}
+                onChange={handleInputChange}
               />
-            </div>
-            <div className="flex flex- justify-between items-center gap-4">
+              <Input
+                className="flex-1"
+                id="avatar"
+                label="Avatar (URL)"
+                name="avatar"
+                type="text"
+                placeholder="https://example.com/avatar.png"
+                disabled={!isEditing}
+                isLoading={isLoading}
+                value={user?.srcPhoto}
+                onChange={handleInputChange}
+              />
+            </div>}
+            <div className="flex xl:flex-row flex-col justify-normal items-center gap-2 mt-4 pt-4 border-t w-full">
               <Input
                 label="Direccion"
                 name="direccion"
@@ -294,7 +327,7 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
       {/* PROFESIONALES RELACIONADOS */}
       {user?.rol === 'recepcion' && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle>Profesionales relacionados</CardTitle>
             <Button variant="primary" onClick={() => setOpenAddProfesional(true)}>
               Agregar profesional
@@ -302,18 +335,18 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-gray-500">Cargando...</p>
+              <p className="text-gray-500 text-sm">Cargando...</p>
             ) : profesionalesRelacionados.length === 0 ? (
-              <p className="text-sm text-gray-500">No hay profesionales relacionados</p>
+              <p className="text-gray-500 text-sm">No hay profesionales relacionados</p>
             ) : (
-              <div className="grid md:grid-cols-2 gap-3">
+              <div className="flex flex-wrap gap-3 w-full item-center">
                 {profesionalesRelacionados.map(p => (
                   <div
                     key={p.profesionalId}
-                    className="flex justify-between capitalize items-center border rounded-lg p-3"
+                    className="flex justify-between items-center gap-2 p-3 border rounded-lg capitalize"
                   >
-                    <div className="bg-gray-400 text-center flex items-center justify-center w-10 h-10 rounded-full">
-                      <span className="text-white text-xl -tracking-tight ">
+                    <div className="flex justify-center items-center bg-gray-400 rounded-full w-10 h-10 text-center">
+                      <span className="text-white text-xl -tracking-tight">
                         {p.nombre.charAt(0)} {p.apellido.charAt(0)}
                       </span>
                     </div>
@@ -321,9 +354,9 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
                       <p className="font-medium">
                         {p.nombre} {p.apellido}
                       </p>
-                      <p className="text-xs text-gray-500">{p.especialidad}</p>
-                      <p className="text-xs text-gray-500">{p.mp}</p>
-                      <p className="text-xs text-gray-500">{p.dni}</p>
+                      <p className="text-gray-500 text-xs">{p.especialidad}</p>
+                      <p className="text-gray-500 text-xs">{p.mp}</p>
+                      <p className="text-gray-500 text-xs">{p.dni}</p>
                     </div>
                     <Button
                       variant="outline"
@@ -343,7 +376,7 @@ export default function PerfilInformacion({ user: initialUser }: { user: any }) 
 
       {openAddProfesional && user?.rol === 'recepcion' && (
         <ModalReact title="Vincular profesional" onClose={() => setOpenAddProfesional(false)}>
-          <div className="p-6 min-h-[75dvh] min-w-[75dvw]">
+          <div className="p-6 min-w-[75dvw] min-h-[75dvh]">
             <Select
               autoFocus
               isSearchable
