@@ -1,6 +1,7 @@
 import db from '@/db';
 import { archivosAdjuntos } from '@/db/schema';
 import { lucia } from '@/lib/auth';
+import { canReadArchivo } from '@/lib/functionAcces/canReadArchivo';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { createReadStream } from 'node:fs';
@@ -24,6 +25,7 @@ export const GET: APIRoute = async ({ params, cookies, locals }) => {
         nombre: archivosAdjuntos.nombre,
         pacienteId: archivosAdjuntos.pacienteId,
         userMedicoId: archivosAdjuntos.userMedicoId,
+        centroMedicoId: archivosAdjuntos.centroMedicoId,
       })
       .from(archivosAdjuntos)
       .where(eq(archivosAdjuntos.id, fileId));
@@ -31,10 +33,11 @@ export const GET: APIRoute = async ({ params, cookies, locals }) => {
     if (!fileRecord) {
       return new Response('Archivo no encontrado en la base de datos.', { status: 404 });
     }
-    // TODO: ¿Vale la pena esta verificacion?
-    // if (user.id !== fileRecord.userMedicoId) {
-    //   return createResponse(400, 'usuario no autorizado para leer este archivos')
-    // }
+    const autorizado = await canReadArchivo(user, fileRecord)
+
+    if (!autorizado) {
+      return new Response('No autorizado', { status: 403 })
+    }
 
     const fullFilePath = path.join(process.cwd(), fileRecord.url);
     const stats = await fs.stat(fullFilePath);
@@ -52,10 +55,8 @@ export const GET: APIRoute = async ({ params, cookies, locals }) => {
     };
     const contentType = mimeTypes[ext] || 'application/octet-stream';
 
-    // 6. Create a readable stream
     const fileStream = createReadStream(fullFilePath);
 
-    // 7. Return the streaming response
     return new Response(fileStream as any, {
       status: 200,
       headers: {
@@ -64,6 +65,8 @@ export const GET: APIRoute = async ({ params, cookies, locals }) => {
         'Content-Disposition': `inline; filename="${fileRecord.nombre || path.basename(fileRecord.url)}"`,
       },
     });
+
+
 
   } catch (error: any) {
     console.error(`Error serving file ${fileId}:`, error);

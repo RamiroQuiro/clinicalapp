@@ -18,6 +18,7 @@ export const archivosAdjuntos = sqliteTable('archivosAdjuntos', {
   updated_at: integer('updated_at', { mode: 'timestamp' }),
   estado: text('estado', { enum: ['pendiente', 'revisar', 'archivado'] }).default('pendiente'),
   tipo: text('tipo'),
+  tamaño: integer('tamaño'),
   created_at: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(strftime('%s', 'now'))`),
