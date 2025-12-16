@@ -12,37 +12,32 @@ interface ModalDictadoIAProps {
 }
 
 const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) => {
-  const [dictationText, setDictationText] = useState('');
   const {
     isListening,
-    newFinalSegment,
+    transcript,
     startListening,
     stopListening,
     error: speechError,
+    setTranscript,
   } = useSpeechRecognition();
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [aiProcessingError, setAiProcessingError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (newFinalSegment) {
-      setDictationText(prev => prev + newFinalSegment + ' ');
-    }
-  }, [newFinalSegment]);
+  const [aiProvider, setAiProvider] = useState<'gemini' | 'groq'>('groq'); // Estado para el proveedor de IA
 
   // Reset state when modal is closed
   useEffect(() => {
     if (!isOpen) {
-      setDictationText('');
+      setTranscript('');
       setAiProcessingError(null);
       setIsProcessingAI(false);
       if (isListening) {
         stopListening();
       }
     }
-  }, [isOpen]);
+  }, [isOpen, isListening, stopListening, setTranscript]);
 
   const processDictation = async () => {
-    if (!dictationText.trim()) return;
+    if (!transcript.trim()) return;
 
     setIsProcessingAI(true);
     setAiProcessingError(null);
@@ -53,7 +48,7 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: dictationText }),
+        body: JSON.stringify({ text: transcript, provider: aiProvider }),
       });
 
       if (!response.ok) {
@@ -87,12 +82,44 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
         </p>
         <TextArea
           name="dictationInput"
-          value={dictationText}
-          onChange={e => setDictationText(e.target.value)}
+          value={transcript}
+          onChange={e => setTranscript(e.target.value)}
           placeholder="Dicta aquí o pega el texto para que la IA lo procese..."
           rows={8}
           className="w-full p-2 border rounded-md"
         />
+
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700">Proveedor de IA:</span>
+          <div className="flex items-center gap-2">
+            <input
+              type="radio"
+              id="groq-provider"
+              name="ai-provider"
+              value="groq"
+              checked={aiProvider === 'groq'}
+              onChange={() => setAiProvider('groq')}
+              className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+            />
+            <label htmlFor="groq-provider" className="text-sm text-gray-900">
+              Groq (Rápido)
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="radio"
+              id="gemini-provider"
+              name="ai-provider"
+              value="gemini"
+              checked={aiProvider === 'gemini'}
+              onChange={() => setAiProvider('gemini')}
+              className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+            />
+            <label htmlFor="gemini-provider" className="text-sm text-gray-900">
+              Gemini
+            </label>
+          </div>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
             onClick={startListening}
@@ -113,7 +140,7 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
           </Button>
           <Button
             variant="cancel"
-            onClick={() => setDictationText('')}
+            onClick={() => setTranscript('')}
             disabled={!isListening}
             className="flex-grow sm:flex-grow-0"
           >
@@ -122,7 +149,7 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
           </Button>
           <Button
             onClick={processDictation}
-            disabled={!dictationText || isProcessingAI}
+            disabled={!transcript || isProcessingAI}
             className="flex-grow sm:flex-grow-0 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             {isProcessingAI ? 'Procesando...' : 'Procesar'}

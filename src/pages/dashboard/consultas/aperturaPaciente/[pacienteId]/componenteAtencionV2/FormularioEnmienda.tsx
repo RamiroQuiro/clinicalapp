@@ -44,7 +44,7 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
   const [contenidoCorregido, setContenidoCorregido] = useState('');
   const [justificacion, setJustificacion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  console.log('atencion -', atencion);
   // Efecto para actualizar el contenido original cuando se selecciona una sección
   useEffect(() => {
     let original = '';
@@ -128,9 +128,9 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
   };
 
   return (
-    <div className="w-full md:w-[65vw] mx-auto p-2">
+    <div className="w-full md:w-[65vw] mx-auto p-2 text-primary-texto">
       <div className="space-y-1 mb-6">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm ">
           <AlertTriangle className="h-4 w-4" />
           <span>Las enmiendas quedan registradas permanentemente en el historial médico.</span>
         </div>
@@ -141,10 +141,7 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
           {/* Sección de Selección */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="motivoEnmienda"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="motivoEnmienda" className="block text-sm font-medium -gray-700 mb-1">
                 Motivo de la Enmienda
               </label>
               <select
@@ -162,10 +159,7 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
               </select>
             </div>
             <div>
-              <label
-                htmlFor="seccionEnmendar"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="seccionEnmendar" className="block text-sm font-medium mb-1">
                 Sección a Enmendar
               </label>
               <select
@@ -190,7 +184,7 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
               label="Contenido Original"
               name="contenidoOriginal"
               value={contenidoOriginal}
-              className="min-h-32 bg-gray-100 text-gray-600"
+              className="min-h-32 0 0"
               readOnly
             />
             <TextArea
@@ -221,15 +215,18 @@ export default function FormularioEnmienda({ atencion, paciente, user, onClose }
             </h4>
             <div className="flex items-center gap-4 p-3 rounded-lg bg-sky-50 border border-sky-200">
               <img
-                src={user?.fotoUrl || '/avatarDefault.png'}
+                src={atencion?.medico.srcPhoto || '/avatarDefault.png'}
                 alt="Avatar"
                 className="h-12 w-12 rounded-full object-cover"
               />
               <div>
-                <p className="font-bold text-gray-900">
-                  {user?.name} {user?.apellido}
+                <p className="font-bold text-gray-900 capitalize">
+                  {atencion?.medico.nombre} {atencion?.medico.apellido}
                 </p>
-                <p className="text-sm text-gray-600">Matrícula: {user?.matricula}</p>
+                <p className="text-sm text-gray-600">Matrícula: {atencion?.medico.mp}</p>
+                <p className="text-sm text-gray-600">
+                  Especialidad: {atencion?.medico.especialidad}
+                </p>
               </div>
             </div>
           </div>

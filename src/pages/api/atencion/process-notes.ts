@@ -4,7 +4,7 @@ import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { text } = await request.json();
+    const { text, provider } = await request.json(); // provider puede ser 'gemini' o 'groq'
 
     if (!text) {
       return new Response(JSON.stringify({ error: 'No se proporcionó texto para procesar.' }), {
@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const jsonResponse = await callAIModel(text);
+    const jsonResponse = await callAIModel(text, provider);
     return new Response(JSON.stringify(jsonResponse), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

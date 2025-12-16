@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Definimos la interfaz para el objeto de reconocimiento de voz para mayor seguridad de tipos
 interface SpeechRecognition extends EventTarget {
@@ -22,7 +22,7 @@ declare global {
 
 export const useSpeechRecognition = () => {
   const [isListening, setIsListening] = useState(false);
-  const [newFinalSegment, setNewFinalSegment] = useState('');
+  const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -40,19 +40,17 @@ export const useSpeechRecognition = () => {
     recognition.lang = 'es-AR';
 
     recognition.onresult = (event) => {
-      let latestFinalSegment = '';
-      // Iterar desde el final para encontrar el último resultado final
-      for (let i = event.results.length - 1; i >= event.resultIndex; --i) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          latestFinalSegment = result[0].transcript;
-          break; // Encontrado el último segmento final, no es necesario ir más atrás
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = 0; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
         }
       }
-
-      if (latestFinalSegment) {
-        setNewFinalSegment(latestFinalSegment + ' ');
-      }
+      setTranscript(finalTranscript + interimTranscript);
     };
 
     recognition.onerror = (event) => {
@@ -74,7 +72,7 @@ export const useSpeechRecognition = () => {
 
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
-      setNewFinalSegment('');
+      setTranscript(''); // Limpiar transcripción anterior
       recognitionRef.current.start();
       setIsListening(true);
     } else if (!recognitionRef.current) {
@@ -93,9 +91,10 @@ export const useSpeechRecognition = () => {
 
   return {
     isListening,
-    newFinalSegment,
+    transcript,
     error,
     startListening,
     stopListening,
+    setTranscript, // Exponer para poder limpiar el texto desde fuera
   };
 };

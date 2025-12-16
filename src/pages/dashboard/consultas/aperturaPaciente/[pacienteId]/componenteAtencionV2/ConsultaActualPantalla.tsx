@@ -4,7 +4,6 @@ import { TextArea } from '@/components/atomos/TextArea';
 import Section from '@/components/moleculas/Section';
 import ModalDictadoIA from '@/components/organismo/ModalDictadoIA';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
-import { dataFormularioContexto } from '@/context/store'; // New import for AI integration
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { useStore } from '@nanostores/react';
 import { Mic } from 'lucide-react';
@@ -136,18 +135,36 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   const handleProcesadoIA = (result: any) => {
     console.log('AI Processed Result received in parent:', result);
 
-    // --- AI Integration for Diagnostico ---
-    if (result.diagnostico && result.diagnostico.nombre) {
-      const newDiag = {
-        diagnostico: result.diagnostico.nombre,
-        observaciones: result.diagnostico.observaciones || '',
-        codigoCIE: result.diagnostico.codigoCIE || '',
-        id: `ai_diag_${Date.now()}`,
-      };
-      dataFormularioContexto.set(newDiag); // Set context for FormularioDiagnosticos
-      // No need to open modal here, as SectionDiagnostico will handle it
+    // --- AI Integration ---
+
+    // Campos de texto: Reemplazar si no están vacíos
+    if (result.motivoConsulta) {
+      setConsultaField('motivoConsulta', result.motivoConsulta);
+    }
+    if (result.sintomas) {
+      setConsultaField('sintomas', result.sintomas);
+    }
+    if (result.tratamiento) {
+      setConsultaField('tratamiento', result.tratamiento);
+    }
+    if (result.planSeguir) {
+      setConsultaField('planSeguir', result.planSeguir);
     }
 
+    // Diagnósticos: Añadir a la lista existente
+    if (result.diagnosticos && Array.isArray(result.diagnosticos)) {
+      const currentDiags = consultaStore.get().diagnosticos;
+      const newDiags = result.diagnosticos.map((diag: any, index: number) => ({
+        diagnostico: diag.nombre || '',
+        observaciones: diag.observaciones || '',
+        codigoCIE: diag.codigoCIE || '',
+        id: `ai_diag_${Date.now()}_${index}`,
+        estado: 'activo',
+      }));
+      setConsultaField('diagnosticos', [...currentDiags, ...newDiags]);
+    }
+
+    // Medicamentos: Añadir a la lista existente
     if (result.medicamentos && Array.isArray(result.medicamentos)) {
       const currentMeds = consultaStore.get().medicamentos;
       const newMeds = result.medicamentos.map((med: any, index: number) => ({
@@ -160,20 +177,26 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       setConsultaField('medicamentos', [...currentMeds, ...newMeds]);
     }
 
-    if (result.tratamiento) {
-      setConsultaField('tratamiento', $consulta.tratamiento + '\n' + result.tratamiento);
-    }
+    // Signos Vitales: Actualizar el objeto de signos vitales
+    if (result.signosVitales) {
+      const currentSignos = consultaStore.get().signosVitales;
+      const updatedSignos = { ...currentSignos };
 
-    if (result.plan_a_seguir) {
-      setConsultaField('planSeguir', $consulta.planSeguir + '\n' + result.plan_a_seguir);
-    }
+      // Mapeo de nombres de campos de la IA a los del store
+      const mapping = {
+        tensionArterial: 'tensionArterial', // El nombre ya coincide
+        frecuenciaCardiaca: 'frecuenciaCardiaca',
+        frecuenciaRespiratoria: 'frecuenciaRespiratoria',
+        temperatura: 'temperatura',
+        saturacionOxigeno: 'saturacionOxigeno',
+      };
 
-    if (result.sintomas) {
-      setConsultaField('sintomas', $consulta.sintomas + '\n' + result.sintomas);
-    }
-
-    if (result.motivoConsulta) {
-      setConsultaField('motivoConsulta', $consulta.motivoConsulta + '\n' + result.motivoConsulta);
+      for (const [key, value] of Object.entries(result.signosVitales)) {
+        if (value !== null && mapping[key]) {
+          updatedSignos[mapping[key]] = value;
+        }
+      }
+      setConsultaField('signosVitales', updatedSignos);
     }
   };
 

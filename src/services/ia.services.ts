@@ -1,120 +1,81 @@
-export const callAIModel = async (text: string) => {
-  const apiKey = import.meta.env.GOOGLE_API_KEY;
-  console.log('apiKey', apiKey);
-  if (!apiKey) {
-    console.error('La GEMINI_API_KEY no está configurada en el archivo .env');
-    return 'Error: La clave de API para el servicio de IA no está configurada. Por favor, contacta al administrador.';
+type AIProvider = 'gemini' | 'groq';
+
+// Función principal que actúa como router
+export const callAIModel = async (text: string, provider: AIProvider = 'groq') => {
+  if (provider === 'gemini') {
+    return await callGeminiModel(text);
+  } else {
+    return await callGroqModel(text);
   }
+};
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+const commonPrompt = (text: string) => `
+    Eres un asistente médico altamente preciso. Tu tarea es transcribir y estructurar la información de un dictado clínico a un formato JSON. NO RESUMAS NI ABREVIES la información, extrae el texto de la forma más literal posible.
 
-  const fullPrompt = `Eres un asistente médico experto en extraer información estructurada de notas clínicas. 
-    Analiza el siguiente texto dictado por un médico y extrae la siguiente información en formato JSON. 
-    Si algún campo no se encuentra en el texto, su valor debe ser null. 
-    Para los medicamentos, si no se especifica la dosis, frecuencia o duración, usa null.
+    ### INSTRUCCIONES:
+    1.  Analiza el "Texto a analizar" proporcionado.
+    2.  Extrae la información y rellena los campos del "Formato JSON esperado".
+    3.  Si un campo no se menciona en el texto, su valor debe ser 'null' (o un array vacío [] para listas).
+    4.  Para los signos vitales, extrae el valor correspondiente. Ejemplos:
+        - "presión 120/80" -> "tensionArterial": "120/80"
+        - "temperatura de 37.5 grados" -> "temperatura": 37.5
+        - "frecuencia cardíaca de 80" -> "frecuenciaCardiaca": 80
+    5.  Para los diagnósticos, si se mencionan varios, crea un objeto para cada uno en la lista.
+    6.  **Importante**: Revisa el texto cuidadosamente y asegúrate de rellenar TODOS los campos posibles del formato JSON. No omitas ninguno si la información está presente.
 
-    Formato JSON esperado:
+    ### Formato JSON esperado:
     {
-      "diagnostico": {
-        "nombre": "string | null",
-        "observaciones": "string | null",
-        "codigoCIE": "string | null"
-      },
+      "motivoConsulta": "string | null",
+      "sintomas": "string | null",
+      "diagnosticos": [
+        {
+          "nombre": "string | null",
+          "observaciones": "string | null",
+          "codigoCIE": "string | null"
+        }
+      ],
       "medicamentos": [
         {
-          "nombreGenerico": "string",
+          "nombreGenerico": "string | null",
           "nombreComercial": "string | null",
           "dosis": "string | null",
           "frecuencia": "string | null"
         }
       ],
       "signosVitales": {
+        "tensionArterial": "string | null",
         "frecuenciaCardiaca": "number | null",
         "frecuenciaRespiratoria": "number | null",
-        "presionArterial": "string | null",
         "temperatura": "number | null",
-        "satO2": "number | null"
+        "saturacionOxigeno": "number | null"
       },
       "tratamiento": "string | null",
-      "plan_a_seguir": "string | null",
-      "sintomas": "string | null",
-      "motivoConsulta": "string | null"
+      "planSeguir": "string | null"
     }
 
-    Texto a analizar:
-    """${text}"""
-    `;
-  const fullPrompt2 = `
-    Eres un asistente médico especializado en convertir notas clínicas dictadas en texto libre 
-    en información estructurada que siga exactamente el modelo de datos de una "Consulta".
-    
-    Debes analizar el texto dictado por un médico y devolverlo en un objeto JSON válido.  
-    Si un campo no está presente en el dictado, debe ir como null o como un array vacío según corresponda.  
-    No inventes información adicional.
-    
-    ### Estructura JSON esperada:
-    
-    {
-      "motivoInicial": "string | null",
-      "motivoConsulta": "string | null",
-      "sintomas": "string | null",
-      "planSeguir": "string | null",
-      "observaciones": "string | null",
-    
-      "signosVitales": {
-        "presionArterial": "number | null",      // mmHg, ejemplo: 120/80 => usa el número sistólico
-        "frecuenciaCardiaca": "number | null",   // lpm
-        "frecuenciaRespiratoria": "number | null",// rpm
-        "temperatura": "number | null"           // ºC
-      },
-    
-      "notas": [
-        {
-          "title": "string | null",
-          "descripcion": "string | null",
-          "profesional": "string | null",
-          "fecha": "ISO8601 string | null",
-          "id": "string | null"
-        }
-      ],
-    
-      "diagnosticos": [
-        {
-          "diagnostico": "string | null",
-          "observaciones": "string | null",
-          "codigoCIE": "string | null",    // usa CIE-10 o null si no se menciona
-          "id": "string | null",
-          "estado": "string | null"        // activo | resuelto | sospecha
-        }
-      ],
-    
-      "tratamiento": "string | null",
-    
-      "medicamentos": [
-        {
-          "nombreGenerico": "string",
-          "nombreComercial": "string | null",
-          "dosis": "string | null",
-          "frecuencia": "string | null",
-          "id": "string | null"
-        }
-      ]
-    }
-    
     ### Texto a analizar:
     """${text}"""
     `;
 
+// --- Implementación para Groq ---
+const callGroqModel = async (text: string) => {
+  const apiKey = import.meta.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error('La GROQ_API_KEY no está configurada en el archivo .env');
+  }
+  const url = 'https://api.groq.com/openai/v1/chat/completions';
+
   const requestBody = {
-    contents: [
+    model: 'llama3-8b-8192',
+    messages: [
       {
-        parts: [
-          {
-            text: fullPrompt,
-          },
-        ],
+        role: 'system',
+        content: 'Eres un asistente médico. Tu única función es devolver un objeto JSON basado en el texto del usuario. No incluyas texto adicional ni explicaciones, solo el JSON.',
       },
+      { role: 'user', content: commonPrompt(text) },
     ],
+    temperature: 0.1,
+    response_format: { type: 'json_object' },
   };
 
   try {
@@ -122,7 +83,50 @@ export const callAIModel = async (text: string) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-goog-api-key': apiKey,
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.json();
+      console.error('Error desde la API de Groq:', errorBody);
+      throw new Error(`La solicitud a la API de Groq falló con el estado ${response.status}`);
+    }
+
+    const data = await response.json();
+    const rawText = data.choices[0].message.content;
+
+    return JSON.parse(rawText);
+  } catch (error) {
+    console.error('Error llamando al modelo de Groq:', error);
+    throw error;
+  }
+};
+
+// --- Implementación para Gemini ---
+const callGeminiModel = async (text: string) => {
+  const apiKey = import.meta.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new Error('La GOOGLE_API_KEY no está configurada en el archivo .env');
+  }
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
+
+  const requestBody = {
+    contents: [{ parts: [{ text: commonPrompt(text) }] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+    },
+  };
+
+
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
       },
       body: JSON.stringify(requestBody),
     });
@@ -130,31 +134,15 @@ export const callAIModel = async (text: string) => {
     if (!response.ok) {
       const errorBody = await response.json();
       console.error('Error desde la API de Gemini:', errorBody);
-      throw new Error(`La solicitud a la API falló con el estado ${response.status}`);
+      throw new Error(`La solicitud a la API de Gemini falló con el estado ${response.status}`);
     }
 
     const data = await response.json();
     const rawText = data.candidates[0].content.parts[0].text;
 
-    let jsonResponse;
-    try {
-      const jsonStartIndex = rawText.indexOf('{');
-      const jsonEndIndex = rawText.lastIndexOf('}');
-      if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-        const jsonString = rawText.substring(jsonStartIndex, jsonEndIndex + 1);
-        jsonResponse = JSON.parse(jsonString);
-      } else {
-        throw new Error('No se encontró un objeto JSON válido en la respuesta de la IA.');
-      }
-    } catch (parseError) {
-      console.error('Error al parsear la respuesta JSON de la IA:', parseError);
-      console.error('Respuesta cruda de la IA:', rawText);
-      throw new Error('Error al procesar la respuesta de la IA.');
-    }
-
-    return jsonResponse;
+    return JSON.parse(rawText);
   } catch (error) {
-    console.error('Error llamando al modelo de IA:', error);
-    return 'Error: No se pudo conectar con el servicio de IA. Verifica la clave de API y la conexión a internet.';
+    console.error('Error llamando al modelo de Gemini:', error);
+    throw error;
   }
 };
