@@ -1,14 +1,48 @@
 ---
-import Layout from '@/layouts/Layout.astro';
 import AutoCheckInForm from '@/components/organismo/autocheckin/AutoCheckInForm.tsx';
+import Layout from '@/layouts/Layout.astro';
+
+const centroId = Astro.url.searchParams.get('centroId');
+if (!centroId) {
+  return Astro.redirect('/error?msg=centro-no-especificado');
+}
+const currentUrl = new URL(Astro.request.url);
+const checkinUrl = currentUrl.toString();
 ---
 
 <Layout title="Auto Check-in">
-  <main class="container mx-auto flex justify-center items-center min-h-screen">
-    <div class="max-w-md w-full">
-      <h1 class="text-3xl font-bold text-center mb-2 text-gray-800">Bienvenido</h1>
-      <p class="text-center text-gray-500 mb-8">Por favor, ingrese su DNI para registrar su llegada.</p>
-      <AutoCheckInForm client:load />
+  <main class="flex justify-center items-center mx-auto min-h-screen container">
+    <div class="space-y-6 w-full max-w-md">
+      <div class="text-center">
+        <h1 class="mb-2 font-bold text-gray-800 text-3xl">No hagas cola con la recepción</h1>
+        <p class="text-gray-500">Escanea el QR o ingresa tu DNI para registrar tu llegada</p>
+      </div>
+
+      <!-- QR con la misma URL -->
+      <div class="flex justify-center">
+        <div class="bg-white shadow-sm p-4 border rounded-lg">
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(checkinUrl)}`}
+            alt="QR Auto Check-in"
+            class="w-48 h-48"
+          />
+        </div>
+      </div>
+
+      <!-- Formulario de check-in -->
+      <AutoCheckInForm client:load centroId={centroId} />
+
+      <!-- Botón de ejemplo para desarrollo -->
+      <div class="text-center">
+        <p class="mb-2 text-gray-400 text-xs">Para desarrollo:</p>
+        <a
+          href="/autocheckin?centroId=centro-ejemplo-123"
+          class="inline-block bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700 text-xs"
+          target="_blank"
+        >
+          Probar con centro de ejemplo
+        </a>
+      </div>
     </div>
   </main>
 </Layout>

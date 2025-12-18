@@ -8,86 +8,109 @@ import { addMinutes } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
-
-
 export const GET: APIRoute = async ({ locals, request }) => {
   if (!locals.session) {
     return createResponse(401, 'No autorizado');
   }
 
   const { user } = locals;
-
   const url = new URL(request.url);
   const fechaQuery = url.searchParams.get('fecha');
   const profesionalId = url.searchParams.get('profesionalId');
   const profesionalIdsParam = url.searchParams.get('profesionalIds');
   const centroMedicoId = url.searchParams.get('centroMedicoId');
 
-  // console.log('user locales', user, 'data obtenida', fechaQuery, profesionalId, centroMedicoId, profesionalIdsParam)
-
-
-
+  // 1. VALIDACIONES BÁSICAS
   if (!fechaQuery || !/^\d{4}-\d{2}-\d{2}$/.test(fechaQuery)) {
     return createResponse(400, 'Fecha no proporcionada o en formato incorrecto. Use YYYY-MM-DD.');
   }
-
   if (!centroMedicoId) {
     return createResponse(400, 'centroMedicoId no proporcionado');
   }
 
-  // La JORNADA_LABORAL y DURACION_SLOT_MINUTOS ahora se obtendrán de la base de datos
+  // 2. DEFINICIÓN DINÁMICA DE PERMISOS (EVITA "isRecepcionista")
+  // Roles que pueden ver agendas de otros profesionales
+  const ROLES_CON_VISTA_GLOBAL = ['admin', 'recepcion', 'supervisor']; // Agrega roles futuros aquí
+  const ROLES_SOLO_VISTA_PROPIA = ['profesional', 'enfermeria']; // Roles restringidos
+
+  // Determina permisos del usuario actual
+  const puedeVerAgendasDeOtros = ROLES_CON_VISTA_GLOBAL.includes(user?.rol);
+  const soloPuedeVerSuAgenda = ROLES_SOLO_VISTA_PROPIA.includes(user?.rol);
+  const rolNoConfigurado = !puedeVerAgendasDeOtros && !soloPuedeVerSuAgenda;
+
+  if (rolNoConfigurado) {
+    console.warn(`Rol '${user.rol}' no configurado en lógica de agendas`);
+    return createResponse(403, 'Su rol no tiene permisos configurados para ver agendas');
+  }
 
   try {
-    const isRecepcionista = user.rolEnCentro === 'recepcion';
+    // 3. DETERMINAR QUÉ PROFESIONALES CONSULTAR
     let profesionalesIds: string[] = [];
 
+    // CASO A: Se solicita un profesional específico (parámetro 'profesionalId')
     if (profesionalId) {
-      // --- Caso 1: Se solicita un profesional específico ---
-      if (isRecepcionista) {
-        // Un recepcionista puede ver la agenda de sus profesionales asociados.
-        // La validación de permisos ya se hizo en el frontend, pero podemos añadir una capa extra si es necesario.
+      if (puedeVerAgendasDeOtros) {
+        // Admin/Recepcion puede ver cualquier profesional
         profesionalesIds = [profesionalId];
-      } else {
-        // Un profesional solo puede ver su propia agenda
+      } else if (soloPuedeVerSuAgenda) {
+        // Profesional solo puede verse a sí mismo
         if (profesionalId !== user.id) {
           return createResponse(403, 'Solo puede ver su propia agenda');
         }
-        profesionalesIds = [profesionalId];
+        profesionalesIds = [user.id];
       }
-    } else if (isRecepcionista && profesionalIdsParam) {
-      // --- Caso 2: Recepcionista solicita la agenda de TODOS sus profesionales ---
+    }
+    // CASO B: Usuario con vista global pide múltiples profesionales (parámetro 'profesionalIds')
+    else if (puedeVerAgendasDeOtros && profesionalIdsParam) {
       profesionalesIds = profesionalIdsParam.split(',');
-    } else if (!isRecepcionista) {
-      // --- Caso 3: Un profesional solicita su propia agenda (caso por defecto) ---
+    }
+    // CASO C: Usuario con vista global NO especifica profesionales → TRAER TODOS
+    else if (puedeVerAgendasDeOtros && !profesionalId && !profesionalIdsParam) {
+      // Consulta automática: todos los profesionales activos del centro
+      const todosProfesionalesCentro = await db
+        .select({ id: users.id })
+        .from(users)
+        .innerJoin(pacienteProfesional, eq(users.id, pacienteProfesional.userId))
+        .where(
+          and(
+            eq(pacienteProfesional.centroMedicoId, centroMedicoId),
+            eq(users.activo, true),
+            inArray(users.rol, ['profesional', 'admin']) // Ajusta según tus roles médicos
+          )
+        );
+      profesionalesIds = todosProfesionalesCentro.map(p => p.id);
+    }
+    // CASO D: Usuario solo puede ver su agenda (caso por defecto para profesionales)
+    else if (soloPuedeVerSuAgenda) {
       profesionalesIds = [user.id];
     }
 
-    // Si después de toda la lógica, no hay IDs, no hay nada que mostrar.
-    // Esto puede pasar si un recepcionista no tiene profesionales asignados.
+    // Si no hay IDs para consultar
     if (profesionalesIds.length === 0) {
       return createResponse(200, 'No hay agendas para mostrar', []);
     }
 
-
-
-    // 1. Calcular el día de la semana a partir de la fecha
-    const fecha = toZonedTime(`${fechaQuery}T12:00:00`, APP_TIME_ZONE); // Usar mediodía para evitar problemas de timezone
+    // 4. LÓGICA PRINCIPAL (GENERACIÓN DE AGENDAS) - MANTIENE TU CÓDIGO ORIGINAL
+    const fecha = toZonedTime(`${fechaQuery}T12:00:00`, APP_TIME_ZONE);
     const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
     const diaSemanaNombre = diasSemana[fecha.getDay()];
 
-
-
-
-    // 2. Obtener la configuración de la agenda y los horarios de TODOS los profesionales para ese día
-    const [configuracionAgenda] = await db.select().from(agendaGeneralCentroMedico).where(eq(agendaGeneralCentroMedico.centroMedicoId, centroMedicoId));
+    const [configuracionAgenda] = await db
+      .select()
+      .from(agendaGeneralCentroMedico)
+      .where(eq(agendaGeneralCentroMedico.centroMedicoId, centroMedicoId));
     const DURACION_SLOT_MINUTOS = configuracionAgenda?.duracionTurnoPorDefecto || 30;
 
-    const todosLosHorarios = await db.select().from(horariosTrabajo).where(and(
-      inArray(horariosTrabajo.userMedicoId, profesionalesIds),
-      eq(horariosTrabajo.diaSemana, diaSemanaNombre)
-    ));
+    const todosLosHorarios = await db
+      .select()
+      .from(horariosTrabajo)
+      .where(
+        and(
+          inArray(horariosTrabajo.userMedicoId, profesionalesIds),
+          eq(horariosTrabajo.diaSemana, diaSemanaNombre)
+        )
+      );
 
-    // 3. Obtener TODOS los turnos del día para los profesionales solicitados
     const inicioDelDia = toZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
     const finDelDia = toZonedTime(`${fechaQuery}T23:59:59`, APP_TIME_ZONE);
 
@@ -126,12 +149,11 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
     const agendasPorProfesional: { [key: string]: any[] } = {};
 
-    // 4. Iterar sobre cada profesional para construir su agenda individual
+    // 5. ITERAR POR CADA PROFESIONAL (MANTIENE TU LÓGICA)
     for (const profId of profesionalesIds) {
-      // console.log('Processing professional:', profId);
-
-      // 🔍 VALIDACIÓN: Verificar si el profesional tiene licencia activa en esta fecha
-      const licenciaActiva = await db.select()
+      // Validación de licencia (igual que antes)
+      const licenciaActiva = await db
+        .select()
         .from(licenciasProfesional)
         .where(
           and(
@@ -144,30 +166,31 @@ export const GET: APIRoute = async ({ locals, request }) => {
         )
         .limit(1);
 
-      // Si hay licencia activa, retornar slot bloqueado con info de licencia
       if (licenciaActiva.length > 0) {
-        agendasPorProfesional[profId] = [{
-          hora: inicioDelDia.toISOString(),
-          disponible: false,
-          userMedicoId: profId,
-          centroMedicoId: centroMedicoId,
-          turnoInfo: null,
-          licenciaInfo: {
-            id: licenciaActiva[0].id,
-            tipo: licenciaActiva[0].tipo,
-            motivo: licenciaActiva[0].motivo,
-            fechaInicio: licenciaActiva[0].fechaInicio,
-            fechaFin: licenciaActiva[0].fechaFin,
-            estado: licenciaActiva[0].estado,
-          }
-        }];
+        agendasPorProfesional[profId] = [
+          {
+            hora: inicioDelDia.toISOString(),
+            disponible: false,
+            userMedicoId: profId,
+            centroMedicoId: centroMedicoId,
+            turnoInfo: null,
+            licenciaInfo: {
+              id: licenciaActiva[0].id,
+              tipo: licenciaActiva[0].tipo,
+              motivo: licenciaActiva[0].motivo,
+              fechaInicio: licenciaActiva[0].fechaInicio,
+              fechaFin: licenciaActiva[0].fechaFin,
+              estado: licenciaActiva[0].estado,
+            },
+          },
+        ];
         continue;
       }
 
+      // Resto de tu lógica de generación de slots...
       const horarioProfesional = todosLosHorarios.find(h => h.userMedicoId === profId);
-      // console.log('Horario profesional:', horarioProfesional);
-
       const JORNADA_LABORAL = [];
+
       if (horarioProfesional && horarioProfesional.activo) {
         if (horarioProfesional.horaInicioManana && horarioProfesional.horaFinManana) {
           JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioManana, fin: horarioProfesional.horaFinManana });
@@ -176,7 +199,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
           JORNADA_LABORAL.push({ inicio: horarioProfesional.horaInicioTarde, fin: horarioProfesional.horaFinTarde });
         }
       }
-      // console.log('JORNADA_LABORAL for', profId, ':', JORNADA_LABORAL);
 
       if (JORNADA_LABORAL.length === 0) {
         agendasPorProfesional[profId] = [];
@@ -194,8 +216,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
       });
 
       const turnosDelProfesionalActual = turnosDelDia.filter(turno => turno.userMedicoId === profId);
-      // console.log('Turnos del profesional actual:', turnosDelProfesionalActual);
-
       const agendaCompleta = slotsDelDia.map(slotInicio => {
         const slotFin = new Date(slotInicio.getTime() + DURACION_SLOT_MINUTOS * 60000);
         const turnoOcupante = turnosDelProfesionalActual.find(turno => {
@@ -247,12 +267,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
       }, new Set());
 
       const turnosExtraNoAsignados = turnosDelProfesionalActual.filter(
-        (turno) =>
+        turno =>
           (turno.tipoDeTurno === 'espontaneo' || turno.tipoDeTurno === 'sobreturno') &&
           !turnosAsignadosEnSlots.has(turno.id)
       );
 
-      const estruturaTurnosExtra = turnosExtraNoAsignados.map((turno) => ({
+      const estruturaTurnosExtra = turnosExtraNoAsignados.map(turno => ({
         hora: turno.fechaTurno.toISOString(),
         disponible: false,
         centroMedicoId: centroMedicoId,

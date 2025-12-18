@@ -434,7 +434,7 @@ Cualquier duda, respondé este mensaje.`;
                 <label className="flex items-center gap-2">
                   <input
                     type="radio"
-                    value={waUsarFicha === 'ficha' ? (pacienteData?.celular || '') : waCelular}
+                    checked={waUsarFicha === 'ficha'}
                     onChange={() => setWaUsarFicha('ficha')}
                     disabled={!pacienteData?.celular}
                   />
@@ -455,7 +455,7 @@ Cualquier duda, respondé este mensaje.`;
                 type="tel"
                 className="p-2 border rounded w-full"
                 placeholder="Ej: 3815123456"
-                value={waUsarFicha === 'ficha' ? (waSlot?.turnoInfo?.pacienteCelular || '') : waCelular}
+                value={waUsarFicha === 'ficha' ? (pacienteData?.celular || '') : waCelular}
                 onChange={e => setWaCelular(e.target.value)}
                 disabled={waUsarFicha === 'ficha'}
               />
@@ -477,14 +477,14 @@ Cualquier duda, respondé este mensaje.`;
               <Button
                 variant='primary'
                 onClick={() => {
-                  const candidate = waUsarFicha === 'ficha' ? (waSlot?.turnoInfo?.pacienteCelular || '') : waCelular;
+                  const candidate = waUsarFicha === 'ficha' ? (pacienteData?.celular || '') : waCelular;
                   const phone = formateoNumeroWhatsapp(candidate, 'AR');
                   if (!phone) return;
                   const link = buildWhatsAppLink(phone, waMensaje);
                   window.open(link, '_blank');
                   setWaOpen(false);
                 }}
-                disabled={(waUsarFicha === 'ficha' && !waSlot?.turnoInfo?.pacienteCelular) || (waUsarFicha === 'otro' && !waCelular)}
+                disabled={(waUsarFicha === 'ficha' && !pacienteData?.celular) || (waUsarFicha === 'otro' && !waCelular)}
               >
                 Enviar por WhatsApp
               </Button>

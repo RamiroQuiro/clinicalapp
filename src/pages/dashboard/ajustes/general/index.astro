@@ -1,11 +1,18 @@
 ---
+import Button from '@/components/atomos/Button';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import { QrCode } from 'lucide-react';
 import FormConfiguracionCentro from './components/FormConfiguracionCentro';
 ---
 
 <LayoutDash title="Ajustes Generales">
   <MainDashboard title="Ajustes Generales" h1="Ajustes Generales" isBack={true}>
+    <div slot="botonera">
+      <Button variant="primary" className="gap-2">
+        <QrCode /> QR sala de espera
+      </Button>
+    </div>
     <div class="p-4 w-full">
       <FormConfiguracionCentro client:load />
     </div>

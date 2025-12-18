@@ -31,8 +31,11 @@ const SalaEspera = ({ user }) => {
     // Si no hay turno, devolvemos un array vacío
     if (!agendaDelDia) return [];
 
-    // Verificamos el estado del turno
-    return agendaDelDia.filter((turno)=> turno.turnoInfo?.estado === 'sala_de_espera')
+    // Incluir tanto 'sala_de_espera' como 'demorado' (siendo llamados)
+    return agendaDelDia.filter((turno)=> 
+        turno.turnoInfo?.estado === 'sala_de_espera' || 
+        turno.turnoInfo?.estado === 'demorado'
+    )
   }, [agendaDelDia]);
   useEffect(() => {
     const toYYYYMMDD = date => {
@@ -60,39 +63,80 @@ const SalaEspera = ({ user }) => {
         });
       });
   };
+
+  const handleLlamarPaciente = async (turno) => {
+    try {
+      console.log(`Llamando a paciente ${turno.turnoInfo?.pacienteNombre} con ID ${turno.turnoInfo?.id}`);
+      
+      // Generar consultorio dinámico basado en el médico
+      const medicoNombre = user?.nombre || 'Dr.';
+      const medicoApellido = user?.apellido || '';  
+      const consultorio = `Consultorio ${medicoNombre} ${medicoApellido}`.trim();
+      
+      const response = await fetch('/api/llamar-paciente', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          turnoId: turno.turnoInfo?.id,
+          consultorio: consultorio
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al llamar paciente');
+      }
+
+      console.log('Paciente llamado exitosamente:', data);
+      showToast(`${data.nombrePaciente} llamado al ${data.consultorio}`, {
+        background: 'bg-green-600',
+      });
+      
+    } catch (error) {
+      console.error('Error al llamar paciente:', error);
+      showToast(error.message || 'No se pudo llamar al paciente', {
+        background: 'bg-red-600',
+      });
+    }
+  };
+
+  
   return (
     <div className="w-full">
-      <div className="flex border-b w-full pb-2 justify-between items-center text-primary-textoTitle  mb-2">
-        <h2 className="text-lg font-semibold ">Lista de Espera</h2>
+      <div className="flex justify-between items-center mb-2 pb-2 border-b w-full text-primary-textoTitle">
+        <h2 className="font-semibold text-lg">Lista de Espera</h2>
         <span className="md:text-2xl">
-          {turnosDelDia?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')?.length || 0}
+          {turnosDelDia?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera' || t?.turnoInfo?.estado === 'demorado')?.length || 0}
         </span>
-        <div className="relative group cursor-pointer" onClick={handleCopy}>
+        <div className="group relative cursor-pointer" onClick={handleCopy}>
           <ClipboardCopy />
-          <div className="absolute hidden group-hover:flex -top-8 left-1/2  animate-aparecer  -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
+          <div className="hidden -top-8 left-1/2 absolute group-hover:flex bg-gray-800 px-2 py-1 rounded text-white text-xs whitespace-nowrap -translate-x-1/2 animate-aparecer">
             Copiar Link
           </div>
         </div>
       </div>
-      <div className="w-full flex flex-col items-start justify-normal gap-3">
+      <div className="flex flex-col justify-normal items-start gap-3 w-full">
         {/* formulario */}
 
-        <div className="flex flex-col w-full  items-start 500 justify-between gap-2  p-2 ">
-          <ul className="flex w-full items-start justify-normal gap-2 flex-col">
-            {colaDeEspera?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')?.length === 0 ? (
+        <div className="flex flex-col justify-between items-start gap-2 p-2 w-full 500">
+          <ul className="flex flex-col justify-normal items-start gap-2 w-full">
+            {colaDeEspera?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera' || t?.turnoInfo?.estado === 'demorado')?.length === 0 ? (
               <div className="w-full">
-                <div className="text-center py-5">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-700/50 flex items-center justify-center">
+                <div className="py-5 text-center">
+                  <div className="flex justify-center items-center bg-gray-700/50 mx-auto mb-3 rounded-full w-12 h-12">
                     <CheckCheck className="w-8 h-8 text-gray-500" />
                   </div>
-                  <p className="text-gray-400 font-medium mb-1">No hay turnos Recepcionados</p>
+                  <p className="mb-1 font-medium text-gray-400">No hay turnos Recepcionados</p>
                   <p className="text-gray-500 text-sm">Los turnos recepcionados aparecerán aquí</p>
                 </div>
               </div>
             ) : (
               colaDeEspera
-                ?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera')
-                .map((turno, i) => <CardSalaEspera key={i} turno={turno} index={i} />)
+                ?.filter(t => t?.turnoInfo?.estado === 'sala_de_espera' || t?.turnoInfo?.estado === 'demorado')
+                .map((turno, i) => <CardSalaEspera key={i} turno={turno} index={i} onLlamarPaciente={handleLlamarPaciente} />)
             )}
           </ul>
         </div>

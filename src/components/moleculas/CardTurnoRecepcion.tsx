@@ -41,27 +41,54 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
     onRecibirPaciente(turno);
   };
 
-  const handleLlamarPaciente = (turnoId: string, nombrePaciente: string) => {
-    console.log(`Llamando a paciente ${nombrePaciente} con ID ${turnoId}`);
-    // Aquí iría la llamada a la API para llamar al paciente
+  const handleLlamarPaciente = async (turno: AgendaSlot) => {
+    try {
+      console.log(`Llamando a paciente ${turno.turnoInfo?.pacienteNombre} con ID ${turno.turnoInfo?.id}`);
+
+      const response = await fetch('/api/llamar-paciente', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          turnoId: turno.turnoInfo?.id,
+          consultorio: 'Consultorio 1' // Podría ser dinámico según el médico
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al llamar paciente');
+      }
+
+      console.log('Paciente llamado exitosamente:', data);
+      // Aquí podrías mostrar un toast o notificación de éxito
+
+    } catch (error: any) {
+      console.error('Error al llamar paciente:', error);
+      // Aquí podrías mostrar un toast o notificación de error
+      alert(error.message || 'No se pudo llamar al paciente');
+    }
   };
 
   const statusInfo = getStatusInfo(slot.turnoInfo?.estado ?? '');
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 p-4 space-y-3">
+    <div className="space-y-3 bg-white p-4 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200">
       {/* Header con información del paciente y estado */}
-      <div className="flex items-start justify-between">
+      <div className="flex justify-between items-start">
         <div className="flex items-center gap-3">
           <InicialesPac
-            nombre={slot.turnoInfo?.pacienteNombre}
-            apellido={slot.turnoInfo?.pacienteApellido}
+            nombre={slot.turnoInfo?.pacienteNombre || ''}
+            apellido={slot.turnoInfo?.pacienteApellido || ''}
           />
           <div>
             <h3 className="font-bold text-gray-900 capitalize">
-              {slot.turnoInfo?.pacienteNombre} {slot.turnoInfo?.pacienteApellido}
+              {slot.turnoInfo?.pacienteNombre || ''} {slot.turnoInfo?.pacienteApellido || ''}
             </h3>
-            <p className="text-sm text-gray-600 mt-0.5">
+            <p className="mt-0.5 text-gray-600 text-sm">
+              DNI: <span className="font-mono">{slot.turnoInfo?.pacienteDocumento || ''}</span>
               DNI: <span className="font-mono">{slot.turnoInfo?.pacienteDocumento}</span>
             </p>
           </div>
@@ -72,21 +99,21 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
       </div>
 
       {/* Grid de información - Mejorado */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+      <div className="gap-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 text-sm">
         <div className="space-y-1">
-          <p className="text-xs text-gray-600 font-medium">Turno</p>
+          <p className="font-medium text-gray-600 text-xs">Turno</p>
           <p className="font-semibold text-gray-900">{extraerHora(slot.hora)}</p>
         </div>
 
         <div className="space-y-1">
-          <p className="text-xs text-gray-600 font-medium">Profesional</p>
+          <p className="font-medium text-gray-600 text-xs">Profesional</p>
           <p className="font-semibold text-gray-900 capitalize">
             Dr. {slot.turnoInfo?.profesionalNombre} {slot.turnoInfo?.profesionalApellido}
           </p>
         </div>
 
         <div className="space-y-1">
-          <p className="text-xs text-gray-600 font-medium">Llegada</p>
+          <p className="font-medium text-gray-600 text-xs">Llegada</p>
           <p className="font-semibold text-gray-900">
             {slot.turnoInfo?.horaLlegadaPaciente
               ? extraerHora(slot.turnoInfo?.horaLlegadaPaciente)
@@ -95,7 +122,7 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
         </div>
 
         <div className="space-y-1">
-          <p className="text-xs text-gray-600 font-medium">Motivo</p>
+          <p className="font-medium text-gray-600 text-xs">Motivo</p>
           <p className="font-semibold text-gray-900 truncate" title={slot.turnoInfo?.motivoConsulta}>
             {slot.turnoInfo?.motivoConsulta || 'No especificado'}
           </p>
@@ -111,43 +138,43 @@ export default function CardTurnoRecepcion({ slot, onRecibirPaciente }: TurnoCar
           onClick={() => handleRecibirPaciente(slot)}
           className="flex items-center gap-1"
         >
-          <UserCheck className="h-4 w-4" />
+          <UserCheck className="w-4 h-4" />
           Recibir
         </Button>
 
         <Button
           size="sm"
           variant="outline"
-          onClick={() => handleLlamarPaciente(slot.turnoInfo?.pacienteId, slot.turnoInfo?.pacienteNombre)}
-          className="flex items-center gap-1 border-green-300 text-green-700 hover:bg-green-50"
+          onClick={() => handleLlamarPaciente(slot)}
+          className="flex items-center gap-1 hover:bg-green-50 border-green-300 text-green-700"
         >
-          <Phone className="h-4 w-4" />
+          <Phone className="w-4 h-4" />
           Llamar
         </Button>
 
         <Button
           size="sm"
           variant="outline"
-          className="flex items-center gap-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+          className="flex items-center gap-1 hover:bg-blue-50 border-blue-300 text-blue-700"
         >
-          <MessageSquare className="h-4 w-4" />
+          <MessageSquare className="w-4 h-4" />
           SMS
         </Button>
 
         <Button
           size="sm"
           variant="outline"
-          className="flex items-center gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+          className="flex items-center gap-1 hover:bg-purple-50 border-purple-300 text-purple-700"
         >
-          <CalendarPlus2 className="h-4 w-4" />
+          <CalendarPlus2 className="w-4 h-4" />
           Reprogramar
         </Button>
       </div>
 
       {/* Alerta para turnos cancelados - Mejorada */}
       {slot.turnoInfo?.estado === 'cancelado' && (
-        <div className="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
-          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+        <div className="flex items-center gap-2 bg-amber-50 px-3 py-2 border border-amber-200 rounded-lg text-amber-700">
+          <AlertCircle className="flex-shrink-0 w-4 h-4" />
           <span className="text-sm">Paciente llegó tarde. Evaluar reprogramación.</span>
         </div>
       )}
