@@ -36,6 +36,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   const [audioPreloaded, setAudioPreloaded] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [userInteracted, setUserInteracted] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
 
   // Preload del audio y solicitar permisos al cargar
   useEffect(() => {
@@ -122,9 +123,9 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
           console.log('Audio reproducido con Audio API');
         }
 
-        // Cuando el sonido termine, reproducir voz
+        // Cuando el sonido termine, reproducir voz (delay para evitar conflicto)
         audio.onended = () => {
-          reproducirVoz(data);
+          setTimeout(() => reproducirVoz(data), 500); // Delay de 500ms
         };
 
       } catch (audioError) {
@@ -147,13 +148,12 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
             console.log('Audio reproducido con Web Audio API');
 
             // Reproducir voz después del audio
-            setTimeout(() => reproducirVoz(data), 2000);
-
+            setTimeout(() => reproducirVoz(data), 500);
           } catch (webAudioError) {
             console.warn('Error con Web Audio API:', webAudioError);
 
             // Estrategia 3: Solo voz (último fallback)
-            reproducirVoz(data);
+            setTimeout(() => reproducirVoz(data), 1000); // Delay de 1s
           }
         }
       }
@@ -161,8 +161,8 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     } catch (error) {
       console.error('Error general reproduciendo audio:', error);
 
-      // Último fallback: solo voz
-      reproducirVoz(data);
+      // Último fallback: solo voz con delay
+      setTimeout(() => reproducirVoz(data), 1000);
     }
   };
 
@@ -244,6 +244,42 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         <p className="mt-1 text-gray-500">
           Bienvenido a tu portal de paciente.
         </p>
+
+        {/* Botón de activación de audio */}
+        {!audioEnabled && (
+          <div className="bg-yellow-50 mt-4 p-4 border border-yellow-200 rounded-lg">
+            <button
+              onClick={() => {
+                // Activar audio con interacción del usuario
+                const activateAudio = async () => {
+                  try {
+                    const audio = new Audio('/sonido-alerta.mp3');
+                    audio.volume = 0.1;
+                    await audio.play().catch(() => { });
+                    setAudioEnabled(true);
+                    setUserInteracted(true);
+
+                    if (audioContext?.state === 'suspended') {
+                      await audioContext.resume();
+                    }
+                  } catch (error) {
+                    console.log('Audio activado (permiso concedido)');
+                    setAudioEnabled(true);
+                    setUserInteracted(true);
+                  }
+                };
+                activateAudio();
+              }}
+              className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg font-medium text-white transition-colors"
+            >
+              🔊 Activar notificaciones de audio
+            </button>
+            <p className="mt-2 text-yellow-700 text-sm">
+              Haz clic para activar las notificaciones de sonido y voz
+            </p>
+          </div>
+        )}
+
         <div className="mt-4">
           <StatusBadge estado={turno.estado} />
         </div>
