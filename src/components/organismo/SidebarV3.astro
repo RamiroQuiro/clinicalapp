@@ -65,36 +65,36 @@ const sections = [
 
 <aside
   id="aside"
-  class="group/sidebar w-full fixed bottom-0 left-0 h- z-20 md:flex md:flex-col items-center justify-start py-1.5 md:py-4 md:h-screen md:sticky md:top-0 md:self-start md:w-16 md:border-r md:border-none border-t lg:bg-gradient-to-b bg-white border-t border-primary-100 from-primary-100 lg:to-primary-150/90 backdrop-blur-sm md:backdrop-blur-none text-primary-textoTitle transition-all duration-300 ease-in-out"
+  class="group/sidebar md:top-0 bottom-0 left-0 z-20 fixed md:sticky md:flex md:flex-col justify-start items-center md:self-start bg-white lg:bg-gradient-to-b from-primary-100 lg:to-primary-150/90 backdrop-blur-sm md:backdrop-blur-none py-1.5 md:py-4 border-primary-100 border-t border-t md:border-r md:border-none w-full md:w-16 h- md:h-screen text-primary-textoTitle transition-all duration-300 ease-in-out"
 >
-  <div class="w-full hidden md:flex px-4 mx-auto items-center justify-end">
+  <div class="hidden md:flex justify-end items-center mx-auto px-4 w-full">
     <PanelLeftOpen
       id="openMenu"
       size={35}
-      className="cursor-pointer stroke-white hover:bg-primary-200 p-1 rounded-full duration-300"
+      className="hover:bg-primary-200 stroke-white p-1 rounded-full duration-300 cursor-pointer"
     />
     <PanelLeftClose
       id="closeMenu"
       size={35}
-      className="cursor-pointer hidden stroke-white hover:bg-primary-200 p-1 rounded-full duration-300"
+      className="hidden hover:bg-primary-200 stroke-white p-1 rounded-full duration-300 cursor-pointer"
     />
   </div>
 
   <!-- Logo -->
-  <div id="logo" class="items-center justify-center h-20 hidden">
-    <a href="/dashboard" class="transition-transform duration-300 group-hover:scale-110">
+  <div id="logo" class="hidden justify-center items-center h-20">
+    <a href="/dashboard" class="group-hover:scale-110 transition-transform duration-300">
       <img src="/ramaCodeBlanco.png" alt="Logo Completo" class="w-24 h-24 -aparecer" />
     </a>
   </div>
 
   <!-- Menú lateral -->
   <nav
-    class="flex-1 flex md:flex-col w-full duration-300 px-1 md:px-3 items-center md:justify-start justify-evenly md:items-start md:mt-10 -aparecer space-y-2"
+    class="flex md:flex-col flex-1 justify-evenly md:justify-start items-center md:items-start space-y-2 md:mt-10 px-1 md:px-3 w-full duration-300 -aparecer"
   >
     {
       sections
         // 🔹 Filtrar según los roles permitidos
-        .filter(section => section.rolesPermitidos.includes(user.rolEnCentro))
+        .filter(section => section.rolesPermitidos.includes(user?.rolEnCentro))
         .map(section => {
           const isActive =
             currentPath === section.href ||
@@ -111,11 +111,11 @@ const sections = [
                 },
               ]}
             >
-              <section.icon className="lg:h-5 lg:w-5 h-5 w-5 lg:flex-shrink-0" />
-              <span class="menu-text-inline hidden group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
+              <section.icon className="lg:flex-shrink-0 w-5 lg:w-5 h-5 lg:h-5" />
+              <span class="hidden menu-text-inline group-[.is-open]/sidebar:inline ml-3 whitespace-nowrap">
                 {section.name}
               </span>
-              <span class="menu-text-tooltip absolute left-full duration-300 ml-1 hidden group-hover/item:block group-[.is-open]/sidebar:hidden rounded-lg px-2 py-1 text-sm bg-primary-100/90 backdrop-blur-sm text-white z-[999]">
+              <span class="hidden group-[.is-open]/sidebar:hidden group-hover/item:block left-full z-[999] absolute bg-primary-100/90 backdrop-blur-sm ml-1 px-2 py-1 rounded-lg menu-text-tooltip text-white text-sm duration-300">
                 {section.name}
               </span>
             </a>
@@ -125,16 +125,16 @@ const sections = [
   </nav>
 
   <!-- Footer -->
-  <div class="px-2 py-4 border-t w-full hidden md:block border-gray-200">
-    <div class="flex items-center w-full justify-center group-hover:justify-start group-hover:px-2">
+  <div class="hidden md:block px-2 py-4 border-gray-200 border-t w-full">
+    <div class="flex justify-center group-hover:justify-start items-center group-hover:px-2 w-full">
       <img
-        class="h-10 w-10 rounded-full object-contain flex-shrink-0"
+        class="flex-shrink-0 rounded-full w-10 h-10 object-contain"
         src="/ramaCodeBlanco.png"
         alt="Avatar"
       />
-      <div class="ml-3 hidden group animate-aparecer divide-purple-300" id="spanRamacode">
-        <p class="text-sm font-medium text-primary-texto whitespace-nowrap">RamaCode</p>
-        <p class="text-xs text-primary-texto whitespace-nowrap">www.ramacode.com</p>
+      <div class="group hidden ml-3 divide-purple-300 animate-aparecer" id="spanRamacode">
+        <p class="font-medium text-primary-texto text-sm whitespace-nowrap">RamaCode</p>
+        <p class="text-primary-texto text-xs whitespace-nowrap">www.ramacode.com</p>
       </div>
     </div>
   </div>
