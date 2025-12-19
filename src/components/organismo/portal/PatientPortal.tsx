@@ -203,11 +203,27 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
 
   // Conexión a Server-Sent Events
   useEffect(() => {
+    console.log('🔗 Iniciando conexión SSE desde el portal del paciente...');
+
     const eventSource = new EventSource('/api/events');
+
+    // Logging para diagnóstico
+    eventSource.onopen = () => {
+      console.log('✅ SSE Conectado exitosamente');
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('❌ Error en conexión SSE:', error);
+      console.error('Estado del EventSource:', {
+        readyState: eventSource.readyState,
+        url: eventSource.url
+      });
+    };
 
     // Escuchar actualizaciones generales de turnos
     eventSource.addEventListener('turno-actualizado', (event) => {
       const turnoActualizado = JSON.parse(event.data);
+      console.log('📝 Evento turno-actualizado recibido:', turnoActualizado);
       // Si la actualización es para mi turno, actualizo mi estado
       if (turnoActualizado.id === turno.id) {
         setTurno(turnoActualizado);
@@ -217,6 +233,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     // Escuchar evento específico de llamado a pacientes
     eventSource.addEventListener('paciente-llamado', (event) => {
       const data = JSON.parse(event.data);
+      console.log('📢 Evento paciente-llamado recibido:', data);
       setAhoraLlamando({ nombre: data.nombrePaciente, consultorio: data.consultorio });
 
       // Reproducir sonido y voz con datos del paciente
@@ -229,6 +246,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     };
 
     return () => {
+      console.log('🔌 Cerrando conexión SSE...');
       eventSource.close();
     };
   }, [turno.id]);
