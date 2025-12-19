@@ -34,173 +34,122 @@ const StatusBadge = ({ estado }: { estado: string }) => {
 export default function PatientPortal({ initialData }: { initialData: InitialData }) {
   const [turno, setTurno] = useState(initialData.turno);
   const [ahoraLlamando, setAhoraLlamando] = useState({ nombre: '-', consultorio: '-' });
-  const [audioPreloaded, setAudioPreloaded] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [userInteracted, setUserInteracted] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
 
-  // Preload del audio y solicitar permisos al cargar
+  // Crear el AudioContext al montar el componente
   useEffect(() => {
-    const preloadAudio = async () => {
-      try {
-        // Crear AudioContext
-        const context = new (window.AudioContext || (window as any).webkitAudioContext)();
-        setAudioContext(context);
-
-        // Intentar reanudar AudioContext (requerido por muchos navegadores)
-        if (context.state === 'suspended') {
-          await context.resume();
-        }
-
-        // Cargar audio
-        const audio = new Audio('/sonido-alerta.mp3');
-        audio.volume = 0.3;
-        await audio.load();
-
-        setAudioPreloaded(true);
-        console.log('Audio preloaded successfully, context state:', context.state);
-      } catch (error) {
-        console.warn('Error preloading audio:', error);
-      }
-    };
-
-    preloadAudio();
+    try {
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioContext(context);
+    } catch (error) {
+      console.warn('Error creating AudioContext:', error);
+    }
   }, []);
 
-  // Detectar interacción del usuario (requerido para autoplay en móviles)
-  useEffect(() => {
-    const handleUserInteraction = () => {
-      if (!userInteracted && audioContext?.state === 'suspended') {
-        audioContext.resume();
-        setUserInteracted(true);
-        console.log('AudioContext resumed after user interaction');
-      }
-    };
 
-    // Eventos que indican interacción del usuario
-    const events = ['click', 'touchstart', 'keydown'];
-    events.forEach(event => {
-      document.addEventListener(event, handleUserInteraction, { once: true });
-    });
+  // Función para activar audio y voz con un gesto del usuario
+  const handleActivateAudio = async () => {
+    if (audioEnabled || !audioContext) return;
 
-    return () => {
-      events.forEach(event => {
-        document.removeEventListener(event, handleUserInteraction);
-      });
-    };
-  }, [audioContext, userInteracted]);
-
-  // Función para reproducir sonido con manejo mejorado para móviles y compatibilidad
-  const playAlertSound = async (data?: any) => {
     try {
-      // Reanudar AudioContext si está suspendido
-      if (audioContext?.state === 'suspended') {
+      // 1. Reanudar AudioContext (clave para móviles)
+      if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
 
-      // Detectar navegador para ajustes específicos
-      const isOpera = navigator.userAgent.includes('Opera');
-      const isEdge = navigator.userAgent.includes('Edg');
-      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      // 2. Reproducir un sonido silencioso para "desbloquear" el audio
+      const audio = new Audio('/sonido-alerta.mp3');
+      audio.volume = 0.01;
+      await audio.play();
+      audio.pause();
 
-      console.log('Navegador detectado:', { isOpera, isEdge, isMobile });
-
-      // Estrategia 1: Audio Context (más compatible)
-      let audioPlayed = false;
-      try {
-        const audio = new Audio('/sonido-alerta.mp3');
-        audio.volume = 0.5;
-
-        // Para móviles, configurar preload
-        if (isMobile) {
-          audio.preload = 'auto';
-        }
-
-        const playPromise = audio.play();
-
-        if (playPromise !== undefined) {
-          await playPromise;
-          audioPlayed = true;
-          console.log('Audio reproducido con Audio API');
-        }
-
-        // Cuando el sonido termine, reproducir voz (delay para evitar conflicto)
-        audio.onended = () => {
-          setTimeout(() => reproducirVoz(data), 500); // Delay de 500ms
-        };
-
-      } catch (audioError) {
-        console.warn('Error con Audio API:', audioError);
-
-        // Estrategia 2: Web Audio API (fallback)
-        if (!audioPlayed) {
-          try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const response = await fetch('/sonido-alerta.mp3');
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContext.destination);
-
-            source.start(0);
-            audioPlayed = true;
-            console.log('Audio reproducido con Web Audio API');
-
-            // Reproducir voz después del audio
-            setTimeout(() => reproducirVoz(data), 500);
-          } catch (webAudioError) {
-            console.warn('Error con Web Audio API:', webAudioError);
-
-            // Estrategia 3: Solo voz (último fallback)
-            setTimeout(() => reproducirVoz(data), 1000); // Delay de 1s
-          }
-        }
-      }
-
-    } catch (error) {
-      console.error('Error general reproduciendo audio:', error);
-
-      // Último fallback: solo voz con delay
-      setTimeout(() => reproducirVoz(data), 1000);
-    }
-  };
-
-  // Función separada para reproducir voz
-  const reproducirVoz = (data?: any) => {
-    try {
+      // 3. "Calentar" el motor de Speech Synthesis con un texto silencioso
       if ('speechSynthesis' in window) {
-        // Limpiar cola primero
-        window.speechSynthesis.cancel();
-
-        let texto = 'Por favor, diríjase al consultorio indicado';
-        if (data?.nombrePaciente && data?.consultorio) {
-          texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
-        }
-
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = 'es-AR';
-        utterance.rate = 0.9;
-        utterance.volume = 1.0;
-        utterance.pitch = 1.0;
-
-        // Para Opera y Edge, configuraciones específicas
-        const isOpera = navigator.userAgent.includes('Opera');
-        const isEdge = navigator.userAgent.includes('Edg');
-
-        if (isOpera || isEdge) {
-          utterance.rate = 0.8; // Más lento para Opera
-          utterance.pitch = 0.9; // Pitch más bajo
-        }
-
+        window.speechSynthesis.cancel(); // Limpiar cola
+        const utterance = new SpeechSynthesisUtterance(' '); // Un espacio en blanco
+        utterance.volume = 0; // Sin volumen
         window.speechSynthesis.speak(utterance);
-        console.log('Voz reproducida con configuración para:', isOpera ? 'Opera' : isEdge ? 'Edge' : 'general');
       }
+      
+      setAudioEnabled(true);
+      setUserInteracted(true);
+      console.log('✅ Audio y Voz activados por el usuario.');
+
     } catch (error) {
-      console.error('Error reproduciendo voz:', error);
+      console.error('⚠️ Error al activar audio/voz. El usuario debe interactuar con la página.', error);
+      // Igualmente se marca como activado para ocultar el botón
+      setAudioEnabled(true);
+      setUserInteracted(true);
     }
   };
+
+
+  // Función simplificada para reproducir solo el sonido de alerta
+  const playAlertSound = async () => {
+    if (!audioEnabled || !audioContext) return;
+
+    try {
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      const audio = new Audio('/sonido-alerta.mp3');
+      audio.volume = 0.5;
+      await audio.play();
+      console.log('🔔 Sonido de alerta reproducido.');
+    } catch (error) {
+      console.error('Error reproduciendo sonido de alerta:', error);
+    }
+  };
+
+  // Función robusta para reproducir voz, esperando a que las voces carguen
+  const reproducirVoz = (data?: any) => {
+    if (!audioEnabled || !('speechSynthesis' in window)) return;
+    
+    const speak = () => {
+      window.speechSynthesis.cancel(); // Limpiar cola antes de hablar
+
+      let texto = 'Por favor, diríjase al consultorio indicado';
+      if (data?.nombrePaciente && data?.consultorio) {
+        texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = 'es-AR';
+      utterance.rate = 0.9;
+      utterance.volume = 1.0;
+
+      // Intentar seleccionar una voz en español para mejorar la calidad
+      const voices = window.speechSynthesis.getVoices();
+      const spanishVoice = voices.find(voice => voice.lang === 'es-AR' || voice.lang === 'es-ES');
+      if (spanishVoice) {
+        utterance.voice = spanishVoice;
+        console.log('Voz en español encontrada:', spanishVoice.name);
+      }
+
+      window.speechSynthesis.speak(utterance);
+      console.log(`🗣️ Intentando decir: "${texto}"`);
+    };
+
+    // La carga de voces puede ser asíncrona.
+    if (window.speechSynthesis.getVoices().length === 0) {
+      console.log('Voces del sintetizador no cargadas, esperando evento onvoiceschanged...');
+      window.speechSynthesis.onvoiceschanged = () => {
+        console.log('Voces cargadas, procediendo a hablar.');
+        speak();
+        // Limpiar el listener para evitar múltiples llamadas
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+      // En algunos navegadores el evento no se dispara, un timeout puede ayudar
+      setTimeout(() => {
+        if(window.speechSynthesis.getVoices().length > 0) speak();
+      }, 500)
+    } else {
+      speak();
+    }
+  };
+
 
   // Conexión a Server-Sent Events
   useEffect(() => {
@@ -242,20 +191,16 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       console.log('📢 Evento paciente-llamado recibido:', data);
       setAhoraLlamando({ nombre: data.nombrePaciente, consultorio: data.consultorio });
 
-      // Reproducir sonido y voz con datos del paciente
-      playAlertSound(data);
+      // Reproducir sonido y, con un pequeño retardo, la voz
+      playAlertSound();
+      setTimeout(() => reproducirVoz(data), 700); // Retardo para evitar solapamiento
     });
-
-    eventSource.onerror = () => {
-      console.error('SSE Error');
-      eventSource.close();
-    };
 
     return () => {
       console.log('🔌 Cerrando conexión SSE...');
       eventSource.close();
     };
-  }, [turno.id]);
+  }, [turno.id, audioEnabled]); // Depender de audioEnabled para reiniciar si es necesario
 
   return (
     <div className="mx-auto max-w-2xl font-sans">
@@ -273,27 +218,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         {!audioEnabled && (
           <div className="bg-yellow-50 mt-4 p-4 border border-yellow-200 rounded-lg">
             <button
-              onClick={() => {
-                // Activar audio con interacción del usuario
-                const activateAudio = async () => {
-                  try {
-                    const audio = new Audio('/sonido-alerta.mp3');
-                    audio.volume = 0.1;
-                    await audio.play().catch(() => { });
-                    setAudioEnabled(true);
-                    setUserInteracted(true);
-
-                    if (audioContext?.state === 'suspended') {
-                      await audioContext.resume();
-                    }
-                  } catch (error) {
-                    console.log('Audio activado (permiso concedido)');
-                    setAudioEnabled(true);
-                    setUserInteracted(true);
-                  }
-                };
-                activateAudio();
-              }}
+              onClick={handleActivateAudio}
               className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg font-medium text-white transition-colors"
             >
               🔊 Activar notificaciones de audio
