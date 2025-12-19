@@ -21,7 +21,7 @@ export const ModalQR: React.FC<ModalQRProps> = ({
     const [isGenerating, setIsGenerating] = useState(false);
 
     // Generar URL del QR para el centro
-    const qrUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/autocheckin?centroId=${centroMedicoId}`;
+    const qrUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/publico/autocheckin?centroId=${centroMedicoId}`;
 
     // Fecha y hora actual para el cartel
     const fechaActual = format(toZonedTime(new Date(), APP_TIME_ZONE), 'dd/MM/yyyy');
