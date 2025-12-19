@@ -4,7 +4,7 @@ import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import FormConfiguracionCentro from './components/FormConfiguracionCentro';
 import { QRManager } from './components/QRManager';
 
-const user = Astro.locals.user;
+const user = Astro.locals.user as any; // Usar any para evitar error de tipo
 const centroMedicoId = user?.centroMedicoId || 'centro-id-demo';
 const nombreCentro = 'Centro Médico Principal';
 ---
