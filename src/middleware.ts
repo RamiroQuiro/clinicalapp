@@ -47,6 +47,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
     // ✅ Rutas abiertas especiales (públicas por naturaleza)
     if (
+      pathname.startsWith('/portal/') ||
       pathname.startsWith('/api/public/') ||
       pathname.startsWith('/reportes/') ||
       pathname.startsWith('/passRestablecer') ||
