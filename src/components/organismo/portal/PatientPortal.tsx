@@ -88,7 +88,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     };
   }, [audioContext, userInteracted]);
 
-  // Función para reproducir sonido con manejo mejorado para móviles
+  // Función para reproducir sonido con manejo mejorado para móviles y compatibilidad
   const playAlertSound = async (data?: any) => {
     try {
       // Reanudar AudioContext si está suspendido
@@ -96,64 +96,108 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         await audioContext.resume();
       }
 
-      const audio = new Audio('/sonido-alerta.mp3');
-      audio.volume = 0.5;
+      // Detectar navegador para ajustes específicos
+      const isOpera = navigator.userAgent.includes('Opera');
+      const isEdge = navigator.userAgent.includes('Edg');
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-      // Intentar reproducir con diferentes estrategias
-      const playPromise = audio.play();
+      console.log('Navegador detectado:', { isOpera, isEdge, isMobile });
 
-      if (playPromise !== undefined) {
-        await playPromise;
-      }
+      // Estrategia 1: Audio Context (más compatible)
+      let audioPlayed = false;
+      try {
+        const audio = new Audio('/sonido-alerta.mp3');
+        audio.volume = 0.5;
 
-      // Cuando el sonido termine, reproducir voz con nombre del paciente
-      audio.onended = () => {
-        if ('speechSynthesis' in window && data?.nombrePaciente && data?.consultorio) {
-          const utterance = new SpeechSynthesisUtterance(
-            `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`
-          );
-          utterance.lang = 'es-AR';
-          utterance.rate = 0.9;
-          utterance.volume = 1.0;
-
-          // Reanudar speechSynthesis si está suspendido
-          window.speechSynthesis.cancel(); // Limpiar cola
-          window.speechSynthesis.speak(utterance);
-        } else if ('speechSynthesis' in window) {
-          // Fallback si no hay datos
-          const utterance = new SpeechSynthesisUtterance('Por favor, diríjase al consultorio indicado');
-          utterance.lang = 'es-AR';
-          utterance.rate = 0.9;
-          utterance.volume = 1.0;
-
-          window.speechSynthesis.cancel(); // Limpiar cola
-          window.speechSynthesis.speak(utterance);
+        // Para móviles, configurar preload
+        if (isMobile) {
+          audio.preload = 'auto';
         }
-      };
+
+        const playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+          await playPromise;
+          audioPlayed = true;
+          console.log('Audio reproducido con Audio API');
+        }
+
+        // Cuando el sonido termine, reproducir voz
+        audio.onended = () => {
+          reproducirVoz(data);
+        };
+
+      } catch (audioError) {
+        console.warn('Error con Audio API:', audioError);
+
+        // Estrategia 2: Web Audio API (fallback)
+        if (!audioPlayed) {
+          try {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const response = await fetch('/sonido-alerta.mp3');
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+
+            source.start(0);
+            audioPlayed = true;
+            console.log('Audio reproducido con Web Audio API');
+
+            // Reproducir voz después del audio
+            setTimeout(() => reproducirVoz(data), 2000);
+
+          } catch (webAudioError) {
+            console.warn('Error con Web Audio API:', webAudioError);
+
+            // Estrategia 3: Solo voz (último fallback)
+            reproducirVoz(data);
+          }
+        }
+      }
 
     } catch (error) {
-      console.error('Error playing audio:', error);
+      console.error('Error general reproduciendo audio:', error);
 
-      // Fallback: solo voz si el audio falla
-      if ('speechSynthesis' in window && data?.nombrePaciente && data?.consultorio) {
-        const utterance = new SpeechSynthesisUtterance(
-          `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`
-        );
+      // Último fallback: solo voz
+      reproducirVoz(data);
+    }
+  };
+
+  // Función separada para reproducir voz
+  const reproducirVoz = (data?: any) => {
+    try {
+      if ('speechSynthesis' in window) {
+        // Limpiar cola primero
+        window.speechSynthesis.cancel();
+
+        let texto = 'Por favor, diríjase al consultorio indicado';
+        if (data?.nombrePaciente && data?.consultorio) {
+          texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(texto);
         utterance.lang = 'es-AR';
         utterance.rate = 0.9;
         utterance.volume = 1.0;
+        utterance.pitch = 1.0;
 
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-      } else if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance('Por favor, diríjase al consultorio indicado');
-        utterance.lang = 'es-AR';
-        utterance.rate = 0.9;
-        utterance.volume = 1.0;
+        // Para Opera y Edge, configuraciones específicas
+        const isOpera = navigator.userAgent.includes('Opera');
+        const isEdge = navigator.userAgent.includes('Edg');
 
-        window.speechSynthesis.cancel();
+        if (isOpera || isEdge) {
+          utterance.rate = 0.8; // Más lento para Opera
+          utterance.pitch = 0.9; // Pitch más bajo
+        }
+
         window.speechSynthesis.speak(utterance);
+        console.log('Voz reproducida con configuración para:', isOpera ? 'Opera' : isEdge ? 'Edge' : 'general');
       }
+    } catch (error) {
+      console.error('Error reproduciendo voz:', error);
     }
   };
 
