@@ -6,6 +6,7 @@ interface InitialData {
   paciente: { nombre: string; apellido: string; };
   medico: { nombre: string; apellido: string; };
   turno: { id: string; estado: string; horaTurno: string; };
+  centroMedicoId: string; // Agregar centro médico
 }
 
 // Componente para mostrar el estado actual del turno del paciente
@@ -204,8 +205,13 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   // Conexión a Server-Sent Events
   useEffect(() => {
     console.log('🔗 Iniciando conexión SSE desde el portal del paciente...');
+    console.log('🏥 Centro Médico ID:', initialData.centroMedicoId);
 
-    const eventSource = new EventSource('/api/events');
+    // Construir URL con centroMedicoId
+    const eventsUrl = `/api/events?centroMedicoId=${initialData.centroMedicoId}`;
+    console.log('📡 URL de conexión SSE:', eventsUrl);
+
+    const eventSource = new EventSource(eventsUrl);
 
     // Logging para diagnóstico
     eventSource.onopen = () => {
