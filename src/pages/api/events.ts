@@ -16,17 +16,19 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Para el portal del paciente, filtrar eventos solo por centroMedicoId
     // El paciente solo debe recibir eventos de su centro médico específico
-    const controller = new ReadableStreamDefaultController();
-    const clientId = addClient(
-        controller,
-        undefined, // No userId para portal público
-        centroMedicoId // Filtrar por centro médico específico
-    );
-
-    console.log(`📡 Cliente SSE [${clientId}] conectado al portal público del centro: ${centroMedicoId}`);
+    let controller: ReadableStreamDefaultController;
+    let clientId: string;
 
     const stream = new ReadableStream({
-        start() {
+        start(ctrl) {
+            controller = ctrl;
+            clientId = addClient(
+                controller,
+                undefined, // No userId para portal público
+                centroMedicoId // Filtrar por centro médico específico
+            );
+
+            console.log(`📡 Cliente SSE [${clientId}] conectado al portal público del centro: ${centroMedicoId}`);
             let isActive = true;
 
             const interval = setInterval(() => {
