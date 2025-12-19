@@ -14,11 +14,21 @@ const UMBRAL_OCUPACION_MEDIA = 40; // %
 const UMBRAL_OCUPACION_BAJA = 10; // %
 const UMBRAL_LICENCIA = 100; // %
 
-// Helper para convertir hora (HH:MM) a minutos desde la medianoche
+// Helper para convertir hora (HH:MM) a minutos desde la medianoche con timezone
 const convertirHoraAMinutos = (hora: string | null | undefined): number => {
   if (!hora) return 0;
+
+  // Crear fecha base con la hora y el timezone correcto
+  const fechaBase = toZonedTime(new Date(), APP_TIME_ZONE);
   const [horas, minutos] = hora.split(':').map(Number);
-  return horas * 60 + minutos;
+
+  // Crear fecha con la hora del horario
+  const fechaConHora = new Date(fechaBase);
+  fechaConHora.setHours(horas, minutos, 0, 0);
+
+  // Convertir a minutos usando el timezone
+  const fechaUTC = toZonedTime(fechaConHora, APP_TIME_ZONE);
+  return fechaUTC.getHours() * 60 + fechaUTC.getMinutes();
 };
 
 // Helper para calcular los minutos disponibles de trabajo en un día
