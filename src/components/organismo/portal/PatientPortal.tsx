@@ -34,27 +34,29 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   const [turno, setTurno] = useState(initialData.turno);
   const [ahoraLlamando, setAhoraLlamando] = useState({ nombre: '-', consultorio: '-' });
   const [audioPreloaded, setAudioPreloaded] = useState(false);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [userInteracted, setUserInteracted] = useState(false);
 
   // Preload del audio y solicitar permisos al cargar
   useEffect(() => {
     const preloadAudio = async () => {
       try {
-        const audio = new Audio('/sonido-alerta.mp3');
-        audio.volume = 0.3;
+        // Crear AudioContext
+        const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioContext(context);
 
-        // Intentar cargar el audio
-        await audio.load();
-
-        // Solicitar permisos de audio (si es necesario)
-        if ('audioContext' in window) {
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-          if (audioContext.state === 'suspended') {
-            await audioContext.resume();
-          }
+        // Intentar reanudar AudioContext (requerido por muchos navegadores)
+        if (context.state === 'suspended') {
+          await context.resume();
         }
 
+        // Cargar audio
+        const audio = new Audio('/sonido-alerta.mp3');
+        audio.volume = 0.3;
+        await audio.load();
+
         setAudioPreloaded(true);
-        console.log('Audio preloaded successfully');
+        console.log('Audio preloaded successfully, context state:', context.state);
       } catch (error) {
         console.warn('Error preloading audio:', error);
       }
@@ -63,17 +65,48 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     preloadAudio();
   }, []);
 
-  // Función para reproducir sonido con manejo de errores mejorado
+  // Detectar interacción del usuario (requerido para autoplay en móviles)
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      if (!userInteracted && audioContext?.state === 'suspended') {
+        audioContext.resume();
+        setUserInteracted(true);
+        console.log('AudioContext resumed after user interaction');
+      }
+    };
+
+    // Eventos que indican interacción del usuario
+    const events = ['click', 'touchstart', 'keydown'];
+    events.forEach(event => {
+      document.addEventListener(event, handleUserInteraction, { once: true });
+    });
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleUserInteraction);
+      });
+    };
+  }, [audioContext, userInteracted]);
+
+  // Función para reproducir sonido con manejo mejorado para móviles
   const playAlertSound = async (data?: any) => {
     try {
+      // Reanudar AudioContext si está suspendido
+      if (audioContext?.state === 'suspended') {
+        await audioContext.resume();
+      }
+
       const audio = new Audio('/sonido-alerta.mp3');
       audio.volume = 0.5;
 
-      // Reproducir sonido
-      await audio.play();
+      // Intentar reproducir con diferentes estrategias
+      const playPromise = audio.play();
+
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
 
       // Cuando el sonido termine, reproducir voz con nombre del paciente
-      // TODO: analizar si comunicar el numero de consultoario o nombre del dr
       audio.onended = () => {
         if ('speechSynthesis' in window && data?.nombrePaciente && data?.consultorio) {
           const utterance = new SpeechSynthesisUtterance(
@@ -81,18 +114,26 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
           );
           utterance.lang = 'es-AR';
           utterance.rate = 0.9;
+          utterance.volume = 1.0;
+
+          // Reanudar speechSynthesis si está suspendido
+          window.speechSynthesis.cancel(); // Limpiar cola
           window.speechSynthesis.speak(utterance);
         } else if ('speechSynthesis' in window) {
           // Fallback si no hay datos
           const utterance = new SpeechSynthesisUtterance('Por favor, diríjase al consultorio indicado');
           utterance.lang = 'es-AR';
           utterance.rate = 0.9;
+          utterance.volume = 1.0;
+
+          window.speechSynthesis.cancel(); // Limpiar cola
           window.speechSynthesis.speak(utterance);
         }
       };
 
     } catch (error) {
       console.error('Error playing audio:', error);
+
       // Fallback: solo voz si el audio falla
       if ('speechSynthesis' in window && data?.nombrePaciente && data?.consultorio) {
         const utterance = new SpeechSynthesisUtterance(
@@ -100,11 +141,17 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         );
         utterance.lang = 'es-AR';
         utterance.rate = 0.9;
+        utterance.volume = 1.0;
+
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
       } else if ('speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance('Por favor, diríjase al consultorio indicado');
         utterance.lang = 'es-AR';
         utterance.rate = 0.9;
+        utterance.volume = 1.0;
+
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
       }
     }
