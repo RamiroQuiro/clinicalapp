@@ -35,235 +35,129 @@ const StatusBadge = ({ estado }: { estado: string }) => {
 export default function PatientPortal({ initialData }: { initialData: InitialData }) {
   const [turno, setTurno] = useState(initialData.turno);
   const [ahoraLlamando, setAhoraLlamando] = useState({ nombre: '-', consultorio: '-' });
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [userInteracted, setUserInteracted] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
-
-  // Crear el AudioContext al montar el componente
-  useEffect(() => {
-    try {
-      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
-      setAudioContext(context);
-    } catch (error) {
-      console.log('Error creating AudioContext:', error);
-    }
-  }, []);
-
-  // Referencia persistente para el elemento de audio (mejor para móviles)
+  const audioContextRef = useRef<AudioContext | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Crear el AudioContext al montar el componente
   useEffect(() => {
-    try {
-      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
-      setAudioContext(context);
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
 
-      // Inicializar el elemento de audio una sola vez
-      const audio = new Audio('/sonido-alerta.mp3');
-      audio.preload = 'auto'; // Importante para móviles
-      audioRef.current = audio;
-    } catch (error) {
-      console.log('Error creating AudioContext:', error);
-    }
+    audioContextRef.current = new AudioContextClass();
+
+    const audio = new Audio('/sonido-alerta.mp3');
+    audio.preload = 'auto';
+    audioRef.current = audio;
   }, []);
 
   // Función para activar audio y voz con un gesto del usuario
   const handleActivateAudio = async () => {
-    if (audioEnabled) return;
-
     try {
-      // 1. Solicitar permisos de notificación (para móviles), si corresponde
-      if ('Notification' in window && Notification.permission === 'default') {
-        // No bloqueamos por esto, es opcional
-        Notification.requestPermission().catch(e =>
-          console.log('Permiso notificaciones ignorado', e)
-        );
+      const ctx = audioContextRef.current;
+      if (!ctx) return;
+
+      // Desbloquear AudioContext
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
       }
 
-      // 2. Desbloquear AudioContext (Clave para iOS/Android Chrome)
-      if (audioContext && audioContext.state === 'suspended') {
-        await audioContext.resume();
-      }
+      // Sonido corto de confirmación (obligatorio para móviles)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-      // 3. Desbloquear el elemento HTML Audio (Fallback)
-      // Reproducir silencio brevemente desbloquea el elemento para usos futuros controlados por script
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.frequency.value = 880;
+      gain.gain.value = 0.2;
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+
+      // Desbloquear HTMLAudio (iOS)
       if (audioRef.current) {
-        audioRef.current.volume = 0; // Muteado para el desbloqueo
-        // Promesa para manejar play() que devuelve promesa en navegadores modernos
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          await playPromise;
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-          // Restaurar volumen para cuando se necesite de verdad
-          audioRef.current.volume = 1.0;
-        }
+        audioRef.current.volume = 0.3;
+        await audioRef.current.play();
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.volume = 1;
       }
 
-      // 4. Feedback auditivo inmediato (Oscilador) para confirmar al usuario
-      if (audioContext) {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.value = 440; // A4
-        gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
-      }
-
-      // 5. "Calentar" el motor de Speech Synthesis
+      // Confirmación por voz (opcional, pero útil)
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(' ');
-        utterance.volume = 0;
-        window.speechSynthesis.speak(utterance);
+        const u = new SpeechSynthesisUtterance('Sonido activado');
+        u.lang = 'es-AR';
+        window.speechSynthesis.speak(u);
       }
 
       setAudioEnabled(true);
-      setUserInteracted(true);
-      console.log('✅ Audio y Voz activados y desbloqueados.');
-    } catch (error) {
-      console.error('⚠️ Error al activar audio/voz:', error);
-      // Marcamos como activado igual para no trabar la UI, el usuario ya intencionó activar
-      setAudioEnabled(true);
-      setUserInteracted(true);
+      console.log('✅ Audio habilitado correctamente');
+    } catch (e) {
+      console.error('Error activando audio:', e);
     }
   };
 
   // Función simplificada para reproducir solo el sonido de alerta
-  const playAlertSound = async () => {
+  const playAlertSound = () => {
     if (!audioEnabled) return;
 
-    // Estrategia "Doble Cañón": Intentar AudioContext Y HTMLAudioElement
-    // Esto maximiza la probabilidad de que suene en cualquier dispositivo
+    const ctx = audioContextRef.current;
 
-    // 1. AudioContext (Mejor latencia y funciona bien si se desbloqueó)
-    if (audioContext) {
+    // 1. AudioContext (principal)
+    if (ctx) {
       try {
-        if (audioContext.state === 'suspended') {
-          audioContext.resume().catch(e => console.warn('No se pudo reanudar context', e));
-        }
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        const now = ctx.currentTime;
 
-        // Sonido "Ding-Dong"
-        const now = audioContext.currentTime;
+        osc.frequency.setValueAtTime(900, now);
+        osc.frequency.setValueAtTime(600, now + 0.25);
 
-        oscillator.frequency.setValueAtTime(800, now);
-        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
 
-        gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-
-        oscillator.start(now);
-        oscillator.stop(now + 0.4);
-      } catch (e) {
-        console.warn('Fallo oscilador', e);
-      }
+        osc.start(now);
+        osc.stop(now + 0.4);
+      } catch {}
     }
 
-    // 2. HTML Audio Element (Fallback robusto si el archivo existe)
+    // 2. MP3 respaldo
     if (audioRef.current) {
-      try {
-        audioRef.current.currentTime = 0;
-        audioRef.current.volume = 1.0; // Asegurar volumen
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.warn('Auto-play preventivo bloqueó el audio html:', error);
-          });
-        }
-      } catch (e) {
-        console.warn('Fallo audio ref', e);
-      }
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
     }
 
     // 3. Vibración
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate([200, 100, 200]);
-      } catch (e) {
-        // Ignorar
-      }
+    if ('vibrate' in navigator) {
+      navigator.vibrate([200, 100, 200]);
     }
-
-    console.log('🔔 Sonido de alerta invocado.');
   };
 
   // Función robusta para reproducir voz, esperando a que las voces carguen
-  const reproducirVoz = (data?: any) => {
+  const reproducirVoz = (data?: { nombrePaciente?: string; consultorio?: string }) => {
     if (!audioEnabled || !('speechSynthesis' in window)) return;
 
-    const speak = () => {
-      window.speechSynthesis.cancel(); // Limpiar cola antes de hablar
+    window.speechSynthesis.cancel();
 
-      let texto = 'Por favor, diríjase al consultorio indicado';
-      if (data?.nombrePaciente && data?.consultorio) {
-        texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
-      }
-
-      const utterance = new SpeechSynthesisUtterance(texto);
-      utterance.lang = 'es-AR';
-      utterance.rate = 0.85; // Un poco más lento para mejor comprensión en móviles
-      utterance.volume = 1.0;
-      utterance.pitch = 1.0;
-
-      // Intentar seleccionar una voz en español para mejorar la calidad
-      const voices = window.speechSynthesis.getVoices();
-      const spanishVoice = voices.find(
-        voice => voice.lang === 'es-AR' || voice.lang === 'es-ES' || voice.lang.startsWith('es')
-      );
-      if (spanishVoice) {
-        utterance.voice = spanishVoice;
-        console.log('Voz en español encontrada:', spanishVoice.name);
-      }
-
-      // Manejar errores de síntesis de voz
-      utterance.onerror = event => {
-        console.error('Error en síntesis de voz:', event);
-      };
-
-      utterance.onend = () => {
-        console.log('🗣️ Voz reproducida completamente');
-      };
-
-      window.speechSynthesis.speak(utterance);
-      console.log(`🗣️ Intentando decir: "${texto}"`);
-    };
-
-    // La carga de voces puede ser asíncrona, especialmente en móviles
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length === 0) {
-      console.log('Voces del sintetizador no cargadas, esperando evento onvoiceschanged...');
-
-      // Usar una función auxiliar para evitar múltiples listeners
-      const handleVoicesChanged = () => {
-        console.log('Voces cargadas, procediendo a hablar.');
-        speak();
-        window.speechSynthesis.onvoiceschanged = null; // Limpiar listener
-      };
-
-      window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
-
-      // Timeout de seguridad para navegadores que no disparan el evento
-      setTimeout(() => {
-        if (window.speechSynthesis.getVoices().length > 0) {
-          window.speechSynthesis.onvoiceschanged = null; // Limpiar si ya se ejecutó
-          speak();
-        }
-      }, 1000); // Aumentado a 1 segundo para móviles más lentos
-    } else {
-      speak();
+    let texto = 'Por favor diríjase al consultorio';
+    if (data?.nombrePaciente && data?.consultorio) {
+      texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
     }
+
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-AR';
+    u.rate = 0.9;
+
+    const voices = window.speechSynthesis.getVoices();
+    const vozEs = voices.find(v => v.lang.startsWith('es'));
+    if (vozEs) u.voice = vozEs;
+
+    window.speechSynthesis.speak(u);
   };
 
   // Conexión a Server-Sent Events con reconexión automática
