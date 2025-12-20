@@ -1,5 +1,5 @@
 import { Clock, Stethoscope, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Tipos para los datos iniciales
 interface InitialData {
