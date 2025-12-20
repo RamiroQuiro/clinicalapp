@@ -34,12 +34,16 @@ export default function AutoCheckInForm({ centroId }: Props) {
     }
 
     try {
-      const response = await fetch('/api/autocheckin', {
+      const response = await fetch('/api/public/autocheckin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ dni, centroMedicoId: centroId, turnoId: turnoSeleccionado || undefined }),
+        body: JSON.stringify({
+          dni,
+          centroMedicoId: centroId,
+          turnoId: turnoSeleccionado || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -59,9 +63,11 @@ export default function AutoCheckInForm({ centroId }: Props) {
       setTimeout(() => {
         window.location.href = `/portal/${data.token}`;
       }, 3000);
-
     } catch (apiError: any) {
-      setError(apiError.message || 'No se pudo realizar el check-in. Verifique el DNI o contacte a recepción.');
+      setError(
+        apiError.message ||
+          'No se pudo realizar el check-in. Verifique el DNI o contacte a recepción.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +83,7 @@ export default function AutoCheckInForm({ centroId }: Props) {
           type="text"
           id="dni"
           value={dni}
-          onChange={(e) => setDni(e.target.value)}
+          onChange={e => setDni(e.target.value)}
           placeholder="Ingrese su número de documento"
           disabled={isLoading}
           className="block shadow-sm mt-1 px-3 py-2 border border-gray-300 focus:border-blue-500 rounded-md focus:outline-none focus:ring-blue-500 w-full sm:text-sm placeholder-gray-400"
@@ -87,18 +93,22 @@ export default function AutoCheckInForm({ centroId }: Props) {
       {opciones.length > 0 && (
         <div className="space-y-2">
           <p className="font-medium text-gray-700 text-sm">Seleccione el turno a recepcionar:</p>
-          {opciones.map((op) => (
+          {opciones.map(op => (
             <label key={op.turnoId} className="flex items-center gap-2">
               <input
                 type="radio"
                 name="turno"
                 value={op.turnoId}
                 checked={turnoSeleccionado === op.turnoId}
-                onChange={(e) => setTurnoSeleccionado(e.target.value)}
+                onChange={e => setTurnoSeleccionado(e.target.value)}
                 disabled={isLoading}
               />
               <span className="text-sm">
-                {op.profesionalNombre} ({op.especialidad}) - {new Date(op.hora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                {op.profesionalNombre} ({op.especialidad}) -{' '}
+                {new Date(op.hora).toLocaleTimeString('es-AR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </span>
             </label>
           ))}

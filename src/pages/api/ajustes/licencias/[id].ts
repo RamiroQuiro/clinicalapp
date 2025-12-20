@@ -20,16 +20,31 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     const { fechaInicio, fechaFin, motivo, tipo, estado } = await request.json();
 
     try {
+        // Construir objeto de actualización sin valores undefined
+        const updateData: any = {
+            updated_at: new Date(),
+        };
+
+        // Solo incluir campos si vienen en los datos
+        if (fechaInicio !== undefined) {
+            updateData.fechaInicio = fechaInicio ? new Date(fechaInicio) : null;
+        }
+        if (fechaFin !== undefined) {
+            updateData.fechaFin = fechaFin ? new Date(fechaFin) : null;
+        }
+        if (motivo !== undefined) {
+            updateData.motivo = motivo;
+        }
+        if (tipo !== undefined) {
+            updateData.tipo = tipo;
+        }
+        if (estado !== undefined) {
+            updateData.estado = estado;
+        }
+
         const licenciaActualizada = await db
             .update(licenciasProfesional)
-            .set({
-                fechaInicio: fechaInicio ? new Date(fechaInicio) : undefined,
-                fechaFin: fechaFin ? new Date(fechaFin) : undefined,
-                motivo,
-                tipo,
-                estado,
-                updated_at: new Date(),
-            })
+            .set(updateData)
             .where(eq(licenciasProfesional.id, id))
             .returning();
 
