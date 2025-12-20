@@ -59,11 +59,12 @@ const audioController = {
     if (!ctx || !audio) return false;
 
     try {
+      // 1. Resume Context (AWAIT es crucial aquí si estamos en un evento de usuario)
       if (ctx.state === 'suspended') {
-        ctx.resume().catch(() => {});
+        await ctx.resume();
       }
 
-      // Beep de confirmación (Feedback y desbloqueo)
+      // 2. Beep Fuerte y Claro
       try {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -71,16 +72,17 @@ const audioController = {
         gain.connect(ctx.destination);
 
         osc.frequency.setValueAtTime(880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        // Volumen más alto para confirmar
+        gain.gain.setValueAtTime(0.5, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
 
         osc.start();
-        osc.stop(ctx.currentTime + 0.1);
+        osc.stop(ctx.currentTime + 0.3);
       } catch (e) {
         console.warn('Osc unlock warn', e);
       }
 
-      // Desbloqueo HTML Audio
+      // 3. Desbloqueo HTML Audio
       audio.volume = 0.05;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -90,9 +92,17 @@ const audioController = {
               audio.pause();
               audio.currentTime = 0;
               audio.volume = 1.0;
-            }, 50);
+            }, 100);
           })
           .catch(() => {});
+      }
+
+      // 4. Feedback de Voz (Restaurado por petición implícita)
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance('Sistema de audio listo');
+        u.lang = 'es-AR';
+        window.speechSynthesis.speak(u);
       }
 
       this.isUnlocked = true;
@@ -105,6 +115,8 @@ const audioController = {
 
   playAlert() {
     if (!this.ctx) this.init();
+
+    // Intento agresivo de despertar
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume().catch(() => {});
     }
@@ -117,26 +129,30 @@ const audioController = {
         gain.connect(this.ctx.destination);
 
         const now = this.ctx.currentTime;
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.setValueAtTime(800, now + 0.1);
-        osc.frequency.setValueAtTime(600, now + 0.3);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.6);
+
+        // Secuencia "Ding-Dong" más larga
+        osc.frequency.setValueAtTime(700, now);
+        osc.frequency.setValueAtTime(500, now + 0.3);
+
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.linearRampToValueAtTime(0, now + 1.0);
 
         osc.start(now);
-        osc.stop(now + 0.6);
+        osc.stop(now + 1.0);
       } catch (e) {
         console.error('Osc play error', e);
       }
     }
 
     if (this.audioElement) {
+      // Asegurar volumen
+      this.audioElement.volume = 1.0;
       this.audioElement.currentTime = 0;
-      this.audioElement.play().catch(() => {});
+      this.audioElement.play().catch(e => console.warn('MP3 fail', e));
     }
 
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate([200, 100, 200]);
+      navigator.vibrate([200, 200, 200]);
     }
   },
 };
