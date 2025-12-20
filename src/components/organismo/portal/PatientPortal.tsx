@@ -1,4 +1,3 @@
-import { showToast } from '@/utils/toast/toastShow';
 import { Clock, Stethoscope, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -39,80 +38,33 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [userInteracted, setUserInteracted] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const [speechReady, setSpeechReady] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+
   // Crear el AudioContext al montar el componente
   useEffect(() => {
     try {
-      // 1. AudioContext
       const context = new (window.AudioContext || (window as any).webkitAudioContext)();
       setAudioContext(context);
-      console.log('✅ AudioContext creado');
-
-      // 2. Elemento de audio HTML
-      const audio = new Audio('/sonido-alerta.mp3');
-      audio.preload = 'auto'; // Importante para móviles
-      audio.load(); // Forzar carga
-      audioRef.current = audio;
-      console.log('✅ Audio element creado y precargado');
     } catch (error) {
-      console.log('Error creating AudioContext/Audio:', error);
+      console.log('Error creating AudioContext:', error);
     }
   }, []);
+
   // Referencia persistente para el elemento de audio (mejor para móviles)
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  // verificar si es movil
+
+  // Crear el AudioContext al montar el componente
   useEffect(() => {
-    const checkMobile = () => {
-      const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      setIsMobile(mobile);
-      console.log(`📱 Dispositivo: ${mobile ? 'Móvil' : 'Escritorio'}`);
-    };
+    try {
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioContext(context);
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  useEffect(() => {
-    // Verificar y cargar voces al inicio
-    const checkSpeechAvailability = () => {
-      if (!('speechSynthesis' in window)) {
-        console.warn('❌ Speech Synthesis no disponible');
-        return;
-      }
-
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        console.log(`✅ ${voices.length} voces disponibles`);
-        setSpeechReady(true);
-        return;
-      }
-
-      // Esperar a que las voces se carguen
-      const onVoicesChanged = () => {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          console.log(`✅ Voces cargadas: ${voices.length}`);
-          setSpeechReady(true);
-          window.speechSynthesis.onvoiceschanged = null;
-        }
-      };
-
-      window.speechSynthesis.onvoiceschanged = onVoicesChanged;
-
-      // Timeout de seguridad
-      setTimeout(() => {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          setSpeechReady(true);
-        } else {
-          console.warn('⚠️ No se cargaron voces después del timeout');
-        }
-        window.speechSynthesis.onvoiceschanged = null;
-      }, 3000);
-    };
-
-    checkSpeechAvailability();
+      // Inicializar el elemento de audio una sola vez
+      const audio = new Audio('/sonido-alerta.mp3');
+      audio.preload = 'auto'; // Importante para móviles
+      audioRef.current = audio;
+    } catch (error) {
+      console.log('Error creating AudioContext:', error);
+    }
   }, []);
 
   // Función para activar audio y voz con un gesto del usuario
@@ -120,16 +72,35 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     if (audioEnabled) return;
 
     try {
-      console.log('🎵 Activando audio...');
-
-      // 1. Desbloquear AudioContext
-      if (audioContext && audioContext.state === 'suspended') {
-        await audioContext.resume();
-        console.log('✅ AudioContext desbloqueado');
+      // 1. Solicitar permisos de notificación (para móviles), si corresponde
+      if ('Notification' in window && Notification.permission === 'default') {
+        // No bloqueamos por esto, es opcional
+        Notification.requestPermission().catch(e =>
+          console.log('Permiso notificaciones ignorado', e)
+        );
       }
 
-      // 2. Reproducir un sonido de prueba SILENCIOSO pero efectivo
-      // Esto es clave para desbloquear audio en iOS/Safari
+      // 2. Desbloquear AudioContext (Clave para iOS/Android Chrome)
+      if (audioContext && audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
+      // 3. Desbloquear el elemento HTML Audio (Fallback)
+      // Reproducir silencio brevemente desbloquea el elemento para usos futuros controlados por script
+      if (audioRef.current) {
+        audioRef.current.volume = 0; // Muteado para el desbloqueo
+        // Promesa para manejar play() que devuelve promesa en navegadores modernos
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          // Restaurar volumen para cuando se necesite de verdad
+          audioRef.current.volume = 1.0;
+        }
+      }
+
+      // 4. Feedback auditivo inmediato (Oscilador) para confirmar al usuario
       if (audioContext) {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
@@ -137,77 +108,30 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
 
-        // Sonido casi inaudible pero suficiente para desbloquear
-        oscillator.frequency.setValueAtTime(1, audioContext.currentTime); // Frecuencia muy baja
-        gainNode.gain.setValueAtTime(0.001, audioContext.currentTime); // Volumen casi cero
+        oscillator.frequency.value = 440; // A4
+        gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
 
-        oscillator.start();
+        oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.1);
-
-        console.log('✅ Sonido de prueba ejecutado');
       }
 
-      // 3. Intentar reproducir audio HTML (clave para iOS)
-      if (audioRef.current) {
-        // Configurar para reproducción silenciosa
-        audioRef.current.volume = 0.01;
-        audioRef.current.muted = false;
-
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          await playPromise
-            .then(() => {
-              console.log('✅ Audio HTML desbloqueado');
-              // Pausar inmediatamente
-              setTimeout(() => {
-                if (audioRef.current) {
-                  audioRef.current.pause();
-                  audioRef.current.currentTime = 0;
-                  audioRef.current.volume = 1.0;
-                }
-              }, 50);
-            })
-            .catch(e => {
-              console.warn('⚠️ Audio HTML bloqueado:', e.message);
-            });
-        }
-      }
-
-      // 4. Probar Speech Synthesis con un mensaje muy corto
+      // 5. "Calentar" el motor de Speech Synthesis
       if ('speechSynthesis' in window) {
-        // Cancelar cualquier síntesis previa
         window.speechSynthesis.cancel();
-
-        // Crear un utterance de prueba MUY CORTO
-        const testUtterance = new SpeechSynthesisUtterance('');
-        testUtterance.volume = 0.1; // Muy bajo volumen
-        testUtterance.rate = 0.8;
-
-        testUtterance.onend = () => {
-          console.log('✅ Speech Synthesis probado exitosamente');
-        };
-
-        testUtterance.onerror = e => {
-          console.warn('⚠️ Error probando Speech Synthesis:', e);
-        };
-
-        // Intentar hablar (aunque sea texto vacío, activa el sistema)
-        window.speechSynthesis.speak(testUtterance);
+        const utterance = new SpeechSynthesisUtterance(' ');
+        utterance.volume = 0;
+        window.speechSynthesis.speak(utterance);
       }
 
-      // 5. Marcar como habilitado
       setAudioEnabled(true);
       setUserInteracted(true);
-
-      console.log('✅ Audio completamente activado');
-
-      // Mostrar feedback visual
-      showToast('Audio activado');
+      console.log('✅ Audio y Voz activados y desbloqueados.');
     } catch (error) {
-      console.error('❌ Error activando audio:', error);
-      // Aún así marcar como interactuado para intentar reproducciones
-      setUserInteracted(true);
+      console.error('⚠️ Error al activar audio/voz:', error);
+      // Marcamos como activado igual para no trabar la UI, el usuario ya intencionó activar
       setAudioEnabled(true);
+      setUserInteracted(true);
     }
   };
 
@@ -215,11 +139,14 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   const playAlertSound = async () => {
     if (!audioEnabled) return;
 
-    // 1. AudioContext (Prioritario - Oscilador)
+    // Estrategia "Doble Cañón": Intentar AudioContext Y HTMLAudioElement
+    // Esto maximiza la probabilidad de que suene en cualquier dispositivo
+
+    // 1. AudioContext (Mejor latencia y funciona bien si se desbloqueó)
     if (audioContext) {
       try {
         if (audioContext.state === 'suspended') {
-          audioContext.resume().catch(() => {});
+          audioContext.resume().catch(e => console.warn('No se pudo reanudar context', e));
         }
 
         const oscillator = audioContext.createOscillator();
@@ -228,14 +155,14 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
 
-        // Sonido "Ding-Dong" más robusto
+        // Sonido "Ding-Dong"
         const now = audioContext.currentTime;
 
         oscillator.frequency.setValueAtTime(800, now);
-        oscillator.frequency.setValueAtTime(600, now + 0.2);
+        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
 
         gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
 
         oscillator.start(now);
         oscillator.stop(now + 0.4);
@@ -244,11 +171,17 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       }
     }
 
-    // 2. HTML Audio Element (Respaldo MP3)
+    // 2. HTML Audio Element (Fallback robusto si el archivo existe)
     if (audioRef.current) {
       try {
         audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(e => console.warn('Fallo MP3', e));
+        audioRef.current.volume = 1.0; // Asegurar volumen
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.warn('Auto-play preventivo bloqueó el audio html:', error);
+          });
+        }
       } catch (e) {
         console.warn('Fallo audio ref', e);
       }
@@ -258,7 +191,9 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
         navigator.vibrate([200, 100, 200]);
-      } catch (e) {}
+      } catch (e) {
+        // Ignorar
+      }
     }
 
     console.log('🔔 Sonido de alerta invocado.');
@@ -266,118 +201,79 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
 
   // Función robusta para reproducir voz, esperando a que las voces carguen
   const reproducirVoz = (data?: any) => {
-    // Verificaciones esenciales
-    if (!audioEnabled) {
-      console.log('🔇 Audio no habilitado, ignorando voz');
-      return;
-    }
+    if (!audioEnabled || !('speechSynthesis' in window)) return;
 
-    if (!('speechSynthesis' in window)) {
-      console.error('❌ Speech Synthesis no soportado');
-      return;
-    }
-
-    // Verificar que el usuario haya interactuado (especialmente en móviles)
-    if (!userInteracted) {
-      console.log('🖱️ Usuario no ha interactuado, ignorando voz');
-      return;
-    }
-
-    // Crear texto
-    let texto = 'Por favor, diríjase al consultorio indicado';
-    if (data?.nombrePaciente && data?.consultorio) {
-      texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
-    }
-
-    console.log(`🗣️ Preparando voz: "${texto}"`);
-
-    // Función principal para hablar
     const speak = () => {
-      try {
-        // Cancelar cualquier síntesis en curso
-        window.speechSynthesis.cancel();
+      window.speechSynthesis.cancel(); // Limpiar cola antes de hablar
 
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = 'es-AR';
-        utterance.rate = 0.9;
-        utterance.volume = 1.0;
-        utterance.pitch = 1.0;
-
-        // Seleccionar mejor voz disponible
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          // Priorizar voces en español
-          const spanishVoice = voices.find(
-            v => v.lang === 'es-AR' || v.lang === 'es-ES' || v.lang.startsWith('es-')
-          );
-          if (spanishVoice) {
-            utterance.voice = spanishVoice;
-            console.log('🔊 Usando voz española:', spanishVoice.name);
-          } else {
-            // Usar la primera voz disponible
-            utterance.voice = voices[0];
-            console.log('🔊 Usando voz predeterminada:', voices[0].name);
-          }
-        }
-
-        // Configurar callbacks
-        utterance.onstart = () => {
-          console.log('🎤 Comenzando síntesis de voz');
-        };
-
-        utterance.onend = () => {
-          console.log('✅ Voz reproducida completamente');
-        };
-
-        utterance.onerror = event => {
-          console.error('❌ Error en síntesis de voz:', event);
-        };
-
-        // Intentar hablar
-        window.speechSynthesis.speak(utterance);
-      } catch (error) {
-        console.error('❌ Error al crear utterance:', error);
+      let texto = 'Por favor, diríjase al consultorio indicado';
+      if (data?.nombrePaciente && data?.consultorio) {
+        texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
       }
-    };
 
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length === 0) {
-      console.log('⏳ Esperando carga de voces...');
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = 'es-AR';
+      utterance.rate = 0.85; // Un poco más lento para mejor comprensión en móviles
+      utterance.volume = 1.0;
+      utterance.pitch = 1.0;
 
-      // Esperar a que se carguen las voces
-      const onVoicesChanged = () => {
-        console.log('✅ Voces cargadas, procediendo a hablar');
-        speak();
-        window.speechSynthesis.onvoiceschanged = null;
+      // Intentar seleccionar una voz en español para mejorar la calidad
+      const voices = window.speechSynthesis.getVoices();
+      const spanishVoice = voices.find(
+        voice => voice.lang === 'es-AR' || voice.lang === 'es-ES' || voice.lang.startsWith('es')
+      );
+      if (spanishVoice) {
+        utterance.voice = spanishVoice;
+        console.log('Voz en español encontrada:', spanishVoice.name);
+      }
+
+      // Manejar errores de síntesis de voz
+      utterance.onerror = event => {
+        console.error('Error en síntesis de voz:', event);
       };
 
-      window.speechSynthesis.onvoiceschanged = onVoicesChanged;
+      utterance.onend = () => {
+        console.log('🗣️ Voz reproducida completamente');
+      };
 
-      // Timeout de seguridad
+      window.speechSynthesis.speak(utterance);
+      console.log(`🗣️ Intentando decir: "${texto}"`);
+    };
+
+    // La carga de voces puede ser asíncrona, especialmente en móviles
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) {
+      console.log('Voces del sintetizador no cargadas, esperando evento onvoiceschanged...');
+
+      // Usar una función auxiliar para evitar múltiples listeners
+      const handleVoicesChanged = () => {
+        console.log('Voces cargadas, procediendo a hablar.');
+        speak();
+        window.speechSynthesis.onvoiceschanged = null; // Limpiar listener
+      };
+
+      window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
+
+      // Timeout de seguridad para navegadores que no disparan el evento
       setTimeout(() => {
-        const currentVoices = window.speechSynthesis.getVoices();
-        if (currentVoices.length > 0) {
-          console.log('⏰ Voces cargadas después del timeout');
+        if (window.speechSynthesis.getVoices().length > 0) {
+          window.speechSynthesis.onvoiceschanged = null; // Limpiar si ya se ejecutó
           speak();
-        } else {
-          console.error('❌ No se cargaron voces después del timeout');
-          // Mostrar notificación visual como fallback
-          showToast(texto);
         }
-        window.speechSynthesis.onvoiceschanged = null;
-      }, 2000);
+      }, 1000); // Aumentado a 1 segundo para móviles más lentos
     } else {
       speak();
     }
   };
+
   // Conexión a Server-Sent Events con reconexión automática
   useEffect(() => {
-    console.log(' Iniciando conexión SSE desde el portal del paciente...');
-    console.log(' Centro Médico ID:', initialData.centroMedicoId);
+    console.log('🔗 Iniciando conexión SSE desde el portal del paciente...');
+    console.log('🏥 Centro Médico ID:', initialData.centroMedicoId);
 
     // Construir URL con centroMedicoId
     const eventsUrl = `/api/public/public-events?centroMedicoId=${initialData.centroMedicoId}`;
-    console.log(' URL de conexión SSE:', eventsUrl);
+    console.log('📡 URL de conexión SSE:', eventsUrl);
 
     let eventSource: EventSource | null = null;
     let reconnectTimeout: NodeJS.Timeout | null = null;
@@ -426,7 +322,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       // Escuchar actualizaciones generales de turnos
       eventSource.addEventListener('turno-actualizado', event => {
         const turnoActualizado = JSON.parse(event.data);
-        console.log(' Evento turno-actualizado recibido:', turnoActualizado);
+        console.log('📝 Evento turno-actualizado recibido:', turnoActualizado);
         // Si la actualización es para mi turno, actualizo mi estado
         if (turnoActualizado.id === turno.id) {
           setTurno(turnoActualizado);
@@ -436,7 +332,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       // Escuchar evento específico de llamado a pacientes
       eventSource.addEventListener('paciente-llamado', event => {
         const data = JSON.parse(event.data);
-        console.log(' Evento paciente-llamado recibido:', data);
+        console.log('📢 Evento paciente-llamado recibido:', data);
 
         // Verificar si es para este paciente específico
         const esMiTurno =
@@ -478,7 +374,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     // Reconectar cuando la página vuelve a estar visible (útil para móviles)
     const handleVisibilityChange = () => {
       if (!document.hidden && (!eventSource || eventSource.readyState === EventSource.CLOSED)) {
-        console.log(' Página visible, verificando conexión SSE...');
+        console.log('👁️ Página visible, verificando conexión SSE...');
         connect();
       }
     };
@@ -514,21 +410,15 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
 
         {/* Botón de activación de audio */}
         {!audioEnabled && (
-          <div
-            className={`mt-4 p-4 border rounded-lg ${isMobile ? 'bg-blue-50 border-blue-200' : 'bg-yellow-50 border-yellow-200'}`}
-          >
+          <div className="bg-yellow-50 mt-4 p-4 border border-yellow-200 rounded-lg">
             <button
               onClick={handleActivateAudio}
-              className={`px-6 py-3 rounded-lg font-medium text-white transition-colors ${
-                isMobile ? 'bg-blue-600 hover:bg-blue-700' : 'bg-yellow-500 hover:bg-yellow-600'
-              }`}
+              className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg font-medium text-white transition-colors"
             >
-              🔊 {isMobile ? 'Tocar para activar audio' : 'Activar notificaciones de audio'}
+              🔊 Activar notificaciones de audio
             </button>
-            <p className="mt-2 text-sm text-gray-600">
-              {isMobile
-                ? 'En dispositivos móviles necesitas tocar este botón para permitir el audio'
-                : 'Haz clic para activar las notificaciones de sonido y voz'}
+            <p className="mt-2 text-yellow-700 text-sm">
+              Haz clic para activar las notificaciones de sonido y voz
             </p>
           </div>
         )}
