@@ -1,5 +1,5 @@
 import { Clock, Stethoscope, User } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Tipos para los datos iniciales
 interface InitialData {
@@ -32,118 +32,133 @@ const StatusBadge = ({ estado }: { estado: string }) => {
   );
 };
 
+// --- Singleton de Audio (Fuera del componente para persistencia absoluta) ---
+const audioController = {
+  ctx: null as AudioContext | null,
+  audioElement: null as HTMLAudioElement | null,
+  isUnlocked: false,
+
+  init() {
+    if (this.ctx) return;
+
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      this.ctx = new AudioContextClass();
+
+      this.audioElement = new Audio('/sonido-alerta.mp3');
+      this.audioElement.preload = 'auto';
+    } catch (e) {
+      console.error('Error init audio:', e);
+    }
+  },
+
+  async unlock() {
+    this.init();
+    const ctx = this.ctx;
+    const audio = this.audioElement;
+    if (!ctx || !audio) return false;
+
+    try {
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+
+      // Beep de confirmación (Feedback y desbloqueo)
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      } catch (e) {
+        console.warn('Osc unlock warn', e);
+      }
+
+      // Desbloqueo HTML Audio
+      audio.volume = 0.05;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setTimeout(() => {
+              audio.pause();
+              audio.currentTime = 0;
+              audio.volume = 1.0;
+            }, 50);
+          })
+          .catch(() => {});
+      }
+
+      this.isUnlocked = true;
+      return true;
+    } catch (err) {
+      console.error('Unlock failed:', err);
+      return false;
+    }
+  },
+
+  playAlert() {
+    if (!this.ctx) this.init();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+
+    if (this.ctx) {
+      try {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        const now = this.ctx.currentTime;
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.setValueAtTime(800, now + 0.1);
+        osc.frequency.setValueAtTime(600, now + 0.3);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.6);
+
+        osc.start(now);
+        osc.stop(now + 0.6);
+      } catch (e) {
+        console.error('Osc play error', e);
+      }
+    }
+
+    if (this.audioElement) {
+      this.audioElement.currentTime = 0;
+      this.audioElement.play().catch(() => {});
+    }
+
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([200, 100, 200]);
+    }
+  },
+};
+
 export default function PatientPortal({ initialData }: { initialData: InitialData }) {
   const [turno, setTurno] = useState(initialData.turno);
   const [ahoraLlamando, setAhoraLlamando] = useState({ nombre: '-', consultorio: '-' });
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Crear el AudioContext al montar el componente
   useEffect(() => {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-
-    audioContextRef.current = new AudioContextClass();
-
-    const audio = new Audio('/sonido-alerta.mp3');
-    audio.preload = 'auto';
-    audioRef.current = audio;
+    audioController.init();
   }, []);
 
-  // Función para activar audio y voz con un gesto del usuario
   const handleActivateAudio = async () => {
-    try {
-      const ctx = audioContextRef.current;
-      if (!ctx) return;
-
-      // Desbloquear AudioContext
-      if (ctx.state === 'suspended') {
-        await ctx.resume();
-      }
-
-      // Sonido corto de confirmación (obligatorio para móviles)
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.frequency.value = 880;
-      gain.gain.value = 0.2;
-
-      osc.start();
-      osc.stop(ctx.currentTime + 0.15);
-
-      // Desbloquear HTMLAudio (iOS)
-      if (audioRef.current) {
-        audioRef.current.volume = 0.3;
-        await audioRef.current.play();
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current.volume = 1;
-      }
-
-      // Confirmación por voz (opcional, pero útil)
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance('Sonido activado');
-        u.lang = 'es-AR';
-        window.speechSynthesis.speak(u);
-      }
-
-      setAudioEnabled(true);
-      console.log('✅ Audio habilitado correctamente');
-    } catch (e) {
-      console.error('Error activando audio:', e);
-    }
+    await audioController.unlock();
+    setAudioEnabled(true);
   };
 
-  // Función simplificada para reproducir solo el sonido de alerta
   const playAlertSound = () => {
     if (!audioEnabled) return;
-
-    const ctx = audioContextRef.current;
-
-    // 1. AudioContext (principal)
-    if (!ctx) {
-      console.error('AudioContext no disponible');
-      return;
-    }
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(e => console.error('Error al activar AudioContext:', e));
-    }
-
-    if (ctx) {
-      try {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        const now = ctx.currentTime;
-
-        osc.frequency.setValueAtTime(900, now);
-        osc.frequency.setValueAtTime(600, now + 0.25);
-
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-        osc.start(now);
-        osc.stop(now + 0.4);
-      } catch {}
-    }
-
-    // 2. MP3 respaldo
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
-
-    // 3. Vibración
-    if ('vibrate' in navigator) {
-      navigator.vibrate([200, 100, 200]);
-    }
+    audioController.playAlert();
+    console.log('🔔 Alerta invocada (Singleton)');
   };
 
   // Función robusta para reproducir voz, esperando a que las voces carguen
