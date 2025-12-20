@@ -1,5 +1,5 @@
 import { Clock, Stethoscope, User } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Tipos para los datos iniciales
 interface InitialData {
@@ -105,6 +105,14 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     const ctx = audioContextRef.current;
 
     // 1. AudioContext (principal)
+    if (!ctx) {
+      console.error('AudioContext no disponible');
+      return;
+    }
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(e => console.error('Error al activar AudioContext:', e));
+    }
+
     if (ctx) {
       try {
         const osc = ctx.createOscillator();
@@ -162,12 +170,12 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
 
   // Conexión a Server-Sent Events con reconexión automática
   useEffect(() => {
-    console.log('🔗 Iniciando conexión SSE desde el portal del paciente...');
-    console.log('🏥 Centro Médico ID:', initialData.centroMedicoId);
+    console.log('Iniciando conexión SSE desde el portal del paciente...');
+    console.log('Centro Médico ID:', initialData.centroMedicoId);
 
     // Construir URL con centroMedicoId
     const eventsUrl = `/api/public/public-events?centroMedicoId=${initialData.centroMedicoId}`;
-    console.log('📡 URL de conexión SSE:', eventsUrl);
+    console.log('URL de conexión SSE:', eventsUrl);
 
     let eventSource: EventSource | null = null;
     let reconnectTimeout: NodeJS.Timeout | null = null;
@@ -216,7 +224,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       // Escuchar actualizaciones generales de turnos
       eventSource.addEventListener('turno-actualizado', event => {
         const turnoActualizado = JSON.parse(event.data);
-        console.log('📝 Evento turno-actualizado recibido:', turnoActualizado);
+        console.log('Turno actualizado:', turnoActualizado);
         // Si la actualización es para mi turno, actualizo mi estado
         if (turnoActualizado.id === turno.id) {
           setTurno(turnoActualizado);
@@ -226,7 +234,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       // Escuchar evento específico de llamado a pacientes
       eventSource.addEventListener('paciente-llamado', event => {
         const data = JSON.parse(event.data);
-        console.log('📢 Evento paciente-llamado recibido:', data);
+        console.log('Paciente llamado:', data);
 
         // Verificar si es para este paciente específico
         const esMiTurno =
