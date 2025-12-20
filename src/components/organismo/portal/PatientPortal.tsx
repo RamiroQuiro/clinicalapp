@@ -164,6 +164,18 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
 
   useEffect(() => {
     audioController.init();
+
+    // Asegurar que las voces estén cargadas (crítico para Chrome/Edge)
+    if ('speechSynthesis' in window) {
+      // Trigger para cargar voces
+      window.speechSynthesis.getVoices();
+
+      // Listener para cuando las voces estén listas
+      window.speechSynthesis.onvoiceschanged = () => {
+        const voices = window.speechSynthesis.getVoices();
+        console.log('🎤 Voces cargadas:', voices.length);
+      };
+    }
   }, []);
 
   const handleActivateAudio = async () => {
@@ -179,7 +191,13 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
 
   // Función robusta para reproducir voz, esperando a que las voces carguen
   const reproducirVoz = (data?: { nombrePaciente?: string; consultorio?: string }) => {
-    if (!audioEnabled || !('speechSynthesis' in window)) return;
+    console.log('🗣️ reproducirVoz llamada con data:', data);
+    console.log('🔊 audioEnabled:', audioEnabled);
+
+    if (!audioEnabled || !('speechSynthesis' in window)) {
+      console.warn('⚠️ Audio no habilitado o speechSynthesis no disponible');
+      return;
+    }
 
     window.speechSynthesis.cancel();
 
@@ -188,15 +206,30 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       texto = `${data.nombrePaciente}, por favor diríjase al ${data.consultorio}`;
     }
 
+    console.log('📢 Texto a decir:', texto);
+
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = 'es-AR';
     u.rate = 0.9;
 
     const voices = window.speechSynthesis.getVoices();
-    const vozEs = voices.find(v => v.lang.startsWith('es'));
-    if (vozEs) u.voice = vozEs;
+    console.log('🎤 Voces disponibles:', voices.length);
+
+    // Prioridad: AR -> ES -> Cualquier español
+    const vozEs =
+      voices.find(v => v.lang === 'es-AR') ||
+      voices.find(v => v.lang === 'es-ES') ||
+      voices.find(v => v.lang.startsWith('es'));
+
+    if (vozEs) {
+      u.voice = vozEs;
+      console.log('✅ Voz seleccionada:', vozEs.name, vozEs.lang);
+    } else {
+      console.warn('⚠️ No se encontró voz en español');
+    }
 
     window.speechSynthesis.speak(u);
+    console.log('🎙️ speechSynthesis.speak() ejecutado');
   };
 
   // Conexión a Server-Sent Events con reconexión automática
@@ -329,7 +362,9 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     initialData.centroMedicoId,
     initialData.paciente.nombre,
     initialData.paciente.apellido,
-  ]); // Dependencias actualizadas
+    playAlertSound,
+    reproducirVoz,
+  ]); // Dependencias actualizadas + funciones de audio
 
   return (
     <div className="mx-auto max-w-2xl font-sans">

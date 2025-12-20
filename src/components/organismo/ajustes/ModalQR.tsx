@@ -3,41 +3,41 @@ import ModalReact from '@/components/moleculas/ModalReact';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { Download, Printer, X } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface ModalQRProps {
-    isOpen: boolean;
-    onClose: () => void;
-    centroMedicoId: string;
-    nombreCentro: string;
+  isOpen: boolean;
+  onClose: () => void;
+  centroMedicoId: string;
+  nombreCentro: string;
 }
 
 export const ModalQR: React.FC<ModalQRProps> = ({
-    isOpen,
-    onClose,
-    centroMedicoId,
-    nombreCentro
+  isOpen,
+  onClose,
+  centroMedicoId,
+  nombreCentro,
 }) => {
-    const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-    // Generar URL del QR para el centro
-    const qrUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/publico/autocheckin?centroId=${centroMedicoId}`;
+  // Generar URL del QR para el centro
+  const qrUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/publico/autocheckin?centroId=${centroMedicoId}`;
 
-    // Fecha y hora actual para el cartel
-    const fechaActual = format(toZonedTime(new Date(), APP_TIME_ZONE), 'dd/MM/yyyy');
-    const horaActual = format(toZonedTime(new Date(), APP_TIME_ZONE), 'HH:mm');
+  // Fecha y hora actual para el cartel
+  const fechaActual = format(toZonedTime(new Date(), APP_TIME_ZONE), 'dd/MM/yyyy');
+  const horaActual = format(toZonedTime(new Date(), APP_TIME_ZONE), 'HH:mm');
 
-    const handlePrint = () => {
-        window.print();
-    };
+  const handlePrint = () => {
+    window.print();
+  };
 
-    const handleDownloadPDF = async () => {
-        setIsGenerating(true);
-        try {
-            // Mostrar loader
-            const loader = document.createElement('div');
-            loader.innerHTML = `
+  const handleDownloadPDF = async () => {
+    setIsGenerating(true);
+    try {
+      // Mostrar loader
+      const loader = document.createElement('div');
+      loader.innerHTML = `
                 <div class="top-4 right-4 z-50 fixed bg-white shadow-lg p-4 border border-gray-200 rounded-lg w-64 h-1/3 download-loader-container">
                     <div class="flex justify-center items-center gap-3 h-full">
                         <div class="download-arrow">
@@ -54,160 +54,131 @@ export const ModalQR: React.FC<ModalQRProps> = ({
                     </div>
                 </div>
             `;
-            document.body.appendChild(loader);
-            loader.style.display = 'block';
+      document.body.appendChild(loader);
+      loader.style.display = 'block';
 
-            // Llamar al endpoint para generar PDF
-            const response = await fetch('/api/public/generar-qr-pdf', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    centroMedicoId,
-                    nombreCentro,
-                    qrUrl
-                }),
-            });
+      // Llamar al endpoint para generar PDF
+      const response = await fetch('/api/public/generar-qr-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          centroMedicoId,
+          nombreCentro,
+          qrUrl,
+        }),
+      });
 
-            if (!response.ok) {
-                throw new Error('Error al generar PDF');
-            }
+      if (!response.ok) {
+        throw new Error('Error al generar PDF');
+      }
 
-            // Descargar el PDF
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `cartel-qr-sala-espera-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error al generar PDF:', error);
-        } finally {
-            // Ocultar loader
-            const loader = document.querySelector('.download-loader-container');
-            if (loader) {
-                loader.remove();
-            }
-            setIsGenerating(false);
-        }
-    };
+      // Descargar el PDF
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cartel-qr-sala-espera-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+    } finally {
+      // Ocultar loader
+      const loader = document.querySelector('.download-loader-container');
+      if (loader) {
+        loader.remove();
+      }
+      setIsGenerating(false);
+    }
+  };
 
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    return (
-        <ModalReact>
-            <div className="bg-white shadow-xl mx-4 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b">
-                    <h2 className="font-semibold text-gray-800 text-xl">
-                        QR Sala de Espera - {nombreCentro}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                        <X size={24} />
-                    </button>
-                </div>
+  return (
+    <ModalReact title={` QR Sala de Espera - ${nombreCentro}`} onClose={onClose}>
+      <div
+        id="qr-cartel-content"
+        className="bg-white mb-6 p-8 border-2 border-gray-300 border-dashed rounded-lg"
+        style={{ minHeight: '600px' }}
+      >
+        {/* Header del cartel */}
+        <div className="mb-8 text-center">
+          <div className="mb-4">
+            <h1 className="mb-2 font-bold text-gray-800 text-3xl">{nombreCentro}</h1>
+            <p className="text-gray-600 text-lg">Sala de Espera Digital</p>
+          </div>
 
-                {/* Content */}
-                <div className="p-6">
-                    {/* Preview del cartel imprimible */}
-                    <div
-                        id="qr-cartel-content"
-                        className="bg-white mb-6 p-8 border-2 border-gray-300 border-dashed rounded-lg"
-                        style={{ minHeight: '600px' }}
-                    >
-                        {/* Header del cartel */}
-                        <div className="mb-8 text-center">
-                            <div className="mb-4">
-                                <h1 className="mb-2 font-bold text-gray-800 text-3xl">
-                                    {nombreCentro}
-                                </h1>
-                                <p className="text-gray-600 text-lg">Sala de Espera Digital</p>
-                            </div>
+          <div className="mb-6 text-gray-500 text-sm">
+            <p>Fecha: {fechaActual}</p>
+            <p>Hora: {horaActual}</p>
+          </div>
+        </div>
 
-                            <div className="mb-6 text-gray-500 text-sm">
-                                <p>Fecha: {fechaActual}</p>
-                                <p>Hora: {horaActual}</p>
-                            </div>
-                        </div>
-
-                        {/* QR Code */}
-                        <div className="flex flex-col items-center mb-8">
-                            <div className="bg-white shadow-md mb-4 p-4 border-2 border-gray-200 rounded-lg">
-                                <div className="flex justify-center items-center bg-gray-50 w-64 h-64">
-                                    <img
-                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
-                                        alt="QR para Check-in"
-                                        className="w-full h-full object-contain"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="text-center">
-                                <h3 className="mb-2 font-semibold text-gray-800 text-xl">
-                                    Escanee para Check-in
-                                </h3>
-                                <p className="mb-4 text-gray-600">
-                                    Use su cámara o escanee el código QR
-                                </p>
-                                <p className="text-gray-500 text-sm">
-                                    También puede visitar: <span className="font-mono text-xs break-all">{qrUrl}</span>
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Instrucciones */}
-                        <div className="bg-blue-50 mb-6 p-6 rounded-lg">
-                            <h4 className="mb-3 font-semibold text-blue-900">¿Cómo usar?</h4>
-                            <ol className="space-y-2 text-blue-800 list-decimal list-inside">
-                                <li>Abra la cámara de su celular</li>
-                                <li>Apunte hacia el código QR</li>
-                                <li>Escanee automáticamente o manualmente</li>
-                                <li>Complete el formulario de check-in</li>
-                                <li>Espere su llamado en la sala</li>
-                            </ol>
-                        </div>
-
-                        {/* Footer del cartel */}
-                        <div className="pt-4 border-t text-gray-500 text-xs text-center">
-                            <p className="mb-2">Powered by</p>
-                            <div className="flex justify-center items-center gap-2">
-                                <span className="font-bold">clínicalApp</span>
-                                <span>•</span>
-                                <span className="font-bold">ramaCode</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Botones de acción */}
-                    <div className="flex justify-center gap-4">
-                        <Button
-                            onClick={handlePrint}
-                            variant="secondary"
-                            className="gap-2"
-                        >
-                            <Printer size={20} />
-                            Imprimir Cartel
-                        </Button>
-
-                        <Button
-                            onClick={handleDownloadPDF}
-                            variant="primary"
-                            disabled={isGenerating}
-                            className="gap-2"
-                        >
-                            <Download size={20} />
-                            {isGenerating ? 'Generando...' : 'Descargar PDF'}
-                        </Button>
-                    </div>
-                </div>
+        {/* QR Code */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="bg-white shadow-md mb-4 p-4 border-2 border-gray-200 rounded-lg">
+            <div className="flex justify-center items-center bg-gray-50 w-64 h-64">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
+                alt="QR para Check-in"
+                className="w-full h-full object-contain"
+              />
             </div>
-        </ModalReact>
-    );
+          </div>
+
+          <div className="text-center">
+            <h3 className="mb-2 font-semibold text-gray-800 text-xl">Escanee para Check-in</h3>
+            <p className="mb-4 text-gray-600">Use su cámara o escanee el código QR</p>
+            <p className="text-gray-500 text-sm">
+              También puede visitar: <span className="font-mono text-xs break-all">{qrUrl}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Instrucciones */}
+        <div className="bg-blue-50 mb-6 p-6 rounded-lg">
+          <h4 className="mb-3 font-semibold text-blue-900">¿Cómo usar?</h4>
+          <ol className="space-y-2 text-blue-800 list-decimal list-inside">
+            <li>Abra la cámara de su celular</li>
+            <li>Apunte hacia el código QR</li>
+            <li>Escanee automáticamente o manualmente</li>
+            <li>Complete el formulario de check-in</li>
+            <li>Espere su llamado en la sala</li>
+          </ol>
+        </div>
+
+        {/* Footer del cartel */}
+        <div className="pt-4 border-t text-gray-500 text-xs text-center">
+          <p className="mb-2">Powered by</p>
+          <div className="flex justify-center items-center gap-2">
+            <span className="font-bold">clínicalApp</span>
+            <span>•</span>
+            <span className="font-bold">ramaCode</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Botones de acción */}
+      <div className="flex justify-center gap-4">
+        <Button onClick={handlePrint} variant="secondary" className="gap-2">
+          <Printer size={20} />
+          Imprimir Cartel
+        </Button>
+
+        <Button
+          onClick={handleDownloadPDF}
+          variant="primary"
+          disabled={isGenerating}
+          className="gap-2"
+        >
+          <Download size={20} />
+          {isGenerating ? 'Generando...' : 'Descargar PDF'}
+        </Button>
+      </div>
+    </ModalReact>
+  );
 };
