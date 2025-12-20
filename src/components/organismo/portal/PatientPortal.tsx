@@ -1,5 +1,5 @@
 import { Clock, Stethoscope, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Tipos para los datos iniciales
 interface InitialData {
@@ -49,63 +49,87 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     }
   }, []);
 
+  // Referencia persistente para el elemento de audio (mejor para móviles)
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Crear el AudioContext al montar el componente
+  useEffect(() => {
+    try {
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioContext(context);
+
+      // Inicializar el elemento de audio una sola vez
+      const audio = new Audio('/sonido-alerta.mp3');
+      audio.preload = 'auto'; // Importante para móviles
+      audioRef.current = audio;
+    } catch (error) {
+      console.log('Error creating AudioContext:', error);
+    }
+  }, []);
+
   // Función para activar audio y voz con un gesto del usuario
   const handleActivateAudio = async () => {
-    if (audioEnabled || !audioContext) return;
+    if (audioEnabled) return;
 
     try {
-      // 1. Solicitar permisos de notificación (para móviles)
+      // 1. Solicitar permisos de notificación (para móviles), si corresponde
       if ('Notification' in window && Notification.permission === 'default') {
-        await Notification.requestPermission();
+        // No bloqueamos por esto, es opcional
+        Notification.requestPermission().catch(e =>
+          console.log('Permiso notificaciones ignorado', e)
+        );
       }
 
-      // 2. Reanudar AudioContext (clave para móviles)
-      if (audioContext.state === 'suspended') {
+      // 2. Desbloquear AudioContext (Clave para iOS/Android Chrome)
+      if (audioContext && audioContext.state === 'suspended') {
         await audioContext.resume();
       }
 
-      // 3. Crear y reproducir un sonido de prueba para "desbloquear" el audio
-      // Usar un oscilador en lugar de un archivo para mejor compatibilidad móvil
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = 440; // La nota A4
-      gainNode.gain.setValueAtTime(0.01, audioContext.currentTime); // Muy bajo volumen
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-
-      // 4. También probar con Audio element como fallback
-      try {
-        const audio = new Audio('/sonido-alerta.mp3');
-        audio.volume = 0.01;
-        await audio.play();
-        audio.pause();
-      } catch (e) {
-        console.warn('Audio element fallback falló:', e);
+      // 3. Desbloquear el elemento HTML Audio (Fallback)
+      // Reproducir silencio brevemente desbloquea el elemento para usos futuros controlados por script
+      if (audioRef.current) {
+        audioRef.current.volume = 0; // Muteado para el desbloqueo
+        // Promesa para manejar play() que devuelve promesa en navegadores modernos
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          // Restaurar volumen para cuando se necesite de verdad
+          audioRef.current.volume = 1.0;
+        }
       }
 
-      // 5. "Calentar" el motor de Speech Synthesis con un texto silencioso
+      // 4. Feedback auditivo inmediato (Oscilador) para confirmar al usuario
+      if (audioContext) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 440; // A4
+        gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+      }
+
+      // 5. "Calentar" el motor de Speech Synthesis
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Limpiar cola
-        const utterance = new SpeechSynthesisUtterance(' '); // Un espacio en blanco
-        utterance.volume = 0; // Sin volumen
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(' ');
+        utterance.volume = 0;
         window.speechSynthesis.speak(utterance);
       }
 
       setAudioEnabled(true);
       setUserInteracted(true);
-      console.log('✅ Audio y Voz activados por el usuario.');
+      console.log('✅ Audio y Voz activados y desbloqueados.');
     } catch (error) {
-      console.error(
-        '⚠️ Error al activar audio/voz. El usuario debe interactuar con la página.',
-        error
-      );
-      // Igualmente se marca como activado para ocultar el botón
+      console.error('⚠️ Error al activar audio/voz:', error);
+      // Marcamos como activado igual para no trabar la UI, el usuario ya intencionó activar
       setAudioEnabled(true);
       setUserInteracted(true);
     }
@@ -115,57 +139,64 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   const playAlertSound = async () => {
     if (!audioEnabled) return;
 
-    try {
-      // 1. Intentar con AudioContext primero (mejor para móviles)
-      if (audioContext) {
+    // Estrategia "Doble Cañón": Intentar AudioContext Y HTMLAudioElement
+    // Esto maximiza la probabilidad de que suene en cualquier dispositivo
+
+    // 1. AudioContext (Mejor latencia y funciona bien si se desbloqueó)
+    if (audioContext) {
+      try {
         if (audioContext.state === 'suspended') {
-          await audioContext.resume();
+          audioContext.resume().catch(e => console.warn('No se pudo reanudar context', e));
         }
 
-        // Crear un sonido de alerta más audible
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
 
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
 
-        // Sonido de alerta: dos tonos rápidos
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+        // Sonido "Ding-Dong"
+        const now = audioContext.currentTime;
 
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        oscillator.frequency.setValueAtTime(800, now);
+        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
 
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+        oscillator.start(now);
+        oscillator.stop(now + 0.4);
+      } catch (e) {
+        console.warn('Fallo oscilador', e);
       }
-
-      // 2. Fallback con Audio element
-      try {
-        const audio = new Audio('/sonido-alerta.mp3');
-        audio.volume = 0.7;
-        // En móviles, asegurar que se reproduzca incluso en background
-        audio.play().catch(err => {
-          console.warn('Error reproduciendo audio element:', err);
-        });
-      } catch (error) {
-        console.warn('Audio element no disponible:', error);
-      }
-
-      // 3. Vibración para móviles (si está disponible)
-      if ('vibrate' in navigator) {
-        try {
-          // Patrón: vibrar 200ms, pausa 100ms, vibrar 200ms
-          navigator.vibrate([200, 100, 200]);
-        } catch (e) {
-          console.warn('Vibración no disponible:', e);
-        }
-      }
-
-      console.log('🔔 Sonido de alerta reproducido.');
-    } catch (error) {
-      console.error('Error reproduciendo sonido de alerta:', error);
     }
+
+    // 2. HTML Audio Element (Fallback robusto si el archivo existe)
+    if (audioRef.current) {
+      try {
+        audioRef.current.currentTime = 0;
+        audioRef.current.volume = 1.0; // Asegurar volumen
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.warn('Auto-play preventivo bloqueó el audio html:', error);
+          });
+        }
+      } catch (e) {
+        console.warn('Fallo audio ref', e);
+      }
+    }
+
+    // 3. Vibración
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate([200, 100, 200]);
+      } catch (e) {
+        // Ignorar
+      }
+    }
+
+    console.log('🔔 Sonido de alerta invocado.');
   };
 
   // Función robusta para reproducir voz, esperando a que las voces carguen
