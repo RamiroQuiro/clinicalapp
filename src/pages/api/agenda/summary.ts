@@ -2,10 +2,12 @@
 import db from '@/db';
 import { licenciasProfesional, turnos } from '@/db/schema';
 import { agendaGeneralCentroMedico, horariosTrabajo } from '@/db/schema/agenda';
+import APP_TIME_ZONE from '@/lib/timeZone';
 import { formatDateToYYYYMMDD, getDayOfWeek, getEndOfDay, getStartOfDay } from '@/utils/agendaTimeUtils';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { addDays } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 // Constantes para los umbrales de ocupación (mejorados)

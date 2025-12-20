@@ -73,7 +73,7 @@ const SalaEspera = ({ user }) => {
       const medicoApellido = user?.apellido || '';  
       const consultorio = `Consultorio ${medicoNombre} ${medicoApellido}`.trim();
       
-      const response = await fetch('/api/llamar-paciente', {
+      const response = await fetch('/api/public/llamar-paciente', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

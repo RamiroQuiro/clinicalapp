@@ -1,4 +1,5 @@
 import Button from '@/components/atomos/Button';
+import ModalReact from '@/components/moleculas/ModalReact';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
@@ -57,7 +58,7 @@ export const ModalQR: React.FC<ModalQRProps> = ({
             loader.style.display = 'block';
 
             // Llamar al endpoint para generar PDF
-            const response = await fetch('/api/generar-qr-pdf', {
+            const response = await fetch('/api/public/generar-qr-pdf', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ export const ModalQR: React.FC<ModalQRProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="z-50 fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+        <ModalReact>
             <div className="bg-white shadow-xl mx-4 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b">
@@ -207,6 +208,6 @@ export const ModalQR: React.FC<ModalQRProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
+        </ModalReact>
     );
 };
