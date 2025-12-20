@@ -241,7 +241,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     console.log('🏥 Centro Médico ID:', initialData.centroMedicoId);
 
     // Construir URL con centroMedicoId
-    const eventsUrl = `/api/publiv/public-events?centroMedicoId=${initialData.centroMedicoId}`;
+    const eventsUrl = `/api/public/public-events?centroMedicoId=${initialData.centroMedicoId}`;
     console.log('📡 URL de conexión SSE:', eventsUrl);
 
     let eventSource: EventSource | null = null;
@@ -307,7 +307,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         const esMiTurno =
           data.turnoId === turno.id ||
           data.nombrePaciente ===
-          `${initialData.paciente.nombre} ${initialData.paciente.apellido}`.trim();
+            `${initialData.paciente.nombre} ${initialData.paciente.apellido}`.trim();
 
         if (esMiTurno || !data.turnoId) {
           // Solo actualizar si es mi turno o si no hay turnoId (llamado general)
