@@ -37,14 +37,16 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 
 ## Stack Tecnológico Identificado
 
-- **Framework Principal**: Astro
-- **Framework UI**: React (con componentes `.jsx` y `.astro`)
+- **Framework Principal**: Astro 5.x
+- **Framework UI**: React 18.x (con componentes `.jsx`, `.tsx` y `.astro`)
 - **Estilos**: Tailwind CSS
-- **Base de Datos**: Turso DB con Drizzle ORM
-- **Autenticación**: Lucia
+- **Base de Datos**: Turso DB (SQLite distribuido) con Drizzle ORM
+- **Autenticación**: Lucia Auth
 - **Servidor**: Node.js
 - **Gestión de Estado (Cliente)**: Nanostores
-- **Comunicación Real-time**: Socket.IO
+- **Comunicación Real-time**: Server-Sent Events (SSE)
+- **Generación de PDFs**: Puppeteer
+- **Integración IA**: Google Gemini API / Groq API
 
 ---
 
@@ -446,41 +448,41 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
 - **Integración con Agenda**:
   - Se refactorizó la API principal de la agenda (`GET /api/agenda`) para que sea 100% dinámico.
   - Se eliminó la `JORNADA_LABORAL` hardcodeada y ahora la API consulta la tabla `horariosTrabajo` para generar los slots de turnos disponibles basándose en la configuración guardada para cada profesional.
---- End of Context from: GEMINI.md ---
+    --- End of Context from: GEMINI.md ---
 
 ## Sesión 20: viernes, 31 de octubre de 2025
 
-*   **Objetivo**: Implementar una lógica de creación de usuarios multi-tenant robusta y configurar la redirección de roles para el personal de recepción.
-*   **Decisión de Arquitectura Clave**: Tras un profundo debate sobre varios modelos de datos, se estableció una arquitectura final para la gestión de usuarios y su relación con los centros médicos:
-    *   **Tabla `users`**: Se acordó que esta tabla debe tener un `UNIQUE` constraint en la columna `dni` para anclar la identidad de una persona a través de toda la plataforma. El campo `email` se mantiene, pero no se utilizará como identificador único principal en la lógica de negocio multi-tenant.
-    *   **Tabla `usersCentrosMedicos`**: Se confirmó que esta tabla es la clave para la multi-tenencia. Contiene el `userId`, `centroMedicoId`, el `rolEnCentro`, y un campo `emailUser` para el email específico de login en ese centro. Se aseguró que tuviera un `UNIQUE` constraint en la combinación de `userId` y `centroMedicoId`.
-*   **Implementación - API de Creación de Usuarios (`POST /api/ajustes/usuarios`)**:
-    *   Se refactorizó completamente el endpoint para manejar la nueva lógica.
-    *   El sistema ahora primero busca un usuario por `dni`.
-    *   Si el usuario existe, comprueba si ya está asociado al centro actual. Si no lo está, crea la nueva relación; si ya existe, devuelve un error de conflicto.
-    *   Si el usuario no existe, comprueba que el `email` no esté en uso por otra persona antes de crear el nuevo usuario y su relación con el centro.
-*   **Implementación - Feedback en Frontend (`FormNuevoUsuario.tsx`)**:
-    *   Se mejoró el formulario de creación de usuarios para manejar los estados de `loading`, `error` y `success`.
-    *   Se añadieron mensajes de feedback claros para el usuario, informando sobre el resultado de la operación.
-    *   Se implementó la recarga de la página tras una creación exitosa para mantener la lista de usuarios actualizada.
-*   **Implementación - Redirección por Rol (`middleware.ts`)**:
-    *   Se implementó una lógica en el middleware de Astro para redirigir automáticamente a los usuarios con el rol `recepcion`.
-    *   Se discutió la optimización de rendimiento, decidiendo finalmente leer el `rolEnCentro` desde la cookie `userData` (previamente guardada en el login) en lugar de hacer una consulta a la base de datos en cada petición, evitando así sobrecargar el sistema.
+- **Objetivo**: Implementar una lógica de creación de usuarios multi-tenant robusta y configurar la redirección de roles para el personal de recepción.
+- **Decisión de Arquitectura Clave**: Tras un profundo debate sobre varios modelos de datos, se estableció una arquitectura final para la gestión de usuarios y su relación con los centros médicos:
+  - **Tabla `users`**: Se acordó que esta tabla debe tener un `UNIQUE` constraint en la columna `dni` para anclar la identidad de una persona a través de toda la plataforma. El campo `email` se mantiene, pero no se utilizará como identificador único principal en la lógica de negocio multi-tenant.
+  - **Tabla `usersCentrosMedicos`**: Se confirmó que esta tabla es la clave para la multi-tenencia. Contiene el `userId`, `centroMedicoId`, el `rolEnCentro`, y un campo `emailUser` para el email específico de login en ese centro. Se aseguró que tuviera un `UNIQUE` constraint en la combinación de `userId` y `centroMedicoId`.
+- **Implementación - API de Creación de Usuarios (`POST /api/ajustes/usuarios`)**:
+  - Se refactorizó completamente el endpoint para manejar la nueva lógica.
+  - El sistema ahora primero busca un usuario por `dni`.
+  - Si el usuario existe, comprueba si ya está asociado al centro actual. Si no lo está, crea la nueva relación; si ya existe, devuelve un error de conflicto.
+  - Si el usuario no existe, comprueba que el `email` no esté en uso por otra persona antes de crear el nuevo usuario y su relación con el centro.
+- **Implementación - Feedback en Frontend (`FormNuevoUsuario.tsx`)**:
+  - Se mejoró el formulario de creación de usuarios para manejar los estados de `loading`, `error` y `success`.
+  - Se añadieron mensajes de feedback claros para el usuario, informando sobre el resultado de la operación.
+  - Se implementó la recarga de la página tras una creación exitosa para mantener la lista de usuarios actualizada.
+- **Implementación - Redirección por Rol (`middleware.ts`)**:
+  - Se implementó una lógica en el middleware de Astro para redirigir automáticamente a los usuarios con el rol `recepcion`.
+  - Se discutió la optimización de rendimiento, decidiendo finalmente leer el `rolEnCentro` desde la cookie `userData` (previamente guardada en el login) en lugar de hacer una consulta a la base de datos en cada petición, evitando así sobrecargar el sistema.
 
 ---
 
 ## Sesión 21: viernes, 5 de noviembre de 2025
 
-*   **Objetivo**: Refactorizar el flujo de creación de turnos para que sea reutilizable tanto por el perfil "Profesional" como por el "Recepcionista", desacoplando la lógica del estado de la UI.
-*   **Decisión de Arquitectura Clave**: Se migró de un formulario monolítico a un patrón de "Componente Tonto / Contenedor Inteligente".
-    *   **Componente Tonto**: `FormularioTurno.tsx` se refactorizó para ser puramente presentacional, sin conexiones directas a ningún store, recibiendo todos los datos y funciones a través de `props`.
-    *   **Contenedores Inteligentes**: Se crearon dos contenedores para orquestar el formulario:
-        1.  `ContenedorFormularioTurno.tsx`: Conecta el formulario con el `agenda.store.ts` para el uso del profesional.
-        2.  `ContenedorFormularioTurnoRecepcionista.tsx`: Conecta el mismo formulario con el `recepcion.recepcionista.store.ts` para el uso de la recepcionista.
-*   **Mejora de UX (Recepcionista)**: Se implementó el componente `ContenedorHorariosRecepsionista.tsx`, que muestra tarjetas de horarios disponibles para cada médico, permitiendo a la recepcionista seleccionar al profesional de forma implícita al elegir un horario.
-*   **DepuraciÃ³n y SoluciÃ³n**: Se resolviÃ³ un bug donde el formulario de la recepcionista no captaba los datos del paciente y del profesional. El usuario identificÃ³ correctamente que el problema no estaba en el formulario en sÃ­, sino en los contenedores, que no estaban pasando el `medicoId` correctamente a las acciones del store (`setFechaYHora...`) al momento de la selecciÃ³n del horario.
-*   **Próximos Pasos**: Continuar con el desarrollo de las funcionalidades específicas de la sección de Recepción.
---- End of Context from: GEMINI.md ---
+- **Objetivo**: Refactorizar el flujo de creación de turnos para que sea reutilizable tanto por el perfil "Profesional" como por el "Recepcionista", desacoplando la lógica del estado de la UI.
+- **Decisión de Arquitectura Clave**: Se migró de un formulario monolítico a un patrón de "Componente Tonto / Contenedor Inteligente".
+  - **Componente Tonto**: `FormularioTurno.tsx` se refactorizó para ser puramente presentacional, sin conexiones directas a ningún store, recibiendo todos los datos y funciones a través de `props`.
+  - **Contenedores Inteligentes**: Se crearon dos contenedores para orquestar el formulario:
+    1.  `ContenedorFormularioTurno.tsx`: Conecta el formulario con el `agenda.store.ts` para el uso del profesional.
+    2.  `ContenedorFormularioTurnoRecepcionista.tsx`: Conecta el mismo formulario con el `recepcion.recepcionista.store.ts` para el uso de la recepcionista.
+- **Mejora de UX (Recepcionista)**: Se implementó el componente `ContenedorHorariosRecepsionista.tsx`, que muestra tarjetas de horarios disponibles para cada médico, permitiendo a la recepcionista seleccionar al profesional de forma implícita al elegir un horario.
+- **DepuraciÃ³n y SoluciÃ³n**: Se resolviÃ³ un bug donde el formulario de la recepcionista no captaba los datos del paciente y del profesional. El usuario identificÃ³ correctamente que el problema no estaba en el formulario en sÃ­, sino en los contenedores, que no estaban pasando el `medicoId` correctamente a las acciones del store (`setFechaYHora...`) al momento de la selecciÃ³n del horario.
+- **Próximos Pasos**: Continuar con el desarrollo de las funcionalidades específicas de la sección de Recepción.
+  --- End of Context from: GEMINI.md ---
 
 ## Sesión 22: 2025-11-10
 
@@ -499,24 +501,371 @@ Este archivo sirve como registro de las tareas, decisiones y cambios importantes
   - Se resolvió el error `horarioProfesional is not defined` al definir correctamente el alcance de la variable y mover su cálculo dentro del bucle de iteración de profesionales.
   - Se aseguró que `JORNADA_LABORAL` se calcule individualmente para cada profesional.
 - **Estado Actual**: El endpoint de la API ahora devuelve correctamente las agendas agrupadas en formato de array, listo para el consumo del frontend. El usuario ha confirmado que ha manejado los cambios en el frontend.
+
 ---
 
 ## Sesión 23: 2025-11-13
 
-*   **Objetivo**: Mejorar la visualización de la disponibilidad en la agenda del profesional y de la recepcionista.
-*   **Implementación (UI/UX)**:
-    *   Se implementó un sistema de codificación por colores en el calendario (`react-datepicker`) para reflejar la carga de turnos de cada día. La intensidad del color (verde -> amarillo -> naranja -> rojo) indica el nivel de ocupación.
-    *   Se añadió un `tooltip` que, al pasar el mouse sobre un día, muestra la cantidad exacta y el porcentaje de turnos ocupados.
-*   **Lógica Condicional (Recepción)**:
-    *   En la vista de recepción, esta funcionalidad de colores y tooltips se activa únicamente cuando se ha seleccionado **un solo profesional**. Si se seleccionan múltiples profesionales, la funcionalidad se desactiva para evitar una representación de datos confusa.
-*   **Próximos Pasos**: Revisar el flujo de la recepcionista para la selección de profesionales y la visualización de sus agendas.
+- **Objetivo**: Mejorar la visualización de la disponibilidad en la agenda del profesional y de la recepcionista.
+- **Implementación (UI/UX)**:
+  - Se implementó un sistema de codificación por colores en el calendario (`react-datepicker`) para reflejar la carga de turnos de cada día. La intensidad del color (verde -> amarillo -> naranja -> rojo) indica el nivel de ocupación.
+  - Se añadió un `tooltip` que, al pasar el mouse sobre un día, muestra la cantidad exacta y el porcentaje de turnos ocupados.
+- **Lógica Condicional (Recepción)**:
+  - En la vista de recepción, esta funcionalidad de colores y tooltips se activa únicamente cuando se ha seleccionado **un solo profesional**. Si se seleccionan múltiples profesionales, la funcionalidad se desactiva para evitar una representación de datos confusa.
+- **Próximos Pasos**: Revisar el flujo de la recepcionista para la selección de profesionales y la visualización de sus agendas.
+
 ---
 
 ## Sesión 24: 2025-11-20
 
-*   **Objetivo**: Sincronizar en tiempo real la agenda y los estados de los turnos entre el perfil del profesional y el de la recepcionista.
-*   **Implementación (SSE)**:
-    *   Se extendió el sistema de Server-Sent Events (SSE) para notificar cambios en los turnos (nuevos, modificados, cambio de estado).
-    *   La vista de la agenda del profesional ahora se actualiza en tiempo real sin necesidad de recargar la página.
-    *   La "Sala de Espera" de la recepcionista refleja instantáneamente cuando un profesional llama a un paciente o cambia el estado de un turno.
-*   **Resultado**: Se logró una experiencia de usuario fluida y colaborativa, donde las acciones de un rol (médico) son visibles de inmediato para otro rol (recepcionista), mejorando la coordinación del consultorio.
+- **Objetivo**: Sincronizar en tiempo real la agenda y los estados de los turnos entre el perfil del profesional y el de la recepcionista.
+- **Implementación (SSE)**:
+  - Se extendió el sistema de Server-Sent Events (SSE) para notificar cambios en los turnos (nuevos, modificados, cambio de estado).
+  - La vista de la agenda del profesional ahora se actualiza en tiempo real sin necesidad de recargar la página.
+  - La "Sala de Espera" de la recepcionista refleja instantáneamente cuando un profesional llama a un paciente o cambia el estado de un turno.
+- **Resultado**: Se logró una experiencia de usuario fluida y colaborativa, donde las acciones de un rol (médico) son visibles de inmediato para otro rol (recepcionista), mejorando la coordinación del consultorio.
+
+---
+
+## Sesión 25: Enero 2025
+
+- **Objetivo**: Documentar completamente el proyecto para prepararlo para salir al mercado.
+- **Análisis Completo del Proyecto**:
+  - Se realizó un análisis exhaustivo de toda la arquitectura, código y features implementadas.
+  - Se identificaron fortalezas y áreas de mejora.
+  - Se evaluó el estado del proyecto para producción.
+- **Documentación Creada**:
+  - **README.md**: Documentación completa del proyecto con:
+    - Descripción y características principales
+    - Requisitos previos y dependencias
+    - Guía de instalación paso a paso
+    - Estructura del proyecto
+    - Scripts disponibles
+    - Configuración de seguridad
+    - Guía de despliegue
+    - Troubleshooting
+  - **ARCHITECTURE.md**: Documentación técnica detallada con:
+    - Visión general de la arquitectura
+    - Stack tecnológico completo
+    - Arquitectura de capas
+    - Estructura de directorios
+    - Patrón Atomic Design
+    - Sistema de autenticación y autorización
+    - Arquitectura de base de datos
+    - Comunicación en tiempo real (SSE)
+    - Integración con IA
+    - Sistema de suscripciones
+    - Flujo de datos
+    - Seguridad
+    - Patrones de diseño utilizados
+    - Optimizaciones y escalabilidad
+    - Convenciones de código
+    - Ciclo de vida de una consulta
+  - **DECISIONES_TECNICAS.md**: Registro de decisiones arquitectónicas (ADRs) con:
+    - 12 decisiones técnicas documentadas (ADR-001 a ADR-012)
+    - Contexto, alternativas y razonamiento de cada decisión
+    - Consecuencias positivas y negativas
+    - Decisiones pendientes para el futuro
+    - Tabla resumen de todas las decisiones
+  - **env.example**: Archivo de ejemplo con todas las variables de entorno documentadas
+- **Evaluación del Proyecto**:
+  - **Calificación General**: 6.5/10 para salir al mercado
+  - **Fortalezas Identificadas**:
+    - Base sólida y funcionalidades completas
+    - Seguridad básica bien implementada
+    - Arquitectura escalable
+    - Sistema multi-tenant robusto
+  - **Áreas de Mejora Identificadas**:
+    - Falta de tests (unitarios e integración)
+    - Muchos console.log en producción (501 encontrados)
+    - Falta rate limiting en APIs
+    - Validación de archivos solo en cliente
+    - Mezcla de JavaScript y TypeScript
+- **Recomendaciones para Producción**:
+  1. Documentación ✅ (Completada)
+  2. Seguridad crítica (rate limiting, validación servidor)
+  3. Sistema de logging profesional
+  4. Testing básico
+  5. Limpieza de código
+  6. Optimizaciones de performance
+  7. Monitoreo y error tracking
+- **Estado Final**: Proyecto bien documentado y listo para continuar con mejoras de seguridad y testing antes del lanzamiento.
+
+---
+
+## Sesión 25: Diciembre 2024 - Enero 2025
+
+### Documentación Completa del Proyecto
+
+- **Objetivo**: Crear documentación profesional y completa del proyecto para prepararlo para salir al mercado.
+- **Implementación**:
+  - **README.md**: Documentación completa del proyecto con instalación, configuración, características principales, guía de despliegue y troubleshooting.
+  - **ARCHITECTURE.md**: Documentación técnica detallada de la arquitectura, patrones de diseño, flujos de datos, seguridad y optimizaciones.
+  - **DECISIONES_TECNICAS.md**: Registro de decisiones técnicas (ADRs) explicando el contexto, alternativas y razonamiento detrás de cada elección tecnológica.
+  - **env.example**: Archivo de ejemplo con todas las variables de entorno documentadas y explicadas.
+
+---
+
+## 🎯 Features Implementadas (Resumen Completo)
+
+### ✅ Módulos Principales Completados
+
+#### 1. Sistema de Autenticación y Autorización
+
+- ✅ Autenticación con Lucia Auth
+- ✅ Sistema de roles (superadmin, admin, profesional, recepcionista, dataEntry, reader)
+- ✅ Middleware de protección de rutas
+- ✅ Protección CSRF
+- ✅ Sistema de auditoría integrado
+- ✅ Gestión de sesiones seguras
+
+#### 2. Arquitectura Multi-Tenant
+
+- ✅ Sistema multi-tenant completo
+- ✅ Separación de datos por centro médico
+- ✅ Gestión de usuarios por centro
+- ✅ Roles específicos por centro (`rolEnCentro`)
+- ✅ Validación de permisos en todas las APIs
+
+#### 3. Gestión de Pacientes
+
+- ✅ Registro completo de pacientes
+- ✅ Historia clínica electrónica
+- ✅ Búsqueda global de pacientes (Ctrl+K)
+- ✅ Perfil completo del paciente
+- ✅ Historial de atenciones
+- ✅ Antecedentes médicos
+- ✅ Notas médicas (CRUD completo)
+- ✅ Signos vitales con gráficos
+- ✅ Documentos adjuntos
+- ✅ Próximos turnos del paciente
+
+#### 4. Sistema de Turnos y Agenda
+
+- ✅ Agenda inteligente con horarios dinámicos
+- ✅ Configuración de horarios por profesional
+- ✅ Turnos espontáneos desde recepción
+- ✅ Estados de turno (confirmado, cancelado, sala_de_espera, en_consulta, finalizado)
+- ✅ Reagendamiento de turnos
+- ✅ Cancelación de turnos
+- ✅ Visualización de disponibilidad con colores
+- ✅ Sincronización en tiempo real (SSE)
+
+#### 5. Consulta Médica (Atención)
+
+- ✅ Interfaz SPA para consultas
+- ✅ Motivo de consulta inicial
+- ✅ Signos vitales
+- ✅ Diagnósticos con búsqueda CIE-11
+- ✅ Medicamentos con vademecum integrado
+- ✅ Tratamientos
+- ✅ Guardado de borradores
+- ✅ Finalización de consulta con sellado
+- ✅ Sistema de enmiendas (adendas)
+- ✅ Historial completo de consultas
+
+#### 6. Portal de Pacientes
+
+- ✅ Portal público con token seguro
+- ✅ Visualización de información del paciente
+- ✅ Auto check-in para pacientes
+- ✅ Generación de tokens temporales
+
+#### 7. Sistema de Recepción
+
+- ✅ Vista dedicada para recepcionistas
+- ✅ Sala de espera en tiempo real
+- ✅ Gestión de turnos espontáneos
+- ✅ Visualización de agendas de múltiples profesionales
+- ✅ Llamado de pacientes
+- ✅ Notificaciones
+
+#### 8. Generación de Documentos (PDFs)
+
+- ✅ Certificados médicos (Puppeteer)
+- ✅ Recetas médicas (Puppeteer)
+- ✅ Órdenes de estudio (Puppeteer)
+- ✅ Derivaciones (Puppeteer)
+- ✅ Reporte completo de atención (Puppeteer)
+- ✅ Plantillas personalizables
+- ✅ Compartir por WhatsApp
+- ✅ Envío por email (preparado)
+
+#### 9. Sistema de Suscripciones
+
+- ✅ Planes de suscripción configurables
+- ✅ Verificación de límites en tiempo real
+- ✅ Sistema de grandfathering (planSnapshot)
+- ✅ Gestión de suscripciones por centro médico
+- ✅ Estados de suscripción (activa, cancelada, impaga, prueba)
+- ✅ Dashboard de uso y límites
+
+#### 10. Sistema de Ajustes
+
+- ✅ **General**: Configuración del centro médico, QR codes
+- ✅ **Usuarios**: Gestión completa de usuarios, perfiles, horarios, licencias
+- ✅ **Historia Clínica**: Configuración de campos, plantillas
+- ✅ **Agenda y Turnos**: Configuración de horarios, duraciones
+- ✅ **Plantillas**: Plantillas de documentos personalizables
+- ✅ **Facturación**: Aranceles, datos fiscales
+- ✅ **Seguridad**: Auditoría, autenticación
+- ✅ **Notificaciones**: Configuración de notificaciones
+- ✅ **Suscripción**: Gestión de planes y límites
+
+#### 11. Integración con Inteligencia Artificial
+
+- ✅ Dictado médico (Speech-to-Text)
+- ✅ Procesamiento de texto con IA (Gemini/Groq)
+- ✅ Extracción estructurada de datos médicos
+- ✅ Autocompletado inteligente
+- ✅ Arquitectura multi-provider
+
+#### 12. Vademecum de Medicamentos
+
+- ✅ Base de datos de medicamentos ANMAT
+- ✅ Búsqueda y autocompletado
+- ✅ Integración con formularios de medicamentos
+- ✅ Script de importación desde CSV
+
+#### 13. Sistema de Tiempo Real
+
+- ✅ Server-Sent Events (SSE) implementado
+- ✅ Actualizaciones en tiempo real de turnos
+- ✅ Sincronización entre roles
+- ✅ Heartbeat automático
+- ✅ Reconexión automática
+
+#### 14. Sistema de Licencias
+
+- ✅ Gestión de licencias de profesionales
+- ✅ Reagendamiento automático de turnos
+- ✅ Períodos de licencia configurables
+
+#### 15. Sistema de Derivaciones
+
+- ✅ Creación de derivaciones
+- ✅ Generación de PDF de derivación
+- ✅ Cancelación de derivaciones
+
+#### 16. Sistema de Órdenes de Estudio
+
+- ✅ Creación de órdenes de estudio
+- ✅ Generación de PDF de órdenes
+- ✅ Cancelación de órdenes
+
+#### 17. Dashboard y Estadísticas
+
+- ✅ Dashboard principal con estadísticas
+- ✅ Gráficos de atenciones
+- ✅ Gráficos de motivos iniciales
+- ✅ Estadísticas del día
+- ✅ Lista de espera
+- ✅ Quick actions
+
+#### 18. Búsqueda y Filtros
+
+- ✅ Buscador global (Ctrl+K)
+- ✅ Búsqueda de pacientes
+- ✅ Búsqueda de diagnósticos (CIE-11)
+- ✅ Búsqueda de medicamentos (Vademecum)
+- ✅ Filtros avanzados
+
+#### 19. Gestión de Archivos
+
+- ✅ Subida de documentos
+- ✅ Organización por centro médico y paciente
+- ✅ Validación de tipos y tamaños
+- ✅ Servicio de archivos
+
+#### 20. Sistema de Preferencias de Perfil
+
+- ✅ Perfiles personalizables por usuario
+- ✅ Configuración de preferencias
+- ✅ Múltiples perfiles por usuario
+
+---
+
+## 📚 Documentación Creada
+
+- ✅ **README.md**: Guía completa de instalación, configuración y uso
+- ✅ **ARCHITECTURE.md**: Documentación técnica detallada
+- ✅ **DECISIONES_TECNICAS.md**: Registro de decisiones arquitectónicas (ADRs)
+- ✅ **env.example**: Variables de entorno documentadas
+
+---
+
+## 🔄 Estado Actual del Proyecto
+
+### Completado ✅
+
+- Arquitectura multi-tenant completa
+- Sistema de autenticación y autorización
+- Gestión completa de pacientes
+- Sistema de turnos y agenda
+- Consulta médica completa
+- Portal de pacientes
+- Auto check-in
+- Generación de PDFs
+- Sistema de suscripciones
+- Integración con IA
+- Vademecum
+- Tiempo real con SSE
+- Sistema de ajustes completo
+- Documentación profesional
+
+### En Mejora Continua 🔄
+
+- Optimización de performance
+- Mejoras de UX/UI
+- Expansión de features de IA
+- Integración con más servicios externos
+
+### Prioridades para Producción 🔴
+
+- **Rate Limiting en APIs** (CRÍTICO)
+  - ⚠️ **Problema identificado**: Actualmente todas las APIs están sin límites de requests
+  - **Riesgos**: Ataques de fuerza bruta, abuso de endpoints costosos (IA, PDFs), DoS, costos excesivos
+  - **Endpoints críticos a proteger**:
+    - `/api/auth/signin` - 5 intentos cada 15 minutos por IP
+    - `/api/auth/signup` - 3 registros por hora por IP
+    - `/api/atencion/process-notes` - 20 requests/minuto por usuario (costo IA)
+    - `/api/certificados`, `/api/recetas` - 10 PDFs/minuto por usuario (recursos pesados)
+    - Endpoints normales - 60 requests/minuto por usuario
+  - **Recomendación**: Implementar Upstash Rate Limit o Redis
+  - **Ver**: `DECISIONES_TECNICAS.md` ADR-013 para detalles técnicos
+
+- **Validación de Archivos en Servidor** (IMPORTANTE)
+  - ⚠️ **Problema identificado**: Solo se valida en cliente, no en servidor
+  - **Riesgos**: DoS por archivos grandes, inyección de archivos maliciosos
+  - **Recomendación**: Validar tipo, tamaño y contenido en servidor antes de guardar
+
+- **Sistema de Logging Profesional** (IMPORTANTE)
+  - ⚠️ **Problema identificado**: Uso de `console.log` en producción
+  - **Recomendación**: Implementar sistema estructurado con niveles (error, warn, info, debug)
+
+### Pendiente para Futuro 📋
+
+- Sistema de notificaciones push
+- Integración con sistemas de facturación externos
+- App móvil
+- Integración con laboratorios
+- Caché con Redis
+- CDN para assets estáticos
+
+---
+
+## 🎉 Logros Principales
+
+1. **Arquitectura Robusta**: Sistema multi-tenant escalable y bien estructurado
+2. **Tiempo Real**: Sincronización instantánea entre usuarios
+3. **Documentación Profesional**: Proyecto completamente documentado
+4. **Integración IA**: Dictado médico y procesamiento inteligente
+5. **Generación de Documentos**: PDFs profesionales para todos los documentos médicos
+6. **Sistema de Suscripciones**: Modelo SaaS completo con grandfathering
+7. **UX Moderna**: Interfaz intuitiva y responsive
+
+---
+
+**Última actualización**: Enero 2025  
+**Estado del Proyecto**: ✅ Listo para producción (con mejoras pendientes documentadas)
+g

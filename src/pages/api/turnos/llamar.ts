@@ -17,7 +17,8 @@ export const POST: APIRoute = async ({ request }) => {
       .select({
         nombre: pacientes.nombre,
         apellido: pacientes.apellido,
-        centroMedicoId: turnos.centroMedicoId, // <-- AÑADIDO
+        centroMedicoId: turnos.centroMedicoId,
+        estado: turnos.estado,
       })
       .from(turnos)
       .leftJoin(pacientes, eq(turnos.pacienteId, pacientes.id))
@@ -34,10 +35,13 @@ export const POST: APIRoute = async ({ request }) => {
     emitEvent(
       'paciente-llamado',
       {
+        turnoId: turnoId, // Incluir turnoId para verificación en portal
         nombrePaciente: nombreCompleto,
         consultorio: consultorio,
+        estado: 'demorado', // Incluir estado para actualizar UI
+        timestamp: new Date().toISOString(),
       },
-      { centroMedicoId: centroMedicoId } // <-- AÑADIDO
+      { centroMedicoId: centroMedicoId }
     );
 
     console.log(`[API /llamar] Evento 'paciente-llamado' emitido para ${nombreCompleto}`);

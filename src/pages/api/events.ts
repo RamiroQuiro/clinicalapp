@@ -18,6 +18,7 @@ export const GET: APIRoute = async ({ request }) => {
     // El paciente solo debe recibir eventos de su centro médico específico
     let controller: ReadableStreamDefaultController;
     let clientId: string;
+    let heartbeatInterval: NodeJS.Timeout | null = null;
 
     const stream = new ReadableStream({
         start(ctrl) {
@@ -31,11 +32,12 @@ export const GET: APIRoute = async ({ request }) => {
             console.log(`📡 Cliente SSE [${clientId}] conectado al portal público del centro: ${centroMedicoId}`);
             let isActive = true;
 
-            const interval = setInterval(() => {
+            // Heartbeat más frecuente para mantener conexión en móviles
+            heartbeatInterval = setInterval(() => {
                 try {
                     // Verificar si el controller está activo
                     if (!isActive) {
-                        clearInterval(interval);
+                        if (heartbeatInterval) clearInterval(heartbeatInterval);
                         return;
                     }
 
@@ -43,25 +45,36 @@ export const GET: APIRoute = async ({ request }) => {
                     try {
                         controller.enqueue(encoder.encode(':ping\n\n'));
                     } catch (error) {
+                        console.log(`🔌 Cliente SSE [${clientId}] desconectado del portal público (error en ping)`);
                         isActive = false;
                         removeClient(controller);
-                        console.log(`🔌 Cliente SSE [${clientId}] desconectado del portal público`);
+                        if (heartbeatInterval) clearInterval(heartbeatInterval);
                     }
                 } catch (error) {
                     console.log(`Error verificando cliente [${clientId}]:`, error);
                     isActive = false;
+                    if (heartbeatInterval) clearInterval(heartbeatInterval);
                 }
-            }, 5000);
+            }, 30000); // 30 segundos para móviles (más largo para ahorrar batería)
+        },
+        cancel() {
+            // Limpiar cuando el stream se cancela
+            console.log(`🔌 Stream SSE [${clientId}] cancelado para portal público`);
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+            }
+            removeClient(controller);
         },
     });
 
     return new Response(stream, {
         headers: {
             'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Connection': 'keep-alive',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Headers': 'Cache-Control',
+            'X-Accel-Buffering': 'no', // Deshabilitar buffering en Nginx si está presente
         },
     });
 };

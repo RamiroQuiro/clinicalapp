@@ -61,6 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
             turnoId: turnoId,
             nombrePaciente: nombreCompleto,
             consultorio: consultorio,
+            estado: 'demorado', // Incluir estado para actualizar UI
             timestamp: new Date().toISOString(),
         }, {
             centroMedicoId: turnoActualizado.centroMedicoId || undefined
