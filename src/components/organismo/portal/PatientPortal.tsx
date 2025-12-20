@@ -55,7 +55,8 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   // Crear el AudioContext al montar el componente
   useEffect(() => {
     try {
-      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const context = new AudioContextClass();
       setAudioContext(context);
 
       // Inicializar el elemento de audio una sola vez
@@ -74,62 +75,66 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     try {
       // 1. Solicitar permisos de notificación (para móviles), si corresponde
       if ('Notification' in window && Notification.permission === 'default') {
-        // No bloqueamos por esto, es opcional
-        Notification.requestPermission().catch(e =>
-          console.log('Permiso notificaciones ignorado', e)
-        );
+        Notification.requestPermission().catch(() => {});
       }
 
-      // 2. Desbloquear AudioContext (Clave para iOS/Android Chrome)
+      // 2. Desbloquear AudioContext
       if (audioContext && audioContext.state === 'suspended') {
         await audioContext.resume();
       }
 
-      // 3. Desbloquear el elemento HTML Audio (Fallback)
-      // Reproducir silencio brevemente desbloquea el elemento para usos futuros controlados por script
+      // 3. Feedback auditivo inmediato (Clave para UX y desbloqueo real)
+      // Reproducimos un BEEP generado audiblemente para confirmar
+      if (audioContext) {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        // Sonido de confirmación (agudo y corto)
+        osc.frequency.setValueAtTime(660, audioContext.currentTime); // E5
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.15);
+      }
+
+      // 4. Intentar reproducir el audio HTML brevemente para desbloquearlo en iOS
+      // En lugar de volumen 0 (que a veces falla), usamos volumen bajo pero audible
       if (audioRef.current) {
-        audioRef.current.volume = 0; // Muteado para el desbloqueo
-        // Promesa para manejar play() que devuelve promesa en navegadores modernos
+        audioRef.current.volume = 0.05; // Mínimo audible
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
-          await playPromise;
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-          // Restaurar volumen para cuando se necesite de verdad
-          audioRef.current.volume = 1.0;
+          playPromise
+            .then(() => {
+              // Pausar inmediatamente después de que empiece
+              setTimeout(() => {
+                if (audioRef.current) {
+                  audioRef.current.pause();
+                  audioRef.current.currentTime = 0;
+                  audioRef.current.volume = 1.0; // Restaurar volumen full
+                }
+              }, 50);
+            })
+            .catch(e => console.warn('Audio HTML play prevented:', e));
         }
       }
 
-      // 4. Feedback auditivo inmediato (Oscilador) para confirmar al usuario
-      if (audioContext) {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.value = 440; // A4
-        gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
-      }
-
-      // 5. "Calentar" el motor de Speech Synthesis
+      // 5. Inicializar síntesis de voz
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(' ');
-        utterance.volume = 0;
+        const utterance = new SpeechSynthesisUtterance('Audio activado');
+        utterance.volume = 0.5;
         window.speechSynthesis.speak(utterance);
       }
 
       setAudioEnabled(true);
       setUserInteracted(true);
-      console.log('✅ Audio y Voz activados y desbloqueados.');
+      console.log('✅ Audio activado con feedback audible.');
     } catch (error) {
       console.error('⚠️ Error al activar audio/voz:', error);
-      // Marcamos como activado igual para no trabar la UI, el usuario ya intencionó activar
+      // Marcamos como activado igual
       setAudioEnabled(true);
       setUserInteracted(true);
     }
@@ -139,14 +144,11 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
   const playAlertSound = async () => {
     if (!audioEnabled) return;
 
-    // Estrategia "Doble Cañón": Intentar AudioContext Y HTMLAudioElement
-    // Esto maximiza la probabilidad de que suene en cualquier dispositivo
-
-    // 1. AudioContext (Mejor latencia y funciona bien si se desbloqueó)
+    // 1. AudioContext (Prioritario - Oscilador)
     if (audioContext) {
       try {
         if (audioContext.state === 'suspended') {
-          audioContext.resume().catch(e => console.warn('No se pudo reanudar context', e));
+          audioContext.resume().catch(() => {});
         }
 
         const oscillator = audioContext.createOscillator();
@@ -155,14 +157,14 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
 
-        // Sonido "Ding-Dong"
+        // Sonido "Ding-Dong" más robusto
         const now = audioContext.currentTime;
 
         oscillator.frequency.setValueAtTime(800, now);
-        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+        oscillator.frequency.setValueAtTime(600, now + 0.2);
 
         gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
 
         oscillator.start(now);
         oscillator.stop(now + 0.4);
@@ -171,17 +173,11 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
       }
     }
 
-    // 2. HTML Audio Element (Fallback robusto si el archivo existe)
+    // 2. HTML Audio Element (Respaldo MP3)
     if (audioRef.current) {
       try {
         audioRef.current.currentTime = 0;
-        audioRef.current.volume = 1.0; // Asegurar volumen
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.warn('Auto-play preventivo bloqueó el audio html:', error);
-          });
-        }
+        audioRef.current.play().catch(e => console.warn('Fallo MP3', e));
       } catch (e) {
         console.warn('Fallo audio ref', e);
       }
@@ -191,9 +187,7 @@ export default function PatientPortal({ initialData }: { initialData: InitialDat
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
         navigator.vibrate([200, 100, 200]);
-      } catch (e) {
-        // Ignorar
-      }
+      } catch (e) {}
     }
 
     console.log('🔔 Sonido de alerta invocado.');
