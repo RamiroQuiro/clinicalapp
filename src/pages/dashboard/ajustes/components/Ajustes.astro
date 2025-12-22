@@ -1,7 +1,7 @@
 ---
 import DivBox1 from '@/components/atomos/DivBox1.astro';
 import FormCont from '@/components/atomos/FormCont.astro';
-import FromularioPerfilAvatar from './FormularioPerfilAvatar';
+
 import H2 from '@/components/atomos/H2.astro';
 import Titulo1 from '@/components/atomos/Titulo1.astro';
 import Button1 from '@/components/atomos/Button1.astro';
@@ -11,10 +11,10 @@ const { user } = Astro.props;
 ---
 
 <MainDashboard h1="Ajustes">
-  <div class="container py-4 gap-2 px-2 flex flex-col w-full">
+  <div class="flex flex-col gap-2 px-2 py-4 w-full container">
     <DivBox1>
       <FormCont title="datos" id="formularioAjustes">
-        <div class="flex items-center justify-between w-full gap-2">
+        <div class="flex justify-between items-center gap-2 w-full">
           <ContenedorInputForm
             id="nombre"
             label="nombre"
@@ -30,7 +30,7 @@ const { user } = Astro.props;
             value={user?.apellido}
           />
         </div>
-        <div class="flex items-center justify-between w-full gap-2">
+        <div class="flex justify-between items-center gap-2 w-full">
           <ContenedorInputForm
             id="email"
             label="email"
@@ -46,7 +46,7 @@ const { user } = Astro.props;
             value={user?.celular}
           />
         </div>
-        <div class="flex items-center justify-between w-full gap-2">
+        <div class="flex justify-between items-center gap-2 w-full">
           <ContenedorInputForm
             id="domicilio"
             label="domicilio"
@@ -62,7 +62,7 @@ const { user } = Astro.props;
             value={user?.ciudad}
           />
         </div>
-        <div class="flex items-center justify-between w-full gap-2">
+        <div class="flex justify-between items-center gap-2 w-full">
           <ContenedorInputForm
             id="provincia"
             label="provincia"
@@ -75,10 +75,10 @@ const { user } = Astro.props;
       </FormCont>
     </DivBox1>
     <DivBox1>
-      <div class="flex items-start justify-between w-full gap-2">
+      <div class="flex justify-between items-start gap-2 w-full">
         <div class="w-1/3">
           <Titulo1>Foto/Avatar/Logo</Titulo1>
-          <FromularioPerfilAvatar client:load />
+          <!-- <FromularioPerfilAvatar client:load /> -->
         </div>
         <div class="w-2/3">
           <FormCont title="Cambio Clave" id="formularioPassword">
@@ -88,7 +88,7 @@ const { user } = Astro.props;
               name="passwordActual"
               type="password"
             />
-            <div class="flex items-center justify-between w-full gap-2">
+            <div class="flex justify-between items-center gap-2 w-full">
               <ContenedorInputForm
                 id="passwordNueva"
                 label="password nueva"
@@ -102,7 +102,7 @@ const { user } = Astro.props;
                 type="password"
               />
             </div>
-            <div class="flex items-center justify-end mt-2 w-full gap-2">
+            <div class="flex justify-end items-center gap-2 mt-2 w-full">
               <Button1>guardar</Button1>
             </div>
           </FormCont>

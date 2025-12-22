@@ -1,6 +1,6 @@
-import type { APIRoute } from 'astro';
 import { createResponse } from '@/utils/responseAPI';
-import { fetchProfesionalesDelCentro } from '@/services/recepcionista.services';
+import type { APIRoute } from 'astro';
+// import { fetchProfesionalesDelCentro } from '@/services/recepcionista.services';
 
 export const GET: APIRoute = async ({ locals }) => {
   const { user } = locals;
@@ -10,8 +10,8 @@ export const GET: APIRoute = async ({ locals }) => {
   }
 
   try {
-    const profesionales = await fetchProfesionalesDelCentro(user.centroMedicoId);
-    return createResponse(200, 'Profesionales obtenidos con éxito', false, profesionales);
+    // const profesionales = await fetchProfesionalesDelCentro(user.centroMedicoId);
+    return createResponse(200, 'Profesionales obtenidos con éxito', false);
   } catch (error: any) {
     console.error('Error en el endpoint /api/recepcion/profesionales:', error);
     return createResponse(500, error.message || 'Error interno del servidor', true);

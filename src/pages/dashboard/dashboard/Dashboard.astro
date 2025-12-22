@@ -1,5 +1,6 @@
 ---
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import type { Session, User } from 'lucia';
 import ContenedorTitleBotonera from '../../../components/atomos/ContenedorTitleBotonera.astro';
 import DivBox1 from '../../../components/atomos/DivBox1.astro';
 import H2 from '../../../components/atomos/H2.astro';
@@ -9,19 +10,19 @@ import GraficoMotivosIniciales from './componente/GraficoMotivosIniciales.astro'
 import GraficoUltimasAtenciones from './componente/GraficoUltimasAtenciones.astro';
 import ListaDeEspera from './componente/ListaDeEspera.astro';
 import PacienteList from './componente/PacienteList.astro';
-const { user, session } = Astro.locals;
+const { user, session } = Astro.locals as { user: User; session: Session };
 let errorData = false;
-const data = await getDashboardData(user?.id, user?.centroMedicoId);
+const data = await getDashboardData(user?.id, user.centroMedicoId);
 // console.log('data dashboard', data);
 
 //
 ---
 
 <MainDashboard h1="Dashboard">
-  <div class="gap-2 flex flex-col w-full">
+  <div class="flex flex-col gap-2 w-full">
     <ContentedorStatsDash data={data?.stats} client:load />
 
-    <div class="flex md:flex-row flex-col items-start justify-between gap-2 w-full">
+    <div class="flex md:flex-row flex-col justify-between items-start gap-2 w-full">
       <!-- ultimas atenciones -->
       <DivBox1 styleDiv="w-full ">
         <ContenedorTitleBotonera>
@@ -34,7 +35,7 @@ const data = await getDashboardData(user?.id, user?.centroMedicoId);
       <ListaDeEspera />
 
       <!-- graficos -->
-      <div class="flex flex-col gap-3 w-full items-stretch justify-normal">
+      <div class="flex flex-col justify-normal items-stretch gap-3 w-full">
         <DivBox1 styleDiv="w-full -[30%]">
           <GraficoUltimasAtenciones data={data?.atencionesUlt7d} />
         </DivBox1>

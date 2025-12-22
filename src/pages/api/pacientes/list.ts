@@ -4,6 +4,7 @@ import { lucia } from '@/lib/auth';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
+import type { User } from 'lucia';
 
 export const GET: APIRoute = async ({ cookies, locals }) => {
     try {
@@ -13,10 +14,10 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
             return createResponse(401, 'No autorizado');
         }
 
-        const { user } = locals;
+        const { user } = locals as { user: User };
         const { session } = await lucia.validateSession(sessionId);
 
-        if (!session || !user || !(user as any).centroMedicoId) {
+        if (!session || !user || !user.centroMedicoId) {
             return createResponse(401, 'No autorizado o sin centro médico asignado');
         }
 
@@ -32,7 +33,7 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
                 fNacimiento: pacientes.fNacimiento,
             })
             .from(pacientes)
-            .where(eq(pacientes.centroMedicoId, (user as any).centroMedicoId));
+            .where(eq(pacientes.centroMedicoId, user.centroMedicoId));
 
         const pacientesData = dataDB.map(paciente => {
             return {
