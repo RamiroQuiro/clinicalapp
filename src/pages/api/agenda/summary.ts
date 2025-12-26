@@ -3,11 +3,11 @@ import db from '@/db';
 import { licenciasProfesional, turnos } from '@/db/schema';
 import { agendaGeneralCentroMedico, horariosTrabajo } from '@/db/schema/agenda';
 import APP_TIME_ZONE from '@/lib/timeZone';
-import { formatDateToYYYYMMDD, getDayOfWeek, getEndOfDay, getStartOfDay } from '@/utils/agendaTimeUtils';
+import { formatDateToYYYYMMDD, getDayOfWeek } from '@/utils/agendaTimeUtils';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { addDays } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { fromZonedTime } from 'date-fns-tz';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 // Constantes para los umbrales de ocupación (mejorados)
@@ -16,21 +16,12 @@ const UMBRAL_OCUPACION_MEDIA = 40; // %
 const UMBRAL_OCUPACION_BAJA = 10; // %
 const UMBRAL_LICENCIA = 100; // %
 
-// Helper para convertir hora (HH:MM) a minutos desde la medianoche con timezone
+// Helper para convertir hora (HH:MM) a minutos desde la medianoche
+// Simplificado para evitar problemas de timezone: "10:30" son siempre 630 minutos
 const convertirHoraAMinutos = (hora: string | null | undefined): number => {
   if (!hora) return 0;
-
-  // Crear fecha base con la hora y el timezone correcto
-  const fechaBase = toZonedTime(new Date(), APP_TIME_ZONE);
   const [horas, minutos] = hora.split(':').map(Number);
-
-  // Crear fecha con la hora del horario
-  const fechaConHora = new Date(fechaBase);
-  fechaConHora.setHours(horas, minutos, 0, 0);
-
-  // Convertir a minutos usando el timezone
-  const fechaUTC = toZonedTime(fechaConHora, APP_TIME_ZONE);
-  return fechaUTC.getHours() * 60 + fechaUTC.getMinutes();
+  return horas * 60 + minutos;
 };
 
 // Helper para calcular los minutos disponibles de trabajo en un día
@@ -98,10 +89,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
     if (!startDateParam || !endDateParam || !professionalIdsParam || !centroMedicoId) {
       return createResponse(400, 'Faltan parámetros requeridos (startDate, endDate, professionalIds, centroMedicoId)');
     }
-    console.log('consultas a esta api syummay')
+
     const ID_PROFESIONALES = professionalIdsParam.split(',');
-    const FECHA_INICIO = new Date(startDateParam);
-    const FECHA_FIN = new Date(endDateParam);
+
+    // Parseamos las fechas interpretándolas estrictamente como "Inicio del día en Argentina"
+    // '2025-01-01' -> 2025-01-01 00:00:00 AR
+    const FECHA_INICIO = fromZonedTime(`${startDateParam}T00:00:00`, APP_TIME_ZONE);
+    const FECHA_FIN = fromZonedTime(`${endDateParam}T23:59:59.999`, APP_TIME_ZONE);
 
     // Estructura mejorada con más información
     const resumenOcupacion: {
@@ -144,8 +138,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
       .from(turnos)
       .where(
         and(
-          gte(turnos.fechaTurno, getStartOfDay(FECHA_INICIO)),
-          lte(turnos.fechaTurno, getEndOfDay(FECHA_FIN)),
+          gte(turnos.fechaTurno, FECHA_INICIO),
+          lte(turnos.fechaTurno, FECHA_FIN),
           inArray(turnos.userMedicoId, ID_PROFESIONALES),
           eq(turnos.centroMedicoId, centroMedicoId)
         )
@@ -170,8 +164,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
       const CLAVE_FECHA = formatDateToYYYYMMDD(fechaActual);
       const NOMBRE_DIA_SEMANA = getDayOfWeek(fechaActual);
 
-      const INICIO_DIA_ACTUAL = getStartOfDay(fechaActual);
-      const FIN_DIA_ACTUAL = getEndOfDay(fechaActual);
+      // Construimos el inicio y fin del día actual iterado (asegurando zona AR)
+      const fechaString = formatDateToYYYYMMDD(fechaActual); // OJO: formatDateToYYYYMMDD debe ser segura
+      const INICIO_DIA_ACTUAL = fromZonedTime(`${fechaString}T00:00:00`, APP_TIME_ZONE);
+      const FIN_DIA_ACTUAL = fromZonedTime(`${fechaString}T23:59:59.999`, APP_TIME_ZONE);
 
       let porcentajesProfesionales: { [profId: string]: number } = {};
       let turnosPorProfesional: { [profId: string]: number } = {};

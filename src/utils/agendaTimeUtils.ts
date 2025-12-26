@@ -1,7 +1,6 @@
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { format, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { es } from 'date-fns/locale';
-import { startOfDay, endOfDay } from 'date-fns';
 
 
 /**
@@ -65,7 +64,12 @@ export const getDayOfWeek = (date: Date): string => {
  * @returns Un objeto Date al inicio del día.
  */
 export const getStartOfDay = (date: Date): Date => {
-  return toZonedTime(startOfDay(date), APP_TIME_ZONE);
+  // Obtenemos la fecha en la zona horaria objetivo
+  const zoned = toZonedTime(date, APP_TIME_ZONE);
+  // Ponemos 00:00:00
+  zoned.setHours(0, 0, 0, 0);
+  // Convertimos de vuelta a UTC "real"
+  return fromZonedTime(zoned, APP_TIME_ZONE);
 };
 
 /**
@@ -74,7 +78,9 @@ export const getStartOfDay = (date: Date): Date => {
  * @returns Un objeto Date al final del día.
  */
 export const getEndOfDay = (date: Date): Date => {
-  return toZonedTime(endOfDay(date), APP_TIME_ZONE);
+  const zoned = toZonedTime(date, APP_TIME_ZONE);
+  zoned.setHours(23, 59, 59, 999);
+  return fromZonedTime(zoned, APP_TIME_ZONE);
 };
 
 /**
@@ -83,9 +89,6 @@ export const getEndOfDay = (date: Date): Date => {
  * @returns Un string con la fecha formateada.
  */
 export const formatDateToYYYYMMDD = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return format(date, 'yyyy-MM-dd', { timeZone: APP_TIME_ZONE });
 };
 

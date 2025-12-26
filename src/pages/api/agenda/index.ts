@@ -5,7 +5,7 @@ import APP_TIME_ZONE from '@/lib/timeZone';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { addMinutes } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 export const GET: APIRoute = async ({ locals, request }) => {
@@ -90,10 +90,17 @@ export const GET: APIRoute = async ({ locals, request }) => {
       return createResponse(200, 'No hay agendas para mostrar', []);
     }
 
-    // 4. LÓGICA PRINCIPAL (GENERACIÓN DE AGENDAS) - MANTIENE TU CÓDIGO ORIGINAL
-    const fecha = toZonedTime(`${fechaQuery}T12:00:00`, APP_TIME_ZONE);
+    // 4. LÓGICA PRINCIPAL (GENERACIÓN DE AGENDAS)
+    // Usamos fromZonedTime para interpretar la fechaQuery como una fecha en Argentina (indep. del server)
+    // fechaQuery viene como YYYY-MM-DD
+    const inicioDelDia = fromZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
+    const finDelDia = fromZonedTime(`${fechaQuery}T23:59:59.999`, APP_TIME_ZONE);
+
+    // Para obtener el día de la semana, usamos toZonedTime para visualizar la fecha en la zona horaria correcta
+    // y pedimos el día UTC (ya que toZonedTime ajusta el timestamp para que UTC coincida con la zona)
+    const fechaZoned = toZonedTime(inicioDelDia, APP_TIME_ZONE);
     const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-    const diaSemanaNombre = diasSemana[fecha.getDay()];
+    const diaSemanaNombre = diasSemana[fechaZoned.getUTCDay()];
 
     const [configuracionAgenda] = await db
       .select()
@@ -110,9 +117,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
           eq(horariosTrabajo.diaSemana, diaSemanaNombre)
         )
       );
-
-    const inicioDelDia = toZonedTime(`${fechaQuery}T00:00:00`, APP_TIME_ZONE);
-    const finDelDia = toZonedTime(`${fechaQuery}T23:59:59`, APP_TIME_ZONE);
 
     const turnosDelDia = await db
       .select({
@@ -207,8 +211,10 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
       const slotsDelDia = [];
       JORNADA_LABORAL.forEach(rango => {
-        let currentSlotUtc = toZonedTime(`${fechaQuery}T${rango.inicio}:00`, APP_TIME_ZONE);
-        const endSlotUtc = toZonedTime(`${fechaQuery}T${rango.fin}:00`, APP_TIME_ZONE);
+        // Usamos fromZonedTime para asegurar que la hora de inicio se interprete en AR, no en local server
+        let currentSlotUtc = fromZonedTime(`${fechaQuery}T${rango.inicio}:00`, APP_TIME_ZONE);
+        const endSlotUtc = fromZonedTime(`${fechaQuery}T${rango.fin}:00`, APP_TIME_ZONE);
+
         while (currentSlotUtc < endSlotUtc) {
           slotsDelDia.push(new Date(currentSlotUtc));
           currentSlotUtc = addMinutes(currentSlotUtc, DURACION_SLOT_MINUTOS);

@@ -6,7 +6,6 @@ import APP_TIME_ZONE from '@/lib/timeZone';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { format } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
 import { eq } from 'drizzle-orm';
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -36,7 +35,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // 3. Preparamos la nueva fecha en UTC.
-    const fechaTurnoUtc = toZonedTime(
+    // Usamos fromZonedTime para que la fecha string ('2025-01-01T10:00') sea interpretada como hora AR
+    const fechaTurnoUtc = fromZonedTime(
       `${format(new Date(data.fechaTurno), 'yyyy-MM-dd')}T${data.horaTurno}`,
       APP_TIME_ZONE
     );
