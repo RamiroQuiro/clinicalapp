@@ -4,13 +4,13 @@ import { auditLog } from '@/db/schema';
 interface LogEventParams {
   userId: string;
   actionType:
-    | 'CREATE'
-    | 'VIEW'
-    | 'UPDATE'
-    | 'DELETE'
-    | 'LOGIN_SUCCESS'
-    | 'LOGIN_FAILURE'
-    | 'EXPORT';
+  | 'CREATE'
+  | 'VIEW'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'LOGIN_SUCCESS'
+  | 'LOGIN_FAILURE'
+  | 'EXPORT';
   tableName: string;
   recordId?: string;
   oldValue?: any;

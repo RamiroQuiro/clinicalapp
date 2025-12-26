@@ -1,10 +1,11 @@
 import { logAuditEvent } from '@/lib/audit';
 import { lucia } from '@/lib/auth';
 import { emitEvent } from '@/lib/sse/sse';
+import { logger } from '@/utils/logger';
 import { normalize } from '@/utils/normalizadorInput';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import db from '../../../db';
 import { historiaClinica, pacienteProfesional, pacientes } from '../../../db/schema';
 
@@ -83,7 +84,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const normalizedData = normalize(rawData, pacienteSchema);
 
     const data = normalizedData;
-    console.log('📥 Creando paciente:', {
+    logger.log('📥 Creando paciente:', {
       ...data,
     });
 
@@ -101,7 +102,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     }
 
     const centroMedicoId = user.centroMedicoId;
-    console.log('🏥 Centro médico:', normalizedData.dni);
+    logger.log('🏥 Centro médico:', normalizedData.dni);
 
     const pacienteExistente = await db
       .select()
@@ -119,7 +120,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     // TRANSACCIÓN ATÓMICA
     const result = await db.transaction(async trx => {
-      console.log('💾 Insertando paciente...');
+      // console.log('💾 Insertando paciente...');
 
       const pacienteId = nanoIDNormalizador('Pac', 15);
 
@@ -139,10 +140,10 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         })
         .returning();
 
-      console.log('✅ Paciente creado:', nuevoPaciente.id);
+      logger.log('✅ Paciente creado:', nuevoPaciente.id);
 
       // 2. Insertar en historia clínica (¿o fichaPaciente? DECIDÍ CUÁL USAR)
-      console.log('📋 Creando historia clínica...');
+      // console.log('📋 Creando historia clínica...');
       await trx.insert(historiaClinica).values({
         id: nanoIDNormalizador('Hist', 15),
         pacienteId: pacienteId,
@@ -160,10 +161,10 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         numeroHC: nanoIDNormalizador('HistClinicaInterna', 10),
       });
 
-      console.log('✅ Historia clínica creada');
+      // console.log('✅ Historia clínica creada');
 
       // 3. Crear relación paciente-profesional
-      console.log('👥 Creando relación paciente-profesional...');
+      // console.log('👥 Creando relación paciente-profesional...');
 
       const relacionExistente = await trx
         .select()
@@ -201,7 +202,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       description: `Creación de paciente: ${data.nombre} ${data.apellido} (DNI: ${data.dni})`,
     });
 
-    console.log('🎉 Paciente creado exitosamente:', result.id);
+    logger.log('🎉 Paciente creado exitosamente:', result.id);
 
     emitEvent('paciente-creado', result, { centroMedicoId: centroMedicoId });
     return createResponse(200, 'Paciente creado y asociado exitosamente', {
@@ -212,7 +213,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     console.error('❌ Error creando paciente:', error);
 
     if (error.message.includes('UNIQUE constraint failed')) {
-      console.log('error.message', error);
+      logger.error('error.message', error);
       return createResponse(
         409,
         'Conflicto: Ya existe un paciente con este DNI en este centro médico.'
@@ -227,7 +228,7 @@ export const PUT: APIRoute = async ({ request, cookies, locals }) => {
     const rawData = await request.json();
 
     const data = normalize(rawData, pacienteSchema);
-    console.log('datos normalizados para la actualizacion', data);
+    logger.log('datos normalizados para la actualizacion', data);
     // Validar sesión
     const sessionId = cookies.get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {

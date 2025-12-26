@@ -2,6 +2,7 @@ import db from '@/db';
 import { pacientes, turnos, users } from '@/db/schema';
 import { portalSessions } from '@/db/schema/portalSessions';
 import { emitEvent } from '@/lib/sse/sse';
+import { logger } from '@/utils/logger';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import type { APIRoute } from 'astro';
 import { and, eq, gte, lte } from 'drizzle-orm';
@@ -12,7 +13,8 @@ export const POST: APIRoute = async ({ request }) => {
     const { dni, centroMedicoId, turnoId } = await request.json();
 
     // Log para depurar qué llega exactamente
-    console.log(`[API /autocheckin] Datos recibidos:`, {
+    // Log para depurar qué llega exactamente
+    logger.log(`[API /autocheckin] Datos recibidos:`, {
       dni,
       centroMedicoId,
       tipoCentroId: typeof centroMedicoId,
@@ -29,7 +31,7 @@ export const POST: APIRoute = async ({ request }) => {
       centroIdLimpio = Object.values(centroMedicoId)[0];
     }
 
-    console.log(`[API /autocheckin] CentroId limpio: ${centroIdLimpio} (tipo: ${typeof centroIdLimpio})`);
+    logger.log(`[API /autocheckin] CentroId limpio: ${centroIdLimpio} (tipo: ${typeof centroIdLimpio})`);
 
     if (!dni || !centroIdLimpio) {
       return new Response(JSON.stringify({ message: 'DNI y centro médico son obligatorios.' }), {
@@ -39,14 +41,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // --- LÓGICA DE BASE DE DATOS REAL ---
-    console.log(`[API /autocheckin] Buscando turno para DNI: ${dni} (como número: ${Number(dni)}) en centro: ${centroIdLimpio}`);
+    logger.log(`[API /autocheckin] Buscando turno para DNI: ${dni} (como número: ${Number(dni)}) en centro: ${centroIdLimpio}`);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    console.log(`[API /autocheckin] Rango de fechas: ${today.toISOString()} - ${tomorrow.toISOString()}`);
+    logger.log(`[API /autocheckin] Rango de fechas: ${today.toISOString()} - ${tomorrow.toISOString()}`);
 
     // Construir condiciones base
     const baseConditions = [
@@ -57,14 +59,14 @@ export const POST: APIRoute = async ({ request }) => {
       eq(turnos.estado, 'pendiente')
     ];
 
-    console.log(`[API /autocheckin] Condiciones de búsqueda: DNI=${Number(dni)}, centro=${centroIdLimpio}, estado=pendiente`);
+    logger.log(`[API /autocheckin] Condiciones de búsqueda: DNI=${Number(dni)}, centro=${centroIdLimpio}, estado=pendiente`);
 
     // Si se especifica un turnoId, agregar filtro
     const conditions = turnoId
       ? [...baseConditions, eq(turnos.id, turnoId)]
       : baseConditions;
 
-    console.log(`[API /autocheckin] Ejecutando consulta...`);
+    // console.log(`[API /autocheckin] Ejecutando consulta...`);
 
     const turnosPendientes = await db
       .select({
@@ -83,13 +85,13 @@ export const POST: APIRoute = async ({ request }) => {
       .leftJoin(users, eq(turnos.userMedicoId, users.id))
       .where(and(...conditions));
 
-    console.log(`[API /autocheckin] Turnos encontrados: ${turnosPendientes.length}`);
+    logger.log(`[API /autocheckin] Turnos encontrados: ${turnosPendientes.length}`);
     if (turnosPendientes.length > 0) {
-      console.log(`[API /autocheckin] Detalles:`, JSON.stringify(turnosPendientes, null, 2));
+      logger.log(`[API /autocheckin] Detalles:`, JSON.stringify(turnosPendientes, null, 2));
     }
 
     if (turnosPendientes.length === 0) {
-      console.log(`[API /autocheckin] No se encontró turno pendiente para DNI: ${dni} en centro: ${centroIdLimpio}`);
+      logger.log(`[API /autocheckin] No se encontró turno pendiente para DNI: ${dni} en centro: ${centroIdLimpio}`);
       return new Response(
         JSON.stringify({ message: `No se encontró un turno pendiente para el DNI proporcionado en el centro ${centroIdLimpio}.` }),
         {
@@ -118,7 +120,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const turnoEncontrado = turnosPendientes[0];
-    console.log(
+    logger.log(
       `[API /autocheckin] Turno encontrado: ${turnoEncontrado.id}. Actualizando a 'sala_de_espera'.`
     );
 
@@ -134,7 +136,7 @@ export const POST: APIRoute = async ({ request }) => {
     // --- EMITIR EVENTO SSE ---
     // Notificamos a todos los clientes (recepción, médico) que el estado del turno cambió.
     emitEvent('turno-actualizado', turnoActualizado, { centroMedicoId: turnoActualizado.centroMedicoId! });
-    console.log(
+    logger.log(
       `[API /autocheckin] Evento SSE 'turno-actualizado' emitido para turno ${turnoActualizado.id}`
     );
 

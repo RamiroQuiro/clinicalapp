@@ -47,6 +47,7 @@ export interface DatosTurno {
   | 'confirmado'
   | 'pendiente'
   | 'cancelado'
+  | 'demorado'
   | 'sala_de_espera'
   | 'en_consulta'
   | 'finalizado';

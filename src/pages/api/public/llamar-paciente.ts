@@ -1,6 +1,7 @@
 import db from '@/db';
 import { pacientes, turnos } from '@/db/schema';
 import { emitEvent } from '@/lib/sse/sse';
+import { logger } from '@/utils/logger';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 
@@ -15,7 +16,7 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
-        console.log(`[API /llamar-paciente] Llamando a paciente con turno ID: ${turnoId}`);
+        // console.log(`[API /llamar-paciente] Llamando a paciente con turno ID: ${turnoId}`);
 
         // Obtener información del turno con datos del paciente
         const [turnoInfo] = await db
@@ -43,12 +44,12 @@ export const POST: APIRoute = async ({ request }) => {
             .update(turnos)
             .set({
                 estado: 'demorado', // Usamos 'demorado' como estado de "siendo llamado"
-                updatedAt: new Date(),
+                updated_at: new Date(),
             })
             .where(eq(turnos.id, turnoId))
             .returning();
 
-        console.log(`[API /llamar-paciente] Turno ${turnoId} actualizado a 'demorado' (siendo llamado)`);
+        logger.log(`[API /llamar-paciente] Turno ${turnoId} actualizado a 'demorado' (siendo llamado)`);
 
         // Emitir evento SSE general de actualización
         emitEvent('turno-actualizado', turnoActualizado, {
@@ -67,7 +68,7 @@ export const POST: APIRoute = async ({ request }) => {
             centroMedicoId: turnoActualizado.centroMedicoId || undefined
         });
 
-        console.log(`[API /llamar-paciente] Evento SSE 'paciente-llamado' emitido para ${nombreCompleto}`);
+        logger.log(`[API /llamar-paciente] Evento SSE 'paciente-llamado' emitido para ${nombreCompleto}`);
 
         return new Response(
             JSON.stringify({

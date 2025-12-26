@@ -1,10 +1,12 @@
 import Button from '@/components/atomos/Button';
+import ModalReact from '@/components/moleculas/ModalReact';
 import BuscadorGlobal from '@/components/organismo/BuscadorGlobal';
 import APP_TIME_ZONE from '@/lib/timeZone';
 import { showToast } from '@/utils/toast/toastShow';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import React, { useState } from 'react';
+import { FormularioRapidoCargaPaciente } from '../pacientes/FormularioRapidoCargaPaciente';
 
 interface PacienteResult {
   id: string;
@@ -29,6 +31,7 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
   const [form, setForm] = useState(initialState);
   const [isSearchingPaciente, setIsSearchingPaciente] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isModalNuevoPaciente, setIsModalNuevoPaciente] = useState(false);
   const [profesionalesDisponibles, setprofesionalesDisponibles] = useState(profesionalesRelacionados)
 
 
@@ -121,23 +124,32 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
   };
 
   const handleModalPaciente = () => {
+    setIsModalNuevoPaciente(true);
     // TODO: Implementar la lógica para abrir un modal de creación de paciente
     showToast('Funcionalidad "Crear Nuevo Paciente" pendiente de conexión.', {
       background: 'bg-blue-600',
     });
   };
 
+  if (isModalNuevoPaciente) {
+    return (
+      <ModalReact title='Crear Nuevo Paciente' id='modalNuevoPaciente' onClose={() => setIsModalNuevoPaciente(false)}>
+        <FormularioRapidoCargaPaciente />
+      </ModalReact>
+    )
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="p-1 space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 p-1">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
+        <label className="block mb-1 font-medium text-gray-700 text-sm">Paciente</label>
         {form.pacienteId && form.pacienteNombre && !isSearchingPaciente ? (
-          <div className="flex items-center justify-between p-3 border border-gray-300 rounded-md shadow-sm bg-gray-50">
+          <div className="flex justify-between items-center bg-gray-50 shadow-sm p-3 border border-gray-300 rounded-md">
             <p className="font-semibold text-gray-800">{form.pacienteNombre}</p>
             <button
               type="button"
               onClick={handleClearPaciente}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-blue-600 hover:text-blue-800 text-sm"
             >
               Cambiar
             </button>
@@ -149,23 +161,23 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
           <button
             type="button"
             onClick={handleModalPaciente}
-            className="mt-2 w-full px-3 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-500 rounded-md transition-colors duration-200"
+            className="bg-green-600 hover:bg-green-500 mt-2 px-3 py-2 rounded-md w-full font-semibold text-white text-sm transition-colors duration-200"
           >
             Crear Nuevo Paciente
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
         <div>
-          <label htmlFor="medicoId" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="medicoId" className="block mb-1 font-medium text-gray-700 text-sm">
             Asignar a Profesional
           </label>
           <select
             id="medicoId"
             value={form.medicoId}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md capitalize shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            className="shadow-sm px-3 py-2 border border-gray-300 focus:border-indigo-500 rounded-md focus:ring-indigo-500 w-full capitalize"
           >
             {profesionalesDisponibles.map(medico => (
               <option key={medico.id} value={medico.id} className='capi'>
@@ -175,14 +187,14 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
           </select>
         </div>
         <div>
-          <label htmlFor="tipoDeTurno" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="tipoDeTurno" className="block mb-1 font-medium text-gray-700 text-sm">
             Tipo de Turno
           </label>
           <select
             id="tipoDeTurno"
             value={form.tipoDeTurno}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            className="shadow-sm px-3 py-2 border border-gray-300 focus:border-indigo-500 rounded-md focus:ring-indigo-500 w-full"
           >
             <option value="espontaneo">Turno Espontáneo</option>
             <option value="sobreturno">Sobreturno</option>
@@ -190,9 +202,9 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
         <div>
-          <label htmlFor="fechaTurno" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="fechaTurno" className="block mb-1 font-medium text-gray-700 text-sm">
             Fecha
           </label>
           <input
@@ -200,11 +212,11 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
             id="fechaTurno"
             value={form.fechaTurno}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            className="shadow-sm px-3 py-2 border border-gray-300 rounded-md w-full"
           />
         </div>
         <div>
-          <label htmlFor="horaTurno" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="horaTurno" className="block mb-1 font-medium text-gray-700 text-sm">
             Hora
           </label>
           <input
@@ -212,13 +224,13 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
             id="horaTurno"
             value={form.horaTurno}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            className="shadow-sm px-3 py-2 border border-gray-300 rounded-md w-full"
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="duracion" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="duracion" className="block mb-1 font-medium text-gray-700 text-sm">
           Duración (minutos)
         </label>
         <input
@@ -226,20 +238,20 @@ export const FormularioTurnoRecepcion: React.FC<Props> = ({ profesionalesRelacio
           id="duracion"
           value={form.duracion}
           onChange={handleNumberChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          className="shadow-sm px-3 py-2 border border-gray-300 focus:border-indigo-500 rounded-md focus:ring-indigo-500 w-full"
           required
         />
       </div>
 
       <div>
-        <label htmlFor="motivoConsulta" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="motivoConsulta" className="block mb-1 font-medium text-gray-700 text-sm">
           Motivo de Consulta
         </label>
         <textarea
           id="motivoConsulta"
           value={form.motivoConsulta}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          className="shadow-sm px-3 py-2 border border-gray-300 focus:border-indigo-500 rounded-md focus:ring-indigo-500 w-full"
           rows={2}
         />
       </div>

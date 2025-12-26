@@ -1,5 +1,7 @@
 import db from '@/db';
 import { licenciasProfesional } from '@/db/schema';
+import { logAuditEvent } from '@/lib/audit';
+import { logger } from '@/utils/logger';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
@@ -52,10 +54,20 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
             return createResponse(404, 'Licencia no encontrada');
         }
 
-        return createResponse(200, 'Licencia actualizada con éxito', licenciaActualizada[0]);
 
+        await logAuditEvent({
+            userId: user.id,
+            actionType: 'UPDATE',
+            tableName: 'licenciasProfesional',
+            recordId: id,
+            newValue: licenciaActualizada[0],
+            centroMedicoId: user.centroMedicoId,
+            description: `Actualización de licencia profesional ${id}`,
+        });
+
+        return createResponse(200, 'Licencia actualizada con éxito', licenciaActualizada[0]);
     } catch (error) {
-        console.error('Error al actualizar licencia:', error);
+        logger.error('Error al actualizar licencia:', error);
         return createResponse(500, 'Error interno del servidor');
     }
 };
@@ -85,8 +97,9 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
         return createResponse(200, 'Licencia eliminada con éxito');
 
+
     } catch (error) {
-        console.error('Error al eliminar licencia:', error);
+        logger.error('Error al eliminar licencia:', error);
         return createResponse(500, 'Error interno del servidor');
     }
 };

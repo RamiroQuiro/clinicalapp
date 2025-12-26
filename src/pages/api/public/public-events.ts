@@ -1,4 +1,5 @@
 import { addClient, removeClient } from '@/lib/sse/sse';
+import { logger } from '@/utils/logger';
 import type { APIRoute } from 'astro';
 
 const encoder = new TextEncoder();
@@ -29,7 +30,7 @@ export const GET: APIRoute = async ({ request }) => {
                 centroMedicoId // Filtrar por centro médico específico
             );
 
-            console.log(`📡 Cliente SSE [${clientId}] conectado al portal público del centro: ${centroMedicoId}`);
+            logger.log(`📡 Cliente SSE [${clientId}] conectado al portal público del centro: ${centroMedicoId}`);
             let isActive = true;
 
             // Heartbeat más frecuente para mantener conexión en móviles
@@ -45,13 +46,13 @@ export const GET: APIRoute = async ({ request }) => {
                     try {
                         controller.enqueue(encoder.encode(':ping\n\n'));
                     } catch (error) {
-                        console.log(`🔌 Cliente SSE [${clientId}] desconectado del portal público (error en ping)`);
+                        logger.log(`🔌 Cliente SSE [${clientId}] desconectado del portal público (error en ping)`);
                         isActive = false;
                         removeClient(controller);
                         if (heartbeatInterval) clearInterval(heartbeatInterval);
                     }
                 } catch (error) {
-                    console.log(`Error verificando cliente [${clientId}]:`, error);
+                    logger.error(`Error verificando cliente [${clientId}]:`, error);
                     isActive = false;
                     if (heartbeatInterval) clearInterval(heartbeatInterval);
                 }
@@ -59,7 +60,7 @@ export const GET: APIRoute = async ({ request }) => {
         },
         cancel() {
             // Limpiar cuando el stream se cancela
-            console.log(`🔌 Stream SSE [${clientId}] cancelado para portal público`);
+            logger.log(`🔌 Stream SSE [${clientId}] cancelado para portal público`);
             if (heartbeatInterval) {
                 clearInterval(heartbeatInterval);
             }
