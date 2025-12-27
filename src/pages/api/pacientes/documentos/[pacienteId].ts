@@ -1,4 +1,5 @@
 import { lucia } from '@/lib/auth';
+import { sanitizeFileName, validateFile } from '@/utils/fileValidation';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
@@ -49,13 +50,23 @@ export const POST: APIRoute = async ({ request, params, cookies, locals }) => {
     await fs.mkdir(patientUploadDir, { recursive: true });
 
     for (const file of files) {
-      const uniqueFileName = `${generateId(10)}-${file.name}`; // Generate unique name
+      // 1. Validar Archivo (TIPO y TAMAÑO)
+      const arrayBuffer = await file.arrayBuffer();
+      const validation = await validateFile(arrayBuffer, file.name);
+
+      if (!validation.isValid) {
+        return createResponse(400, `Error en archivo '${file.name}': ${validation.error}`);
+      }
+
+      // 2. Sanitizar Nombre
+      const originalNameSanitized = sanitizeFileName(file.name);
+      const uniqueFileName = `${generateId(10)}-${originalNameSanitized}`;
       const filePath = path.join(patientUploadDir, uniqueFileName);
 
       const fileInternalPath = path.relative(process.cwd(), filePath); // Store path relative to project root
 
-      // Save file to disk
-      await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+      // 3. Escribir en Disco solo si es válido
+      await fs.writeFile(filePath, Buffer.from(arrayBuffer));
 
       uploadedFilesData.push({
         id: nanoIDNormalizador('archivosAdjuntos', 10),
@@ -106,7 +117,7 @@ export const PUT: APIRoute = async ({ locals, request, params, cookies }) => {
         descripcion: descripcion,
         nombre: nombre,
         userMedicoId: user.id,
-        estado: estado,
+        estado: estado || 'revisar',
         tipo: tipo,
       })
       .where(and(eq(archivosAdjuntos.id, id), eq(archivosAdjuntos.pacienteId, pacienteId)))

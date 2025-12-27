@@ -3,7 +3,7 @@ import Button from '@/components/atomos/Button';
 import DivBox1 from '@/components/atomos/DivBox1.astro';
 import Modal from '@/components/moleculas/Modal.astro';
 import { FormularioNuevoPaciente } from '@/components/organismo/pacientes/FormularioNuevoPaciente';
-import { Edit3, PlusIcon, SaveIcon } from 'lucide-react';
+import { Edit3, Stethoscope } from 'lucide-react';
 import StatsPacienteHeader from './StatsPacienteHeader';
 
 const { pacienteId } = Astro.params;
@@ -28,19 +28,32 @@ function calcularEdad(fechaNacimiento: Date): number {
   <div
     class="flex w-full flex-col md:flex-row items-start md:items-center gap-6 -4 px-2 md:px-6 h flex-1 flex-between"
   >
-    <!-- datps del paciente -->
-    <StatsPacienteHeader pacienteData={pacienteData} client:load />
+    <StatsPacienteHeader
+      pacienteData={pacienteData}
+      lastVisit={Astro.props.lastVisit}
+      client:load
+    />
     <div
-      class="flex md:flex-col items-center w-full md:w-auto md:justify-between justify-end gap-2 text-sm"
+      class="flex md:flex-col items-end w-full md:w-auto md:justify-stretch justify-end gap-2 text-sm"
     >
-      <Modal isIcon iconNode={Edit3} label={`Editar`} title="Editar paciente" id="modal-agregar">
+      <Modal
+        isIcon
+        iconNode={Edit3}
+        label={`Editar`}
+        title="Editar paciente"
+        id="modal-agregar"
+        classNameButton="ll"
+      >
         <FormularioNuevoPaciente client:visible pacienteData={pacienteData} userId={userId} />
       </Modal>
-      <Button variant="primary">
+      <!-- <Button variant="primary">
         <SaveIcon className="mr-2" /> Exportar HC
-      </Button>
-      <Button className="w-full" href={`/api/atencion/nueva?pacienteId=${pacienteId}`}>
-        <PlusIcon className="mr-2" /> Atender
+      </Button> -->
+      <Button
+        className="flex items-center w-full gap-1.5 text-xs px-2 py-1 rounded-md bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+        href={`/api/atencion/nueva?pacienteId=${pacienteId}`}
+      >
+        <Stethoscope className="mr-2" /> Atender
       </Button>
     </div>
   </div>

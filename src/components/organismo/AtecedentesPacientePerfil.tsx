@@ -9,11 +9,13 @@ import FormularioAntecedentes from './FormularioAntecedentes';
 interface AtecedentesPacientePerfilProps {
   antecedentes: Antecedente[];
   pacienteId: string;
+  centroMedicoId: string; // New required prop
 }
 
 export default function AtecedentesPacientePerfil({
   antecedentes = [],
   pacienteId,
+  centroMedicoId,
 }: AtecedentesPacientePerfilProps) {
   const [antecedenteEditando, setAntecedenteEditando] = useState<Antecedente | null>(null);
 
@@ -79,6 +81,7 @@ export default function AtecedentesPacientePerfil({
         >
           <FormularioAntecedentes
             pacienteId={pacienteId}
+            centroMedicoId={centroMedicoId}
             initialData={antecedenteEditando}
             onSuccess={() => setIsModalOpen(false)}
           />

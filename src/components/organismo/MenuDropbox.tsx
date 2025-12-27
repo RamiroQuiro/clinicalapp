@@ -45,6 +45,7 @@ type MenuDropboxProps = {
   items: MenuItem[];
   triggerIconClassName?: string;
   buttonClassName?: string;
+  className?: string;
   closeOnSelect?: boolean; // Prop to control closing behavior
   footer?: ReactNode;
 };
@@ -59,6 +60,7 @@ export default function MenuDropbox({
   triggerIconClassName,
   triggerTitle = 'Más acciones',
   buttonClassName = '',
+  className,
   closeOnSelect = true, // Por defecto, el menú se cierra al seleccionar un item.
   footer,
 }: MenuDropboxProps) {
@@ -117,13 +119,17 @@ export default function MenuDropbox({
 
       {/* Contenido del menú, se muestra solo si isDropdownOpen es true */}
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-60 bg-primary-150/85 backdrop-blur-sm rounded-md shadow-lg z-20 border border-primary-100">
-          <ul className="py-1 text-slate-200 max-h-60 overflow-y-auto">
+        <div
+          className={`absolute right-0 mt-2 z-20 rounded-md shadow-lg border ${className || 'w-60 bg-primary-150/85 backdrop-blur-sm border-primary-100 text-slate-200'}`}
+        >
+          <ul className="py-1 max-h-60 overflow-y-auto">
             {/* Itera sobre el array de items para renderizar cada uno */}
             {items.map((item, index) => {
               // --- 1. Renderiza un separador ---
               if (item.isSeparator) {
-                return <li key={`separator-${index}`} className="border-b border-slate-700 my-1" />;
+                return (
+                  <li key={`separator-${index}`} className="border-b border-gray-200/20 my-1" />
+                );
               }
 
               // --- 2. Renderiza un checkbox ---
@@ -132,7 +138,7 @@ export default function MenuDropbox({
                   <li
                     key={item.label}
                     title={item.title}
-                    className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer select-none"
+                    className="flex items-center px-4 py-2 hover:bg-black/10 cursor-pointer select-none"
                     onClick={() => handleItemClick(item)}
                   >
                     {item.isChecked ? (
@@ -166,7 +172,7 @@ export default function MenuDropbox({
                   <li
                     key={item.label}
                     title={item.title}
-                    className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer"
+                    className="flex items-center px-4 py-2 hover:bg-black/10 cursor-pointer"
                   >
                     <a
                       href={item.href}
@@ -186,7 +192,7 @@ export default function MenuDropbox({
                 <li
                   key={item.label}
                   title={item.title}
-                  className="flex items-center px-4 py-2 hover:bg-slate-700 cursor-pointer"
+                  className="flex items-center px-4 py-2 hover:bg-black/10 cursor-pointer"
                   onClick={() => handleItemClick(item)}
                 >
                   {content}

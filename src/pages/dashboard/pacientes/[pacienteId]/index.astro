@@ -5,6 +5,7 @@ import DivBox1 from '../../../../components/atomos/DivBox1.astro';
 import MainDashboard from '../../../../components/atomos/MainDashboard.astro';
 import LayoutDash from '../../../../components/layouts/LayoutDash.astro';
 import ContenedorCharts from '../../../../components/moleculas/ContenedorCharts.astro';
+import AlergiasPacientePerfil from '../../../../components/organismo/AlergiasPacientePerfil';
 import AntecedentesPacientePerfil from '../../../../components/organismo/AtecedentesPacientePerfil';
 import HistorialVisitaPaciente from '../../../../components/organismo/HistorialVisitaPaciente.astro';
 import MedicacionFichaPaciente from '../../../../components/organismo/MedicacionFichaPaciente.astro';
@@ -39,42 +40,15 @@ try {
 } catch (error) {
   console.error('Error fetching paciente data:', error);
 }
-
-// Datos de ejemplo para Proximos Turnos
-const turnosDeEjemplo = [
-  {
-    id: 'turno1',
-    fecha: '2025-09-05T10:00:00.000Z',
-    hora: '10:00',
-    profesional: 'Dr. Alan Grant',
-    motivoConsulta: 'Control anual',
-  },
-  {
-    id: 'turno2',
-    fecha: '2025-09-12T11:30:00.000Z',
-    hora: '11:30',
-    profesional: 'Dra. Ellie Sattler',
-    motivoConsulta: 'Presentar resultados de laboratorio',
-  },
-  {
-    id: 'turno3',
-    fecha: '2025-09-20T09:00:00.000Z',
-    hora: '09:00',
-    profesional: 'Dr. Ian Malcolm',
-    motivoConsulta: 'Dolor de cabeza persistente',
-  },
-];
-
-// Sobrescribir con datos de ejemplo si no hay datos reales
-if (!perfilPaciente.proximosTurnos || perfilPaciente.proximosTurnos.length === 0) {
-  perfilPaciente.proximosTurnos = turnosDeEjemplo;
-}
 ---
 
 <LayoutDash>
   <MainDashboard h1="Ficha del paciente" pacienteId={pacienteId}>
     <div class="gap-2 flex flex-col w-full">
-      <PacienteHeader pacienteData={perfilPaciente.pacienteData} />
+      <PacienteHeader
+        pacienteData={perfilPaciente.pacienteData}
+        lastVisit={perfilPaciente.historialVisitas?.[0] || null}
+      />
       <DivBox1 className="w-full text-primary-texto">
         <details class="w-full group">
           <summary
@@ -113,10 +87,17 @@ if (!perfilPaciente.proximosTurnos || perfilPaciente.proximosTurnos.length === 0
       <div class="flex w-full flex-col items-start justify-normal gap-2 md:flex-row">
         <Div1Atencion>
           <DivBox1>
+            <AlergiasPacientePerfil
+              client:load
+              pacienteId={pacienteId}
+              alergias={perfilPaciente.pacienteData.alergias || []}
+            />
+            <div class="border-b border-primary-100"></div>
             <AntecedentesPacientePerfil
               client:load
               pacienteId={pacienteId}
               antecedentes={perfilPaciente.arrayAntecedente}
+              centroMedicoId={user?.centroMedicoId || ''}
             />
           </DivBox1>
           <HistorialVisitaPaciente

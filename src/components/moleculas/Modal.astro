@@ -1,14 +1,14 @@
 ---
 import Button from '../atomos/Button';
 import { CircleX } from 'lucide-react';
-const { id, iconNode, label, title, isIcon } = Astro.props;
+const { id, iconNode, label, title, isIcon, classNameButton } = Astro.props;
 const Icon = iconNode;
 ---
 
 <div data-id={id}>
   {
     label && (
-      <Button className="w-fit whitespace-nowrap" variant="primary" id={`modal-open-${id}`}>
+      <Button className={classNameButton} variant="primary" id={`modal-open-${id}`}>
         {isIcon && <Icon className="mr-2" />}
         {label}
       </Button>

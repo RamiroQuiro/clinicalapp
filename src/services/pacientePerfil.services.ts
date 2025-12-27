@@ -7,10 +7,11 @@ import {
   historiaClinica,
   medicamento,
   pacientes,
+  turnos,
   users,
 } from '@/db/schema';
 import { antecedentes } from '@/db/schema/atecedentes';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
 function generateColor(index: number) {
   const colors = ['#A5CDFE38', '#DCECFF45', '#FCE3D54C', '#FFD2B2BD', '#E25B3250'];
@@ -31,7 +32,7 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       arrayAntecedente,
       arrayArchivosAdjuntos,
       // arrayNotasMedicas,
-      // proximosTurnos,
+      proximosTurnos,
     ] = await Promise.all([
       // datos del paciente
       db
@@ -44,11 +45,14 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
           celular: historiaClinica.celular,
           email: historiaClinica.email,
           fNacimiento: pacientes.fNacimiento,
+          numeroHC: historiaClinica.numeroHC,
           obraSocial: historiaClinica.obraSocial,
           nObraSocial: historiaClinica.nObraSocial,
           ciudad: historiaClinica.ciudad,
           provincia: historiaClinica.provincia,
           grupoSanguineo: historiaClinica.grupoSanguineo,
+          alergias: historiaClinica.alergias,
+          medicacionesCronicas: historiaClinica.medicacionesCronicas,
 
           domicilio: pacientes.domicilio,
         })
@@ -142,22 +146,27 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       //   .where(eq(notasMedicas.pacienteId, pacienteId))
       //   .orderBy(desc(notasMedicas.created_at)),
 
-      // Próximos Turnos
-      // db
-      //   .select({
-      //     id: turnos.id,
-      //     fecha: turnos.fechaTurno,
-      //     hora: turnos.horaAtencion,
-      //     motivoConsulta: turnos.motivoConsulta,
-      //     profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
-      //     userMedicoId: turnos.userMedicoId,
-      //   })
-      //   .from(turnos)
-      //   .innerJoin(users, eq(users.id, turnos.userMedicoId))
-      //   .where(and(eq(turnos.pacienteId, pacienteId), eq(turnos.centroMedicoId, centroMedicoId)))
-      // .where(gte(turnos.fechaTurno, new Date())) // Filtrar por fechas futuras
-      //     .orderBy(asc(turnos.fechaTurno))
-      //     .limit(5),
+      // Próximos Turnos (Activado)
+      db
+        .select({
+          id: turnos.id,
+          fecha: turnos.fechaTurno,
+          hora: turnos.horaAtencion,
+          motivoConsulta: turnos.motivoConsulta,
+          profesional: sql`CONCAT(users.nombre, ' ', users.apellido)`,
+          userMedicoId: turnos.userMedicoId,
+        })
+        .from(turnos)
+        .innerJoin(users, eq(users.id, turnos.userMedicoId))
+        .where(
+          and(
+            eq(turnos.pacienteId, pacienteId),
+            eq(turnos.centroMedicoId, centroMedicoId),
+            gte(turnos.fechaTurno, new Date())
+          )
+        )
+        .orderBy(asc(turnos.fechaTurno))
+        .limit(5),
     ]);
 
     const pacienteData = pacienteDataRaw.at(0);
@@ -187,7 +196,8 @@ export async function getPacienteData(pacienteId: string, userId: string, centro
       arrayAntecedente,
       arrayArchivosAdjuntos,
       // arrayNotasMedicas,
-      // proximosTurnos,
+      // arrayNotasMedicas,
+      proximosTurnos,
       colorMap,
     };
   } catch (error) {

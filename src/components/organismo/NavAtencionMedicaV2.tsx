@@ -12,9 +12,11 @@ import {
   FileDown,
   FileEdit,
   FileText,
+  Info,
   Lock,
   Mail,
   MessageSquare,
+  PhoneCall,
   Printer,
   Save,
   Table2,
@@ -37,6 +39,12 @@ type PacienteData = {
   obraSocial?: string;
   fNacimiento?: Date;
   domicilio?: string;
+  alergias?: Array<{
+    sustancia: string;
+    reaccion: string;
+    severidad: 'leve' | 'moderada' | 'grave';
+    activa: boolean;
+  }>;
 };
 
 type Props = {
@@ -99,8 +107,11 @@ export default function NavAtencionMedicaV2({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { nombre, apellido, dni, fotoUrl } = pacienteData;
+  const { nombre, apellido, dni, fotoUrl, alergias } = pacienteData;
   const avatarDefault = '/avatarDefault.png'; // Ruta pública del avatar
+
+  // Safe check for allergies array
+  const hasAlergias = Array.isArray(alergias) && alergias.length > 0;
 
   const menuItems = [
     {
@@ -122,7 +133,8 @@ export default function NavAtencionMedicaV2({
       label: 'Enviar por WhatsApp',
       icon: <MessageSquare className="w-4 h-4" />,
       onClick: () => {
-        const nombre = [pacienteData?.nombre, pacienteData?.apellido].filter(Boolean).join(' ') || 'Paciente';
+        const nombre =
+          [pacienteData?.nombre, pacienteData?.apellido].filter(Boolean).join(' ') || 'Paciente';
         const urlPDF = `/api/pacientes/${pacienteId}/atenciones/${atencionId}/reporteAten`;
         const msg = `Hola ${nombre} 👋
 
@@ -242,10 +254,95 @@ Cualquier duda, respondé este mensaje.`;
     }
   };
 
+  // Estado para mostrar/ocultar detalles (compact mode)
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // Helper para edad
+  const calculateAge = (dob?: Date) => {
+    if (!dob) return '';
+    try {
+      const diffMs = Date.now() - new Date(dob).getTime();
+      const ageDt = new Date(diffMs);
+      return Math.abs(ageDt.getUTCFullYear() - 1970);
+    } catch {
+      return '';
+    }
+  };
+
+  const edad = calculateAge(pacienteData.fNacimiento);
+
+  // Construimos los items del menú de info dinámicamente
+  const infoItems: any[] = [
+    {
+      label: 'Información de Contacto',
+      isSeparator: false,
+      type: 'button',
+      onClick: () => {},
+      icon: null,
+    },
+    { isSeparator: true },
+    {
+      label: pacienteData.celular || 'Sin celular',
+      icon: <PhoneCall className="w-4 h-4 text-emerald-500" />,
+      onClick: () => {
+        if (pacienteData.celular) navigator.clipboard.writeText(pacienteData.celular);
+      },
+      title: 'Clic para copiar',
+    },
+    {
+      label: pacienteData.email || 'Sin email',
+      icon: <Mail className="w-4 h-4 text-blue-500" />,
+      onClick: () => {
+        if (pacienteData.email) navigator.clipboard.writeText(pacienteData.email);
+      },
+      title: 'Clic para copiar',
+    },
+    {
+      label: pacienteData.domicilio || 'Sin domicilio',
+      icon: <Table2 className="w-4 h-4 text-gray-500" />,
+      onClick: () => {},
+    },
+    { isSeparator: true },
+    {
+      label: `Nacido el ${pacienteData.fNacimiento?.toLocaleDateString() || '-'}`,
+      icon: <FileText className="w-4 h-4 text-gray-400" />,
+      onClick: () => {},
+    },
+  ];
+
+  // Si tiene alergias, las agregamos al menú
+  if (hasAlergias) {
+    infoItems.push({ isSeparator: true });
+    // Agregamos las alergias al principio o en una sección destacada
+    // Vamos a ponerlas al final de la lista de contacto o al principio? El usuario dijo "a lo sumo le agregaria ... alergias".
+    // Mejor al principio del dropdown para que se vea rápido si abren el detalle.
+    // O mejor, agregamos un header rojo.
+
+    const alergiasItems = alergias.map(al => ({
+      label: `${al.sustancia} (${al.severidad})`,
+      icon: <TriangleAlert className="w-4 h-4 text-red-500" />,
+      onClick: () => {},
+      title: `Reacción: ${al.reaccion}`,
+    }));
+
+    infoItems.push({
+      label: '⚠️ ALERGIAS Y ANTECEDENTES',
+      isSeparator: false,
+      type: 'button',
+      onClick: () => {},
+      icon: null,
+    });
+    infoItems.push(...alergiasItems);
+  }
+
   return (
     <div
       id="navAtencionMedica"
-      className={` p-4 duration-300 ${isFinalized ? 'bg-gradient-to-r text-white from-primary-100 to-primary-150 shadow-md rounded-b-lg sticky top-0 z-10 border-b border-x p-2 border-slate-700' : 'bg-white/90 shadow-sm rounded-b-lg sticky top-0 z-10 border-b border-x p-2 border-gray-200'}`}
+      className={`transition-all duration-300 ${
+        isFinalized
+          ? 'bg-gradient-to-r from-primary-100 to-primary-150 text-white shadow-lg sticky top-0 z-20 border-b border-primary-bg-claro rounded-lg'
+          : 'bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-20 border-b border-gray-200'
+      }`}
     >
       {isAnimating && (
         <div className="z-50 fixed inset-0 flex justify-center items-center bg-slate-100/50 backdrop-blur-sm rounded-b-lg w-full h-full">
@@ -256,119 +353,140 @@ Cualquier duda, respondé este mensaje.`;
         </div>
       )}
 
-      <div className="flex md:flex-row flex-col justify-between md:items-center gap-2 w-full">
-        <div className="flex items-center gap-4">
+      {/* CONTENEDOR PRINCIPAL: Flex Row Compacto */}
+      <div className="flex justify-between items-center gap-2 px-4 py-3 w-full">
+        {/* Center: Info Paciente Compacta */}
+        <div className="flex items-center gap-3">
+          {/* Avatar más pequeño */}
           <img
             src={fotoUrl || avatarDefault}
-            alt="Foto de perfil"
-            className="hidden md:block rounded-full w-16 h-16 object-cover"
+            alt="Foto"
+            className="rounded-full w-9 h-9 border border-gray-200 object-cover"
           />
-          <div>
-            <h1 className="font-semibold text-2xl capitalize">
-              {nombre} {apellido}
-            </h1>
-            <p className="text-lg">DNI: {dni}</p>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h1
+                className={`font-bold text-lg leading-tight capitalize ${isFinalized ? 'text-white' : 'text-gray-800'}`}
+              >
+                {nombre} {apellido}
+              </h1>
+              {/* Badges de Info Básica */}
+              <span
+                className={`text-xs px-1.5 py-0.5 rounded border ${isFinalized ? 'border-indigo-400 bg-indigo-500/40 text-indigo-50' : 'border-gray-200 bg-gray-100 text-gray-600'}`}
+              >
+                {edad} años
+              </span>
+              <span
+                className={`text-xs px-1.5 py-0.5 rounded border hidden sm:block ${isFinalized ? 'border-indigo-400 bg-indigo-500/40 text-indigo-50' : 'border-gray-200 bg-gray-100 text-gray-600'}`}
+              >
+                DNI {dni}
+              </span>
+
+              {/* BADGE ALERGIAS */}
+              {hasAlergias && (
+                <span
+                  className={`flex items-center gap-1 px-2 py-0.5 border rounded-full font-bold text-[10px] ${isFinalized ? 'bg-red-500/90 border-red-400 text-white' : 'bg-red-100 border-red-200 text-red-700 animate-pulse'}`}
+                >
+                  <TriangleAlert className="w-3 h-3" />
+                  ALERGIAS
+                </span>
+              )}
+            </div>
+
+            {/* Fila secundaria colapsable (Toggle) */}
+            <span className={isFinalized ? 'text-indigo-100' : 'text-gray-500'}>
+              {pacienteData.obraSocial || 'Sin Obra Social'}
+            </span>
+
+            {/* Botón Info usando MenuDropbox */}
+            <MenuDropbox
+              className="bg-white border-gray-200 text-gray-700 w-72"
+              triggerIcon={
+                <div
+                  className={`flex items-center gap-1 hover:underline ${isFinalized ? 'text-indigo-100 hover:text-white' : 'text-primary-600'}`}
+                >
+                  <Info className="w-3.5 h-3.5" />
+                  <span className="text-[10px]">Ver detalles</span>
+                </div>
+              }
+              triggerTitle="Ver información detallada"
+              buttonClassName="p-0 h-auto bg-transparent border-none hover:bg-transparent shadow-none !rounded-none focus:ring-0"
+              triggerIconClassName=""
+              items={infoItems}
+            />
           </div>
         </div>
-        {isFinalized ? (
-          <div className="flex flex-grow justify-center items-center">
-            <div className="bg-slate-700/50 px-4 py-1 border border-sky-400/30 rounded-full font-semibold text-sky-300 text-sm">
-              CONSULTA FINALIZADA
-            </div>
-          </div>
-        ) : (
-          <div className="hidden md:flex flex-wrap flex-1 justify-evenly md:items-center gap-4 px-3 border- w-fit h-full font- text-sm">
-            <div className="flex flex-col items-start text-sm capitalize">
-              <p>Sexo:</p>
-              <span className="font-normal text-primary-textoTitle text-base">
-                {pacienteData.sexo}
-              </span>
-            </div>
-            <div className="flex flex-col items-start text-sm capitalize">
-              <p>Celular:</p>
-              <span className="font-normal text-primary-textoTitle text-base">
-                {pacienteData.celular}
-              </span>
-            </div>
-            <div className="flex flex-col items-start text-sm capitalize">
-              <p>Email:</p>
-              <span className="font-normal text-primary-textoTitle text-base">
-                {pacienteData.email}
-              </span>
-            </div>
-            <div className="flex flex-col items-start text-sm capitalize">
-              <p>Obra Social:</p>
-              <span className="font-normal text-primary-textoTitle text-base">
-                {pacienteData.obraSocial}
-              </span>
-            </div>
-            <div className="flex flex-col items-start text-sm capitalize">
-              <p>Fecha de Nacimiento:</p>
-              <span className="font-normal text-primary-textoTitle text-base">
-                {pacienteData.fNacimiento?.toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex flex-col items-start text-sm capitalize">
-              <p>Domicilio:</p>
-              <span className="font-normal text-primary-textoTitle text-base">
-                {pacienteData.domicilio}
-              </span>
+
+        {/* CENTRO: Estado Finalizada (Solo si finalizada) - MEJORADO */}
+        {isFinalized && (
+          <div className="hidden md:flex items-center justify-center">
+            <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-4 py-2 rounded-lg border border-white/20 shadow-lg">
+              <Lock className="w-5 h-5 text-white" />
+              <div className="flex flex-col leading-tight">
+                <span className="font-bold text-white text-sm tracking-wide">CONSULTA CERRADA</span>
+                <span className="text-indigo-200 text-[10px]">Registro sellado</span>
+              </div>
             </div>
           </div>
         )}
 
-        {/* BOTONERA */}
-        {isFinalized ? (
-          <div className="flex flex-shrink-0 items-center">
-            <a
-              href={`/dashboard/pacientes/${pacienteId}`}
-              className="text-primary-textoTitle text-sm"
-              title="Ver ficha completa del paciente"
-            >
-              <Button variant="blanco" className="rounded-r-none">
-                <p className="inline-flex items-center gap-2">
-                  <Table2 className="w-4 h-4" /> Ficha
-                </p>
+        {/* DERECHA: Botonera Compacta */}
+        <div className="flex items-center gap-1">
+          {isFinalized ? (
+            <>
+              <a href={`/dashboard/pacientes/${pacienteId}`} title="Ver ficha">
+                <Button
+                  variant="blanco"
+                  className="px-2 py-1 h-8 text-xs bg-white/90  text-indigo-700 border-white/30"
+                >
+                  <Table2 className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Ficha</span>
+                </Button>
+              </a>
+              <Button
+                variant="blanco"
+                className="px-2 py-1 h-8 text-xs bg-white/90 text-indigo-700 border-white/30"
+                onClick={() => setIsEnmiendaModalOpen(true)}
+                title="Crear Enmienda"
+              >
+                <Edit3 className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Enmienda</span>
               </Button>
-            </a>
-            <Button
-              id="crearEnmienda"
-              variant="blanco"
-              className="border-x rounded-none text-primary-textoTitle"
-              onClick={() => setIsEnmiendaModalOpen(true)}
-              title="Crear Enmienda"
-            >
-              <p className="inline-flex items-center gap-2">
-                <Edit3 className="w-4 h-4" /> Enmienda
-              </p>
-            </Button>
-            <MenuDropbox items={menuItems} />
-          </div>
-        ) : (
-          <div className="flex flex-row md:flex-col items-center gap-2 w-full md:w-fit">
-            <a href={`/dashboard/pacientes/${pacienteId}`} className="w-full text-sm">
-              <Button variant="primary" className="w-full">
-                <p className="inline-flex items-center gap-2">
-                  <Table2 className="w-4 h-4" /> Ficha Paciente
-                </p>
+              <MenuDropbox items={menuItems} />
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <a href={`/dashboard/pacientes/${pacienteId}`} title="Ficha Paciente">
+                <Button
+                  variant="secondary"
+                  className="px-2 py-1 h-8 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 border-none"
+                >
+                  <Table2 className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden lg:inline">Ficha</span>
+                </Button>
+              </a>
+              <Button
+                variant="secondary"
+                className="px-2 py-1 h-8 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
+                onClick={() => handleGuardarBorrador('borrador')}
+                title="Guardar Borrador"
+              >
+                <Save className="w-4 h-4 sm:mr-1" />
+                <span className="hidden lg:inline">Guardar</span>
               </Button>
-            </a>
-            <Button
-              variant="primary"
-              id="guardarBorradorV2"
-              onClick={() => handleGuardarBorrador('borrador')}
-            >
-              <p className="inline-flex items-center gap-2">
-                <Save className="w-4 h-4" /> Guardar Borrador
-              </p>
-            </Button>
-            <Button variant="primary" id="finalizarConsultaV2" onClick={handleFinalizarClick}>
-              <p className="inline-flex items-center gap-2">
-                <Lock className="w-4 h-4" /> Finalizar Consulta
-              </p>
-            </Button>
-          </div>
-        )}
+              <Button
+                variant="primary"
+                className="px-3 py-1 h-8 text-xs shadow-sm hover:shadow"
+                onClick={handleFinalizarClick}
+                title="Finalizar Consulta"
+              >
+                <Lock className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Finalizar</span>
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
       {isModalOpen && (
         <ModalReact
@@ -421,12 +539,8 @@ Cualquier duda, respondé este mensaje.`;
         </ModalReact>
       )}
 
-      {
-        waOpen &&
-        <ModalReact
-          title="Enviar WhatsApp"
-          onClose={() => setWaOpen(false)}
-        >
+      {waOpen && (
+        <ModalReact title="Enviar WhatsApp" onClose={() => setWaOpen(false)}>
           <div className="space-y-4">
             <div className="space-y-2">
               <p className="text-gray-600 text-sm">Número de teléfono</p>
@@ -439,7 +553,8 @@ Cualquier duda, respondé este mensaje.`;
                     disabled={!pacienteData?.celular}
                   />
                   <span>
-                    Usar ficha {pacienteData?.celular ? `(${pacienteData.celular})` : '(no disponible)'}
+                    Usar ficha{' '}
+                    {pacienteData?.celular ? `(${pacienteData.celular})` : '(no disponible)'}
                   </span>
                 </label>
                 <label className="flex items-center gap-2">
@@ -455,7 +570,7 @@ Cualquier duda, respondé este mensaje.`;
                 type="tel"
                 className="p-2 border rounded w-full"
                 placeholder="Ej: 3815123456"
-                value={waUsarFicha === 'ficha' ? (pacienteData?.celular || '') : waCelular}
+                value={waUsarFicha === 'ficha' ? pacienteData?.celular || '' : waCelular}
                 onChange={e => setWaCelular(e.target.value)}
                 disabled={waUsarFicha === 'ficha'}
               />
@@ -471,27 +586,31 @@ Cualquier duda, respondé este mensaje.`;
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant='cancel' onClick={() => setWaOpen(false)}>
+              <Button variant="cancel" onClick={() => setWaOpen(false)}>
                 Cancelar
               </Button>
               <Button
-                variant='primary'
+                variant="primary"
                 onClick={() => {
-                  const candidate = waUsarFicha === 'ficha' ? (pacienteData?.celular || '') : waCelular;
+                  const candidate =
+                    waUsarFicha === 'ficha' ? pacienteData?.celular || '' : waCelular;
                   const phone = formateoNumeroWhatsapp(candidate, 'AR');
                   if (!phone) return;
                   const link = buildWhatsAppLink(phone, waMensaje);
                   window.open(link, '_blank');
                   setWaOpen(false);
                 }}
-                disabled={(waUsarFicha === 'ficha' && !pacienteData?.celular) || (waUsarFicha === 'otro' && !waCelular)}
+                disabled={
+                  (waUsarFicha === 'ficha' && !pacienteData?.celular) ||
+                  (waUsarFicha === 'otro' && !waCelular)
+                }
               >
                 Enviar por WhatsApp
               </Button>
             </div>
           </div>
         </ModalReact>
-      }
+      )}
     </div>
   );
 }

@@ -60,6 +60,7 @@ export async function getDatosNuevaAtencion(pacienteId: string, atencionId: stri
       provincia: historiaClinica.provincia,
       fNacimiento: pacientes.fNacimiento,
       nObraSocial: historiaClinica.nObraSocial,
+      alergias: historiaClinica.alergias,
       obraSocial: historiaClinica.obraSocial,
       ciudad: historiaClinica.ciudad,
       grupoSanguineo: historiaClinica.grupoSanguineo,
