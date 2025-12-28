@@ -26,6 +26,8 @@ export const useSpeechRecognition = () => {
   const [error, setError] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // NEW: Ref to accumulate finalized text across sessions
+  const accumulatedTranscriptRef = useRef('');
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -40,17 +42,25 @@ export const useSpeechRecognition = () => {
     recognition.lang = 'es-AR';
 
     recognition.onresult = (event) => {
+      let currentSessionFinal = '';
       let interimTranscript = '';
-      let finalTranscript = '';
 
-      for (let i = 0; i < event.results.length; ++i) {
+      // FIXED: Use event.resultIndex to only process new results
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
+          currentSessionFinal += event.results[i][0].transcript + ' ';
         } else {
           interimTranscript += event.results[i][0].transcript;
         }
       }
-      setTranscript(finalTranscript + interimTranscript);
+
+      // FIXED: Accumulate final results across sessions
+      if (currentSessionFinal) {
+        accumulatedTranscriptRef.current += currentSessionFinal;
+      }
+
+      // Display: accumulated + interim
+      setTranscript(accumulatedTranscriptRef.current + interimTranscript);
     };
 
     recognition.onerror = (event) => {
@@ -59,6 +69,8 @@ export const useSpeechRecognition = () => {
 
     recognition.onend = () => {
       setIsListening(false);
+      // FIXED: Keep accumulated text visible after recognition ends
+      setTranscript(accumulatedTranscriptRef.current);
     };
 
     recognitionRef.current = recognition;
@@ -72,7 +84,7 @@ export const useSpeechRecognition = () => {
 
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
-      setTranscript(''); // Limpiar transcripción anterior
+      // FIXED: DON'T clear transcript here - preserve accumulated text
       recognitionRef.current.start();
       setIsListening(true);
     } else if (!recognitionRef.current) {
@@ -89,12 +101,19 @@ export const useSpeechRecognition = () => {
     }
   };
 
+  // NEW: Function to manually clear all accumulated text
+  const clearTranscript = () => {
+    accumulatedTranscriptRef.current = '';
+    setTranscript('');
+  };
+
   return {
     isListening,
     transcript,
     error,
     startListening,
     stopListening,
-    setTranscript, // Exponer para poder limpiar el texto desde fuera
+    setTranscript, // Keep for backward compatibility
+    clearTranscript, // NEW: Expose clear function
   };
 };

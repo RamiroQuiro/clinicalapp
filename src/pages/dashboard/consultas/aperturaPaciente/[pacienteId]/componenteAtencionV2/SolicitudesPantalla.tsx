@@ -233,20 +233,18 @@ export const SolicitudesPantalla = ({ data }: { data: any }) => {
           id={`modal-${modalType}`}
           onClose={handleCloseModal}
         >
-          <div className="w-[80vw] md:w-[600px]">
-            {modalType === 'orden' && (
-              <FormularioOrdenEstudio
-                onSave={formData => handleSave('orden', formData)}
-                onCancel={handleCloseModal}
-              />
-            )}
-            {modalType === 'derivacion' && (
-              <FormularioDerivacion
-                onSave={formData => handleSave('derivacion', formData)}
-                onCancel={handleCloseModal}
-              />
-            )}
-          </div>
+          {modalType === 'orden' && (
+            <FormularioOrdenEstudio
+              onSave={formData => handleSave('orden', formData)}
+              onCancel={handleCloseModal}
+            />
+          )}
+          {modalType === 'derivacion' && (
+            <FormularioDerivacion
+              onSave={formData => handleSave('derivacion', formData)}
+              onCancel={handleCloseModal}
+            />
+          )}
         </ModalReact>
       )}
 

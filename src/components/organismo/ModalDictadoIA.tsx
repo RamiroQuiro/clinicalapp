@@ -19,6 +19,7 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
     stopListening,
     error: speechError,
     setTranscript,
+    clearTranscript, // NEW: Use dedicated clear function
   } = useSpeechRecognition();
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [aiProcessingError, setAiProcessingError] = useState<string | null>(null);
@@ -27,14 +28,14 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
   // Reset state when modal is closed
   useEffect(() => {
     if (!isOpen) {
-      setTranscript('');
+      clearTranscript(); // FIXED: Use clearTranscript instead of setTranscript('')
       setAiProcessingError(null);
       setIsProcessingAI(false);
       if (isListening) {
         stopListening();
       }
     }
-  }, [isOpen, isListening, stopListening, setTranscript]);
+  }, [isOpen, isListening, stopListening, clearTranscript]);
 
   const processDictation = async () => {
     if (!transcript.trim()) return;
@@ -140,7 +141,7 @@ const ModalDictadoIA = ({ isOpen, onClose, onProcesado }: ModalDictadoIAProps) =
           </Button>
           <Button
             variant="cancel"
-            onClick={() => setTranscript('')}
+            onClick={clearTranscript} // FIXED: Use clearTranscript instead of setTranscript('')
             disabled={!isListening}
             className="flex-grow sm:flex-grow-0"
           >

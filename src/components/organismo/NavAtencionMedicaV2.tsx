@@ -210,6 +210,11 @@ Cualquier duda, respondé este mensaje.`;
         body: JSON.stringify({ ...dataToSave, status: modoFetch }),
       });
       const result = await response.json();
+
+      // Log para debugging
+      console.log('Response status:', response.status);
+      console.log('Response data:', result);
+
       if (!response.ok) throw new Error(result.message || 'Error en el servidor');
 
       // LA SOLUCIÓN: Actualizamos el store con los datos que guardamos, pero añadiendo el ID que nos devolvió el servidor.
@@ -226,7 +231,9 @@ Cualquier duda, respondé este mensaje.`;
       showToast(successMessage, { background: 'bg-green-500' });
       return true;
     } catch (error: any) {
-      console.error('Error al guardar la consulta:', error);
+      console.error('Error completo al guardar:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       showToast(`Error al guardar: ${error.message}`, { background: 'bg-primary-400' });
       return false;
     }

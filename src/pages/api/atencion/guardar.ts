@@ -8,6 +8,7 @@ import {
 } from '@/db/schema'; // Importa las tablas necesarias
 import type { APIRoute } from 'astro';
 
+import type { Consulta } from '@/context/consultaAtencion.store';
 import db from '@/db';
 import { logAuditEvent } from '@/lib/audit';
 import { emitEvent } from '@/lib/sse/sse';
@@ -59,12 +60,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     } = consultaData;
 
     // Validaciones básicas
-    if (!pacienteId || !motivoConsulta) {
-      return new Response(
-        JSON.stringify({
-          message: 'Paciente ID y Motivo de Consulta son requeridos.',
-        }),
-        { status: 400 }
+    if (!pacienteId || !motivoInicial) {
+      return createResponse(
+        400,
+        'Paciente ID y Motivo Inicial son requeridos.'
       );
     }
 
@@ -203,13 +202,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         );
       }
 
-      // 5. Guardar Medicamentos (asumiendo que se insertan nuevos cada vez)
-      // Tu interfaz Consulta tiene 'medicamentos: string[]', pero tu componente
-      // ConsultaActualPantalla.tsx no tiene un input para 'medicamentos' directamente.
       console.log('Datos de la consulta: medicamentos', medicamentos);
-      // Si 'medicamentos' se refiere a los tratamientos, entonces esta sección podría no ser necesaria
-      // o necesitaría ser ajustada. Por ahora, la dejo como un placeholder.
-      // Eliminamos los medicamentos existentes para esta atención
       await tx.delete(medicamento).where(eq(medicamento.atencionId, currentAtencionId));
       if (medicamentos && medicamentos.length > 0) {
         await tx.insert(medicamento).values(
@@ -267,6 +260,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       JSON.stringify({
         message: 'Consulta guardada con éxito',
         atencionId: currentAtencionId,
+        turnoId: turnoId || null, // Return the turnoId from the request
       }),
       { status: 200 }
     );
