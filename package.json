@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "drizzle-kit": "^0.31.4",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1",

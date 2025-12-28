@@ -1,0 +1,125 @@
+---
+const { token } = Astro.params;
+
+let confirmationState: 'loading' | 'success' | 'error' | 'already_confirmed' = 'loading';
+let turnoData: any = null;
+let errorMessage = '';
+
+if (token) {
+  try {
+    const response = await fetch(`${Astro.url.origin}/api/turnos/confirmar/${token}`);
+    const data = await response.json();
+
+    if (response.ok) {
+      confirmationState = data.message.includes('ya confirmado') ? 'already_confirmed' : 'success';
+      turnoData = data.data?.turno;
+    } else {
+      confirmationState = 'error';
+      errorMessage = data.message || 'Error al confirmar turno';
+    }
+  } catch (error) {
+    confirmationState = 'error';
+    errorMessage = 'Error de conexión';
+  }
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirmar Turno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+      {
+        confirmationState === 'success' && (
+          <div class="text-center">
+            <div class="mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <svg
+                class="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">¡Turno Confirmado!</h1>
+            <p class="text-gray-600 mb-6">Tu asistencia ha sido registrada exitosamente.</p>
+
+            {turnoData && (
+              <div class="bg-gray-50 rounded-lg p-4 text-left space-y-2">
+                <p class="text-sm text-gray-600">
+                  <span class="font-semibold">Fecha:</span>{' '}
+                  {new Date(turnoData.fechaTurno).toLocaleDateString('es-AR')}
+                </p>
+                <p class="text-sm text-gray-600">
+                  <span class="font-semibold">Hora:</span> {turnoData.horaAtencion}
+                </p>
+              </div>
+            )}
+
+            <p class="text-sm text-gray-500 mt-6">Te esperamos 15 minutos antes de tu turno.</p>
+          </div>
+        )
+      }
+
+      {
+        confirmationState === 'already_confirmed' && (
+          <div class="text-center">
+            <div class="mx-auto mb-4 w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg
+                class="w-8 h-8 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Turno Ya Confirmado</h1>
+            <p class="text-gray-600">Este turno ya fue confirmado previamente.</p>
+          </div>
+        )
+      }
+
+      {
+        confirmationState === 'error' && (
+          <div class="text-center">
+            <div class="mx-auto mb-4 w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <svg
+                class="w-8 h-8 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Error</h1>
+            <p class="text-gray-600 mb-4">{errorMessage}</p>
+            <p class="text-sm text-gray-500">Por favor contacta con la clínica.</p>
+          </div>
+        )
+      }
+    </div>
+  </body>
+</html>

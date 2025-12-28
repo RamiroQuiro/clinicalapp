@@ -67,7 +67,13 @@ export default function TurnosDelDia({
     return `${yyyy}${mm}${dd}T${HH}${MM}${SS}Z`;
   }
 
-  function buildGoogleCalendarLink(start: Date, durationMin: number, title: string, details?: string, location?: string) {
+  function buildGoogleCalendarLink(
+    start: Date,
+    durationMin: number,
+    title: string,
+    details?: string,
+    location?: string
+  ) {
     const end = new Date(start.getTime() + durationMin * 60000);
     const dates = `${toGoogleDateTime(start)}/${toGoogleDateTime(end)}`;
     const params = new URLSearchParams({
@@ -81,6 +87,12 @@ export default function TurnosDelDia({
   }
 
   const turnosOcupados = useMemo(() => {
+    console.log(
+      '🔄 Recalculando turnosOcupados, agenda:',
+      agenda,
+      'diaSeleccionado:',
+      diaSeleccionado
+    );
     return agenda
       .map((agendaProf: any) => {
         return agendaProf.agenda
@@ -91,8 +103,6 @@ export default function TurnosDelDia({
       })
       .flat();
   }, [agenda]);
-
-
 
   // Handlers para las acciones del menú
   const handleVerDetalles = (slot: any) => {
@@ -114,10 +124,12 @@ export default function TurnosDelDia({
     // Integración con teléfono
   };
 
-  const handleWhatsApp = (slot: any) => {
+  const handleWhatsApp = async (slot: any) => {
     const fechaTurno = new Date(slot.hora);
     const pacienteNombre =
-      [slot.turnoInfo?.pacienteNombre, slot.turnoInfo?.pacienteApellido].filter(Boolean).join(' ') || 'Paciente';
+      [slot.turnoInfo?.pacienteNombre, slot.turnoInfo?.pacienteApellido]
+        .filter(Boolean)
+        .join(' ') || 'Paciente';
 
     const fechaFormateada = fechaTurno.toLocaleDateString('es-AR', {
       weekday: 'long',
@@ -132,23 +144,47 @@ export default function TurnosDelDia({
     });
     const duracion = slot.turnoInfo?.duracion || 30;
     const tituloEvento = `Consulta Médica - ${slot.turnoInfo?.profesionalNombre} ${slot.turnoInfo?.profesionalApellido}`;
-    const detallesEvento = `Consulta de ${pacienteNombre}. Motivo: ${slot.turnoInfo?.motivoConsulta || ''}`.trim();
-    const googleCalLink = buildGoogleCalendarLink(fechaTurno, duracion, tituloEvento, detallesEvento);
+    const detallesEvento =
+      `Consulta de ${pacienteNombre}. Motivo: ${slot.turnoInfo?.motivoConsulta || ''}`.trim();
+    const googleCalLink = buildGoogleCalendarLink(
+      fechaTurno,
+      duracion,
+      tituloEvento,
+      detallesEvento
+    );
 
+    // Generate confirmation link on server (JWT can't run in browser)
+    let confirmLink = '/confirmar-turno/pendiente';
+    try {
+      const response = await fetch(`/api/turnos/generar-link-confirmacion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turnoId: slot.turnoInfo?.id }),
+      });
+      const data = await response.json();
+      if (response.ok && data.data?.confirmLink) {
+        confirmLink = data.data.confirmLink;
+      }
+    } catch (error) {
+      console.error('Error generando link de confirmación:', error);
+    }
 
     const mensaje = `¡Hola ${pacienteNombre}! 👋
 
-*Recordatorio de Turno Médico* 🏥
+*Turno Médico Agendado* 🏥
 
-*Fecha:* ${fechaFormateada}
-*Hora:* ${horaFormateada}
-*Duración:* ${duracion} minutos
-*Profesional:* Dr. ${slot.turnoInfo?.profesionalNombre} ${slot.turnoInfo?.profesionalApellido}
+📅 *Fecha:* ${fechaFormateada}
+🕐 *Hora:* ${horaFormateada}
+⏱️ *Duración:* ${duracion} minutos
+👨‍⚕️ *Profesional:* Dr. ${slot.turnoInfo?.profesionalNombre} ${slot.turnoInfo?.profesionalApellido}
 
-*Agregar a calendario:*
-${googleCalLink}
+*Por favor confirma tu asistencia:*
+✅ Confirmar: ${confirmLink}
 
-Llegar 15 minutos antes. Confirmar asistencia respondiendo este mensaje.`;
+*Agregar a tu calendario:*
+📆 ${googleCalLink}
+
+_Llegar 15 minutos antes._`;
 
     setWaSlot(slot);
     setWaCelular(slot.turnoInfo?.pacienteCelular || '');
@@ -158,11 +194,11 @@ Llegar 15 minutos antes. Confirmar asistencia respondiendo este mensaje.`;
   };
   const formattedDate = diaSeleccionado
     ? new Intl.DateTimeFormat('es-AR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(diaSeleccionado)
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(diaSeleccionado)
     : 'Seleccione una fecha';
 
   if (turnosOcupados.length === 0) {
@@ -202,7 +238,6 @@ Llegar 15 minutos antes. Confirmar asistencia respondiendo este mensaje.`;
         </div>
         {/* Lista de turnos */}
         <div className="space-y-2">
-
           {isLoading ? (
             <TurnosSkeletonLoader />
           ) : (
@@ -220,12 +255,8 @@ Llegar 15 minutos antes. Confirmar asistencia respondiendo este mensaje.`;
           )}
         </div>
 
-        {
-          waOpen &&
-          <ModalReact
-            title="Enviar WhatsApp"
-            size="md"
-          >
+        {waOpen && (
+          <ModalReact title="Enviar WhatsApp" size="md">
             <div className="space-y-4">
               <div className="space-y-2">
                 <p className="text-gray-600 text-sm">Número de teléfono</p>
@@ -238,7 +269,10 @@ Llegar 15 minutos antes. Confirmar asistencia respondiendo este mensaje.`;
                       disabled={!waSlot?.turnoInfo?.pacienteCelular}
                     />
                     <span>
-                      Usar ficha {waSlot?.turnoInfo?.pacienteCelular ? `(${waSlot.turnoInfo.pacienteCelular})` : '(no disponible)'}
+                      Usar ficha{' '}
+                      {waSlot?.turnoInfo?.pacienteCelular
+                        ? `(${waSlot.turnoInfo.pacienteCelular})`
+                        : '(no disponible)'}
                     </span>
                   </label>
                   <label className="flex items-center gap-2">
@@ -254,7 +288,9 @@ Llegar 15 minutos antes. Confirmar asistencia respondiendo este mensaje.`;
                   type="tel"
                   className="p-2 border rounded w-full"
                   placeholder="Ej: 3815123456"
-                  value={waUsarFicha === 'ficha' ? (waSlot?.turnoInfo?.pacienteCelular || '') : waCelular}
+                  value={
+                    waUsarFicha === 'ficha' ? waSlot?.turnoInfo?.pacienteCelular || '' : waCelular
+                  }
                   onChange={e => setWaCelular(e.target.value)}
                   disabled={waUsarFicha === 'ficha'}
                 />
@@ -270,25 +306,33 @@ Llegar 15 minutos antes. Confirmar asistencia respondiendo este mensaje.`;
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant='cancel' onClick={() => setWaOpen(false)}>
+                <Button variant="cancel" onClick={() => setWaOpen(false)}>
                   Cancelar
                 </Button>
-                <Button variant='primary' onClick={() => {
-                  const candidate = waUsarFicha === 'ficha' ? (waSlot?.turnoInfo?.pacienteCelular || '') : waCelular;
-                  const phone = formateoNumeroWhatsapp(candidate, 'AR');
-                  if (!phone) return;
-                  const link = buildWhatsAppLink(phone, waMensaje);
-                  window.open(link, '_blank');
-                  setWaOpen(false);
-                }}
-                  disabled={(waUsarFicha === 'ficha' && !waSlot?.turnoInfo?.pacienteCelular) || (waUsarFicha === 'otro' && !waCelular)}
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    const candidate =
+                      waUsarFicha === 'ficha'
+                        ? waSlot?.turnoInfo?.pacienteCelular || ''
+                        : waCelular;
+                    const phone = formateoNumeroWhatsapp(candidate, 'AR');
+                    if (!phone) return;
+                    const link = buildWhatsAppLink(phone, waMensaje);
+                    window.open(link, '_blank');
+                    setWaOpen(false);
+                  }}
+                  disabled={
+                    (waUsarFicha === 'ficha' && !waSlot?.turnoInfo?.pacienteCelular) ||
+                    (waUsarFicha === 'otro' && !waCelular)
+                  }
                 >
                   Enviar por WhatsApp
                 </Button>
               </div>
             </div>
           </ModalReact>
-        }
+        )}
       </div>
     );
   }

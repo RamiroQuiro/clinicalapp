@@ -3,18 +3,7 @@ import Button from '@/components/atomos/Button';
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/organismo/Card';
-import {
-  ArrowRight,
-  Bell,
-  Calendar,
-  Database,
-  DollarSign,
-  FileText,
-  Settings,
-  Shield,
-  Stethoscope,
-  Users,
-} from 'lucide-react';
+import { ArrowRight, Calendar, DollarSign, Settings, Users } from 'lucide-react';
 
 const settingsCategories = [
   {
@@ -35,44 +24,39 @@ const settingsCategories = [
     description: 'Configura horarios, duración de turnos y tipos de consulta.',
     icon: Calendar,
   },
-  {
-    id: 'notificaciones',
-    name: 'Notificaciones',
-    description: 'Personaliza plantillas de email, SMS y preferencias de alerta.',
-    icon: Bell,
-  },
+  // {
+  //   id: 'notificaciones',
+  //   name: 'Notificaciones',
+  //   description: 'Personaliza plantillas de email, SMS y preferencias de alerta.',
+  //   icon: Bell,
+  // },
 
-  {
-    id: 'datos',
-    name: 'Gestión de Datos',
-    description: 'Opciones de respaldo, restauración y políticas de retención de datos.',
-    icon: Database,
-  },
+  // {
+  //   id: 'datos',
+  //   name: 'Gestión de Datos',
+  //   description: 'Opciones de respaldo, restauración y políticas de retención de datos.',
+  //   icon: Database,
+  // },
 
-  {
-    id: 'historia-clinica',
-    name: 'Historia Clínica',
-    description: 'Personaliza campos, secciones y plantillas de la historia clínica.',
-    icon: Stethoscope,
-  },
-  {
-    id: 'plantillas',
-    name: 'Plantillas de Documentos',
-    description: 'Crea y gestiona plantillas para recetas, certificados e informes.',
-    icon: FileText,
-  },
+  // {
+  //   id: 'historia-clinica',
+  //   name: 'Historia Clínica',
+  //   description: 'Personaliza campos, secciones y plantillas de la historia clínica.',
+  //   icon: Stethoscope,
+  // },
+  // {
+  //   id: 'plantillas',
+  //   name: 'Plantillas de Documentos',
+  //   description: 'Crea y gestiona plantillas para recetas, certificados e informes.',
+  //   icon: FileText,
+  // },
   {
     id: 'facturacion',
     name: 'Facturación y Aranceles',
     description: 'Define aranceles de prestaciones y configura datos para facturación.',
     icon: DollarSign,
   },
-  {
-    id: 'seguridad',
-    name: 'Seguridad',
-    description: 'Configura 2FA, políticas de contraseñas y auditoría de accesos.',
-    icon: Shield,
-  },
+
   {
     id: 'suscripcion',
     name: 'Gestión de Suscripción',

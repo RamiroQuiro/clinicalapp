@@ -1,10 +1,6 @@
 ---
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import LayoutDash from '@/components/layouts/LayoutDash.astro';
-const { session, user } = Astro.locals;
-if (user.rolEnCentro !== 'recepcion') {
-  return Response.redirect(new URL('/dashboard', Astro.url));
-}
 ---
 
 <LayoutDash title="Ajustes de Facturación y Aranceles">
