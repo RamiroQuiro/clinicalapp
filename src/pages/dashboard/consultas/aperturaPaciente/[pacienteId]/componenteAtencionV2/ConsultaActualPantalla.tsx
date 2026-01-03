@@ -2,14 +2,14 @@ import Button from '@/components/atomos/Button';
 import { TextArea } from '@/components/atomos/TextArea';
 import ModalReact from '@/components/moleculas/ModalReact'; // Added for Evolution Modal
 import Section from '@/components/moleculas/Section';
-import EvolucionClinica from '@/components/organismo/FormNotaEvolucionClinica';
-import ModalDictadoIA from '@/components/organismo/ModalDictadoIA';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { useStore } from '@nanostores/react';
 import { ChevronLeft, ChevronRight, FileText, History } from 'lucide-react'; // Added icons
 import React, { useEffect, useState } from 'react';
 
+import FormNotaEvolucionClinica from '@/components/organismo/FormNotaEvolucionClinica';
+import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
 import { HistorialSidebar } from './HistorialSidebar';
 import PercentilesPantallaConsulta from './PercentilesPantallaConsulta';
 import SectionArchivosAtencion from './SectionArchivosAtencion';
@@ -78,7 +78,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     setConsultaField(name, value);
   };
 
-  // ReactQuill handler
+  // textoenriquecido con reactquill
   const handleQuillChange = (value: string) => {
     setConsultaField('motivoConsulta', value);
   };
@@ -160,11 +160,11 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     <div className="w-full flex lg:flex-row gap-2 animate-aparecer h-[calc(100vh-140px)]">
       {/* Columna izquierda */}
       <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 pb-20">
-        <ModalDictadoIA
+        {/* <ModalDictadoIA
           isOpen={isDictadoModalOpen}
           onClose={() => setIsDictadoModalOpen(false)}
           onProcesado={handleProcesadoIA}
-        />
+        /> */}
 
         <fieldset
           disabled={isLocked}
@@ -190,16 +190,14 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
               title="Evolución Clínica & Notas"
               id="modal-evolucion"
               onClose={() => setIsEvolutionModalOpen(false)}
-              className="w-[90vw] h-[85vh]" // Large modal
+              className="w-[90vw] h-[85vh]"
             >
               <div className="p-1">
-                <EvolucionClinica
+                <FormNotaEvolucionClinica
                   value={$consulta.motivoConsulta}
                   onChange={handleQuillChange}
                   onProcesadoIA={result => {
                     handleProcesadoIA(result);
-                    // Optional: Close modal automatically or show success toast?
-                    // For now keep open so they can review.
                   }}
                   motivoInicial={$consulta.motivoInicial}
                   onMotivoChange={value => setConsultaField('motivoInicial', value)}
@@ -212,6 +210,21 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             </ModalReact>
           )}
 
+          <Section title="Motivo de Consulta">
+            <ContenedorMotivoInicialV2 initialMotivos={data.atencion.listadoMotivos || []} />
+            {$consulta.motivoInicial && (
+              <div className="mt-2 text-sm text-gray-600">
+                <span className="font-semibold">Motivo Inicial Seleccionado:</span>{' '}
+                {$consulta.motivoInicial}
+              </div>
+            )}
+            <TextArea
+              name="motivoConsulta"
+              value={$consulta.motivoConsulta}
+              onChange={handleFormChange}
+              placeholder="Describe el motivo principal de la visita..."
+            />
+          </Section>
           {/* Signos Vitales */}
           <SignosVitalesPantallaConsulta
             userId={data.atencion.userIdMedico}

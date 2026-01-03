@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utilsStyles';
 import { CircleX } from 'lucide-react';
 import React from 'react';
 
@@ -18,7 +19,9 @@ export default function ModalReact({ onClose, children, className, title, id, ic
       onClick={() => onClose(false)}
     >
       <div
-        className={`bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit max-h overflow-y-auto w-fit min-w-[50dvw] ${className}`}
+        className={cn(
+          `bg-white relative rounded-lg overflow-hidden border-l-2 text-border-primary-100/80 mt-0 shadow-lg h-fit max-w-[90dvw] overflow-y-auto w-fit min-w-[50dvw] ${className}`
+        )}
         onClick={e => e.stopPropagation()}
       >
         {/* Header Fijo */}

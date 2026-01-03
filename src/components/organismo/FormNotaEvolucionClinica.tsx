@@ -18,7 +18,7 @@ interface EvolucionClinicaProps {
   atencionId?: string;
 }
 
-export default function EvolucionClinica({
+export default function FormNotaEvolucionClinica({
   value,
   onChange,
   onProcesadoIA,
