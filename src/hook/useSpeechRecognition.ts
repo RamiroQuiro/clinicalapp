@@ -20,10 +20,18 @@ declare global {
   }
 }
 
-export const useSpeechRecognition = () => {
+export const useSpeechRecognition = (props?: { onFinalSegment?: (text: string) => void }) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [newFinalSegment, setNewFinalSegment] = useState(''); // Kept for backward compat or other uses
   const [error, setError] = useState<string | null>(null);
+
+  // Ref to hold correct callback without triggering re-runs
+  const onFinalSegmentRef = useRef(props?.onFinalSegment);
+
+  useEffect(() => {
+    onFinalSegmentRef.current = props?.onFinalSegment;
+  }, [props?.onFinalSegment]);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   // NEW: Ref to accumulate finalized text across sessions
@@ -57,6 +65,14 @@ export const useSpeechRecognition = () => {
       // FIXED: Accumulate final results across sessions
       if (currentSessionFinal) {
         accumulatedTranscriptRef.current += currentSessionFinal;
+        setNewFinalSegment(currentSessionFinal);
+
+        // Callback functionality
+        if (onFinalSegmentRef.current) {
+          onFinalSegmentRef.current(currentSessionFinal);
+        }
+      } else {
+        setNewFinalSegment('');
       }
 
       // Display: accumulated + interim
@@ -115,5 +131,6 @@ export const useSpeechRecognition = () => {
     stopListening,
     setTranscript, // Keep for backward compatibility
     clearTranscript, // NEW: Expose clear function
+    newFinalSegment, // Expose for appending
   };
 };

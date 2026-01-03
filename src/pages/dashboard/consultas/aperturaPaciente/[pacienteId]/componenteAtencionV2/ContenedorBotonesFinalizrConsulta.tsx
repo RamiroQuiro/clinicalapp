@@ -45,7 +45,7 @@ export default function ContenedorBotonesFinalizrConsulta({
       id: 'descargaPdf',
       icon: <FileDown className="mr- w-4 h-4" />,
       label: 'PDF',
-      onClick: () => { },
+      onClick: () => {},
       variant: 'ghost',
       className: 'text-white hover:bg-slate-700/50',
     },
@@ -86,7 +86,7 @@ export default function ContenedorBotonesFinalizrConsulta({
       id: 'imprimirReceta',
       icon: <Printer className="mr- w-4 h-4" />,
       label: 'Imprimir Receta',
-      onClick: () => { },
+      onClick: () => {},
       variant: 'ghost',
       className: 'text-white hover:bg-slate-700/50',
     },
@@ -94,13 +94,13 @@ export default function ContenedorBotonesFinalizrConsulta({
       id: 'facturarConsulta',
       icon: <Wallet className="mr- w-4 h-4" />,
       label: 'Facturar Consulta',
-      onClick: () => { },
+      onClick: () => {},
       variant: 'ghost',
       className: 'text-white hover:bg-slate-700/50',
     },
   ];
 
-  // Close dropdown when clicking outside
+  // cerrar dropdown al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

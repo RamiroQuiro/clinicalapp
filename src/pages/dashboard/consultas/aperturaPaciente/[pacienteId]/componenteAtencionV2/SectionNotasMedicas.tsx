@@ -41,7 +41,7 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
       // Llamamos a editNota, pasándole la nota original con los datos nuevos del formulario.
       editNota({
         ...noteContent, // Mantiene la ID, fecha, etc.
-        ...formData,   // Sobrescribe el title y descripcion con lo nuevo.
+        ...formData, // Sobrescribe el title y descripcion con lo nuevo.
       });
     } else {
       // Si no tiene ID, estamos CREANDO una nota nueva.
@@ -50,6 +50,7 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
         id: nanoid(),
         profesional: 'Autor desconocido',
         created_at: new Date().toISOString(),
+        estado: 'activo',
       });
     }
 

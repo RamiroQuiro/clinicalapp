@@ -1,9 +1,8 @@
 import db from '@/db';
 import { notasMedicas } from '@/db/schema';
 import { logAuditEvent } from '@/lib/audit';
-import { createResponse } from '@/utils/responseAPI';
+import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
-import { nanoid } from 'nanoid';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const { session, user } = locals;
@@ -20,7 +19,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return createResponse(400, 'Faltan datos requeridos (descripcion, pacienteId)');
   }
 
-  const newNoteId = nanoid();
+  const newNoteId = nanoIDNormalizador('notMed', 16);
   const newNoteData = {
     id: newNoteId,
     descripcion,
@@ -28,6 +27,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     title,
     atencionId: atencionId ? atencionId : null,
     userMedicoId: user.id,
+    centroMedicoId: user.centroMedicoId,
   };
 
   // 3. Insertar en la base de datos
@@ -39,6 +39,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       userId: user.id,
       actionType: 'CREATE',
       tableName: 'notasMedicas',
+      centroMedicoId: user.centroMedicoId,
       recordId: newNoteId,
       newValue: insertandoDB[0],
       description: `El usuario ${user.name} creó una nueva nota médica.`,

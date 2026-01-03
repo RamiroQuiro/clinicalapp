@@ -8,14 +8,25 @@ import React, { useEffect, useState } from 'react';
 
 interface ContenedorMotivoInicialV2Props {
   initialMotivos?: any[];
+  currentValue?: string;
 }
 
-const ContenedorMotivoInicialV2 = ({ initialMotivos = [] }: ContenedorMotivoInicialV2Props) => {
+const ContenedorMotivoInicialV2 = ({
+  initialMotivos = [],
+  currentValue,
+}: ContenedorMotivoInicialV2Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [motivos, setMotivos] = useState<any[]>(initialMotivos);
   const [isLoading, setIsLoading] = useState(initialMotivos.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [nuevoMotivoNombre, setNuevoMotivoNombre] = useState('');
+
+  // Sync search with external currentValue
+  useEffect(() => {
+    if (currentValue !== undefined && currentValue !== search) {
+      setSearch(currentValue);
+    }
+  }, [currentValue]);
 
   useEffect(() => {
     if (initialMotivos.length > 0) return;
@@ -113,7 +124,7 @@ const ContenedorMotivoInicialV2 = ({ initialMotivos = [] }: ContenedorMotivoInic
       </div>
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
-      {search.length > 0 && !noResultados && (
+      {search?.length > 0 && !noResultados && (
         <ul className="absolute top-full left-0 right-0 bg-white border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
           {encontrado.map((motivo: any) => (
             <li
@@ -128,7 +139,11 @@ const ContenedorMotivoInicialV2 = ({ initialMotivos = [] }: ContenedorMotivoInic
       )}
 
       {isModalOpen && (
-        <ModalReact onClose={() => setIsModalOpen(false)} title="Agregar Nuevo Motivo">
+        <ModalReact
+          id="modal-crear-motivo"
+          onClose={() => setIsModalOpen(false)}
+          title="Agregar Nuevo Motivo"
+        >
           <form onSubmit={handleCreateMotivo} className="flex flex-col gap-4">
             <Input
               label="Nombre del Motivo"

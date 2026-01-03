@@ -13,7 +13,6 @@ import db from '@/db';
 import { logAuditEvent } from '@/lib/audit';
 import { emitEvent } from '@/lib/sse/sse';
 import { createResponse, nanoIDNormalizador } from '@/utils/responseAPI';
-import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid'; // Para generar IDs únicos
 // Helper para parsear números de forma segura
@@ -80,12 +79,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let currentAtencionId = consultaData.id || nanoIDNormalizador('Aten'); // Genera un ID si no existe
 
     await db.transaction(async tx => {
-      const fechaHoy = new Date(getFechaEnMilisegundos());
+      const fechaHoy = new Date();
       let turnoActualizado;
       // 1. Guardar/Actualizar Atención principal
-      // Aquí deberías decidir si es una inserción o una actualización.
-      // Por simplicidad, asumiremos inserción por ahora, o que el id se maneja en el frontend.
-      // Si id viene, es una actualización. Si no, es una inserción.
       console.log('ingresando los datos emepezando con la atencion', consultaData);
       if (consultaData.id) {
         // Actualizar atención existente
@@ -96,13 +92,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
             sintomas,
             observaciones,
             motivoInicial,
-            centroMedicoId: user.centroMedicoId,
             inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null,
             finAtencion: finAtencion ? new Date(finAtencion) : null,
             duracionAtencion: safeParseFloat(duracionAtencion),
             updated_at: fechaHoy,
+            userIdMedico: user.id,
+            centroMedicoId: user.centroMedicoId,
             turnoId: turnoId ? turnoId : null,
-            estado: status,
+            estado: status || 'pendiente',
             ultimaModificacionPorId: user.id, //
           })
           .where(eq(atenciones.id, consultaData.id));
@@ -187,8 +184,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         // Luego, insertamos los nuevos diagnósticos que vienen del frontend
         await tx.insert(diagnostico).values(
           diagnosticos.map(d => ({
-            id: nanoid(),
+            id: nanoIDNormalizador('Diag', 15),
             atencionId: currentAtencionId,
+
             pacienteId,
             userMedicoId: user.id,
             estado: d.estado,
@@ -222,21 +220,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
         );
       }
 
-      // guardado de notas
+      console.log('Datos de la consulta: notas', notas);
+      // upsert de notas médicas (crear si no existe, actualizar si ya existe)
       if (notas && notas.length > 0) {
-        await tx.insert(notasMedicas).values(
-          notas.map(n => ({
-            id: n.id,
-            atencionId: currentAtencionId,
-            pacienteId,
-            userMedicoId: user.id,
-            title: n.title,
-            descripcion: n.descripcion,
-            centroMedicoId: user.centroMedicoId,
-            created_at: n.created_at,
-            estado: n.estado,
-          }))
-        );
+        for (const n of notas) {
+          await tx
+            .insert(notasMedicas)
+            .values({
+              id: n.id,
+              atencionId: currentAtencionId,
+              pacienteId,
+              userMedicoId: user.id,
+              title: n.title,
+              descripcion: n.descripcion,
+              centroMedicoId: user.centroMedicoId,
+              created_at: fechaHoy,
+            })
+            .onConflictDoUpdate({
+              target: [notasMedicas.id],
+              set: {
+                title: n.title,
+                descripcion: n.descripcion,
+                updated_at: fechaHoy,
+              },
+            });
+        }
       }
 
       // emitir evento de atencion guardada

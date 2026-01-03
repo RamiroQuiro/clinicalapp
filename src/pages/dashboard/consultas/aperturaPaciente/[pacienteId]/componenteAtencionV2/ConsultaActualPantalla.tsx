@@ -1,14 +1,16 @@
 import Button from '@/components/atomos/Button';
-import DivReact from '@/components/atomos/DivReact';
 import { TextArea } from '@/components/atomos/TextArea';
+import ModalReact from '@/components/moleculas/ModalReact'; // Added for Evolution Modal
 import Section from '@/components/moleculas/Section';
+import EvolucionClinica from '@/components/organismo/FormNotaEvolucionClinica';
 import ModalDictadoIA from '@/components/organismo/ModalDictadoIA';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { useStore } from '@nanostores/react';
-import { Mic } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
+import { ChevronLeft, ChevronRight, FileText, History } from 'lucide-react'; // Added icons
+import React, { useEffect, useState } from 'react';
+
+import { HistorialSidebar } from './HistorialSidebar';
 import PercentilesPantallaConsulta from './PercentilesPantallaConsulta';
 import SectionArchivosAtencion from './SectionArchivosAtencion';
 import SectionDiagnostico from './SectionDiagnostico';
@@ -20,22 +22,8 @@ interface ConsultaActualPantallaProps {
   data: any;
 }
 
-const preferenciaPerdilProfesional = {
-  signosVitales: [
-    'tensionArterial',
-    'frecuenciaCardiaca',
-    'frecuenciaRespiratoria',
-    'temperatura',
-    'saturacionOxigeno',
-    'peso',
-    'talla',
-    'imc',
-    'glucosa',
-  ],
-};
 export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) => {
   const $consulta = useStore(consultaStore);
-  // console.log('datos del contesto $consulta', $consulta);
   const [signosVitalesHistorial, setSignosVitalesHistorial] = useState([]);
   const [currentMedicamento, setCurrentMedicamento] = useState({
     dosis: '',
@@ -46,9 +34,12 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   });
 
   const [isDictadoModalOpen, setIsDictadoModalOpen] = useState(false);
-
   const [isLocked, setIsLocked] = useState($consulta.estado === 'finalizada');
-  const [unlockInput, setUnlockInput] = useState('');
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
+
+  // UI Refinement States
+  const [isEvolutionModalOpen, setIsEvolutionModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Collapsed by default as per request
 
   useEffect(() => {
     if (!data || !data.atencion) return;
@@ -63,6 +54,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       diagnosticos: data.atencion.diagnosticos || [],
       medicamentos: data.atencion.medicamentos || [],
       signosVitales: data.atencion.signosVitales || {},
+
+      motivoConsulta: data.atencion.motivoConsulta || '',
     };
 
     consultaStore.set(atencionData);
@@ -80,15 +73,14 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     setIsLocked($consulta.estado === 'finalizada');
   }, [$consulta.estado]);
 
-  const handleUnlock = () => {
-    if (unlockInput === 'modificar') {
-      setIsLocked(false);
-    }
-  };
-
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setConsultaField(name, value);
+  };
+
+  // ReactQuill handler
+  const handleQuillChange = (value: string) => {
+    setConsultaField('motivoConsulta', value);
   };
 
   const handleSignosVitalesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,22 +100,6 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     );
   };
 
-  const addMedicamento = () => {
-    if (!currentMedicamento.nombreGenerico && !currentMedicamento.nombreComercial) return;
-    const current = consultaStore.get().medicamentos;
-    setConsultaField('medicamentos', [
-      ...current,
-      { ...currentMedicamento, id: `temp_${Date.now()}` },
-    ]);
-    setCurrentMedicamento({
-      dosis: '',
-      frecuencia: '',
-      nombreComercial: '',
-      nombreGenerico: '',
-      id: '',
-    });
-  };
-
   const deletMedicamento = (medId: string) => {
     const current = consultaStore.get().medicamentos;
     setConsultaField(
@@ -135,25 +111,12 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   const handleProcesadoIA = (result: any) => {
     console.log('AI Processed Result received in parent:', result);
 
-    // --- AI Integration ---
+    if (result.sintomas) setConsultaField('sintomas', result.sintomas);
+    if (result.tratamiento) setConsultaField('tratamiento', result.tratamiento);
+    if (result.planSeguir) setConsultaField('planSeguir', result.planSeguir);
 
-    // Campos de texto: Reemplazar si no están vacíos
-    if (result.motivoConsulta) {
-      setConsultaField('motivoConsulta', result.motivoConsulta);
-    }
-    if (result.sintomas) {
-      setConsultaField('sintomas', result.sintomas);
-    }
-    if (result.tratamiento) {
-      setConsultaField('tratamiento', result.tratamiento);
-    }
-    if (result.planSeguir) {
-      setConsultaField('planSeguir', result.planSeguir);
-    }
-
-    // Diagnósticos: Añadir a la lista existente
     if (result.diagnosticos && Array.isArray(result.diagnosticos)) {
-      const currentDiags = consultaStore.get().diagnosticos;
+      const currentDiags = consultaStore.get().diagnosticos || [];
       const newDiags = result.diagnosticos.map((diag: any, index: number) => ({
         diagnostico: diag.nombre || '',
         observaciones: diag.observaciones || '',
@@ -164,9 +127,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       setConsultaField('diagnosticos', [...currentDiags, ...newDiags]);
     }
 
-    // Medicamentos: Añadir a la lista existente
     if (result.medicamentos && Array.isArray(result.medicamentos)) {
-      const currentMeds = consultaStore.get().medicamentos;
+      const currentMeds = consultaStore.get().medicamentos || [];
       const newMeds = result.medicamentos.map((med: any, index: number) => ({
         nombreGenerico: med.nombreGenerico || '',
         nombreComercial: med.nombreComercial || '',
@@ -177,149 +139,168 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
       setConsultaField('medicamentos', [...currentMeds, ...newMeds]);
     }
 
-    // Signos Vitales: Actualizar el objeto de signos vitales
     if (result.signosVitales) {
-      const currentSignos = consultaStore.get().signosVitales;
+      const currentSignos = consultaStore.get().signosVitales || {};
       const updatedSignos = { ...currentSignos };
-
-      // Mapeo de nombres de campos de la IA a los del store
       const mapping = {
-        tensionArterial: 'tensionArterial', // El nombre ya coincide
+        tensionArterial: 'tensionArterial',
         frecuenciaCardiaca: 'frecuenciaCardiaca',
         frecuenciaRespiratoria: 'frecuenciaRespiratoria',
         temperatura: 'temperatura',
         saturacionOxigeno: 'saturacionOxigeno',
       };
-
       for (const [key, value] of Object.entries(result.signosVitales)) {
-        if (value !== null && mapping[key]) {
-          updatedSignos[mapping[key]] = value;
-        }
+        if (value !== null && mapping[key]) updatedSignos[mapping[key]] = value;
       }
       setConsultaField('signosVitales', updatedSignos);
     }
   };
 
   return (
-    <div className="w-full flex flex-col gap-2 animate-aparecer">
-      <ModalDictadoIA
-        isOpen={isDictadoModalOpen}
-        onClose={() => setIsDictadoModalOpen(false)}
-        onProcesado={handleProcesadoIA}
-      />
+    <div className="w-full flex lg:flex-row gap-2 animate-aparecer h-[calc(100vh-140px)]">
+      {/* Columna izquierda */}
+      <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 pb-20">
+        <ModalDictadoIA
+          isOpen={isDictadoModalOpen}
+          onClose={() => setIsDictadoModalOpen(false)}
+          onProcesado={handleProcesadoIA}
+        />
 
-      {/* {isLocked && (
-        <div
-          className="p-4 mb-4 text-sm text-orange-800 rounded-lg bg-orange-50 border border-orange-300 flex flex-col gap-3"
-          role="alert"
+        <fieldset
+          disabled={isLocked}
+          className="flex flex-col w-full min-w-0 gap-3 disabled:opacity-60"
         >
-          <div className="flex items-center gap-2">
-            <Lock className="w-5 h-5" />
-            <h3 className="text-lg font-semibold">Consulta Finalizada</h3>
-          </div>
-          <p>
-            Esta consulta ya ha sido marcada como finalizada. Para realizar cambios, debe
-            desbloquearla explícitamente.
-            <br />
-            <strong>Importante:</strong> Cualquier modificación quedará registrada con su usuario y
-            la fecha actual para fines de auditoría.
-          </p>
-          <div className="flex items-center gap-2 mt-2">
-            <Input
-              value={unlockInput}
-              onChange={e => setUnlockInput(e.target.value)}
-              placeholder="Escriba 'modificar' para habilitar"
-              className="max-w-xs"
-            />
-            <Button onClick={handleUnlock} disabled={unlockInput !== 'modificar'}>
-              Desbloquear Formulario
+          {/* Main Action Bar - Reemplaza el editor visible por default */}
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-wrap gap-4 items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-gray-700">Texto de la consulta</h3>
+              <p className="text-sm text-gray-500">Aquí se registra el texto de la consulta.</p>
+            </div>
+            <Button onClick={() => setIsEvolutionModalOpen(true)}>
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                <span>Escribir Evolución / Nota (IA)</span>
+              </div>
             </Button>
           </div>
-        </div>
-      )} */}
 
-      <fieldset
-        disabled={isLocked}
-        className="flex flex-col w-full min-w-0 gap-2 disabled:opacity-60"
+          {/* Texto enriquecido Modal */}
+          {isEvolutionModalOpen && (
+            <ModalReact
+              title="Evolución Clínica & Notas"
+              id="modal-evolucion"
+              onClose={() => setIsEvolutionModalOpen(false)}
+              className="w-[90vw] h-[85vh]" // Large modal
+            >
+              <div className="p-1">
+                <EvolucionClinica
+                  value={$consulta.motivoConsulta}
+                  onChange={handleQuillChange}
+                  onProcesadoIA={result => {
+                    handleProcesadoIA(result);
+                    // Optional: Close modal automatically or show success toast?
+                    // For now keep open so they can review.
+                  }}
+                  motivoInicial={$consulta.motivoInicial}
+                  onMotivoChange={value => setConsultaField('motivoInicial', value)}
+                  initialMotivos={data.atencion.listadoMotivos}
+                  pacienteId={data.atencion.pacienteId}
+                  userId={data.atencion.userIdMedico}
+                  atencionId={data.atencion.id}
+                />
+              </div>
+            </ModalReact>
+          )}
+
+          {/* Signos Vitales */}
+          <SignosVitalesPantallaConsulta
+            userId={data.atencion.userIdMedico}
+            signosVitalesHistorial={signosVitalesHistorial}
+            handleSignosVitalesChange={handleSignosVitalesChange}
+          />
+
+          <PercentilesPantallaConsulta $consulta={consultaStore.get()} data={data} />
+
+          {/* Structured Fields (Auto-filled by IA but editable) */}
+          <Section title="Síntomas Detectados (Anamnesis)">
+            <TextArea
+              name="sintomas"
+              value={$consulta.sintomas}
+              onChange={handleFormChange}
+              placeholder="Síntomas identificados..."
+            />
+          </Section>
+
+          <SectionDiagnostico $consulta={consultaStore.get()} deletDiagnostico={deletDiagnostico} />
+
+          <SectionMedicamentos
+            $consulta={consultaStore.get()}
+            deletMedicamento={deletMedicamento}
+          />
+
+          <Section title="Tratamiento">
+            <TextArea
+              name="tratamiento"
+              value={$consulta.tratamiento}
+              onChange={handleFormChange}
+              placeholder="Plan de tratamiento..."
+            />
+          </Section>
+
+          <Section title="Plan a Seguir">
+            <TextArea
+              name="planSeguir"
+              value={$consulta.planSeguir}
+              onChange={handleFormChange}
+              placeholder="Próximos pasos..."
+            />
+          </Section>
+
+          <SectionArchivosAtencion $consulta={$consulta} />
+          <SectionNotasMedicas
+            $consulta={$consulta}
+            handleFormChange={handleFormChange}
+            pacienteId={data.pacienteId}
+          />
+        </fieldset>
+      </div>
+
+      {/* Columna derecha: Barra lateral desplegable */}
+      <div
+        className={`flex-shrink-0 h-full transition-all duration-300 ease-in-out bg-white border-l shadow-sm relative ${isSidebarOpen ? 'w-[350px]' : 'w-[50px]'}`}
       >
-        <DivReact>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold">
-              Utiliza el asistente para dictar notas y que la IA rellene los campos automáticamente.
-            </p>
-            <Button onClick={() => setIsDictadoModalOpen(true)} className="self-start">
-              <Mic className="w-5 h-5 " />
-              Abrir Dictado
-            </Button>
-          </div>
-        </DivReact>
-        <Section title="Motivo de Consulta">
-          <ContenedorMotivoInicialV2 initialMotivos={data.atencion.listadoMotivos || []} />
-          {$consulta.motivoInicial && (
-            <div className="mt-2 text-sm text-gray-600">
-              <span className="font-semibold">Motivo Inicial Seleccionado:</span>{' '}
-              {$consulta.motivoInicial}
+        {/* Botón de alternar barra lateral */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="absolute -left-3 top-4 bg-white border border-gray-200 shadow-md rounded-full p-1 text-gray-500 hover:text-indigo-600 z-10"
+          title={isSidebarOpen ? 'Ocultar Historial' : 'Ver Historial'}
+        >
+          {isSidebarOpen ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+
+        <div className="h-full overflow-hidden">
+          {isSidebarOpen ? (
+            <HistorialSidebar data={data} />
+          ) : (
+            /* Collapsed State Icon Bar */
+            <div
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex flex-col items-center pt-6 gap-6 cursor-pointer hover:bg-gray-50 h-full"
+              title="Expandir Historial"
+            >
+              <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600">
+                <History className="w-6 h-6" />
+              </div>
+              <div
+                className="text-gray-500 font-medium tracking-wide transform rotate-180"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                HISTORIAL
+              </div>
             </div>
           )}
-          <TextArea
-            name="motivoConsulta"
-            value={$consulta.motivoConsulta}
-            onChange={handleFormChange}
-            placeholder="Describe el motivo principal de la visita..."
-          />
-        </Section>
-        {/* seccion signos vitales */}
-        <SignosVitalesPantallaConsulta
-          userId={data.atencion.userIdMedico}
-          signosVitalesHistorial={signosVitalesHistorial}
-          handleSignosVitalesChange={handleSignosVitalesChange}
-          preferenciaPerfilProfesional={preferenciaPerdilProfesional}
-        />
-
-        {/* percentiles */}
-        <PercentilesPantallaConsulta $consulta={consultaStore.get()} data={data} />
-
-        <Section title="Síntomas (Anamnesis)">
-          <TextArea
-            name="sintomas"
-            value={$consulta.sintomas}
-            onChange={handleFormChange}
-            placeholder="Describe los síntomas que reporta el paciente..."
-          />
-        </Section>
-
-        {/* seccion de diagnostico */}
-        <SectionDiagnostico $consulta={consultaStore.get()} deletDiagnostico={deletDiagnostico} />
-
-        <SectionMedicamentos $consulta={consultaStore.get()} deletMedicamento={deletMedicamento} />
-
-        <Section title="Tratamiento no farmacologico">
-          <TextArea
-            name="tratamiento"
-            value={$consulta.tratamiento}
-            onChange={handleFormChange}
-            placeholder="Describe el plan o tratemiento, próximas citas, estudios, etc."
-          />
-        </Section>
-
-        <Section title="Plan a Seguir">
-          <TextArea
-            name="planSeguir"
-            value={$consulta.planSeguir}
-            onChange={handleFormChange}
-            placeholder="Describe el plan de tratamiento, próximas citas, estudios, etc."
-          />
-        </Section>
-
-        <SectionArchivosAtencion $consulta={$consulta} />
-
-        {/* Notas Médicas */}
-        <SectionNotasMedicas
-          $consulta={$consulta}
-          handleFormChange={handleFormChange}
-          pacienteId={data.pacienteId}
-        />
-      </fieldset>
+        </div>
+      </div>
     </div>
   );
 };

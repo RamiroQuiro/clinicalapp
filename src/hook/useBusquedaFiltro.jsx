@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 const useBusquedaFiltros = (arr, opcionesFiltrado) => {
   const [search, setSearch] = useState('');
@@ -29,15 +29,12 @@ const useBusquedaFiltros = (arr, opcionesFiltrado) => {
 
   const encontrado = useMemo(() => busquedaFiltros(arr, search), [arr, search, busquedaFiltros]);
 
-  const handleSearch = useCallback(
-    e => {
-      setSearch(e.target.value);
-    },
-    []
-  );
+  const handleSearch = useCallback(e => {
+    setSearch(e.target.value);
+  }, []);
 
   // Nuevo valor de retorno: indica si la búsqueda está activa y no se encontraron resultados.
-  const noResultados = search.length > 0 && encontrado.length === 0;
+  const noResultados = search?.length > 0 && encontrado?.length === 0;
 
   return { search, encontrado, handleSearch, setSearch, noResultados };
 };
