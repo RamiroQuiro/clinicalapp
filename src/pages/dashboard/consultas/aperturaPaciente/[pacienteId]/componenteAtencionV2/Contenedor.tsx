@@ -10,7 +10,7 @@ const tabs = [
   { id: 'diagnostico', name: 'Diagnósticos' },
   { id: 'medicamentos', name: 'Medicamentos' },
   { id: 'solicitudes', name: 'Solicitudes' },
-  { id: 'historial', name: 'Historial de Visitas' },
+  // { id: 'historial', name: 'Historial de Visitas' },
 ];
 
 // --- Componente Principal ---
@@ -19,21 +19,22 @@ export default function Contenedor({ data, esFinalizada }: { data: any; esFinali
   consultaStore.set(data);
 
   return (
-    <div className="mt-2 w-full">
+    <div className=" w-full">
       {!esFinalizada && (
-        <div className="border-gray-200 border-b">
+        <div className="">
           <nav
-            className="flex justify-around items-center space-x-6 bg-white -mb-px px-6 border rounded-lg w-full overflow-x-auto"
+            className="flex justify-around items-center bg-white rounded-b-lg border-b-2 border-gray-200 space-x-6 mb-2 px-6  w-full overflow-x-auto"
             aria-label="Tabs"
           >
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`${activeTab === tab.id
+                className={`${
+                  activeTab === tab.id
                     ? 'border-primary-100 text-primary-100'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none`}
+                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none`}
               >
                 {tab.name}
               </button>
@@ -41,7 +42,7 @@ export default function Contenedor({ data, esFinalizada }: { data: any; esFinali
           </nav>
         </div>
       )}
-      <div className="mt-2 mb-8 w-full">
+      <div className="mt-1 mb-2 w-full">
         <RenderizacionPantalla activeTab={activeTab} data={data} esFinalizada={esFinalizada} />
       </div>
     </div>

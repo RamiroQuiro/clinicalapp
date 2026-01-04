@@ -161,7 +161,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   return (
     <div className="w-full flex lg:flex-row gap-2 animate-aparecer h-[calc(100vh-140px)]">
       {/* Columna izquierda */}
-      <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 pb-20">
+      <div className="flex-1 flex flex-col gap-0 overflow-y-auto pr-2 pb-20">
         {/* <ModalDictadoIA
           isOpen={isDictadoModalOpen}
           onClose={() => setIsDictadoModalOpen(false)}
@@ -170,7 +170,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
         <fieldset
           disabled={isLocked}
-          className="flex flex-col w-full min-w-0 gap-3 disabled:opacity-60"
+          className="flex flex-col w-full min-w-0 gap-1 disabled:opacity-60"
         >
           {/* Main Action Bar - Reemplaza el editor visible por default */}
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-wrap gap-4 items-center justify-between">

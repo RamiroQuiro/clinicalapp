@@ -340,7 +340,7 @@ Cualquier duda, respondé este mensaje.`;
       className={`transition-all duration-300 ${
         isFinalized
           ? 'bg-gradient-to-r from-primary-100 to-primary-150 text-white shadow-lg sticky top-0 z-20 border-b border-primary-bg-claro rounded-lg'
-          : 'bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-20 border-b border-gray-200'
+          : 'bg-white/95 backdrop-blur-sm  sticky top-0 z-20 '
       }`}
     >
       {isAnimating && (
