@@ -1,5 +1,4 @@
 import Button from '@/components/atomos/Button';
-import DivReact from '@/components/atomos/DivReact';
 import { InfoCard } from '@/components/moleculas/InfoCard'; // New import
 import ModalReact from '@/components/moleculas/ModalReact';
 import FormularioDiagnosticos from '@/components/organismo/FormularioDiagnosticos';
@@ -28,14 +27,14 @@ export default function SectionDiagnostico({ $consulta, deletDiagnostico }: Prop
   };
 
   return (
-    <DivReact className=" relative">
+    <div className="relative my-4 pt-2 border-t border-gray-200">
       <div
-        className={` text-base font-semibold text-primary-textoTitle border-b  border-gray-200 pb-1 mb-2 flex items-center justify-between `}
+        className={` text-sm  font-semibold text-primary-textoTitle pb-1 mb-2 flex items-center justify-between `}
       >
         <h3>Diagnóstico</h3>
-      </div>
 
-      <Button onClick={() => setIsOpenModal(true)}>Agregar Diagnóstico</Button>
+        <Button onClick={() => setIsOpenModal(true)}>Agregar Diagnóstico</Button>
+      </div>
 
       {isOpenModal && (
         <ModalReact title="Agregar Diagnóstico" onClose={() => setIsOpenModal(false)}>
@@ -43,7 +42,7 @@ export default function SectionDiagnostico({ $consulta, deletDiagnostico }: Prop
         </ModalReact>
       )}
 
-      <div className="mt-2 w-full  space-y-4">
+      <div className="mt-2 w-full   space-y-2">
         {' '}
         {/* Replaces <ul> */}
         {$consulta.diagnosticos?.length > 0 ? (
@@ -62,6 +61,6 @@ export default function SectionDiagnostico({ $consulta, deletDiagnostico }: Prop
           <p className="font-thin">No hay diagnósticos registrados para esta consulta.</p>
         )}
       </div>
-    </DivReact>
+    </div>
   );
 }

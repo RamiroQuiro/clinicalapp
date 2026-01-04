@@ -1,6 +1,8 @@
 // components/organismos/PercentilesPantallaConsulta.tsx
 import { GraficoPercentil } from '@/components/moleculas';
 import { PresionArterialCard } from '@/components/moleculas/PresionArterialCard'; // ← Import nuevo
+import Section from '@/components/moleculas/Section';
+import { BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 type Props = {
   data: any;
@@ -14,46 +16,39 @@ export default function PercentilesPantallaConsulta({ data, $consulta }: Props) 
   const [tooltipsMejorados, setTooltipsMejorados] = useState(true);
 
   return (
-    <details className="w-full group bg-white rounded-lg border shadow-sm">
-      <summary className="px-4 py-3 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
-        <div className="flex items-center space-x-3">
-          <span className="font-semibold text-gray-700">Percentiles de Crecimiento</span>
-
-          {/* Selector de modo visual */}
-          <div className="flex space-x-1 text-sm">
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                setModoVisualizacion('estandar');
-              }}
-              className={`px-2 py-1 rounded ${modoVisualizacion === 'estandar' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
-            >
-              Estándar
-            </button>
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                setModoVisualizacion('accesible');
-              }}
-              className={`px-2 py-1 rounded ${modoVisualizacion === 'accesible' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
-            >
-              🎨 Accesible
-            </button>
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                setModoVisualizacion('bebe');
-              }}
-              className={`px-2 py-1 rounded ${modoVisualizacion === 'bebe' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
-            >
-              👶 Bebé
-            </button>
-          </div>
+    <Section title="Percentiles de Crecimiento" isCollapsible defaultOpen={false} icon={BarChart3}>
+      <div className="flex items-center space-x-3">
+        {/* Selector de modo visual */}
+        <div className="flex space-x-1 text-sm">
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              setModoVisualizacion('estandar');
+            }}
+            className={`px-2 py-1 rounded ${modoVisualizacion === 'estandar' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+          >
+            Estándar
+          </button>
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              setModoVisualizacion('accesible');
+            }}
+            className={`px-2 py-1 rounded ${modoVisualizacion === 'accesible' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+          >
+            🎨 Accesible
+          </button>
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              setModoVisualizacion('bebe');
+            }}
+            className={`px-2 py-1 rounded ${modoVisualizacion === 'bebe' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+          >
+            👶 Bebé
+          </button>
         </div>
-
-        <span className="text-sm text-gray-500 group-open:hidden">Ver más</span>
-        <span className="text-sm text-gray-500 hidden group-open:inline">Ver menos</span>
-      </summary>
+      </div>
 
       <div className="p-4">
         {/* Controles adicionales */}
@@ -165,6 +160,6 @@ export default function PercentilesPantallaConsulta({ data, $consulta }: Props) 
           );
         })()}
       </div>
-    </details>
+    </Section>
   );
 }

@@ -5,7 +5,7 @@ export default function DivReact({ children, className, onClick }) {
     <div
       onClick={onClick}
       className={twMerge(
-        `border bg-white w-full flex-col items-start justify-between rounded-lg  p-4 shadow-sm ${className}`
+        `border bg-white w-full flex-col items-start justify-between rounded-lg  px-4 py-2 shadow-sm ${className}`
       )}
     >
       {children}

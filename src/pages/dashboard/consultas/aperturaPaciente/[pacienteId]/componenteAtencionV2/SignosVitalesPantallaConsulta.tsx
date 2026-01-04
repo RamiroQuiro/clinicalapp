@@ -15,6 +15,7 @@ import {
   Ruler,
   Save,
   Settings,
+  Stethoscope,
   Thermometer,
   Weight,
   Wind,
@@ -246,7 +247,10 @@ export default function SignosVitalesPantallaConsulta({
 
   return (
     <Section
-      title="Signos Vitales"
+      isCollapsible
+      defaultOpen={true}
+      title={`Signos Vitales`}
+      icon={Stethoscope}
       rightContent={
         <MenuDropbox
           items={itemsMenu}
@@ -257,7 +261,7 @@ export default function SignosVitalesPantallaConsulta({
         />
       }
     >
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div className="flex flex-wrap gap-2">
         {signosVisibles.map(signo => {
           const datosHistorial =
             signosVitalesHistorial.find((h: any) => h.tipo === signo.nombre)?.historial || [];

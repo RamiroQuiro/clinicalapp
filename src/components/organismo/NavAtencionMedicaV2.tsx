@@ -261,10 +261,8 @@ Cualquier duda, respondé este mensaje.`;
     }
   };
 
-  // Estado para mostrar/ocultar detalles (compact mode)
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Helper para edad
   const calculateAge = (dob?: Date) => {
     if (!dob) return '';
     try {
@@ -278,7 +276,6 @@ Cualquier duda, respondé este mensaje.`;
 
   const edad = calculateAge(pacienteData.fNacimiento);
 
-  // Construimos los items del menú de info dinámicamente
   const infoItems: any[] = [
     {
       label: 'Información de Contacto',
@@ -317,13 +314,8 @@ Cualquier duda, respondé este mensaje.`;
     },
   ];
 
-  // Si tiene alergias, las agregamos al menú
   if (hasAlergias) {
     infoItems.push({ isSeparator: true });
-    // Agregamos las alergias al principio o en una sección destacada
-    // Vamos a ponerlas al final de la lista de contacto o al principio? El usuario dijo "a lo sumo le agregaria ... alergias".
-    // Mejor al principio del dropdown para que se vea rápido si abren el detalle.
-    // O mejor, agregamos un header rojo.
 
     const alergiasItems = alergias.map(al => ({
       label: `${al.sustancia} (${al.severidad})`,
@@ -360,10 +352,10 @@ Cualquier duda, respondé este mensaje.`;
         </div>
       )}
 
-      {/* CONTENEDOR PRINCIPAL: Flex Row Compacto */}
-      <div className="flex justify-between items-center gap-2 px-4 py-3 w-full">
-        {/* Center: Info Paciente Compacta */}
-        <div className="flex items-center gap-3">
+      {/* CONTENEDOR PRINCIPAL*/}
+      <div className="flex justify-between items-center gap-2 px-4 py-2 w-full">
+        {/* Center: Info Paciente */}
+        <div className="flex flex-1 items-center gap-3">
           {/* Avatar más pequeño */}
           <img
             src={fotoUrl || avatarDefault}
@@ -371,7 +363,7 @@ Cualquier duda, respondé este mensaje.`;
             className="rounded-full w-9 h-9 border border-gray-200 object-cover"
           />
 
-          <div className="flex flex-col">
+          <div className="flex flex- gap-2 items-center justify-start flex-1">
             <div className="flex items-center gap-2">
               <h1
                 className={`font-bold text-lg leading-tight capitalize ${isFinalized ? 'text-white' : 'text-gray-800'}`}
@@ -402,7 +394,9 @@ Cualquier duda, respondé este mensaje.`;
             </div>
 
             {/* Fila secundaria colapsable (Toggle) */}
-            <span className={isFinalized ? 'text-indigo-100' : 'text-gray-500'}>
+            <span
+              className={`text-xs px-1.5 py-0.5 rounded border ${isFinalized ? 'border-indigo-400 bg-indigo-500/40 text-indigo-50' : 'border-gray-200 bg-gray-100 text-gray-600'}`}
+            >
               {pacienteData.obraSocial || 'Sin Obra Social'}
             </span>
 
@@ -425,7 +419,7 @@ Cualquier duda, respondé este mensaje.`;
           </div>
         </div>
 
-        {/* CENTRO: Estado Finalizada (Solo si finalizada) - MEJORADO */}
+        {/* CENTRO: Estado Finalizada */}
         {isFinalized && (
           <div className="hidden md:flex items-center justify-center">
             <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-4 py-2 rounded-lg border border-white/20 shadow-lg">

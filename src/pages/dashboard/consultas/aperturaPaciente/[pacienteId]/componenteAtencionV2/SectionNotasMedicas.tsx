@@ -26,9 +26,9 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
   const [noteContent, setNoteContent] = useState({
     title: '',
     descripcion: '',
-    created_at: '',
+    fecha: '',
     id: '',
-    estado: 'activo', // Default to Activo
+    profesional: '',
     atencionId: '',
     userMedicoId: '',
   });
@@ -45,12 +45,11 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
       });
     } else {
       // Si no tiene ID, estamos CREANDO una nota nueva.
-      addNota({
+      (addNota as any)({
         ...formData,
         id: nanoid(),
         profesional: 'Autor desconocido',
-        created_at: new Date().toISOString(),
-        estado: 'activo',
+        fecha: new Date().toISOString(),
       });
     }
 
@@ -88,7 +87,7 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
 
       <div className="space-y-4">
         {$consulta?.notas?.length > 0 ? (
-          $consulta.notas.map(nota => {
+          $consulta.notas.map((nota: any) => {
             return (
               <div
                 key={nota.id}
@@ -102,7 +101,7 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
                   <div className="flex items-center gap-2  text-primary-100 border border-primary-100 font-medium bg-primary-100/10 px-2 py-1 rounded-full">
                     <Calendar size={16} />
                     <p className="text-sm ">Fecha:</p>
-                    <p className="text-sm">{formatDate(nota.created_at)}</p>
+                    <p className="text-sm">{formatDate(nota.fecha)}</p>
                   </div>
                 </div>
                 <div className="capitalize font-semibold text-sm text-primary-textoTitle flex items-center justify-start gap-2">
@@ -138,10 +137,16 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
         >
           <div className="p- w-[80vw]">
             <FormularioNota
-              noteContent={noteContent}
+              noteContent={
+                {
+                  ...noteContent,
+                  fecha: noteContent.fecha || new Date().toISOString(),
+                  profesional: noteContent.profesional || 'Autor desconocido',
+                } as any
+              }
               onSave={handleSave}
               onCancel={() => setIsOpenModal(false)}
-              pacienteId={pacienteId}
+              onEdit={() => {}}
             />
           </div>
         </ModalReact>

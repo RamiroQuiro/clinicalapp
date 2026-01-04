@@ -10,11 +10,11 @@ import React, { useEffect, useState } from 'react';
 
 import FormNotaEvolucionClinica from '@/components/organismo/FormNotaEvolucionClinica';
 import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
+import ContenedorSintomasDiagnostico from './ContenedorSintomasDiagnostico';
+import ContenedorTratamientoPlan from './ContenedorTratamientoPlan';
 import { HistorialSidebar } from './HistorialSidebar';
 import PercentilesPantallaConsulta from './PercentilesPantallaConsulta';
 import SectionArchivosAtencion from './SectionArchivosAtencion';
-import SectionDiagnostico from './SectionDiagnostico';
-import SectionMedicamentos from './SectionMedicamentos';
 import SectionNotasMedicas from './SectionNotasMedicas';
 import SignosVitalesPantallaConsulta from './SignosVitalesPantallaConsulta';
 
@@ -80,7 +80,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
   // textoenriquecido con reactquill
   const handleQuillChange = (value: string) => {
-    setConsultaField('motivoConsulta', value);
+    setConsultaField('evolucion', value);
   };
 
   const handleSignosVitalesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +114,8 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     if (result.sintomas) setConsultaField('sintomas', result.sintomas);
     if (result.tratamiento) setConsultaField('tratamiento', result.tratamiento);
     if (result.planSeguir) setConsultaField('planSeguir', result.planSeguir);
+    if (result.motivoConsulta) setConsultaField('motivoConsulta', result.motivoConsulta);
+    if (result.evolucion) setConsultaField('evolucion', result.evolucion);
 
     if (result.diagnosticos && Array.isArray(result.diagnosticos)) {
       const currentDiags = consultaStore.get().diagnosticos || [];
@@ -194,7 +196,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             >
               <div className="p-1">
                 <FormNotaEvolucionClinica
-                  value={$consulta.motivoConsulta}
+                  value={$consulta.evolucion}
                   onChange={handleQuillChange}
                   onProcesadoIA={result => {
                     handleProcesadoIA(result);
@@ -234,40 +236,22 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
           <PercentilesPantallaConsulta $consulta={consultaStore.get()} data={data} />
 
-          {/* Structured Fields (Auto-filled by IA but editable) */}
-          <Section title="Síntomas Detectados (Anamnesis)">
-            <TextArea
-              name="sintomas"
-              value={$consulta.sintomas}
-              onChange={handleFormChange}
-              placeholder="Síntomas identificados..."
-            />
-          </Section>
+          {/* seccion diagnosio y sintomas */}
 
-          <SectionDiagnostico $consulta={consultaStore.get()} deletDiagnostico={deletDiagnostico} />
-
-          <SectionMedicamentos
+          <ContenedorSintomasDiagnostico
             $consulta={consultaStore.get()}
-            deletMedicamento={deletMedicamento}
+            consultaStore={consultaStore}
+            deletDiagnostico={deletDiagnostico}
+            handleFormChange={handleFormChange}
           />
 
-          <Section title="Tratamiento">
-            <TextArea
-              name="tratamiento"
-              value={$consulta.tratamiento}
-              onChange={handleFormChange}
-              placeholder="Plan de tratamiento..."
-            />
-          </Section>
-
-          <Section title="Plan a Seguir">
-            <TextArea
-              name="planSeguir"
-              value={$consulta.planSeguir}
-              onChange={handleFormChange}
-              placeholder="Próximos pasos..."
-            />
-          </Section>
+          {/* Sección Tratamiento y Plan */}
+          <ContenedorTratamientoPlan
+            $consulta={consultaStore.get()}
+            consultaStore={consultaStore}
+            deletMedicamento={deletMedicamento}
+            handleFormChange={handleFormChange}
+          />
 
           <SectionArchivosAtencion $consulta={$consulta} />
           <SectionNotasMedicas

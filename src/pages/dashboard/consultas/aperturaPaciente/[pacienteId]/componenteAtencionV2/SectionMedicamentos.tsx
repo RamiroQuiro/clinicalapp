@@ -1,5 +1,4 @@
 import Button from '@/components/atomos/Button';
-import DivReact from '@/components/atomos/DivReact';
 import { InfoCard } from '@/components/moleculas/InfoCard';
 import ModalReact from '@/components/moleculas/ModalReact';
 import FormularioMedicamentos from '@/components/organismo/FormularioMedicamentos';
@@ -25,21 +24,21 @@ export default function SectionMedicamentos({ $consulta, deletMedicamento }: Pro
   };
 
   return (
-    <DivReact className=" relative">
+    <div className=" relative border-y border-gray-200 py-2">
       <div
-        className={` text-base font-semibold text-primary-textoTitle border-b  border-gray-200 pb-1 mb-2 flex items-center justify-between `}
+        className={` text-sm  font-semibold text-primary-textoTitle pb-1  flex items-center justify-between `}
       >
-        <h3>Tratamiento Farmacológico</h3>
-      </div>
+        <h3 className="text-primary-textoTitle my-4">Tratamiento Farmacológico</h3>
 
-      <Button onClick={() => setIsOpenModal(true)}>Agregar Medicamentos</Button>
+        <Button onClick={() => setIsOpenModal(true)}>Agregar Medicamentos</Button>
+      </div>
 
       {isOpenModal && (
         <ModalReact title="Agregar/Editar Medicamento" onClose={() => setIsOpenModal(false)}>
           <FormularioMedicamentos onClose={() => setIsOpenModal(false)} med={currentMedToEdit} />
         </ModalReact>
       )}
-      <div className="mt-2 w-full  flex flex-col space-y-2">
+      <div className="mt-2 w-full  flex flex-wrap -2 items-stretch gap-2 justify-start h-full">
         {$consulta.medicamentos?.length > 0 ? (
           $consulta.medicamentos.map((med: any) => (
             <InfoCard
@@ -59,6 +58,6 @@ export default function SectionMedicamentos({ $consulta, deletMedicamento }: Pro
           <p className="font-thin">No hay medicamentos registrados para esta consulta.</p>
         )}
       </div>
-    </DivReact>
+    </div>
   );
 }
