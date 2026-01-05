@@ -1,287 +1,294 @@
-import calcularEdad from '@/utils/calcularEdad';
+import formatDate from '@/utils/formatDate';
 import {
-  Calendar,
-  Calendar1,
+  Activity,
+  AlertCircle,
+  Calculator,
   Clock,
-  HeartPulse,
-  Mail,
-  Phone,
+  Droplet,
+  Heart,
   Pill,
   Ruler,
+  Scale,
   Stethoscope,
+  Syringe,
   Thermometer,
   User,
-  Weight,
   Wind,
 } from 'lucide-react';
 
-// Componente para un item de información del paciente
-const InfoItem = ({
-  icon,
+const VITAL_SIGNS_CONFIG = [
+  { key: 'temperatura', label: 'Temperatura', unit: '°C', icon: Thermometer, color: 'bg-rose-500' },
+  {
+    key: 'frecuenciaCardiaca',
+    label: 'Frec. Cardíaca',
+    unit: ' lpm',
+    icon: Heart,
+    color: 'bg-amber-500',
+  },
+  {
+    key: 'presionSistolica',
+    label: 'P. Sistólica',
+    unit: ' mmHg',
+    icon: Activity,
+    color: 'bg-blue-600',
+  },
+  {
+    key: 'presionDiastolica',
+    label: 'P. Diastólica',
+    unit: ' mmHg',
+    icon: Activity,
+    color: 'bg-blue-400',
+  },
+  {
+    key: 'saturacionOxigeno',
+    label: 'Saturación O2',
+    unit: '%',
+    icon: Activity,
+    color: 'bg-emerald-500',
+  },
+  {
+    key: 'frecuenciaRespiratoria',
+    label: 'Frec. Resp.',
+    unit: ' rpm',
+    icon: Wind,
+    color: 'bg-sky-500',
+  },
+  { key: 'peso', label: 'Peso', unit: ' kg', icon: Scale, color: 'bg-indigo-500' },
+  { key: 'talla', label: 'Talla', unit: ' cm', icon: Ruler, color: 'bg-cyan-500' },
+  { key: 'imc', label: 'IMC', unit: '', icon: Calculator, color: 'bg-purple-500' },
+  { key: 'glucosa', label: 'Glucosa', unit: ' mg/dl', icon: Droplet, color: 'bg-orange-500' },
+  {
+    key: 'perimetroCefalico',
+    label: 'P. Cefálico',
+    unit: ' cm',
+    icon: Ruler,
+    color: 'bg-teal-500',
+  },
+  {
+    key: 'perimetroAbdominal',
+    label: 'P. Abdominal',
+    unit: ' cm',
+    icon: Ruler,
+    color: 'bg-lime-500',
+  },
+  { key: 'dolor', label: 'Dolor (EVA)', unit: '/10', icon: AlertCircle, color: 'bg-red-600' },
+];
+
+const ClinicalSection = ({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: any;
+  children: React.ReactNode;
+}) => (
+  <div className="flex flex-col gap-2  pb-6 border-b border-gray-100 last:border-0 last:pb-0">
+    <div className="flex items-center gap-2 text-xs font-bold text-primary-100 uppercase tracking-wider">
+      <Icon className="w-4 h-4" />
+      <span>{title}</span>
+    </div>
+    <div className="pl-6">{children}</div>
+  </div>
+);
+
+const VitalCard = ({
   label,
   value,
+  icon: Icon,
+  color,
 }: {
-  icon: React.ReactNode;
   label: string;
-  value: string | number;
+  value: string;
+  icon: any;
+  color: string;
 }) => (
-  <div className="flex items-start gap-3">
-    <div className="flex-shrink-0 text-muted-foreground mt-1">{icon}</div>
+  <div className={`p-3 rounded-xl border bg-white flex items-center gap-3 shadow-sm`}>
+    <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
+      <Icon className={`w-4 h-4 ${color.replace('bg-', 'text-')}`} />
+    </div>
     <div>
-      <p className="font-semibold text-foreground">{label}</p>
-      <p className="text-muted-foreground">{value || 'N/A'}</p>
+      <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">{label}</p>
+      <p className="text-sm font-bold text-gray-700 leading-none">{value}</p>
     </div>
   </div>
 );
 
-// Componente para una sección
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
-    <h3 className="text-xl font-semibold text-foreground mb-4 border-b pb-3">{title}</h3>
-    {children}
-  </div>
-);
+export const AtencionExistenteV3 = ({ data }: { data: any }) => {
+  if (!data) return <div className="p-10 text-center text-gray-400">Cargando...</div>;
 
-// Mock data types - to avoid TypeScript errors in the component
-type Medico = {
-  nombre: string;
-  apellido: string;
-};
+  const { atencionData: atencion } = data;
 
-type Paciente = {
-  nombre: string;
-  apellido: string;
-  dni: string;
-  fNacimiento: string;
-  sexo: string;
-  email: string;
-  celular: string;
-};
-
-type AtencionData = {
-  fecha: string;
-  medico: Medico;
-  motivoConsulta: string;
-  sintomas: string;
-  observaciones: string;
-};
-
-type SignosVitales = {
-  temperatura: number;
-  frecuenciaCardiaca: number;
-  frecuenciaRespiratoria: number;
-  tensionArterial: string;
-  peso: number;
-  talla: number;
-};
-
-type Diagnostico = {
-  id: string;
-  diagnostico: string;
-  codigoCIE: string;
-  observaciones: string;
-};
-
-type Medicamento = {
-  id: string;
-  nombreComercial: string;
-  nombreGenerico: string;
-  dosis: string;
-  frecuencia: string;
-};
-
-type Atencion = {
-  atencionData: AtencionData;
-  signosVitales: SignosVitales;
-  diagnosticos: Diagnostico[];
-  medicamentos: Medicamento[];
-};
-
-type ComponentProps = {
-  data: {
-    atencionData: Atencion;
-    pacienteData: Paciente;
-  } | null;
-  onClose: () => void;
-};
-
-export const AtencionExistenteV3 = ({ data, onClose }: ComponentProps) => {
-  console.log('esta es la data para la atencion existente', data);
-  if (!data) {
-    return (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-        <div className="bg-card text-card-foreground rounded-lg p-8">
-          Cargando datos de la atención...
-        </div>
-      </div>
-    );
-  }
-
-  console.log('esta es la data para la atencion existente', data);
-  const { atencionData: atencion, pacienteData: paciente } = data;
-  const edad = paciente?.fNacimiento ? calcularEdad(paciente.fNacimiento) : 'N/A';
+  // Filtrar signos vitales que tienen contenido
+  const visibleVitalSigns = VITAL_SIGNS_CONFIG.filter(config => {
+    const value = atencion?.signosVitales?.[config.key];
+    return value !== null && value !== undefined && value !== '' && value !== 0;
+  });
 
   return (
-    <div className="overflow-y-auto">
-      {/* Encabezado */}
-      <div className="flex items-center justify-between w-full  pb-2">
-        <InfoItem
-          icon={<Calendar1 size={16} />}
-          label="Incio de Consulta"
-          value={atencion?.atencionData?.inicioAtencion}
-        />
-        <InfoItem
-          icon={<Calendar1 size={16} />}
-          label="Fin de Consulta"
-          value={atencion?.atencionData?.finAtencion}
-        />
-        <InfoItem
-          icon={<Clock size={16} />}
-          label="Duración de la Atencion"
-          value={atencion?.atencionData?.duracionAtencion}
-        />
+    <div className=" mx-auto border border-gray-100 rounded  ">
+      {/* Encabezado Principal */}
+      <div className="bg-primary-100 rounded-t py-3 px-5 text-white mb-4  flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded backdrop-blur-md">
+            <User className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold leading-tight">
+              Dr. {atencion?.nombreDoctor} {atencion?.apellidoDoctor}
+            </h2>
+            <p className="text-indigo-100 text-sm opacity-90">{formatDate(atencion?.fecha)}</p>
+          </div>
+        </div>
+        <div className="flex gap-4">
+          <div className="p-2 flex flex-col items-center text-center">
+            <p className="text-xs font-bold uppercase">Duración</p>
+            <div className="flex items-center gap-1.5 font-thin">
+              <Clock className="w-4 h-4" />
+              <span>{atencion?.atencionData?.duracionAtencion} min</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center justify-between pb-2 border-b">
-        <div className="overflow-y-auto p2 space-y-4">
-          {/* Datos del Paciente */}
-          <Section title={`Datos del Paciente`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-              <InfoItem
-                icon={<User size={18} />}
-                label="Nombre Completo"
-                value={`${paciente?.nombre} ${paciente?.apellido}`}
-              />
-              <InfoItem icon={<User size={18} />} label="DNI" value={paciente?.dni} />
-              <InfoItem icon={<Calendar size={18} />} label="Edad" value={`${edad} años`} />
-              <InfoItem icon={<User size={18} />} label="Sexo" value={paciente?.sexo} />
-              <InfoItem icon={<Mail size={18} />} label="Email" value={paciente?.email} />
-              <InfoItem icon={<Phone size={18} />} label="Celular" value={paciente?.celular} />
-            </div>
-          </Section>
-          {/* detalles de los sintomas de la consulta */}
-          <Section title="Detalles de los Sintomas">
-            <div className="text-sm text-muted-foreground flex items-center gap-2 mb-4">
-              <span className="font-semibold text-foreground">Atendido por:</span>{' '}
-              <p className="capitalize ">{`${atencion?.nombreDoctor} ${atencion?.apellidoDoctor}`}</p>
-            </div>
-            <div className="space-y-4 text-sm">
+      {/* contenedor principal */}
+      <div className="flex gap-4 w-full ">
+        <div className="lg:col-span-2 gap-4  flex-1   flex flex-col  p-5 m">
+          <ClinicalSection title="Motivo Inicial" icon={User}>
+            <div className="space-y-4">
               <div>
-                <h4 className="font-semibold text-foreground mb-1">Motivo de Consulta</h4>
-                <p className="text-muted-foreground pl-4 border-l-2 border-primary">
-                  {atencion?.motivoConsulta}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground mb-1">Síntomas (Anamnesis)</h4>
-                <p className="text-muted-foreground pl-4">
-                  {atencion?.sintomas || 'No se registraron síntomas.'}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground mb-1">Observaciones</h4>
-                <p className="text-muted-foreground pl-4">
-                  {atencion?.observaciones || 'Sin observaciones.'}
+                <p className="text-sm text-gray-700 font-medium leading-relaxed italic border-l-3 border-indigo-500 pl-4">
+                  "{atencion?.motivoInicial}"
                 </p>
               </div>
             </div>
-          </Section>
+          </ClinicalSection>
+          <ClinicalSection title="Motivo Consulta" icon={User}>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-700 font-medium leading-relaxed italic border-l-3 border-indigo-500 pl-4">
+                  "{atencion?.motivoConsulta}"
+                </p>
+              </div>
+            </div>
+          </ClinicalSection>
 
-          {/* Signos Vitales */}
-          {atencion?.signosVitales && (
-            <Section title="Signos Vitales">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-6 text-sm">
-                <InfoItem
-                  icon={<Thermometer size={18} />}
-                  label="Temperatura"
-                  value={`${atencion?.signosVitales?.temperatura}°C`}
-                />
-                <InfoItem
-                  icon={<HeartPulse size={18} />}
-                  label="Frec. Cardíaca"
-                  value={`${atencion?.signosVitales?.frecuenciaCardiaca} lpm`}
-                />
-                <InfoItem
-                  icon={<Wind size={18} />}
-                  label="Frec. Resp."
-                  value={`${atencion?.signosVitales?.frecuenciaRespiratoria} rpm`}
-                />
-                <InfoItem
-                  icon={<HeartPulse size={18} />}
-                  label="Tensión Arterial"
-                  value={atencion?.signosVitales?.tensionArterial}
-                />
-                <InfoItem
-                  icon={<Weight size={18} />}
-                  label="Peso"
-                  value={`${atencion?.signosVitales?.peso} kg`}
-                />
-                <InfoItem
-                  icon={<Ruler size={18} />}
-                  label="Talla"
-                  value={`${atencion?.signosVitales?.talla} cm`}
-                />
+          {atencion?.sintomas && (
+            <ClinicalSection title="Anamnesis / Síntomas" icon={User}>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 leading-relaxed">{atencion.sintomas}</p>
+                </div>
               </div>
-            </Section>
+            </ClinicalSection>
           )}
 
-          {/* Diagnósticos */}
-          <Section title="Diagnósticos">
-            <ul className="space-y-3">
+          {atencion?.examenFisico && (
+            <ClinicalSection title="Objetivo / Examen Físico" icon={Activity}>
+              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                {atencion.examenFisico}
+              </p>
+            </ClinicalSection>
+          )}
+
+          <ClinicalSection title="Diagnósticos" icon={Stethoscope}>
+            <div className="flex flex-wrap gap-2">
               {atencion?.diagnosticos?.length > 0 ? (
-                atencion?.diagnosticos?.map(diag => (
-                  <li key={diag.id} className="bg-background rounded-md p-3 border">
-                    <div className="flex items-center gap-3 font-semibold text-foreground">
-                      <Stethoscope size={18} className="text-primary" />
-                      <span>{diag.diagnostico}</span>
-                      {diag.codigoCIE && (
-                        <span className="text-xs font-mono text-secondary-foreground bg-secondary px-2 py-1 rounded-full">
-                          {diag.codigoCIE}
-                        </span>
-                      )}
+                atencion.diagnosticos.map((diag: any) => (
+                  <div
+                    key={diag.id}
+                    className="flex flex-col p-3 bg-gray-50 rounded-xl border border-gray-100 w-full group transition-all hover:bg-indigo-50/30 hover:border-indigo-100"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-gray-700">{diag.diagnostico}</span>
                     </div>
                     {diag.observaciones && (
-                      <p className="text-sm mt-2 pl-8 text-muted-foreground">
-                        {diag.observaciones}
+                      <p className="text-[11px] text-gray-400 mt-1 italic pl-10">
+                        "{diag.observaciones}"
                       </p>
                     )}
-                  </li>
+                  </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No se registraron diagnósticos.</p>
+                <p className="text-sm text-gray-400">No se registraron diagnósticos.</p>
               )}
-            </ul>
-          </Section>
+            </div>
+          </ClinicalSection>
 
-          {/* Medicamentos */}
-          <Section title="Medicamentos Recetados">
-            <ul className="space-y-3">
-              {atencion?.medicamentos?.length > 0 ? (
-                atencion?.medicamentos?.map(med => (
-                  <li key={med.id} className="bg-background rounded-md p-3 border">
-                    <div className="flex items-center gap-3 font-semibold text-foreground">
-                      <Pill size={18} className="text-primary" />
-                      <span>{med.nombreComercial || med.nombreGenerico}</span>
+          <ClinicalSection title="Medicamentos" icon={Syringe}>
+            {atencion?.medicamentos?.length > 0 ? (
+              <div className="bg-indigo-50/30 rounded-2xl p-4 border border-indigo-100">
+                <div className="flex items-center gap-2 mb-3 text-xs font-bold text-indigo-700 uppercase">
+                  <Pill className="w-3 h-3" />
+                  <span>Prescripción de Medicamentos</span>
+                </div>
+                <div className="grid gap-3">
+                  {atencion.medicamentos.map((med: any) => (
+                    <div
+                      key={med.id}
+                      className="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-gray-800">
+                          {med.nombreComercial || med.nombreGenerico}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium">
+                          Genérico: {med.nombreGenerico}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
+                          {med.dosis} cada {med.frecuencia}
+                        </p>
+                      </div>
                     </div>
-                    <div className="pl-8 text-sm mt-2 text-muted-foreground grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                      <p>
-                        <span className="font-semibold text-foreground">Genérico:</span>{' '}
-                        {med.nombreGenerico}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-foreground">Dosis:</span> {med.dosis}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-foreground">Frecuencia:</span>{' '}
-                        {med.frecuencia}
-                      </p>
-                    </div>
-                  </li>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">No se encontraron medicamentos prescritos.</p>
+            )}
+          </ClinicalSection>
+          {atencion?.planSeguir && (
+            <ClinicalSection title="Tratamiento / Plan a Seguir" icon={Syringe}>
+              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap pl-4 border-l-2 border-gray-100">
+                {atencion.planSeguir}
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap pl-4 border-l-2 border-gray-100">
+                {atencion.tratamiento}
+              </p>
+            </ClinicalSection>
+          )}
+
+          {atencion?.observaciones && (
+            <ClinicalSection title="Observaciones Adicionales" icon={Activity}>
+              <p className="text-sm text-gray-500 italic">"{atencion.observaciones}"</p>
+            </ClinicalSection>
+          )}
+        </div>
+
+        {/* Columna Derecha: Signos Vitales y Tags */}
+        <div className="space-y-6 px-4 pb-4">
+          <div className="bg-primary-bg-componentes rounded p-6 border border-gray-100 space-y-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest border-b pb-3 mb-4">
+              Signos Vitales
+            </h3>
+
+            <div className="grid grid-cols-1 gap-3">
+              {visibleVitalSigns.length > 0 ? (
+                visibleVitalSigns.map(config => (
+                  <VitalCard
+                    key={config.key}
+                    label={config.label}
+                    value={`${atencion.signosVitales[config.key]}${config.unit}`}
+                    icon={config.icon}
+                    color={config.color}
+                  />
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No se recetaron medicamentos.</p>
+                <p className="text-[10px] text-gray-400 text-center italic">Sin registros</p>
               )}
-            </ul>
-          </Section>
+            </div>
+          </div>
         </div>
       </div>
     </div>

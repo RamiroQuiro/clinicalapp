@@ -30,7 +30,7 @@ export const signosVitales = sqliteTable(
     temperatura: integer('temperatura'),
     perimetroAbdominal: integer('perimetroAbdominal'),
     perimetroCefalico: integer('perimetroCefalico'),
-    presionSiscolica: integer('presionSiscolica'),
+    presionSistolica: integer('presionSistolica'),
     presionDiastolica: integer('presionDiastolica'),
     pulso: integer('pulso'),
     respiracion: integer('respiracion'),
@@ -45,7 +45,6 @@ export const signosVitales = sqliteTable(
     fechaRegistro: integer('fechaRegistro', { mode: 'timestamp' }),
   },
   t => [
-    // Único para DNI y empresa
     unique().on(t.atencionId, t.pacienteId),
   ]
 );

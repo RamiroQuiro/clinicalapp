@@ -4,6 +4,7 @@ import { AtencionExistenteV3 } from '@/components/organismo/AtencionExistenteV3'
 import formatDate from '@/utils/formatDate';
 import {
   Activity,
+  AlertCircle,
   Calendar,
   ChevronRight,
   FileText,
@@ -15,86 +16,157 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const HoverPreview = ({ item }: { item: any }) => (
-  <div className="space-y-3 px-2 bg-white border shadow-2xl rounded-2xl w-72 animate-aparecer py-4">
-    <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
-      <Calendar className="h-3 w-3" />
-      <span>Vista Previa • Historial</span>
-    </div>
+const VITAL_PREVIEW_CONFIG = [
+  {
+    key: 'temperatura',
+    label: 'Temp.',
+    unit: '°C',
+    icon: Thermometer,
+    bg: 'bg-rose-50',
+    border: 'border-rose-100',
+    text: 'text-rose-700',
+    iconColor: 'text-rose-400',
+  },
+  {
+    key: 'tensionArterial',
+    label: 'T.A.',
+    unit: '',
+    icon: Activity,
+    bg: 'bg-blue-50',
+    border: 'border-blue-100',
+    text: 'text-blue-700',
+    iconColor: 'text-blue-400',
+  },
+  {
+    key: 'frecuenciaCardiaca',
+    label: 'F.C.',
+    unit: ' bpm',
+    icon: Heart,
+    bg: 'bg-amber-50',
+    border: 'border-amber-100',
+    text: 'text-amber-700',
+    iconColor: 'text-amber-400',
+  },
+  {
+    key: 'peso',
+    label: 'Peso',
+    unit: ' kg',
+    icon: Scale,
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-100',
+    text: 'text-emerald-700',
+    iconColor: 'text-emerald-400',
+  },
+  {
+    key: 'saturacionOxigeno',
+    label: 'Sat.',
+    unit: '%',
+    icon: Activity,
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-100',
+    text: 'text-indigo-700',
+    iconColor: 'text-indigo-400',
+  },
+];
 
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-2 text-sm">
-        <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
-          <User className="h-4 w-4" />
-        </div>
-        <span className="font-semibold text-gray-700 leading-tight">
-          Dr. {item.nombreDoctor} {item.apellidoDoctor}
-        </span>
+const HoverPreview = ({ item }: { item: any }) => {
+  const visibleVitals = VITAL_PREVIEW_CONFIG.filter(config => {
+    const value = item[config.key];
+    return value !== null && value !== undefined && value !== '' && value !== 0;
+  });
+
+  return (
+    <div className="space-y-3 px-2 bg-white border shadow-2xl rounded-2xl w-72 animate-aparecer py-4">
+      <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
+        <Calendar className="h-3 w-3" />
+        <span>Vista Previa • Historial</span>
       </div>
 
-      {item.motivoConsulta && (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase">
-            <FileText className="h-3 w-3" />
-            <span>Motivo</span>
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2 text-sm">
+          <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
+            <User className="h-4 w-4" />
           </div>
-          <p className="text-xs text-gray-600 pl-5 italic line-clamp-3 leading-relaxed">
-            "{item.motivoConsulta.replace(/<[^>]*>?/gm, '')}"
-          </p>
+          <span className="font-semibold text-gray-700 leading-tight">
+            Dr. {item.nombreDoctor} {item.apellidoDoctor}
+          </span>
         </div>
-      )}
 
-      {item.diagnosticoPrincipal && (
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase">
-            <Stethoscope className="h-3 w-3" />
-            <span>Diagnóstico</span>
+        {item.motivoConsulta && (
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase">
+              <FileText className="h-3 w-3" />
+              <span>Motivo</span>
+            </div>
+            <p className="text-xs text-gray-600 pl-5 italic line-clamp-3 leading-relaxed">
+              "{item.motivoConsulta.replace(/<[^>]*>?/gm, '')}"
+            </p>
           </div>
-          <div className="pl-5">
-            <Badge
-              variant="outline"
-              className="text-[10px] bg-indigo-50 border-indigo-200 text-indigo-700 font-bold"
-            >
-              {item.diagnosticoPrincipal}
-            </Badge>
-          </div>
-        </div>
-      )}
+        )}
 
-      {(item.temperatura || item.frecuenciaCardiaca || item.tensionArterial || item.peso) && (
-        <div className="pt-3 border-t">
-          <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Signos vitales</p>
-          <div className="grid grid-cols-2 gap-2 text-[10px]">
-            {item.temperatura && (
-              <div className="flex items-center justify-between bg-rose-50 p-1.5 rounded-md border border-rose-100">
-                <Thermometer className="h-3 w-3 text-rose-400" />
-                <span className="font-bold text-rose-700">{item.temperatura}°C</span>
-              </div>
-            )}
-            {item.tensionArterial && (
-              <div className="flex items-center justify-between bg-blue-50 p-1.5 rounded-md border border-blue-100">
-                <Activity className="h-3 w-3 text-blue-400" />
-                <span className="font-bold text-blue-700">{item.tensionArterial}</span>
-              </div>
-            )}
-            {item.frecuenciaCardiaca && (
-              <div className="flex items-center justify-between bg-amber-50 p-1.5 rounded-md border border-amber-100">
-                <Heart className="h-3 w-3 text-amber-400" />
-                <span className="font-bold text-amber-700">{item.frecuenciaCardiaca} bpm</span>
-              </div>
-            )}
-            {item.peso && (
-              <div className="flex items-center justify-between bg-emerald-50 p-1.5 rounded-md border border-emerald-100">
-                <Scale className="h-3 w-3 text-emerald-400" />
-                <span className="font-bold text-emerald-700">{item.peso} kg</span>
-              </div>
-            )}
+        {item.diagnosticos && item.diagnosticos.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase">
+              <Stethoscope className="h-3 w-3" />
+              <span>Diagnósticos</span>
+            </div>
+            <div className="pl-5 flex flex-wrap gap-1">
+              {item.diagnosticos.map((diag: string, idx: number) => (
+                <Badge
+                  key={idx}
+                  variant="outline"
+                  className="text-[10px] bg-indigo-50 border-indigo-100 text-indigo-700 font-bold"
+                >
+                  {diag}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {item.medicamentos && item.medicamentos.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase">
+              <Activity className="h-3 w-3" />
+              <span>Medicamentos</span>
+            </div>
+            <div className="pl-5 flex flex-wrap gap-1">
+              {item.medicamentos.map((med: string, idx: number) => (
+                <Badge
+                  key={idx}
+                  variant="outline"
+                  className="text-[10px] bg-emerald-50 border-emerald-100 text-emerald-700 font-bold"
+                >
+                  {med}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {visibleVitals.length > 0 && (
+          <div className="pt-3 border-t">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Signos vitales</p>
+            <div className="grid grid-cols-2 gap-2 text-[10px]">
+              {visibleVitals.map(config => (
+                <div
+                  key={config.key}
+                  className={`flex items-center justify-between ${config.bg} p-1.5 rounded-md border ${config.border}`}
+                >
+                  <config.icon className={`h-3 w-3 ${config.iconColor}`} />
+                  <span className={`font-bold ${config.text}`}>
+                    {item[config.key]}
+                    {config.unit}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const HistorialSidebar = ({ data }: { data: any }) => {
   const [historial, setHistorial] = useState([]);
@@ -102,21 +174,38 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedAtencion, setSelectedAtencion] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [isAllProfessionals, setIsAllProfessionals] = useState<boolean>(false);
   // Estado para el hover preview
   const [hoveredItem, setHoveredItem] = useState<any>(null);
   const [hoverPos, setHoverPos] = useState({ top: 0 });
+
+  // Procesar antecedentes destacados (se muestran todos por pedido del usuario)
+  const antecedentesDestacados = data?.antecedentes || [];
+
+  const rawAlergias = data?.paciente?.alergias;
+  const textoAlergias = Array.isArray(rawAlergias)
+    ? rawAlergias.map((a: any) => (typeof a === 'string' ? a : a.sustancia)).join(', ')
+    : typeof rawAlergias === 'string'
+      ? rawAlergias
+      : '';
 
   useEffect(() => {
     if (data) {
       fetchHistorial();
     }
-  }, [data]);
+  }, [data, isAllProfessionals]);
 
   const fetchHistorial = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/pacientes/${data.atencion.pacienteId}/atencionesHistory`);
+      const params = new URLSearchParams({
+        excludeAtencionId: data.atencion.id,
+        soloMisAtenciones: (!isAllProfessionals).toString(),
+      });
+      const response = await fetch(
+        `/api/pacientes/${data.atencion.pacienteId}/atencionesHistory?${params}`
+      );
       if (!response.ok) throw new Error('Error al cargar historial');
       const result = await response.json();
       setHistorial(result.data || []);
@@ -128,7 +217,7 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
   };
 
   const handleVerDetalle = async (atencionId: string) => {
-    setLoading(true);
+    setDetailLoading(true);
     try {
       const response = await fetch(
         `/api/pacientes/${data.atencion.pacienteId}/atenciones/${atencionId}`
@@ -141,13 +230,51 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      setDetailLoading(false);
     }
   };
 
-  console.log(historial);
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden relative">
+      {/* Hub de Contexto Clínico (Fijo arriba) */}
+      {(textoAlergias || antecedentesDestacados.length > 0) && (
+        <div className="p-3 bg-indigo-50/40 border-b border-indigo-100/50 shrink-0">
+          <div className="flex items-center gap-2 mb-2">
+            <Activity className="w-3.5 h-3.5 text-indigo-600" />
+            <h3 className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">
+              Antecedentes / Alergias
+            </h3>
+          </div>
+          <div className="space-y-1.5">
+            {textoAlergias && (
+              <div className="flex border-b border-black/20 pb-1 gap-2 items-start">
+                <span className="text-[9px] text-rose-600 inline-flex items-center gap-2  font-bold uppercase mr-1">
+                  <AlertCircle className="w-2.5 h-2.5" />
+                  Alergias:
+                </span>
+                <p className="text-[11px] text-rose-900 font-bold leading-tight">{textoAlergias}</p>
+              </div>
+            )}
+            {antecedentesDestacados.length > 0 && (
+              <div className="flex flex-wrap gap-1 items-center pt-1">
+                <span className="text-[9px] text-gray-400 font-bold uppercase mr-1">
+                  Antecedentes:
+                </span>
+                {antecedentesDestacados.map((ant: any, idx: number) => (
+                  <Badge
+                    key={idx}
+                    variant="outline"
+                    className="text-[9px] bg-white border-indigo-200 text-indigo-700 font-bold py-0 h-4 px-1.5"
+                  >
+                    {ant.antecedente}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="p-3 border-b bg-gray-50 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-indigo-500" />
@@ -156,6 +283,12 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
         <span className="text-[10px] font-bold bg-indigo-100 text-primary-100 px-2 py-0.5 rounded-full">
           {historial.length}
         </span>
+        <button
+          onClick={() => setIsAllProfessionals(!isAllProfessionals)}
+          className="text-[10px] font-bold bg-indigo-100 text-primary-100 px-2 py-0.5 rounded-full"
+        >
+          {isAllProfessionals ? 'mis atenciones' : 'todas atenciones'}
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
@@ -249,13 +382,20 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
 
       {isModalOpen && (
         <ModalReact
-          title="Detalle de Atención"
+          title="Ficha de Atención Clínica"
           id="modal-historial-detalle"
           onClose={() => setIsModalOpen(false)}
-          className="w-[90vw] h-[85vh]"
+          className="w-[90vw] h-[85vh] max-w-5xl"
         >
-          {selectedAtencion && (
-            <AtencionExistenteV3 data={selectedAtencion} onClose={() => setIsModalOpen(false)} />
+          {detailLoading ? (
+            <div className="flex flex-col items-center justify-center h-full space-y-4 py-20">
+              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                Cargando Historia...
+              </p>
+            </div>
+          ) : (
+            selectedAtencion && <AtencionExistenteV3 data={selectedAtencion} />
           )}
         </ModalReact>
       )}

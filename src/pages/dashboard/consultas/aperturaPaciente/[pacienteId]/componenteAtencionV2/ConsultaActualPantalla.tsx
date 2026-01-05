@@ -66,6 +66,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     if (data.signosVitalesHistorial) {
       setSignosVitalesHistorial(data.signosVitalesHistorial);
     }
+
+    if (data.atencion.signosVitales) {
+      setConsultaField('signosVitales', data.atencion.signosVitales);
+    }
   }, [data]);
 
   useEffect(() => {
@@ -150,6 +154,16 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         frecuenciaRespiratoria: 'frecuenciaRespiratoria',
         temperatura: 'temperatura',
         saturacionOxigeno: 'saturacionOxigeno',
+        dolor: 'dolor',
+        glucosa: 'glucosa',
+        respiracion: 'respiracion',
+        perimetroAbdominal: 'perimetroAbdominal',
+        perimetroCefalico: 'perimetroCefalico',
+        presionDiastolica: 'presionDiastolica',
+        presionSistolica: 'presionSistolica',
+        peso: 'peso',
+        talla: 'talla',
+        imc: 'imc',
       };
       for (const [key, value] of Object.entries(result.signosVitales)) {
         if (value !== null && mapping[key]) updatedSignos[mapping[key]] = value;
@@ -263,7 +277,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
       {/* Columna derecha: Barra lateral desplegable */}
       <div
-        className={`flex-shrink-0 h-full transition-all duration-300 ease-in-out bg-white border-l shadow-sm relative ${isSidebarOpen ? 'w-[350px]' : 'w-[50px]'}`}
+        className={`flex-shrink-0 h-full transition-all duration-300 ease-in-out bg-white rounded-lg border shadow-sm relative ${isSidebarOpen ? 'w-[350px]' : 'w-[50px]'}`}
       >
         {/* Botón de alternar barra lateral */}
         <button

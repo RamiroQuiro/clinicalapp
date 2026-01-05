@@ -76,8 +76,13 @@ export default function PercentilesPantallaConsulta({ data, $consulta }: Props) 
             const hoy = new Date();
             const nacimiento = new Date(fechaNacimiento);
             let meses = (hoy.getFullYear() - nacimiento.getFullYear()) * 12;
-            meses -= nacimiento.getMonth();
-            meses += hoy.getMonth();
+            meses += hoy.getMonth() - nacimiento.getMonth();
+
+            // Si el día de hoy es menor al día de nacimiento, todavía no cumplió el mes
+            if (hoy.getDate() < nacimiento.getDate()) {
+              meses--;
+            }
+
             return meses <= 0 ? 0 : meses;
           };
 

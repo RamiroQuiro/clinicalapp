@@ -1,24 +1,29 @@
 import { CardVisitaV2 } from '@/components/moleculas/CardVisitaV2';
-import ModalReact from '@/components/moleculas/ModalReact'; // Importar el Modal
+import ModalReact from '@/components/moleculas/ModalReact';
 import Section from '@/components/moleculas/Section';
 import { AtencionExistenteV3 } from '@/components/organismo/AtencionExistenteV3';
-import formatDate from '@/utils/formatDate';
-
 import { useEffect, useState } from 'react';
 
 // --- Componente Principal de la Pantalla ---
-export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
+export const HistorialVisitasPantalla = ({
+  data,
+  pacienteId,
+}: {
+  data: any;
+  pacienteId: string;
+}) => {
   const [historial, setHistorial] = useState(data || []);
   const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAtencionData, setSelectedAtencionData] = useState<any>(null);
-  const [error, setError] = useState(null); // NUEVO: Estado para manejar errores
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (pacienteId) {
       const fetchHistorial = async () => {
         setLoading(true);
-        setError(null); // Limpiar errores previos
+        setError(null);
         try {
           const response = await fetch(`/api/pacientes/${pacienteId}/atencionesHistory`);
           if (!response.ok) {
@@ -27,24 +32,24 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
           }
           const fullData = await response.json();
           setHistorial(fullData.data);
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error al cargar el historial de atenciones:', err);
           setError(err.message || 'No se pudo cargar el historial de atenciones.');
-          setHistorial([]); // Limpiar historial en caso de error
+          setHistorial([]);
         } finally {
           setLoading(false);
         }
       };
       fetchHistorial();
     }
-  }, [data]);
+  }, [pacienteId, data]);
 
   const handleCardClick = async (e: React.MouseEvent<HTMLButtonElement>, atencionId: string) => {
     setIsModalOpen(true);
     e.stopPropagation();
-    setSelectedAtencionData(null); // Limpiar datos previos
-    setLoading(true);
-    setError(null); // Limpiar errores previos
+    setSelectedAtencionData(null);
+    setDetailLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/pacientes/${pacienteId}/atenciones/${atencionId}`);
       if (!response.ok) {
@@ -52,20 +57,17 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
         throw new Error(errorData.message || 'Error al cargar los detalles de la atención');
       }
       const fullData = await response.json();
-      // Asegurarse de que fullData.data exista y no esté vacío antes de establecerlo
       if (fullData.data && Object.keys(fullData.data).length > 0) {
         setSelectedAtencionData(fullData.data);
       } else {
-        // Si los datos son vacíos o nulos desde la API, establecer explícitamente a nulo
         setSelectedAtencionData(null);
         setError('No se encontraron datos detallados para esta atención.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching detalles de atención:', err);
       setError(err.message || 'No se pudieron cargar los detalles de la atención.');
-      setSelectedAtencionData(null); // Asegurar que los datos se limpien en caso de error
     } finally {
-      setLoading(false);
+      setDetailLoading(false);
     }
   };
 
@@ -75,11 +77,11 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
         <p className="text-center text-primary-texto py-3 font-semibold animate-pulse">
           Cargando historial de atenciones previas...
         </p>
-      ) : error ? (
+      ) : error && !isModalOpen ? (
         <p className="text-center text-red-500 py-3">Error: {error}</p>
       ) : historial.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {historial.map(item => {
+          {historial.map((item: any) => {
             const atencionParaCard = {
               estado: item.estado,
               motivoInicial: item.motivoInicial,
@@ -94,7 +96,7 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
               <CardVisitaV2
                 key={item.id}
                 atencion={atencionParaCard}
-                onClick={e => handleCardClick(e, item.id)}
+                onClick={(e: any) => handleCardClick(e, item.id)}
               />
             );
           })}
@@ -105,23 +107,28 @@ export const HistorialVisitasPantalla = ({ data, pacienteId }) => {
 
       {isModalOpen && (
         <ModalReact
-          title={`Detalles de la atencion del día  ${formatDate(selectedAtencionData?.atencionData?.created_at)}`}
+          title="Ficha de Atención Clínica Histórica"
           id="modal-atencion-existente"
           onClose={() => setIsModalOpen(false)}
+          className="w-[90vw] h-[85vh] max-w-5xl"
         >
-          {loading ? (
-            <p className="text-center text-primary-texto py-3 font-semibold animate-pulse">
-              Cargando datos de la atención...
-            </p>
+          {detailLoading ? (
+            <div className="flex flex-col items-center justify-center h-full space-y-4 py-20">
+              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                Recuperando Información...
+              </p>
+            </div>
           ) : error ? (
-            <p className="text-center text-red-500 py-3">Error: {error}</p>
+            <div className="p-6 bg-red-50 border border-red-100 rounded-xl text-center">
+              <p className="text-red-600 font-bold">{error}</p>
+            </div>
           ) : selectedAtencionData ? (
-            <AtencionExistenteV3
-              data={selectedAtencionData}
-              onClose={() => setIsModalOpen(false)}
-            />
+            <AtencionExistenteV3 data={selectedAtencionData} />
           ) : (
-            <p>No se encontraron datos de la atención.</p>
+            <p className="text-center py-10 text-gray-400">
+              No se encontraron datos de la atención.
+            </p>
           )}
         </ModalReact>
       )}

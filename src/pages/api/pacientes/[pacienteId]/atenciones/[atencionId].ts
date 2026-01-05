@@ -80,7 +80,23 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
     }
 
     const [signosVitalesAtencion] = await db
-      .select()
+      .select({
+        dolor: signosVitales.dolor,
+        temperatura: signosVitales.temperatura,
+        glucosa: signosVitales.glucosa,
+        respiracion: signosVitales.respiracion,
+        perimetroAbdominal: signosVitales.perimetroAbdominal,
+        perimetroCefalico: signosVitales.perimetroCefalico,
+        presionDiastolica: signosVitales.presionDiastolica,
+        presionSistolica: signosVitales.presionSistolica,
+        frecuenciaCardiaca: signosVitales.frecuenciaCardiaca,
+        frecuenciaRespiratoria: signosVitales.frecuenciaRespiratoria,
+        saturacionOxigeno: signosVitales.saturacionOxigeno,
+        peso: signosVitales.peso,
+        talla: signosVitales.talla,
+        imc: signosVitales.imc,
+
+      })
       .from(signosVitales)
       .where(eq(signosVitales.atencionId, atencionId))
       .orderBy(desc(signosVitales.created_at));

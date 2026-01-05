@@ -5,12 +5,8 @@ import { RenderizacionPantalla } from './RenderizacionPantalla';
 // --- Definición de Pestañas ---
 const tabs = [
   { id: 'consultaActual', name: 'Consulta Actual' },
-  { id: 'antecedentes', name: 'Antecedentes' },
-  { id: 'signos', name: 'Signos Vitales' },
-  { id: 'diagnostico', name: 'Diagnósticos' },
-  { id: 'medicamentos', name: 'Medicamentos' },
-  { id: 'solicitudes', name: 'Solicitudes' },
-  // { id: 'historial', name: 'Historial de Visitas' },
+  { id: 'signos', name: 'Evolución Signos' },
+  { id: 'solicitudes', name: 'Solicitudes / Estudios' },
 ];
 
 // --- Componente Principal ---

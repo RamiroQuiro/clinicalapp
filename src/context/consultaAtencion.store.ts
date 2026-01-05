@@ -107,6 +107,7 @@ const initialConsulta: Consulta = {
   examenFisico: '',
   historiaClinicaId: '',
   estado: '',
+  evolucion: '',
   signosVitales: {
     presionSistolica: 0,
     presionDiastolica: 0,

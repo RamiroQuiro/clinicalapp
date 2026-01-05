@@ -150,6 +150,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         frecuenciaCardiaca: safeParseFloat(svData?.frecuenciaCardiaca),
         frecuenciaRespiratoria: safeParseFloat(svData?.frecuenciaRespiratoria),
         temperatura: safeParseFloat(svData?.temperatura),
+        presionSistolica: safeParseFloat(svData?.presionSistolica),
+        presionDiastolica: safeParseFloat(svData?.presionDiastolica),
         saturacionOxigeno: safeParseFloat(svData?.saturacionOxigeno),
         peso: safeParseFloat(svData?.peso),
         talla: safeParseFloat(svData?.talla),

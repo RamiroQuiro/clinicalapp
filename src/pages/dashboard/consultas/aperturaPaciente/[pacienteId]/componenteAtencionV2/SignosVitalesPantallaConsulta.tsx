@@ -216,20 +216,15 @@ export default function SignosVitalesPantallaConsulta({
     [configuracionSignosVitales, signosSeleccionados, manejarSeleccionSigno]
   );
 
-  // 5. BOTÓN DE GUARDAR PARA EL PIE DEL MENÚ
+  // 5. botonera del menudropbox
   const botonGuardarPie = (
     <div className="flex  gap-1">
-      <Button
-        className="w-fit"
-        variant="blanco"
-        onClick={handleResetPreferencias}
-        disabled={guardando}
-      >
+      <Button className="w-fit" variant="" onClick={handleResetPreferencias} disabled={guardando}>
         <Backpack className="w-4 h-4 mr-1" />
         reset
       </Button>
       <Button
-        variant="blanco"
+        variant="green"
         onClick={manejarGuardarPreferencias}
         disabled={guardando}
         className="w-full"
