@@ -421,7 +421,7 @@ Cualquier duda, respondé este mensaje.`;
 
         {/* CENTRO: Estado Finalizada */}
         {isFinalized && (
-          <div className="hidden md:flex items-center justify-center">
+          <div className="hidden md:flex flex-1 items-center justify-center">
             <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-4 py-2 rounded-lg border border-white/20 shadow-lg">
               <Lock className="w-5 h-5 text-white" />
               <div className="flex flex-col leading-tight">

@@ -24,6 +24,8 @@ export const atenciones = sqliteTable(
     motivoConsulta: text('motivoConsulta'),
     sintomas: text('sintomas'),
     tratamientoId: text('tratamientoId'),
+    examenFisico: text('examenFisico'),
+    evolucion: text('evolucion'),
     tratamiento: text('tratamiento'),
     planSeguir: text('planSeguir'),
     turnoId: text('turnoId').references(() => turnos.id, {

@@ -27,6 +27,7 @@ const commonPrompt = (text: string) => `
     {
       "motivoConsulta": "string | null",
       "sintomas": "string | null",
+      "examenFisico": "string | null",
       "diagnosticos": [
         {
           "nombre": "string | null",

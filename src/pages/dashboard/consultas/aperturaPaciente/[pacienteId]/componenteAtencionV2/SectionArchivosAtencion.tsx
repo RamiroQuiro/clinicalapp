@@ -1,7 +1,6 @@
 import Button from '@/components/atomos/Button';
 import BotonIndigo from '@/components/moleculas/BotonIndigo';
 import ModalReact from '@/components/moleculas/ModalReact';
-import Section from '@/components/moleculas/Section';
 import FormularioArchivosAdjuntos from '@/components/organismo/FormularioArchivosAdjuntos';
 import { addArchivo, removeArchivo } from '@/context/consultaAtencion.store';
 import type { Documentos } from '@/types';
@@ -25,7 +24,6 @@ export default function SectionArchivosAtencion({ $consulta }: { $consulta: Cons
     setIsModalOpen(true);
   };
   const handleDelete = async (archivoId: string) => {
-    // TODO: Implementar llamada a la API para borrar el archivo del servidor
     if (
       window.confirm(
         '¿Estás seguro de que quieres eliminar este archivo? Esta acción no se puede deshacer.'
@@ -77,8 +75,12 @@ export default function SectionArchivosAtencion({ $consulta }: { $consulta: Cons
     }
   };
   return (
-    <Section title="Archivos Adjuntos">
-      <div className="flex justify-end mb-4">
+    <div>
+      <div
+        className={` text-sm  font-semibold text-primary-textoTitle pb-1 mb-2 flex items-center justify-between `}
+      >
+        <h3>Archivos Adjuntos</h3>
+
         <Button onClick={() => setIsModalOpen(true)}>
           <Upload className="w-4 h-4 mr-2" />
           Agregar Archivo
@@ -158,6 +160,6 @@ export default function SectionArchivosAtencion({ $consulta }: { $consulta: Cons
           />
         </ModalReact>
       )}
-    </Section>
+    </div>
   );
 }

@@ -42,6 +42,8 @@ export interface Consulta {
   motivoInicial: string;
   motivoConsulta: string;
   sintomas: string;
+  evolucion: string;
+  examenFisico: string;
   historiaClinicaId: string;
   estado: string; // AÑADIDO
   planSeguir: string;
@@ -55,10 +57,12 @@ export interface Consulta {
     perimetroAbdominal: number;
     perimetroCefalico: number;
     talla: number;
-    saturacionOxigeno: number;
     presionSistolica: number;
     presionDiastolica: number;
     temperatura: number;
+    tensionArterial?: string | null;
+    frecuenciaCardiaca?: number | null;
+    saturacionOxigeno?: number | null;
   };
   notas: {
     title: string;
@@ -79,6 +83,7 @@ export interface Consulta {
   medicamentos: {
     nombreGenerico: string;
     nombreComercial: string;
+    presentacion?: string | null;
     dosis: string;
     frecuencia: string;
     id: string;
@@ -99,6 +104,7 @@ const initialConsulta: Consulta = {
   motivoInicial: '',
   motivoConsulta: '',
   sintomas: '',
+  examenFisico: '',
   historiaClinicaId: '',
   estado: '',
   signosVitales: {

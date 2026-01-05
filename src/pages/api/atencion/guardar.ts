@@ -45,6 +45,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       historiaClinicaId,
       motivoConsulta,
       sintomas,
+      evolucion,
+      examenFisico,
       signosVitales: svData,
       observaciones,
       medicamentos,
@@ -90,7 +92,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
           .set({
             motivoConsulta,
             sintomas,
+            examenFisico,
             observaciones,
+            evolucion,
             motivoInicial,
             inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null,
             finAtencion: finAtencion ? new Date(finAtencion) : null,
@@ -104,30 +108,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
           })
           .where(eq(atenciones.id, consultaData.id));
 
-        [turnoActualizado] = await tx
+        const turnoRaw = (await tx
           .update(turnos)
           .set({
-            estado: status,
+            estado: status as any,
           })
-          .where(eq(turnos.id, consultaData.turnoId))
-          .returning();
+          .where(eq(turnos.id, consultaData.turnoId as any))
+          .returning()) as any;
+        turnoActualizado = Array.isArray(turnoRaw) ? turnoRaw[0] : turnoRaw;
       } else {
         // Insertar nueva atención
         await tx.insert(atenciones).values({
           id: currentAtencionId,
-          pacienteId,
-          motivoInicial,
-          motivoConsulta,
-          sintomas,
-          ultimaModificacionPorId: user.id,
-          observaciones,
+          pacienteId: pacienteId,
+          motivoInicial: motivoInicial,
+          motivoConsulta: motivoConsulta,
+          sintomas: sintomas,
+          examenFisico: examenFisico,
+          ultimaModificacionPorId: user.id as any,
+          observaciones: observaciones,
           tratamiento: tratamientoData,
-          planSeguir,
-          turnoId: turnoId ? turnoId : null,
-          historiaClinicaId,
-          estado: status,
-          userIdMedico: user.id,
-          centroMedicoId: user.centroMedicoId,
+          planSeguir: planSeguir,
+          turnoId: (turnoId ? turnoId : null) as any,
+          historiaClinicaId: historiaClinicaId,
+          estado: (status || 'pendiente') as any,
+          userIdMedico: user.id as any,
+          centroMedicoId: user.centroMedicoId as any,
           inicioAtencion: inicioAtencion ? new Date(inicioAtencion) : null,
           finAtencion: finAtencion ? new Date(finAtencion) : null,
           duracionAtencion: safeParseFloat(duracionAtencion),
@@ -186,17 +192,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
           diagnosticos.map(d => ({
             id: nanoIDNormalizador('Diag', 15),
             atencionId: currentAtencionId,
-
             pacienteId,
             userMedicoId: user.id,
-            estado: d.estado,
+            estado: (['activo', 'curado', 'controlado'].includes(d.estado)
+              ? d.estado
+              : 'activo') as any,
             historiaClinicaId,
-            diagnostico: d.diagnostico, // Asegúrate que el frontend envíe 'diagnostico'
+            diagnostico: d.diagnostico,
             observaciones: d.observaciones,
-            codigoCIE: d.codigoCIE, // Y 'codigoCIE'
+            codigoCIE: d.codigoCIE,
             ultimaModificacionPorId: user.id,
-            centroMedicoId: user.centroMedicoId,
-          }))
+            centroMedicoId: String(user.centroMedicoId),
+          })) as any
         );
       }
 

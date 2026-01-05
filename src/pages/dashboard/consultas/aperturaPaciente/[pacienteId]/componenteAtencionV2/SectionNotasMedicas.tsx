@@ -1,5 +1,4 @@
 import Button from '@/components/atomos/Button';
-import DivReact from '@/components/atomos/DivReact';
 import BotonIndigo from '@/components/moleculas/BotonIndigo';
 import ModalReact from '@/components/moleculas/ModalReact';
 import FormularioNota from '@/components/organismo/FormularioNota';
@@ -77,9 +76,12 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
   };
 
   return (
-    <DivReact className=" p-4 rounded-lg shadow-md border">
-      <div className="flex border-b pb-2 justify-between items-center text-primary-textoTitle w-full mb-2">
-        <h2 className="text-lg font-semibold text-primary-textoTitle">Notas Médicas</h2>
+    <div>
+      <div
+        className={` text-sm  font-semibold text-primary-textoTitle pb-1 mb-2 flex items-center justify-between `}
+      >
+        <h3>Notas Médicas</h3>
+
         <Button onClick={() => handleOpenModal({ title: '', descripcion: '' })}>
           Agregar Nota
         </Button>
@@ -151,6 +153,6 @@ export default function SectionNotasMedicas({ $consulta, handleFormChange, pacie
           </div>
         </ModalReact>
       )}
-    </DivReact>
+    </div>
   );
 }

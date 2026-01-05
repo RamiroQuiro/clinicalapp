@@ -10,12 +10,11 @@ import React, { useEffect, useState } from 'react';
 
 import FormNotaEvolucionClinica from '@/components/organismo/FormNotaEvolucionClinica';
 import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
+import ContenedorDocumentacionAnexos from './ContenedorDocumentacionAnexos';
 import ContenedorSintomasDiagnostico from './ContenedorSintomasDiagnostico';
 import ContenedorTratamientoPlan from './ContenedorTratamientoPlan';
 import { HistorialSidebar } from './HistorialSidebar';
 import PercentilesPantallaConsulta from './PercentilesPantallaConsulta';
-import SectionArchivosAtencion from './SectionArchivosAtencion';
-import SectionNotasMedicas from './SectionNotasMedicas';
 import SignosVitalesPantallaConsulta from './SignosVitalesPantallaConsulta';
 
 interface ConsultaActualPantallaProps {
@@ -116,6 +115,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     if (result.planSeguir) setConsultaField('planSeguir', result.planSeguir);
     if (result.motivoConsulta) setConsultaField('motivoConsulta', result.motivoConsulta);
     if (result.evolucion) setConsultaField('evolucion', result.evolucion);
+    if (result.examenFisico) setConsultaField('examenFisico', result.examenFisico);
 
     if (result.diagnosticos && Array.isArray(result.diagnosticos)) {
       const currentDiags = consultaStore.get().diagnosticos || [];
@@ -253,8 +253,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             handleFormChange={handleFormChange}
           />
 
-          <SectionArchivosAtencion $consulta={$consulta} />
-          <SectionNotasMedicas
+          <ContenedorDocumentacionAnexos
             $consulta={$consulta}
             handleFormChange={handleFormChange}
             pacienteId={data.pacienteId}

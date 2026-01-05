@@ -25,6 +25,14 @@ export default function ContenedorSintomasDiagnostico({
         onChange={handleFormChange}
         placeholder="Síntomas identificados..."
       />
+      <div className="my-2 border-b border-gray-200"></div>
+      <TextArea
+        name="examenFisico"
+        label="Examen Fisico"
+        value={$consulta.examenFisico}
+        onChange={handleFormChange}
+        placeholder="Examen Fisico..."
+      />
       <SectionDiagnostico $consulta={consultaStore.get()} deletDiagnostico={deletDiagnostico} />
     </Section>
   );
