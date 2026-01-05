@@ -88,11 +88,27 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
   const handleSignosVitalesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const currentSignos = consultaStore.get().signosVitales;
-    setConsultaField('signosVitales', {
+    const currentSignos = consultaStore.get().signosVitales || {};
+    const newValue = parseFloat(value) || 0;
+
+    const updatedSignos = {
       ...currentSignos,
-      [name]: parseFloat(value) || 0,
-    });
+      [name]: newValue,
+    };
+
+    // --- Cálculo Automático de IMC ---
+    if (name === 'peso' || name === 'talla') {
+      const p = name === 'peso' ? newValue : updatedSignos.peso;
+      const t = name === 'talla' ? newValue : updatedSignos.talla;
+
+      if (p > 0 && t > 0) {
+        const alturaMetros = t / 100;
+        const imcCalculado = parseFloat((p / (alturaMetros * alturaMetros)).toFixed(2));
+        updatedSignos.imc = imcCalculado;
+      }
+    }
+
+    setConsultaField('signosVitales', updatedSignos);
   };
 
   const deletDiagnostico = (diagId: string) => {
@@ -246,6 +262,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             userId={data.atencion.userIdMedico}
             signosVitalesHistorial={signosVitalesHistorial}
             handleSignosVitalesChange={handleSignosVitalesChange}
+            isLocked={isLocked}
           />
 
           <PercentilesPantallaConsulta $consulta={consultaStore.get()} data={data} />

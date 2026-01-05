@@ -240,19 +240,19 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
       {(textoAlergias || antecedentesDestacados.length > 0) && (
         <div className="p-3 bg-indigo-50/40 border-b border-indigo-100/50 shrink-0">
           <div className="flex items-center gap-2 mb-2">
-            <Activity className="w-3.5 h-3.5 text-indigo-600" />
-            <h3 className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">
+            <Activity className="w-3.5 h-3.5 text-primary-100" />
+            <h3 className="text-[10px] font-bold text-primary-textoTitle uppercase tracking-wider">
               Antecedentes / Alergias
             </h3>
           </div>
           <div className="space-y-1.5">
             {textoAlergias && (
-              <div className="flex border-b border-black/20 pb-1 gap-2 items-start">
+              <div className="flex border-b border-black/20 pb-1 gap-2 items-center">
                 <span className="text-[9px] text-rose-600 inline-flex items-center gap-2  font-bold uppercase mr-1">
                   <AlertCircle className="w-2.5 h-2.5" />
                   Alergias:
                 </span>
-                <p className="text-[11px] text-rose-900 font-bold leading-tight">{textoAlergias}</p>
+                <p className="text-sm text-red-700 font-bold leading-tight">{textoAlergias}</p>
               </div>
             )}
             {antecedentesDestacados.length > 0 && (
@@ -264,7 +264,7 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
                   <Badge
                     key={idx}
                     variant="outline"
-                    className="text-[9px] bg-white border-indigo-200 text-indigo-700 font-bold py-0 h-4 px-1.5"
+                    className="text-xs bg-white border-indigo-200 text-indigo-700 font-bold py-0 h-4 px-1.5"
                   >
                     {ant.antecedente}
                   </Badge>
@@ -277,8 +277,8 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
 
       <div className="p-3 border-b bg-gray-50 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-indigo-500" />
-          <h3 className="font-bold text-gray-700 text-sm">Historial de Visitas</h3>
+          <Calendar className="w-4 h-4 text-primary-100" />
+          <h3 className="font-bold text-primary-textoTitle">Historial de Visitas</h3>
         </div>
         <span className="text-[10px] font-bold bg-indigo-100 text-primary-100 px-2 py-0.5 rounded-full">
           {historial.length}

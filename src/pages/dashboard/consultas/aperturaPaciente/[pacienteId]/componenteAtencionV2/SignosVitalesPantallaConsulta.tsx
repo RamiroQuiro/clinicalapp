@@ -2,6 +2,7 @@ import Button from '@/components/atomos/Button';
 import ContenedorSignosVitales from '@/components/moleculas/ContenedorSignosVitales';
 import Section from '@/components/moleculas/Section';
 import MenuDropbox, { type MenuItem } from '@/components/organismo/MenuDropbox';
+import { consultaStore } from '@/context/consultaAtencion.store';
 import { preferenciaPerfilUserStore } from '@/context/preferenciasPerfilUser.store';
 
 import { useStore } from '@nanostores/react';
@@ -26,6 +27,7 @@ type Props = {
   signosVitalesHistorial: any;
   handleSignosVitalesChange: any;
   userId: string;
+  isLocked?: boolean;
 };
 
 // --- Configuración de Signos Vitales ---
@@ -112,8 +114,10 @@ export default function SignosVitalesPantallaConsulta({
   signosVitalesHistorial,
   handleSignosVitalesChange,
   userId,
+  isLocked = false,
 }: Props) {
   const $preferenciasPerfilUsuario = useStore(preferenciaPerfilUserStore);
+  const $consulta = useStore(consultaStore);
   const [signosSeleccionados, setSignosSeleccionados] = useState<Record<string, boolean>>({});
 
   const [guardando, setGuardando] = useState(false);
@@ -219,7 +223,12 @@ export default function SignosVitalesPantallaConsulta({
   // 5. botonera del menudropbox
   const botonGuardarPie = (
     <div className="flex  gap-1">
-      <Button className="w-fit" variant="" onClick={handleResetPreferencias} disabled={guardando}>
+      <Button
+        className="w-fit"
+        variant="secondary"
+        onClick={handleResetPreferencias}
+        disabled={guardando}
+      >
         <Backpack className="w-4 h-4 mr-1" />
         reset
       </Button>
@@ -268,8 +277,9 @@ export default function SignosVitalesPantallaConsulta({
               label={signo.etiqueta}
               unit={signo.unidad}
               icon={signo.icono}
-              value={signosVitalesHistorial[signo.nombre]}
+              value={($consulta.signosVitales as any)?.[signo.nombre] || ''}
               onChange={handleSignosVitalesChange}
+              readOnly={isLocked}
               history={datosHistorial}
             />
           );
