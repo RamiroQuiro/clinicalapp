@@ -128,7 +128,7 @@ export const getLMSParaEdad = (
 
     // Filtra puntos válidos y ordena por edad
     const puntosValidos = data
-      .filter(d => d.edadMeses !== undefined && d.percentil50 !== undefined)
+      .filter((d: any) => d.edadMeses !== undefined && d.percentil50 !== undefined)
       .sort((a, b) => a.edadMeses - b.edadMeses);
 
     if (puntosValidos.length === 0) return null;
@@ -385,19 +385,57 @@ export const obtenerPercentilesPresionArterial = (
     const data = percentiles.presionArterialEdad;
     if (!data || !Array.isArray(data)) return null;
 
-    const punto = data.find(d => d.edadMeses === edadMeses);
-    if (!punto) return null;
+    // Ordenar puntos por edad para asegurar interpolación correcta
+    const puntosValidos = data
+      .filter(d => d.edadMeses !== undefined)
+      .sort((a, b) => a.edadMeses - b.edadMeses);
+
+    if (puntosValidos.length === 0) return null;
+
+    // Caso: exacto o fuera de límites (clipping)
+    if (edadMeses <= puntosValidos[0].edadMeses) {
+      const p = puntosValidos[0];
+      return {
+        sistolica: { p50: p.sistolica_p50, p90: p.sistolica_p90, p95: p.sistolica_p95 },
+        diastolica: { p50: p.diastolica_p50, p90: p.diastolica_p90, p95: p.diastolica_p95 },
+      };
+    }
+
+    if (edadMeses >= puntosValidos[puntosValidos.length - 1].edadMeses) {
+      const p = puntosValidos[puntosValidos.length - 1];
+      return {
+        sistolica: { p50: p.sistolica_p50, p90: p.sistolica_p90, p95: p.sistolica_p95 },
+        diastolica: { p50: p.diastolica_p50, p90: p.diastolica_p90, p95: p.diastolica_p95 },
+      };
+    }
+
+    // Buscar puntos adyacentes
+    const lower = puntosValidos.filter(d => d.edadMeses <= edadMeses).pop();
+    const upper = puntosValidos.find(d => d.edadMeses > edadMeses);
+
+    if (!lower || !upper) return null;
+
+    // Si coincide exactamente con el lower
+    if (lower.edadMeses === edadMeses) {
+      return {
+        sistolica: { p50: lower.sistolica_p50, p90: lower.sistolica_p90, p95: lower.sistolica_p95 },
+        diastolica: { p50: lower.diastolica_p50, p90: lower.diastolica_p90, p95: lower.diastolica_p95 },
+      };
+    }
+
+    // Interpolación lineal
+    const t = (edadMeses - lower.edadMeses) / (upper.edadMeses - lower.edadMeses);
 
     return {
       sistolica: {
-        p50: punto.sistolica_p50,
-        p90: punto.sistolica_p90,
-        p95: punto.sistolica_p95,
+        p50: Math.round(interpolate(lower.sistolica_p50, upper.sistolica_p50, t)),
+        p90: Math.round(interpolate(lower.sistolica_p90, upper.sistolica_p90, t)),
+        p95: Math.round(interpolate(lower.sistolica_p95, upper.sistolica_p95, t)),
       },
       diastolica: {
-        p50: punto.diastolica_p50,
-        p90: punto.diastolica_p90,
-        p95: punto.diastolica_p95,
+        p50: Math.round(interpolate(lower.diastolica_p50, upper.diastolica_p50, t)),
+        p90: Math.round(interpolate(lower.diastolica_p90, upper.diastolica_p90, t)),
+        p95: Math.round(interpolate(lower.diastolica_p95, upper.diastolica_p95, t)),
       },
     };
   } catch (error) {
