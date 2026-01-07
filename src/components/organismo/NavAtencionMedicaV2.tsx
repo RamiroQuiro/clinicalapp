@@ -107,7 +107,7 @@ export default function NavAtencionMedicaV2({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { nombre, apellido, dni, fotoUrl, alergias } = pacienteData;
+  const { nombre, apellido, dni, fotoUrl, sexo, alergias } = pacienteData;
   const avatarDefault = '/avatarDefault.png'; // Ruta pública del avatar
 
   // Safe check for allergies array
@@ -281,7 +281,7 @@ Cualquier duda, respondé este mensaje.`;
       label: 'Información de Contacto',
       isSeparator: false,
       type: 'button',
-      onClick: () => { },
+      onClick: () => {},
       icon: null,
     },
     { isSeparator: true },
@@ -304,13 +304,13 @@ Cualquier duda, respondé este mensaje.`;
     {
       label: pacienteData.domicilio || 'Sin domicilio',
       icon: <Table2 className="w-4 h-4 text-gray-500" />,
-      onClick: () => { },
+      onClick: () => {},
     },
     { isSeparator: true },
     {
       label: `Nacido el ${pacienteData.fNacimiento?.toLocaleDateString() || '-'}`,
       icon: <FileText className="w-4 h-4 text-gray-400" />,
-      onClick: () => { },
+      onClick: () => {},
     },
   ];
 
@@ -320,7 +320,7 @@ Cualquier duda, respondé este mensaje.`;
     const alergiasItems = alergias.map(al => ({
       label: `${al.sustancia} (${al.severidad})`,
       icon: <TriangleAlert className="w-4 h-4 text-red-500" />,
-      onClick: () => { },
+      onClick: () => {},
       title: `Reacción: ${al.reaccion}`,
     }));
 
@@ -328,7 +328,7 @@ Cualquier duda, respondé este mensaje.`;
       label: '⚠️ ALERGIAS Y ANTECEDENTES',
       isSeparator: false,
       type: 'button',
-      onClick: () => { },
+      onClick: () => {},
       icon: null,
     });
     infoItems.push(...alergiasItems);
@@ -337,10 +337,11 @@ Cualquier duda, respondé este mensaje.`;
   return (
     <div
       id="navAtencionMedica"
-      className={`transition-all duration-300 z-50 ${isFinalized
+      className={`transition-all duration-300 z-50 ${
+        isFinalized
           ? 'bg-gradient-to-r from-primary-100 to-primary-150 text-white shadow-lg sticky top-0 z-20 border-b border-primary-bg-claro rounded-lg'
           : 'bg-white/95 backdrop-blur-sm  sticky top-0 z-20 '
-        }`}
+      }`}
     >
       {isAnimating && (
         <div className="z-50 fixed inset-0 flex justify-center items-center bg-slate-100/50 backdrop-blur-sm rounded-b-lg w-full h-full">
@@ -374,6 +375,11 @@ Cualquier duda, respondé este mensaje.`;
                 className={`text-xs px-1.5 py-0.5 rounded border ${isFinalized ? 'border-indigo-400 bg-indigo-500/40 text-indigo-50' : 'border-gray-200 bg-gray-100 text-gray-600'}`}
               >
                 {edad} años
+              </span>
+              <span
+                className={`text-xs px-1.5 py-0.5 rounded border hidden sm:block ${isFinalized ? 'border-indigo-400 bg-indigo-500/40 text-indigo-50' : 'border-gray-200 bg-gray-100 text-gray-600'}`}
+              >
+                {sexo}
               </span>
               <span
                 className={`text-xs px-1.5 py-0.5 rounded border hidden sm:block ${isFinalized ? 'border-indigo-400 bg-indigo-500/40 text-indigo-50' : 'border-gray-200 bg-gray-100 text-gray-600'}`}

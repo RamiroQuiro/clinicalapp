@@ -10,7 +10,11 @@ type Props = {
   verticalLayout?: boolean; // Nueva prop para layout vertical
 };
 
-export default function PercentilesPantallaConsulta({ data, $consulta, verticalLayout = false }: Props) {
+export default function PercentilesPantallaConsulta({
+  data,
+  $consulta,
+  verticalLayout = false,
+}: Props) {
   const [modoVisualizacion, setModoVisualizacion] = useState<'estandar' | 'accesible' | 'bebe'>(
     'estandar'
   );
@@ -120,10 +124,19 @@ export default function PercentilesPantallaConsulta({ data, $consulta, verticalL
             { clave: 'perimetroCefalico', valor: perimetroCefalico, unidad: 'cm' },
           ];
 
-          // Filtrar medidas que tienen valores válidos
-          const medidasValidas = tiposMedida.filter(
-            medida => medida.valor && !isNaN(parseFloat(medida.valor))
-          );
+          // Filtrar medidas que tienen valores válidos y son soportadas por la edad
+          const medidasValidas = tiposMedida.filter(medida => {
+            const tieneValor = medida.valor && !isNaN(parseFloat(medida.valor));
+            if (!tieneValor) return false;
+
+            // Para mayores de 5 años (60 meses), solo mostramos Peso y Talla
+            // ya que no tenemos datos de referencia extendidos para IMC y Perímetro Cefálico
+            if (edadMeses > 60) {
+              return medida.clave === 'peso' || medida.clave === 'talla';
+            }
+
+            return true;
+          });
 
           // Verificar si hay presión arterial válida
           const tienePresionArterial =
@@ -145,7 +158,10 @@ export default function PercentilesPantallaConsulta({ data, $consulta, verticalL
             return (
               <div className="flex flex-col gap-3 p-2">
                 {medidasValidas.map(medida => (
-                  <div key={medida.clave} className="w-full bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+                  <div
+                    key={medida.clave}
+                    className="w-full bg-white border border-gray-200 rounded-lg p-2 shadow-sm"
+                  >
                     <GraficoPercentil
                       tipoMedida={medida.clave}
                       sexo={sexo}

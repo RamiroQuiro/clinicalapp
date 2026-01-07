@@ -1,0 +1,189 @@
+{
+  "pesoEdadNino": [
+    {
+      "edadMeses": 0,
+      "percentil3": 2.5,
+      "percentil10": 2.8,
+      "percentil25": 3.1,
+      "percentil50": 3.4,
+      "percentil75": 3.8,
+      "percentil90": 4.1,
+      "percentil97": 4.5
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 8.1,
+      "percentil10": 8.8,
+      "percentil25": 9.4,
+      "percentil50": 10.2,
+      "percentil75": 11.2,
+      "percentil90": 12.0,
+      "percentil97": 12.8
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 15.5,
+      "percentil10": 16.6,
+      "percentil25": 18.0,
+      "percentil50": 19.6,
+      "percentil75": 21.4,
+      "percentil90": 23.2,
+      "percentil97": 25.2
+    }
+  ],
+  "pesoEdadNina": [
+    {
+      "edadMeses": 0,
+      "percentil3": 2.4,
+      "percentil10": 2.7,
+      "percentil25": 3.0,
+      "percentil50": 3.3,
+      "percentil75": 3.6,
+      "percentil90": 3.9,
+      "percentil97": 4.3
+    },
+    {
+      "edadMeses": 12,
+      "percentil3": 7.4,
+      "percentil10": 8.1,
+      "percentil25": 8.8,
+      "percentil50": 9.6,
+      "percentil75": 10.6,
+      "percentil90": 11.4,
+      "percentil97": 12.3
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 15.0,
+      "percentil10": 16.1,
+      "percentil25": 17.5,
+      "percentil50": 19.1,
+      "percentil75": 20.9,
+      "percentil90": 22.7,
+      "percentil97": 24.7
+    }
+  ],
+  "tallaEdadNino": [
+    {
+      "edadMeses": 0,
+      "percentil3": 46.5,
+      "percentil10": 48.0,
+      "percentil25": 49.5,
+      "percentil50": 50.5,
+      "percentil75": 52.0,
+      "percentil90": 53.0,
+      "percentil97": 54.5
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 81.0,
+      "percentil10": 84.0,
+      "percentil25": 86.0,
+      "percentil50": 88.0,
+      "percentil75": 90.0,
+      "percentil90": 92.0,
+      "percentil97": 95.0
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 99.0,
+      "percentil10": 102.0,
+      "percentil25": 105.0,
+      "percentil50": 108.0,
+      "percentil75": 111.0,
+      "percentil90": 114.0,
+      "percentil97": 117.0
+    }
+  ],
+  "tallaEdadNina": [
+    {
+      "edadMeses": 0,
+      "percentil3": 45.5,
+      "percentil10": 47.0,
+      "percentil25": 48.5,
+      "percentil50": 49.5,
+      "percentil75": 51.0,
+      "percentil90": 52.0,
+      "percentil97": 53.5
+    },
+    {
+      "edadMeses": 24,
+      "percentil3": 80.0,
+      "percentil10": 83.0,
+      "percentil25": 85.0,
+      "percentil50": 87.0,
+      "percentil75": 89.0,
+      "percentil90": 91.0,
+      "percentil97": 94.0
+    },
+    {
+      "edadMeses": 60,
+      "percentil3": 98.0,
+      "percentil10": 101.0,
+      "percentil25": 104.0,
+      "percentil50": 107.0,
+      "percentil75": 110.0,
+      "percentil90": 113.0,
+      "percentil97": 116.0
+    }
+  ],
+  "imcEdadNino": [
+    { "edadMeses": 0, "percentil3": 11.5, "percentil50": 13.5, "percentil97": 16.0 },
+    { "edadMeses": 24, "percentil3": 16.5, "percentil50": 18.8, "percentil97": 23.5 },
+    { "edadMeses": 60, "percentil3": 15.2, "percentil50": 17.8, "percentil97": 23.8 }
+  ],
+  "imcEdadNina": [
+    { "edadMeses": 0, "percentil3": 11.0, "percentil50": 13.0, "percentil97": 15.5 },
+    { "edadMeses": 24, "percentil3": 16.0, "percentil50": 18.3, "percentil97": 23.0 },
+    { "edadMeses": 60, "percentil3": 15.0, "percentil50": 17.7, "percentil97": 23.8 }
+  ],
+  "perimetroCefalicoEdadNino": [
+    { "edadMeses": 0, "percentil3": 33.0, "percentil50": 35.0, "percentil97": 37.5 },
+    { "edadMeses": 60, "percentil3": 50.5, "percentil50": 53.0, "percentil97": 55.5 }
+  ],
+  "perimetroCefalicoEdadNina": [
+    { "edadMeses": 0, "percentil3": 32.5, "percentil50": 34.5, "percentil97": 37.0 },
+    { "edadMeses": 60, "percentil3": 49.5, "percentil50": 52.0, "percentil97": 54.5 }
+  ],
+  "presionArterialEdad": [
+    {
+      "edadMeses": 12,
+      "sistolica_p50": 105,
+      "sistolica_p95": 120,
+      "diastolica_p50": 70,
+      "diastolica_p95": 85
+    },
+    {
+      "edadMeses": 60,
+      "sistolica_p50": 125,
+      "sistolica_p95": 140,
+      "diastolica_p50": 90,
+      "diastolica_p95": 105
+          }
+        ],
+        "referencias_argentinas_6_a_19_anos": {
+          "estatura_ninas": [
+            { "edad_anos": 6, "p50": 113.20, "de": 5.11 },
+            { "edad_anos": 12, "p50": 147.10, "de": 8.55 },
+            { "edad_anos": 15, "p50": 159.60, "de": 6.32 },
+            { "edad_anos": 19, "p50": 160.70, "de": 6.10 }
+          ],
+          "estatura_ninos": [
+            { "edad_anos": 6, "p50": 114.20, "de": 4.70 },
+            { "edad_anos": 12, "p50": 145.20, "de": 7.20 },
+            { "edad_anos": 15, "p50": 164.70, "de": 8.20 },
+            { "edad_anos": 19, "p50": 172.80, "de": 6.80 }
+          ],
+          "peso_ninas": [
+            { "edad_anos": 6, "p50": 20.25, "hemidistribucion_inf": 2.30, "hemidistribucion_sup": 3.55 },
+            { "edad_anos": 12, "p50": 41.70, "hemidistribucion_inf": 6.75, "hemidistribucion_sup": 9.14 },
+            { "edad_anos": 19, "p50": 53.70, "hemidistribucion_inf": 5.99, "hemidistribucion_sup": 9.60 }
+          ],
+          "peso_ninos": [
+            { "edad_anos": 6, "p50": 20.90, "hemidistribucion_inf": 2.60, "hemidistribucion_sup": 3.40 },
+            { "edad_anos": 12, "p50": 38.40, "hemidistribucion_inf": 5.40, "hemidistribucion_sup": 9.88 },
+            { "edad_anos": 19, "p50": 65.70, "hemidistribucion_inf": 8.61, "hemidistribucion_sup": 10.41 }
+          ]
+        }
+      }
+      

@@ -33,8 +33,10 @@ interface GraficoProps {
 const determinarRangoEdad = (edadMeses: number): number => {
   if (edadMeses <= 12) return 12;
   if (edadMeses <= 24) return 24;
-  if (edadMeses <= 36) return 36;
-  return 60;
+  if (edadMeses <= 60) return 60; // Up to 5 years
+  if (edadMeses <= 120) return 120; // Up to 10 years
+  if (edadMeses <= 228) return 228; // Up to 19 years
+  return 228;
 };
 
 // Determinar paso de muestreo apropiado
@@ -136,6 +138,7 @@ export const GraficoPercentil = ({
         pointRadius: 0,
         tension: 0.4,
         spanGaps: true,
+        order: 1, // Dibuja las líneas de percentiles primero (fondo)
       };
     });
 
@@ -157,6 +160,7 @@ export const GraficoPercentil = ({
         pointBorderColor: '#FFFFFF',
         pointBorderWidth: 2,
         showLine: false,
+        order: 10, // Dibuja el punto del paciente al final (frente)
       });
     }
 

@@ -1,4 +1,4 @@
-import percentiles from '@/lib/percentiles/percentilesPediatricos.json';
+import percentiles from '@/lib/percentiles/percentilesSAP.json';
 
 export interface LMS {
   L: number;
@@ -124,6 +124,78 @@ export const getLMSParaEdad = (
     if (!data || !Array.isArray(data)) {
       console.warn(`No se encontraron datos para: ${dataKey}`);
       return null;
+    }
+
+    if (edadMeses > 60) {
+      if (tipoMedida !== 'peso' && tipoMedida !== 'talla') {
+        // console.warn(`No hay referencias argentinas > 60 meses para: ${tipoMedida}`);
+        return null;
+      }
+
+      const dataKey = tipoMedida === 'talla'
+        ? (sexo === 'niño' ? 'estatura_ninos' : 'estatura_ninas')
+        : (sexo === 'niño' ? 'peso_ninos' : 'peso_ninas');
+
+      const data = percentiles.referencias_argentinas_6_a_19_anos[dataKey as keyof typeof percentiles.referencias_argentinas_6_a_19_anos];
+
+      if (!data || !Array.isArray(data)) {
+        console.warn(`No se encontraron datos para: ${dataKey}`);
+        return null;
+      }
+
+      const edadAnos = edadMeses / 12;
+
+      // Filtra puntos válidos y ordena por edad
+      const puntosValidos = data
+        .filter((d: any) => d.edad_anos !== undefined && d.p50 !== undefined)
+        .sort((a, b) => a.edad_anos - b.edad_anos);
+
+      if (puntosValidos.length === 0) return null;
+
+      // Encuentra el punto exacto o los puntos para interpolación
+      const puntoExacto = puntosValidos.find(d => d.edad_anos === edadAnos);
+      if (puntoExacto) {
+        let S;
+        if (tipoMedida === 'talla') {
+          S = puntoExacto.de / puntoExacto.p50;
+        } else { // peso
+          const avgDe = (puntoExacto.hemidistribucion_inf + puntoExacto.hemidistribucion_sup) / 2;
+          S = avgDe / puntoExacto.p50;
+        }
+
+        return {
+          L: 1,
+          M: puntoExacto.p50,
+          S: S,
+        };
+      }
+
+      // Encuentra puntos adyacentes para interpolación
+      const lower = puntosValidos.filter(d => d.edad_anos < edadAnos).pop();
+      const upper = puntosValidos.find(d => d.edad_anos > edadAnos);
+
+      if (!lower || !upper) return null;
+
+      // Interpolación lineal
+      const t = (edadAnos - lower.edad_anos) / (upper.edad_anos - lower.edad_anos);
+      const p50 = interpolate(lower.p50, upper.p50, t);
+
+      let S;
+      if (tipoMedida === 'talla') {
+        const de = interpolate(lower.de, upper.de, t);
+        S = de / p50;
+      } else { // peso
+        const hemidistribucion_inf = interpolate(lower.hemidistribucion_inf, upper.hemidistribucion_inf, t);
+        const hemidistribucion_sup = interpolate(lower.hemidistribucion_sup, upper.hemidistribucion_sup, t);
+        const avgDe = (hemidistribucion_inf + hemidistribucion_sup) / 2;
+        S = avgDe / p50;
+      }
+
+      return {
+        L: 1,
+        M: p50,
+        S: S,
+      };
     }
 
     // Filtra puntos válidos y ordena por edad
