@@ -105,7 +105,7 @@ export default function MenuDropbox({
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative z-[80]" ref={dropdownRef}>
       {/* Botón que abre y cierra el menú */}
       <Button
         variant="blanco"

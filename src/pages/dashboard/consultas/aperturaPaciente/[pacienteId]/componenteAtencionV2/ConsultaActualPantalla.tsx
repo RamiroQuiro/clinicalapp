@@ -1,20 +1,15 @@
-import Button from '@/components/atomos/Button';
-import { TextArea } from '@/components/atomos/TextArea';
-import ModalReact from '@/components/moleculas/ModalReact'; // Added for Evolution Modal
-import Section from '@/components/moleculas/Section';
 import { consultaStore, setConsultaField } from '@/context/consultaAtencion.store';
 import { getFechaEnMilisegundos } from '@/utils/timesUtils';
 import { useStore } from '@nanostores/react';
-import { ChevronLeft, ChevronRight, FileText, History } from 'lucide-react'; // Added icons
+import { BarChart3, ChevronLeft, ChevronRight, History, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-import FormNotaEvolucionClinica from '@/components/organismo/FormNotaEvolucionClinica';
-import ContenedorMotivoInicialV2 from '../ContenedorMotivoInicialV2';
+import Section from '@/components/moleculas/Section';
 import ContenedorDocumentacionAnexos from './ContenedorDocumentacionAnexos';
+import ContenedorFormEvolucino from './ContenedorFormEvolucino';
 import ContenedorSintomasDiagnostico from './ContenedorSintomasDiagnostico';
 import ContenedorTratamientoPlan from './ContenedorTratamientoPlan';
 import { HistorialSidebar } from './HistorialSidebar';
-import PercentilesPantallaConsulta from './PercentilesPantallaConsulta';
 import SignosVitalesPantallaConsulta from './SignosVitalesPantallaConsulta';
 
 interface ConsultaActualPantallaProps {
@@ -39,6 +34,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
   // UI Refinement States
   const [isEvolutionModalOpen, setIsEvolutionModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Collapsed by default as per request
+  const [sidebarActiveTab, setSidebarActiveTab] = useState<'percentiles' | 'historial'>('historial');
 
   useEffect(() => {
     if (!data || !data.atencion) return;
@@ -78,7 +74,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setConsultaField(name, value);
+    setConsultaField(name as any, value);
   };
 
   // textoenriquecido con reactquill
@@ -131,6 +127,7 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
     console.log('AI Processed Result received in parent:', result);
 
     if (result.sintomas) setConsultaField('sintomas', result.sintomas);
+    if (result.motivoInicial) setConsultaField('motivoInicial', result.motivoInicial);
     if (result.tratamiento) setConsultaField('tratamiento', result.tratamiento);
     if (result.planSeguir) setConsultaField('planSeguir', result.planSeguir);
     if (result.motivoConsulta) setConsultaField('motivoConsulta', result.motivoConsulta);
@@ -182,7 +179,10 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
         imc: 'imc',
       };
       for (const [key, value] of Object.entries(result.signosVitales)) {
-        if (value !== null && mapping[key]) updatedSignos[mapping[key]] = value;
+        if (value !== null && mapping[key as keyof typeof mapping]) {
+          const mappedKey = mapping[key as keyof typeof mapping];
+          (updatedSignos as any)[mappedKey] = value;
+        }
       }
       setConsultaField('signosVitales', updatedSignos);
     }
@@ -202,61 +202,19 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
           disabled={isLocked}
           className="flex flex-col w-full min-w-0 gap-1 disabled:opacity-60"
         >
-          {/* Main Action Bar - Reemplaza el editor visible por default */}
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-wrap gap-4 items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-gray-700">Texto de la consulta</h3>
-              <p className="text-sm text-gray-500">Aquí se registra el texto de la consulta.</p>
-            </div>
-            <Button onClick={() => setIsEvolutionModalOpen(true)}>
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                <span>Escribir Evolución / Nota (IA)</span>
-              </div>
-            </Button>
-          </div>
 
-          {/* Texto enriquecido Modal */}
-          {isEvolutionModalOpen && (
-            <ModalReact
-              title="Evolución Clínica & Notas"
-              id="modal-evolucion"
-              onClose={() => setIsEvolutionModalOpen(false)}
-              className="w-[90vw] h-[85vh]"
-            >
-              <div className="p-1">
-                <FormNotaEvolucionClinica
-                  value={$consulta.evolucion}
-                  onChange={handleQuillChange}
-                  onProcesadoIA={result => {
-                    handleProcesadoIA(result);
-                  }}
-                  motivoInicial={$consulta.motivoInicial}
-                  onMotivoChange={value => setConsultaField('motivoInicial', value)}
-                  initialMotivos={data.atencion.listadoMotivos}
-                  pacienteId={data.atencion.pacienteId}
-                  userId={data.atencion.userIdMedico}
-                  atencionId={data.atencion.id}
-                />
-              </div>
-            </ModalReact>
-          )}
 
-          <Section title="Motivo de Consulta">
-            <ContenedorMotivoInicialV2 initialMotivos={data.atencion.listadoMotivos || []} />
-            {$consulta.motivoInicial && (
-              <div className="mt-2 text-sm text-gray-600">
-                <span className="font-semibold">Motivo Inicial Seleccionado:</span>{' '}
-                {$consulta.motivoInicial}
-              </div>
-            )}
-            <TextArea
-              name="motivoConsulta"
-              value={$consulta.motivoConsulta}
-              onChange={handleFormChange}
-              placeholder="Describe el motivo principal de la visita..."
-            />
-          </Section>
+          {/* Formulario de motivo, evolucion y tratamiento */}
+          <ContenedorFormEvolucino
+            $consulta={$consulta}
+            handleFormChange={handleFormChange}
+            handleQuillChange={handleQuillChange}
+            handleProcesadoIA={handleProcesadoIA}
+            initialMotivos={data.atencion?.listadoMotivos || []}
+            pacienteId={data.atencion?.pacienteId}
+            userId={data.atencion?.userIdMedico}
+            atencionId={data.atencion?.id}
+          />
           {/* Signos Vitales */}
           <SignosVitalesPantallaConsulta
             userId={data.atencion.userIdMedico}
@@ -265,64 +223,94 @@ export const ConsultaActualPantalla = ({ data }: ConsultaActualPantallaProps) =>
             isLocked={isLocked}
           />
 
-          <PercentilesPantallaConsulta $consulta={consultaStore.get()} data={data} />
+          {/* opciones de atencion avanzado, ocultos */}
+          <Section title="Opciones de Atención Avanzado" isCollapsible defaultOpen={false} icon={Settings}>
 
-          {/* seccion diagnosio y sintomas */}
 
-          <ContenedorSintomasDiagnostico
-            $consulta={consultaStore.get()}
-            consultaStore={consultaStore}
-            deletDiagnostico={deletDiagnostico}
-            handleFormChange={handleFormChange}
-          />
+            {/* seccion diagnosio y sintomas */}
 
-          {/* Sección Tratamiento y Plan */}
-          <ContenedorTratamientoPlan
-            $consulta={consultaStore.get()}
-            consultaStore={consultaStore}
-            deletMedicamento={deletMedicamento}
-            handleFormChange={handleFormChange}
-          />
+            <ContenedorSintomasDiagnostico
+              $consulta={consultaStore.get()}
+              consultaStore={consultaStore}
+              deletDiagnostico={deletDiagnostico}
+              handleFormChange={handleFormChange}
+            />
 
-          <ContenedorDocumentacionAnexos
-            $consulta={$consulta}
-            handleFormChange={handleFormChange}
-            pacienteId={data.pacienteId}
-          />
+            {/* Sección Tratamiento y Plan */}
+            <ContenedorTratamientoPlan
+              $consulta={consultaStore.get()}
+              consultaStore={consultaStore}
+              deletMedicamento={deletMedicamento}
+              handleFormChange={handleFormChange}
+            />
+
+            <ContenedorDocumentacionAnexos
+              $consulta={$consulta}
+              handleFormChange={handleFormChange}
+              pacienteId={data.pacienteId}
+            /></Section>
         </fieldset>
       </div>
 
       {/* Columna derecha: Barra lateral desplegable */}
       <div
-        className={`flex-shrink-0 h-full transition-all duration-300 ease-in-out bg-white rounded-lg border shadow-sm relative ${isSidebarOpen ? 'w-[350px]' : 'w-[50px]'}`}
+        className={`flex-shrink-0 h-full transition-all duration-300 ease-in-out bg-white rounded-lg border shadow-sm relative ${isSidebarOpen ? 'w-[420px]' : 'w-[50px]'}`}
       >
         {/* Botón de alternar barra lateral */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="absolute -left-3 top-4 bg-white border border-gray-200 shadow-md rounded-full p-1 text-gray-500 hover:text-indigo-600 z-10"
-          title={isSidebarOpen ? 'Ocultar Historial' : 'Ver Historial'}
+          title={isSidebarOpen ? `Ocultar ${sidebarActiveTab === 'percentiles' ? 'Percentiles' : 'Historial'}` : 'Abrir Sidebar'}
         >
           {isSidebarOpen ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
 
         <div className="h-full overflow-hidden">
           {isSidebarOpen ? (
-            <HistorialSidebar data={data} />
+            <HistorialSidebar
+              data={data}
+              $consulta={$consulta}
+              activeTab={sidebarActiveTab}
+              onTabChange={setSidebarActiveTab}
+            />
           ) : (
             /* Collapsed State Icon Bar */
-            <div
-              onClick={() => setIsSidebarOpen(true)}
-              className="flex flex-col items-center pt-6 gap-6 cursor-pointer hover:bg-gray-50 h-full"
-              title="Expandir Historial"
-            >
-              <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600">
-                <History className="w-6 h-6" />
+            <div className="flex flex-col items-center pt-6 gap-4 h-full">
+              <div
+                onClick={() => {
+                  setSidebarActiveTab('percentiles');
+                  setIsSidebarOpen(true);
+                }}
+                className="flex flex-col items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors w-full"
+                title="Ver Percentiles"
+              >
+                <div className={`p-2 rounded-lg ${sidebarActiveTab === 'percentiles' ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-50 text-gray-500'}`}>
+                  <BarChart3 className="w-6 h-6" />
+                </div>
+                <div
+                  className="text-gray-500 font-medium tracking-wide transform rotate-180 text-xs"
+                  style={{ writingMode: 'vertical-rl' }}
+                >
+                  PERC.
+                </div>
               </div>
               <div
-                className="text-gray-500 font-medium tracking-wide transform rotate-180"
-                style={{ writingMode: 'vertical-rl' }}
+                onClick={() => {
+                  setSidebarActiveTab('historial');
+                  setIsSidebarOpen(true);
+                }}
+                className="flex flex-col items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors w-full"
+                title="Ver Historial"
               >
-                HISTORIAL
+                <div className={`p-2 rounded-lg ${sidebarActiveTab === 'historial' ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-50 text-gray-500'}`}>
+                  <History className="w-6 h-6" />
+                </div>
+                <div
+                  className="text-gray-500 font-medium tracking-wide transform rotate-180 text-xs"
+                  style={{ writingMode: 'vertical-rl' }}
+                >
+                  HIST.
+                </div>
               </div>
             </div>
           )}

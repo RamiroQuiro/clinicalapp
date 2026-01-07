@@ -5,6 +5,7 @@ import formatDate from '@/utils/formatDate';
 import {
   Activity,
   AlertCircle,
+  BarChart3,
   Calendar,
   ChevronRight,
   FileText,
@@ -15,6 +16,7 @@ import {
   User,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import PercentilesPantallaConsulta from './PercentilesPantallaConsulta';
 
 const VITAL_PREVIEW_CONFIG = [
   {
@@ -168,7 +170,17 @@ const HoverPreview = ({ item }: { item: any }) => {
   );
 };
 
-export const HistorialSidebar = ({ data }: { data: any }) => {
+export const HistorialSidebar = ({
+  data,
+  $consulta,
+  activeTab = 'historial',
+  onTabChange
+}: {
+  data: any;
+  $consulta: any;
+  activeTab?: 'percentiles' | 'historial';
+  onTabChange?: (tab: 'percentiles' | 'historial') => void;
+}) => {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -236,148 +248,183 @@ export const HistorialSidebar = ({ data }: { data: any }) => {
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden relative">
-      {/* Hub de Contexto Clínico (Fijo arriba) */}
-      {(textoAlergias || antecedentesDestacados.length > 0) && (
-        <div className="p-3 bg-indigo-50/40 border-b border-indigo-100/50 shrink-0">
-          <div className="flex items-center gap-2 mb-2">
-            <Activity className="w-3.5 h-3.5 text-primary-100" />
-            <h3 className="text-[10px] font-bold text-primary-textoTitle uppercase tracking-wider">
-              Antecedentes / Alergias
-            </h3>
-          </div>
-          <div className="space-y-1.5">
-            {textoAlergias && (
-              <div className="flex border-b border-black/20 pb-1 gap-2 items-center">
-                <span className="text-[9px] text-rose-600 inline-flex items-center gap-2  font-bold uppercase mr-1">
-                  <AlertCircle className="w-2.5 h-2.5" />
-                  Alergias:
-                </span>
-                <p className="text-sm text-red-700 font-bold leading-tight">{textoAlergias}</p>
+      {/* Tabs para alternar entre Percentiles e Historial */}
+      <div className="flex border-b border-gray-200 shrink-0 bg-gray-50">
+        <button
+          onClick={() => onTabChange?.('percentiles')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold text-sm transition-colors ${activeTab === 'percentiles'
+            ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>Percentiles</span>
+        </button>
+        <button
+          onClick={() => onTabChange?.('historial')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold text-sm transition-colors ${activeTab === 'historial'
+            ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+        >
+          <Calendar className="w-4 h-4" />
+          <span>Historial</span>
+        </button>
+      </div>
+
+      {/* Contenido según tab activo */}
+      {activeTab === 'percentiles' ? (
+        <div className="flex-1 overflow-y-auto">
+          <PercentilesPantallaConsulta $consulta={$consulta} data={data} verticalLayout={true} />
+        </div>
+      ) : (
+        <>
+
+          {/* Hub de Contexto Clínico (Fijo arriba) */}
+          {(textoAlergias || antecedentesDestacados.length > 0) && (
+            <div className="p-3 bg-indigo-50/40 border-b border-indigo-100/50 shrink-0">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="w-3.5 h-3.5 text-primary-100" />
+                <h3 className="text-[10px] font-bold text-primary-textoTitle uppercase tracking-wider">
+                  Antecedentes / Alergias
+                </h3>
               </div>
-            )}
-            {antecedentesDestacados.length > 0 && (
-              <div className="flex flex-wrap gap-1 items-center pt-1">
-                <span className="text-[9px] text-gray-400 font-bold uppercase mr-1">
-                  Antecedentes:
-                </span>
-                {antecedentesDestacados.map((ant: any, idx: number) => (
-                  <Badge
-                    key={idx}
-                    variant="outline"
-                    className="text-xs bg-white border-indigo-200 text-indigo-700 font-bold py-0 h-4 px-1.5"
+              <div className="space-y-1.5">
+                {textoAlergias && (
+                  <div className="flex border-b border-black/20 pb-1 gap-2 items-center">
+                    <span className="text-[9px] text-rose-600 inline-flex items-center gap-2  font-bold uppercase mr-1">
+                      <AlertCircle className="w-2.5 h-2.5" />
+                      Alergias:
+                    </span>
+                    <p className="text-sm text-red-700 font-bold leading-tight">{textoAlergias}</p>
+                  </div>
+                )}
+                {antecedentesDestacados.length > 0 && (
+                  <div className="flex flex-wrap gap-1 items-center pt-1">
+                    <span className="text-[9px] text-gray-400 font-bold uppercase mr-1">
+                      Antecedentes:
+                    </span>
+                    {antecedentesDestacados.map((ant: any, idx: number) => (
+                      <Badge
+                        key={idx}
+                        variant="outline"
+                        className="text-xs bg-white border-indigo-200 text-indigo-700 font-bold py-0 h-4 px-1.5"
+                      >
+                        {ant.antecedente}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="p-3 border-b bg-gray-50 flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary-100" />
+              <h3 className="font-bold text-primary-textoTitle">Historial de Visitas</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-indigo-100 text-primary-100 px-2 py-0.5 rounded-full">
+              {historial.length}
+            </span>
+            <button
+              onClick={() => setIsAllProfessionals(!isAllProfessionals)}
+              className="text-[10px] font-bold bg-indigo-100 text-primary-100 px-2 py-0.5 rounded-full"
+            >
+              {isAllProfessionals ? 'mis atenciones' : 'todas atenciones'}
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar" style={{ minHeight: 0 }}>
+            {loading && !selectedAtencion ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div
+                    key={i}
+                    className="h-24 bg-primary-bg-componentes animate-pulse rounded-xl border border-gray-100"
+                  />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="p-4 bg-red-50 rounded-xl text-center">
+                <p className="text-red-500 text-xs font-bold">{error}</p>
+              </div>
+            ) : historial.length === 0 ? (
+              <div className="text-center py-10 opacity-30">
+                <Calendar className="w-12 h-12 mx-auto mb-2" />
+                <p className="text-sm font-bold">Sin historial previo</p>
+              </div>
+            ) : (
+              <div className="relative border-l-2 border-gray-100 ml-2.5 space-y-6 pb-6 pt-2">
+                {historial.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className="relative ml-5"
+                    onMouseEnter={e => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setHoveredItem(item);
+                      setHoverPos({ top: rect.top });
+                    }}
+                    onMouseLeave={() => setHoveredItem(null)}
                   >
-                    {ant.antecedente}
-                  </Badge>
+                    {/* linea de tiempo */}
+                    <div className="absolute -left-[27px] top-1 bg-white border-2 border-primary-100 w-3.5 h-3.5 rounded-full z-10 shadow-sm" />
+
+                    <div
+                      onClick={() => handleVerDetalle(item.id)}
+                      className="group cursor-pointer bg-white hover:bg-primary-50/50 p-3 rounded-xl border border-transparent hover:border-primary-200 transition-all shadow-sm hover:shadow-md -mt-1"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-sm font-bold text-gray-800 transition-colors group-hover:text-primary-600 leading-none">
+                            {formatDate(item.fecha)}
+                          </p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-wider">
+                            Dr. {item.nombreDoctor} {item.apellidoDoctor}
+                          </p>
+                        </div>
+                        <div className="p-1 rounded-lg bg-gray-50 group-hover:bg-indigo-100 transition-colors">
+                          <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-indigo-600" />
+                        </div>
+                      </div>
+
+                      {item.motivoConsulta && (
+                        <div className="text-[11px] text-gray-500 line-clamp-2 italic leading-relaxed">
+                          "{item.motivoConsulta.replace(/<[^>]*>?/gm, '')}"
+                        </div>
+                      )}
+
+                      {item.diagnosticoPrincipal && (
+                        <div className="mt-2.5 flex">
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] uppercase font-bold bg-gray-50 text-gray-500 border-gray-200 group-hover:bg-white group-hover:border-indigo-200 group-hover:text-indigo-600"
+                          >
+                            {item.diagnosticoPrincipal}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
-      )}
 
-      <div className="p-3 border-b bg-gray-50 flex justify-between items-center shrink-0">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-primary-100" />
-          <h3 className="font-bold text-primary-textoTitle">Historial de Visitas</h3>
-        </div>
-        <span className="text-[10px] font-bold bg-indigo-100 text-primary-100 px-2 py-0.5 rounded-full">
-          {historial.length}
-        </span>
-        <button
-          onClick={() => setIsAllProfessionals(!isAllProfessionals)}
-          className="text-[10px] font-bold bg-indigo-100 text-primary-100 px-2 py-0.5 rounded-full"
-        >
-          {isAllProfessionals ? 'mis atenciones' : 'todas atenciones'}
-        </button>
-      </div>
+          {/* Preview Flotante (Hover) */}
+          {hoveredItem && (
+            <div
+              className="fixed z-50 pointer-events-none"
+              style={{
+                top: Math.max(20, Math.min(window.innerHeight - 400, hoverPos.top - 50)),
+                right: 360, // Sidebar width + margin
+              }}
+            >
+              <HoverPreview item={hoveredItem} />
+            </div>
+          )}
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
-        {loading && !selectedAtencion ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div
-                key={i}
-                className="h-24 bg-primary-bg-componentes animate-pulse rounded-xl border border-gray-100"
-              />
-            ))}
-          </div>
-        ) : error ? (
-          <div className="p-4 bg-red-50 rounded-xl text-center">
-            <p className="text-red-500 text-xs font-bold">{error}</p>
-          </div>
-        ) : historial.length === 0 ? (
-          <div className="text-center py-10 opacity-30">
-            <Calendar className="w-12 h-12 mx-auto mb-2" />
-            <p className="text-sm font-bold">Sin historial previo</p>
-          </div>
-        ) : (
-          <div className="relative border-l-2 border-gray-100 ml-2.5 space-y-6 pb-6 pt-2">
-            {historial.map((item: any) => (
-              <div
-                key={item.id}
-                className="relative ml-5"
-                onMouseEnter={e => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  setHoveredItem(item);
-                  setHoverPos({ top: rect.top });
-                }}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                {/* linea de tiempo */}
-                <div className="absolute -left-[27px] top-1 bg-white border-2 border-primary-100 w-3.5 h-3.5 rounded-full z-10 shadow-sm" />
-
-                <div
-                  onClick={() => handleVerDetalle(item.id)}
-                  className="group cursor-pointer bg-white hover:bg-primary-50/50 p-3 rounded-xl border border-transparent hover:border-primary-200 transition-all shadow-sm hover:shadow-md -mt-1"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="text-sm font-bold text-gray-800 transition-colors group-hover:text-primary-600 leading-none">
-                        {formatDate(item.fecha)}
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-wider">
-                        Dr. {item.nombreDoctor} {item.apellidoDoctor}
-                      </p>
-                    </div>
-                    <div className="p-1 rounded-lg bg-gray-50 group-hover:bg-indigo-100 transition-colors">
-                      <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-indigo-600" />
-                    </div>
-                  </div>
-
-                  {item.motivoConsulta && (
-                    <div className="text-[11px] text-gray-500 line-clamp-2 italic leading-relaxed">
-                      "{item.motivoConsulta.replace(/<[^>]*>?/gm, '')}"
-                    </div>
-                  )}
-
-                  {item.diagnosticoPrincipal && (
-                    <div className="mt-2.5 flex">
-                      <Badge
-                        variant="outline"
-                        className="text-[9px] uppercase font-bold bg-gray-50 text-gray-500 border-gray-200 group-hover:bg-white group-hover:border-indigo-200 group-hover:text-indigo-600"
-                      >
-                        {item.diagnosticoPrincipal}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Preview Flotante (Hover) */}
-      {hoveredItem && (
-        <div
-          className="fixed z-50 pointer-events-none"
-          style={{
-            top: Math.max(20, Math.min(window.innerHeight - 400, hoverPos.top - 50)),
-            right: 360, // Sidebar width + margin
-          }}
-        >
-          <HoverPreview item={hoveredItem} />
-        </div>
+        </>
       )}
 
       {isModalOpen && (

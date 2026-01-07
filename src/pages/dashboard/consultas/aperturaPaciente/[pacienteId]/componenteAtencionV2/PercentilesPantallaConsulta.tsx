@@ -7,62 +7,67 @@ import { useState } from 'react';
 type Props = {
   data: any;
   $consulta: any;
+  verticalLayout?: boolean; // Nueva prop para layout vertical
 };
 
-export default function PercentilesPantallaConsulta({ data, $consulta }: Props) {
+export default function PercentilesPantallaConsulta({ data, $consulta, verticalLayout = false }: Props) {
   const [modoVisualizacion, setModoVisualizacion] = useState<'estandar' | 'accesible' | 'bebe'>(
     'estandar'
   );
   const [tooltipsMejorados, setTooltipsMejorados] = useState(true);
 
   return (
-    <Section title="Percentiles de Crecimiento" isCollapsible defaultOpen={false} icon={BarChart3}>
-      <div className="flex items-center space-x-3">
-        {/* Selector de modo visual */}
-        <div className="flex space-x-1 text-sm">
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              setModoVisualizacion('estandar');
-            }}
-            className={`px-2 py-1 rounded ${modoVisualizacion === 'estandar' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
-          >
-            Estándar
-          </button>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              setModoVisualizacion('accesible');
-            }}
-            className={`px-2 py-1 rounded ${modoVisualizacion === 'accesible' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
-          >
-            🎨 Accesible
-          </button>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              setModoVisualizacion('bebe');
-            }}
-            className={`px-2 py-1 rounded ${modoVisualizacion === 'bebe' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
-          >
-            👶 Bebé
-          </button>
+    <Section title="Percentiles de Crecimiento" isCollapsible defaultOpen={true} icon={BarChart3}>
+      {!verticalLayout && (
+        <div className="flex items-center space-x-3">
+          {/* Selector de modo visual */}
+          <div className="flex space-x-1 text-sm">
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                setModoVisualizacion('estandar');
+              }}
+              className={`px-2 py-1 rounded ${modoVisualizacion === 'estandar' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+            >
+              Estándar
+            </button>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                setModoVisualizacion('accesible');
+              }}
+              className={`px-2 py-1 rounded ${modoVisualizacion === 'accesible' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+            >
+              🎨 Accesible
+            </button>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                setModoVisualizacion('bebe');
+              }}
+              className={`px-2 py-1 rounded ${modoVisualizacion === 'bebe' ? 'bg-blue-100 text-blue-700' : 'text-gray-500'}`}
+            >
+              👶 Bebé
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="p-4">
-        {/* Controles adicionales */}
-        <div className="flex items-center space-x-4 mb-4">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={tooltipsMejorados}
-              onChange={e => setTooltipsMejorados(e.target.checked)}
-              className="rounded text-blue-600"
-            />
-            <span className="text-sm">Tooltips mejorados</span>
-          </label>
-        </div>
+      <div className={verticalLayout ? 'p-2' : 'p-4'}>
+        {!verticalLayout && (
+          /* Controles adicionales */
+          <div className="flex items-center space-x-4 mb-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={tooltipsMejorados}
+                onChange={e => setTooltipsMejorados(e.target.checked)}
+                className="rounded text-blue-600"
+              />
+              <span className="text-sm">Tooltips mejorados</span>
+            </label>
+          </div>
+        )}
         {(() => {
           if (!data.paciente?.fNacimiento || !data.paciente.sexo) {
             return (
@@ -135,6 +140,39 @@ export default function PercentilesPantallaConsulta({ data, $consulta }: Props) 
             );
           }
 
+          // Layout vertical para sidebar
+          if (verticalLayout) {
+            return (
+              <div className="flex flex-col gap-3 p-2">
+                {medidasValidas.map(medida => (
+                  <div key={medida.clave} className="w-full bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+                    <GraficoPercentil
+                      tipoMedida={medida.clave}
+                      sexo={sexo}
+                      edadMeses={edadMeses}
+                      valorPaciente={parseFloat(medida.valor)}
+                      unidad={medida.unidad}
+                      modoVisualizacion={modoVisualizacion}
+                      tooltipsMejorados={tooltipsMejorados}
+                    />
+                  </div>
+                ))}
+
+                {/* Tarjeta de presión arterial */}
+                {tienePresionArterial && (
+                  <div className="w-full bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+                    <PresionArterialCard
+                      edadMeses={edadMeses}
+                      sistolica={parseFloat(presionSistolica)}
+                      diastolica={parseFloat(presionDiastolica)}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Layout horizontal original
           return (
             <div className="flex flex-row gap-4 overflow-x-auto p-2">
               {medidasValidas.map(medida => (

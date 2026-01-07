@@ -5,7 +5,6 @@ import { RenderizacionPantalla } from './RenderizacionPantalla';
 // --- Definición de Pestañas ---
 const tabs = [
   { id: 'consultaActual', name: 'Consulta Actual' },
-  { id: 'signos', name: 'Evolución Signos' },
   { id: 'solicitudes', name: 'Solicitudes / Estudios' },
 ];
 
@@ -15,22 +14,21 @@ export default function Contenedor({ data, esFinalizada }: { data: any; esFinali
   consultaStore.set(data);
 
   return (
-    <div className=" w-full">
+    <div className="w-full">
       {!esFinalizada && (
-        <div className="">
+        <div className="mb-2">
           <nav
-            className="flex justify-around items-center bg-white rounded-b-lg border-b-2 border-gray-200 space-x-6 mb-2 px-6  w-full overflow-x-auto"
+            className="flex justify-start items-center bg-white rounded-b-lg border-b border-gray-200 space-x-6 px-6 w-full overflow-x-auto shadow-sm"
             aria-label="Tabs"
           >
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`${
-                  activeTab === tab.id
-                    ? 'border-primary-100 text-primary-100'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none`}
+                className={`${activeTab === tab.id
+                  ? 'border-primary-100 text-primary-100'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm transition-colors focus:outline-none`}
               >
                 {tab.name}
               </button>
