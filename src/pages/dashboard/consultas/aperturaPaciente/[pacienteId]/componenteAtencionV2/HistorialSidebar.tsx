@@ -77,6 +77,7 @@ const HoverPreview = ({ item }: { item: any }) => {
     return value !== null && value !== undefined && value !== '' && value !== 0;
   });
 
+  console.log(item);
   return (
     <div className="space-y-3 px-2 bg-white border shadow-2xl rounded-2xl w-72 animate-aparecer py-4">
       <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
@@ -93,8 +94,18 @@ const HoverPreview = ({ item }: { item: any }) => {
             Dr. {item.nombreDoctor} {item.apellidoDoctor}
           </span>
         </div>
-
-        {item.motivoConsulta && (
+        {item.evolucion && (
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase">
+              <FileText className="h-3 w-3" />
+              <span>Evolución</span>
+            </div>
+            <p className="text-xs text-gray-600 pl-5 italic line-clamp-5 leading-relaxed">
+              "{item.evolucion.replace(/<[^>]*>?/gm, '')}"
+            </p>
+          </div>
+        )}
+        {item.motivoConsulta && !item.evolucion && (
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase">
               <FileText className="h-3 w-3" />
@@ -174,7 +185,7 @@ export const HistorialSidebar = ({
   data,
   $consulta,
   activeTab = 'historial',
-  onTabChange
+  onTabChange,
 }: {
   data: any;
   $consulta: any;
@@ -252,20 +263,22 @@ export const HistorialSidebar = ({
       <div className="flex border-b border-gray-200 shrink-0 bg-gray-50">
         <button
           onClick={() => onTabChange?.('percentiles')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold text-sm transition-colors ${activeTab === 'percentiles'
-            ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
-            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold text-sm transition-colors ${
+            activeTab === 'percentiles'
+              ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+          }`}
         >
           <BarChart3 className="w-4 h-4" />
           <span>Percentiles</span>
         </button>
         <button
           onClick={() => onTabChange?.('historial')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold text-sm transition-colors ${activeTab === 'historial'
-            ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
-            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold text-sm transition-colors ${
+            activeTab === 'historial'
+              ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+          }`}
         >
           <Calendar className="w-4 h-4" />
           <span>Historial</span>
@@ -279,7 +292,6 @@ export const HistorialSidebar = ({
         </div>
       ) : (
         <>
-
           {/* Hub de Contexto Clínico (Fijo arriba) */}
           {(textoAlergias || antecedentesDestacados.length > 0) && (
             <div className="p-3 bg-indigo-50/40 border-b border-indigo-100/50 shrink-0">
@@ -335,7 +347,10 @@ export const HistorialSidebar = ({
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar" style={{ minHeight: 0 }}>
+          <div
+            className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar"
+            style={{ minHeight: 0 }}
+          >
             {loading && !selectedAtencion ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
@@ -423,7 +438,6 @@ export const HistorialSidebar = ({
               <HoverPreview item={hoveredItem} />
             </div>
           )}
-
         </>
       )}
 

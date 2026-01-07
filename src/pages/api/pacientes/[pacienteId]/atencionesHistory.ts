@@ -38,6 +38,7 @@ export const GET: APIRoute = async ({ params, locals, request }) => {
         userId: atenciones.userIdMedico,
         pacienteId: atenciones.pacienteId,
         motivoConsulta: atenciones.motivoConsulta,
+        evolucion: atenciones.evolucion,
         motivoInicial: atenciones.motivoInicial,
         fecha: atenciones.fecha,
         estado: atenciones.estado,

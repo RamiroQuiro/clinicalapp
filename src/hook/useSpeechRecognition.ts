@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Definimos la interfaz para el objeto de reconocimiento de voz para mayor seguridad de tipos
 interface SpeechRecognition extends EventTarget {
@@ -98,7 +98,7 @@ export const useSpeechRecognition = (props?: { onFinalSegment?: (text: string) =
     };
   }, []);
 
-  const startListening = () => {
+  const startListening = useCallback(() => {
     if (recognitionRef.current && !isListening) {
       // FIXED: DON'T clear transcript here - preserve accumulated text
       recognitionRef.current.start();
@@ -106,22 +106,22 @@ export const useSpeechRecognition = (props?: { onFinalSegment?: (text: string) =
     } else if (!recognitionRef.current) {
       setError('API de reconocimiento de voz no inicializada. Asegúrate de que tu navegador la soporte y de haber dado permisos.');
     }
-  };
+  }, [isListening]);
 
-  const stopListening = () => {
+  const stopListening = useCallback(() => {
     if (recognitionRef.current && isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
     } else if (!recognitionRef.current) {
       setError('API de reconocimiento de voz no inicializada. Asegúrate de que tu navegador la soporte y de haber dado permisos.');
     }
-  };
+  }, [isListening]);
 
   // NEW: Function to manually clear all accumulated text
-  const clearTranscript = () => {
+  const clearTranscript = useCallback(() => {
     accumulatedTranscriptRef.current = '';
     setTranscript('');
-  };
+  }, []);
 
   return {
     isListening,

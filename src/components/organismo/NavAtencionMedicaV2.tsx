@@ -281,7 +281,7 @@ Cualquier duda, respondé este mensaje.`;
       label: 'Información de Contacto',
       isSeparator: false,
       type: 'button',
-      onClick: () => {},
+      onClick: () => { },
       icon: null,
     },
     { isSeparator: true },
@@ -304,13 +304,13 @@ Cualquier duda, respondé este mensaje.`;
     {
       label: pacienteData.domicilio || 'Sin domicilio',
       icon: <Table2 className="w-4 h-4 text-gray-500" />,
-      onClick: () => {},
+      onClick: () => { },
     },
     { isSeparator: true },
     {
       label: `Nacido el ${pacienteData.fNacimiento?.toLocaleDateString() || '-'}`,
       icon: <FileText className="w-4 h-4 text-gray-400" />,
-      onClick: () => {},
+      onClick: () => { },
     },
   ];
 
@@ -320,7 +320,7 @@ Cualquier duda, respondé este mensaje.`;
     const alergiasItems = alergias.map(al => ({
       label: `${al.sustancia} (${al.severidad})`,
       icon: <TriangleAlert className="w-4 h-4 text-red-500" />,
-      onClick: () => {},
+      onClick: () => { },
       title: `Reacción: ${al.reaccion}`,
     }));
 
@@ -328,7 +328,7 @@ Cualquier duda, respondé este mensaje.`;
       label: '⚠️ ALERGIAS Y ANTECEDENTES',
       isSeparator: false,
       type: 'button',
-      onClick: () => {},
+      onClick: () => { },
       icon: null,
     });
     infoItems.push(...alergiasItems);
@@ -337,11 +337,10 @@ Cualquier duda, respondé este mensaje.`;
   return (
     <div
       id="navAtencionMedica"
-      className={`transition-all duration-300 ${
-        isFinalized
+      className={`transition-all duration-300 z-50 ${isFinalized
           ? 'bg-gradient-to-r from-primary-100 to-primary-150 text-white shadow-lg sticky top-0 z-20 border-b border-primary-bg-claro rounded-lg'
           : 'bg-white/95 backdrop-blur-sm  sticky top-0 z-20 '
-      }`}
+        }`}
     >
       {isAnimating && (
         <div className="z-50 fixed inset-0 flex justify-center items-center bg-slate-100/50 backdrop-blur-sm rounded-b-lg w-full h-full">

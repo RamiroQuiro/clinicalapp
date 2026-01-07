@@ -114,7 +114,7 @@ export default function FormNotaEvolucionClinica({
     <div className="h-full flex flex-col items-stretch">
 
       {/* Input de motivo inicial con autocompletado */}
-      <div className="mb-4 px-1 relative z-">
+      <div className="mb-4 px-1 relative z-30">
         <div className="relative">
           <Input
             label="Motivo de la Consulta"
