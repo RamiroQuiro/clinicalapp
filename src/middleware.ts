@@ -70,11 +70,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const validation = await lucia.validateSession(sessionId);
       session = validation.session;
 
-      if (session && session.fresh) {
+      // ✅ Set cookies BEFORE calling next() to avoid immutable headers error
+      if (session?.fresh) {
         const sessionCookie = lucia.createSessionCookie(session.id);
         context.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-      }
-      if (!session) {
+      } else if (!session) {
         const blank = lucia.createBlankSessionCookie();
         context.cookies.set(blank.name, blank.value, blank.attributes);
       }
