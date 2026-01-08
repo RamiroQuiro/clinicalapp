@@ -12,7 +12,11 @@ const getStatusInfo = estado => {
   }
 };
 
-export const CardMedicamentoV2 = ({ medicamento, onStatusChange }) => {
+interface Props {
+  medicamento: any;
+  onStatusChange: (id: string, nuevoEstado: string) => void;
+}
+export const CardMedicamentoV2 = ({ medicamento, onStatusChange }: Props) => {
   const {
     nombreGenerico,
     nombreComercial,

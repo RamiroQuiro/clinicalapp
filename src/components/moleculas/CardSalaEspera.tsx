@@ -24,26 +24,35 @@ export default function CardSalaEspera({ turno, index, onLlamarPaciente }: Props
   const esEspontaneo = turno.turnoInfo?.tipoDeTurno?.toLowerCase() === 'espontaneo';
 
   return (
-    <Card className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 gap-3 border-l-4 rounded-lg ${esEspontaneo
-      ? 'border-l-orange-500 bg-white hover:bg-orange-50'
-      : 'border-l-blue-500 bg-white hover:bg-blue-50'
-      }`}>
-
+    <Card
+      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 gap-3 border-l-4 rounded-lg ${
+        esEspontaneo
+          ? 'border-l-orange-500 bg-white hover:bg-orange-50'
+          : 'border-l-blue-500 bg-white hover:bg-blue-50'
+      }`}
+    >
       {/* Número y badge - Responsive */}
       <div className="flex flex-col flex-1 items-start gap-2 min-w-[90px]">
-        <div className='flex justify-start items-center gap-2'>
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${esEspontaneo ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-blue-100 text-blue-800 border border-blue-300'
-            }`}>
+        <div className="flex justify-start items-center gap-2">
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+              esEspontaneo
+                ? 'bg-orange-100 text-orange-800 border border-orange-300'
+                : 'bg-blue-100 text-blue-800 border border-blue-300'
+            }`}
+          >
             {index + 1}
           </div>
 
-          <div className={`text-xs font-semibold px-2 py-1 rounded-full ${esEspontaneo
-            ? 'bg-orange-100 text-orange-800 border border-orange-200'
-            : 'bg-blue-100 text-blue-800 border border-blue-200'
-            }`}>
+          <div
+            className={`text-xs font-semibold px-2 py-1 rounded-full ${
+              esEspontaneo
+                ? 'bg-orange-100 text-orange-800 border border-orange-200'
+                : 'bg-blue-100 text-blue-800 border border-blue-200'
+            }`}
+          >
             {esEspontaneo ? 'Hoy' : 'Programado'}
           </div>
-
         </div>
         {/* Información del paciente - Responsive */}
         <div className="flex flex-col flex-1 min-w-0">
@@ -64,9 +73,7 @@ export default function CardSalaEspera({ turno, index, onLlamarPaciente }: Props
         <div className="flex flex-col gap-2 w-full sm:w-auto">
           {!esEspontaneo && (
             <div className="text-left">
-              <p className="font-semibold text-gray-600 text-xs">
-                {extraerHora(turno.hora)}
-              </p>
+              <p className="font-semibold text-gray-600 text-xs">{extraerHora(turno.hora)}</p>
               <p className="text-gray-400 text-xs">Turno</p>
             </div>
           )}
@@ -75,9 +82,7 @@ export default function CardSalaEspera({ turno, index, onLlamarPaciente }: Props
             <p className="font-semibold text-gray-600 text-xs">
               {extraerHora(turno.turnoInfo?.horaLlegadaPaciente) || '--:--'}
             </p>
-            <p className="text-gray-400 text-xs">
-              {esEspontaneo ? 'Ingreso' : 'Llegada'}
-            </p>
+            <p className="text-gray-400 text-xs">{esEspontaneo ? 'Ingreso' : 'Llegada'}</p>
           </div>
         </div>
 
@@ -85,7 +90,7 @@ export default function CardSalaEspera({ turno, index, onLlamarPaciente }: Props
           {/* Botón de llamar - Nuevo */}
           <Button
             onClick={handleLlamar}
-            variant='green'
+            variant="green"
             className={`flex items-center gap-1 px-3 w-full py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap `}
             title="Llamar paciente"
           >

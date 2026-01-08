@@ -34,6 +34,7 @@ export interface DatosTurno {
   pacienteCelular: string;
   fechaTurno: string;
   pacienteNombre: string;
+  tipoDeTurno?: 'programado' | 'espontaneo';
   pacienteApellido: string;
   pacienteDocumento: string;
   userMedicoId: string;

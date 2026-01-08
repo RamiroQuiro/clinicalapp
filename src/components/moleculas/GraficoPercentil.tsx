@@ -119,9 +119,9 @@ export const GraficoPercentil = ({
     const datasets = percentilesObjetivo.map(p => {
       let color;
       if (modoVisualizacion === 'estandar') {
-        color = p === 50 ? paleta.p50 : paleta.otros;
+        color = p === 50 ? paleta.p50 : (paleta as any).otros || '#9CA3AF';
       } else {
-        color = paleta[`p${p}` as keyof typeof paleta] || paleta.otros;
+        color = (paleta as any)[`p${p}`] || '#9CA3AF';
       }
 
       return {

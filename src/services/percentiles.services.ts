@@ -156,11 +156,12 @@ export const getLMSParaEdad = (
       const puntoExacto = puntosValidos.find(d => d.edad_anos === edadAnos);
       if (puntoExacto) {
         let S;
+        const p = puntoExacto as any;
         if (tipoMedida === 'talla') {
-          S = puntoExacto.de / puntoExacto.p50;
+          S = p.de / p.p50;
         } else { // peso
-          const avgDe = (puntoExacto.hemidistribucion_inf + puntoExacto.hemidistribucion_sup) / 2;
-          S = avgDe / puntoExacto.p50;
+          const avgDe = (p.hemidistribucion_inf + p.hemidistribucion_sup) / 2;
+          S = avgDe / p.p50;
         }
 
         return {
@@ -181,12 +182,15 @@ export const getLMSParaEdad = (
       const p50 = interpolate(lower.p50, upper.p50, t);
 
       let S;
+      const l = lower as any;
+      const u = upper as any;
+
       if (tipoMedida === 'talla') {
-        const de = interpolate(lower.de, upper.de, t);
+        const de = interpolate(l.de, u.de, t);
         S = de / p50;
       } else { // peso
-        const hemidistribucion_inf = interpolate(lower.hemidistribucion_inf, upper.hemidistribucion_inf, t);
-        const hemidistribucion_sup = interpolate(lower.hemidistribucion_sup, upper.hemidistribucion_sup, t);
+        const hemidistribucion_inf = interpolate(l.hemidistribucion_inf, u.hemidistribucion_inf, t);
+        const hemidistribucion_sup = interpolate(l.hemidistribucion_sup, u.hemidistribucion_sup, t);
         const avgDe = (hemidistribucion_inf + hemidistribucion_sup) / 2;
         S = avgDe / p50;
       }
@@ -450,8 +454,8 @@ export const calcularPercentilPC = (
 export const obtenerPercentilesPresionArterial = (
   edadMeses: number
 ): {
-  sistolica: { p50: number; p90: number; p95: number };
-  diastolica: { p50: number; p90: number; p95: number };
+  sistolica: { p50: number; p95: number };
+  diastolica: { p50: number; p95: number };
 } | null => {
   try {
     const data = percentiles.presionArterialEdad;
@@ -468,16 +472,16 @@ export const obtenerPercentilesPresionArterial = (
     if (edadMeses <= puntosValidos[0].edadMeses) {
       const p = puntosValidos[0];
       return {
-        sistolica: { p50: p.sistolica_p50, p90: p.sistolica_p90, p95: p.sistolica_p95 },
-        diastolica: { p50: p.diastolica_p50, p90: p.diastolica_p90, p95: p.diastolica_p95 },
+        sistolica: { p50: p.sistolica_p50, p95: p.sistolica_p95 },
+        diastolica: { p50: p.diastolica_p50, p95: p.diastolica_p95 },
       };
     }
 
     if (edadMeses >= puntosValidos[puntosValidos.length - 1].edadMeses) {
       const p = puntosValidos[puntosValidos.length - 1];
       return {
-        sistolica: { p50: p.sistolica_p50, p90: p.sistolica_p90, p95: p.sistolica_p95 },
-        diastolica: { p50: p.diastolica_p50, p90: p.diastolica_p90, p95: p.diastolica_p95 },
+        sistolica: { p50: p.sistolica_p50, p95: p.sistolica_p95 },
+        diastolica: { p50: p.diastolica_p50, p95: p.diastolica_p95 },
       };
     }
 
@@ -490,8 +494,8 @@ export const obtenerPercentilesPresionArterial = (
     // Si coincide exactamente con el lower
     if (lower.edadMeses === edadMeses) {
       return {
-        sistolica: { p50: lower.sistolica_p50, p90: lower.sistolica_p90, p95: lower.sistolica_p95 },
-        diastolica: { p50: lower.diastolica_p50, p90: lower.diastolica_p90, p95: lower.diastolica_p95 },
+        sistolica: { p50: lower.sistolica_p50, p95: lower.sistolica_p95 },
+        diastolica: { p50: lower.diastolica_p50, p95: lower.diastolica_p95 },
       };
     }
 
@@ -501,12 +505,10 @@ export const obtenerPercentilesPresionArterial = (
     return {
       sistolica: {
         p50: Math.round(interpolate(lower.sistolica_p50, upper.sistolica_p50, t)),
-        p90: Math.round(interpolate(lower.sistolica_p90, upper.sistolica_p90, t)),
         p95: Math.round(interpolate(lower.sistolica_p95, upper.sistolica_p95, t)),
       },
       diastolica: {
         p50: Math.round(interpolate(lower.diastolica_p50, upper.diastolica_p50, t)),
-        p90: Math.round(interpolate(lower.diastolica_p90, upper.diastolica_p90, t)),
         p95: Math.round(interpolate(lower.diastolica_p95, upper.diastolica_p95, t)),
       },
     };
@@ -536,14 +538,12 @@ export const evaluarPresionArterial = (
   const percentilSistolica = calcularPercentilParaPresion(
     sistolica,
     percentiles.sistolica.p50,
-    percentiles.sistolica.p90,
     percentiles.sistolica.p95
   );
 
   const percentilDiastolica = calcularPercentilParaPresion(
     diastolica,
     percentiles.diastolica.p50,
-    percentiles.diastolica.p90,
     percentiles.diastolica.p95
   );
 
@@ -562,11 +562,9 @@ export const evaluarPresionArterial = (
 const calcularPercentilParaPresion = (
   valor: number,
   p50: number,
-  p90: number,
   p95: number
 ): number => {
   if (valor <= p50) return 50;
-  if (valor <= p90) return 90;
   if (valor <= p95) return 95;
   return 97;
 };

@@ -17,9 +17,8 @@ export default function SelectorProfesional({
   profesionales,
   valorActual,
   onSeleccion,
-  incluirOpcionTodos = true
+  incluirOpcionTodos = true,
 }: Props) {
-
   const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     onSeleccion(value === 'todos' ? null : value);
@@ -40,7 +39,8 @@ export default function SelectorProfesional({
         {incluirOpcionTodos && <option value="todos">Todos</option>}
         {profesionales?.map(profesional => (
           <option key={profesional.id} value={profesional.id}>
-            {profesional.nombreApellido ? profesional.nombreApellido : profesional.nombre}  {profesional.apellido}
+            {profesional.nombre || 'nombreProfesional'}{' '}
+            {profesional.apellido || 'apellidoProfesional'}
           </option>
         ))}
       </select>

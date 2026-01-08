@@ -4,6 +4,8 @@ import { BriefcaseMedical, Calendar, Stethoscope } from 'lucide-react';
 interface Atencion {
   id: string;
   fecha: string;
+  estado: string;
+  motivoInicial: string;
   motivoConsulta: string;
   medico: {
     nombreCompleto: string;
