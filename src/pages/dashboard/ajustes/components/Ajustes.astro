@@ -80,7 +80,39 @@ const { user } = Astro.props;
           <Titulo1>Foto/Avatar/Logo</Titulo1>
           <!-- <FromularioPerfilAvatar client:load /> -->
         </div>
-        <div class="w-2/3">
+        <div class="w-2/3 flex flex-col gap-4">
+          <!-- Sección Portal de Pacientes -->
+          <FormCont title="Portal de Pacientes" id="portalPacientes">
+            <div class="flex flex-col gap-2">
+              <p class="text-sm text-gray-500">
+                Comparte este enlace con tus pacientes para que reserven turnos online.
+              </p>
+              <div class="flex gap-2 items-center">
+                <input
+                  type="text"
+                  id="portalLink"
+                  class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                  readonly
+                  value={`${Astro.url.origin}/turnos/${user.centroMedicoId || user.id}`}
+                />
+                <button
+                  type="button"
+                  id="btnCopiarPortal"
+                  class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 outline-none"
+                >
+                  Copiar
+                </button>
+                <a
+                  href={`/turnos/${user.centroMedicoId || user.id}`}
+                  target="_blank"
+                  class="text-blue-700 bg-white border border-blue-700 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 outline-none text-center"
+                >
+                  Abrir
+                </a>
+              </div>
+            </div>
+          </FormCont>
+
           <FormCont title="Cambio Clave" id="formularioPassword">
             <ContenedorInputForm
               id="passwordActual"
@@ -114,32 +146,52 @@ const { user } = Astro.props;
 
 <script>
   const formularioAjustes = document.getElementById('formularioAjustes');
+  const btnCopiarPortal = document.getElementById('btnCopiarPortal');
 
-  formularioAjustes.addEventListener('submit', async e => {
-    e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-      const response = await fetch('/api/ajustes/actualizar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        alert('Cambios guardados con éxito');
-      } else {
-        alert('Error al guardar los cambios');
+  // Logica para copiar link
+  if (btnCopiarPortal) {
+    btnCopiarPortal.addEventListener('click', () => {
+      const inputLink = document.getElementById('portalLink') as HTMLInputElement;
+      if (inputLink) {
+        inputLink.select();
+        navigator.clipboard.writeText(inputLink.value).then(() => {
+          // Podriamos usar un toast aqui, por ahora un alert simple o cambiar texto del boton
+          const originalText = btnCopiarPortal.innerText;
+          btnCopiarPortal.innerText = 'Copiado!';
+          setTimeout(() => (btnCopiarPortal.innerText = originalText), 2000);
+        });
       }
-    } catch (error) {
-      console.error('Error al enviar los datos:', error);
-      alert('Error de conexión al servidor');
-    }
-  });
+    });
+  }
+
+  if (formularioAjustes) {
+    formularioAjustes.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const target = e.target as HTMLFormElement; // Type assertion explicito
+      const formData = new FormData(target);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch('/api/ajustes/actualizar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('Cambios guardados con éxito');
+        } else {
+          alert('Error al guardar los cambios: ' + (result.message || ''));
+        }
+      } catch (error) {
+        console.error('Error al enviar los datos:', error);
+        alert('Error de conexión al servidor');
+      }
+    });
+  }
 </script>

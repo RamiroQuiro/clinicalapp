@@ -1,5 +1,14 @@
 import { formatUtcToAppTime } from '@/utils/agendaTimeUtils';
-import { CalendarDays, CheckCircle, Clock, MessageCircle, MoreVertical, Phone, User, X } from 'lucide-react';
+import {
+  CalendarDays,
+  CheckCircle,
+  Clock,
+  MessageCircle,
+  MoreVertical,
+  Phone,
+  User,
+  X,
+} from 'lucide-react';
 import type { MenuItem } from '../MenuDropbox';
 import MenuDropbox from '../MenuDropbox';
 
@@ -63,7 +72,6 @@ function TurnoCard({
   ];
   const statusInfo = getStatusInfo(slot.turnoInfo?.estado);
 
-
   return (
     <div className="group relative">
       <div className="flex items-start justify-center  gap-3 p-3 rounded-lg border border-gray-200/50 bg-primary-bg-componentes hover:bg-white/10 transition-all duration-300 hover:border-primary-100/30 hover:shadow-lg">
@@ -80,18 +88,21 @@ function TurnoCard({
         {/* Información del paciente */}
         <div className="flex-grow min-w-0 gap-2 flex flex-col items-start ">
           <div className="flex items-start justify-between  w-full">
-            <div className='flex gap-2 items-center justify-start'>
-
+            <div className="flex gap-2 items-center justify-start">
               <p className="font-semibold text-primary-textoTitle  capitalize truncate text-lg">
-                {slot.turnoInfo?.pacienteNombre + ' ' + slot.turnoInfo?.pacienteApellido ||
-                  'Paciente no asignado'}
+                {slot.turnoInfo?.datosPacienteTemporal
+                  ? slot.turnoInfo?.datosPacienteTemporal?.nombre +
+                    ' ' +
+                    slot.turnoInfo?.datosPacienteTemporal?.apellido
+                  : slot.turnoInfo?.pacienteNombre + ' ' + slot.turnoInfo?.pacienteApellido ||
+                    'Paciente no asignado'}
               </p>
               <p className="text-xs text-primary-texto">
-                {slot.turnoInfo?.pacienteDocumento}
+                {slot.turnoInfo?.datosPacienteTemporal?.documento ||
+                  slot.turnoInfo?.pacienteDocumento}
               </p>
             </div>
             <div className="flex items-center gap-2">
-
               <MenuDropbox
                 items={itemsMenuTurno}
                 triggerIcon={<MoreVertical className="w-4 h-4" />}
@@ -117,11 +128,12 @@ function TurnoCard({
                 {slot.turnoInfo?.tipoDeTurno}
               </span>
             </div>
-            <div className={`text-xs font-medium border rounded-full px-3 py-1 ${statusInfo.colorClass}`}>
+            <div
+              className={`text-xs font-medium border rounded-full px-3 py-1 ${statusInfo.colorClass}`}
+            >
               {statusInfo.text}
             </div>
           </div>
-
 
           {/* Información adicional del turno */}
           {slot.turnoInfo?.motivoConsulta && (

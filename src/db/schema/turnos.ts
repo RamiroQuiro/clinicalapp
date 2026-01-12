@@ -10,11 +10,9 @@ export const turnos = sqliteTable(
   {
     id: text('id').primaryKey(),
     pacienteId: text('pacienteId')
-      .references(() => pacientes.id, { onDelete: 'cascade', onUpdate: 'cascade' })
-      .notNull(),
+      .references(() => pacientes.id, { onDelete: 'cascade', onUpdate: 'cascade' }), // Puede ser nulo para reservas publicas no confirmadas
     otorgaUserId: text('otorgaUserId')
-      .references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' })
-      .notNull(),
+      .references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }), // Puede ser nulo si es auto-agendado
     userMedicoId: text('userMedicoId')
       .references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' })
       .notNull(),
@@ -37,9 +35,17 @@ export const turnos = sqliteTable(
     horaAtencion: text('horaAtencion', { mode: 'text' }).notNull(),
     motivoConsulta: text('motivoConsulta'),
     motivoInicial: text('motivoInicial'),
+
+    // Campos para reservas publicas (Reserva Efimera)
+    datosPacienteTemporal: text('datosPacienteTemporal', { mode: 'json' }), // JSON con datos del paciente temporal
+    tokenConfirmacion: text('tokenConfirmacion'), // Token para validar email
+    fechaExpiracion: integer('fechaExpiracion', { mode: 'timestamp' }), // Cuando expira la reserva si no confirma
+    origen: text('origen', { enum: ['interno', 'publico'] }).default('interno'),
+
     estado: text('estado', {
       enum: [
         'pendiente',
+        'pendiente_validacion',
         'en_consulta',
         'sala_de_espera',
         'finalizado',

@@ -138,6 +138,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         estado: turnos.estado,
         horaTurno: turnos.horaAtencion,
         motivoConsulta: turnos.motivoConsulta,
+        datosPacienteTemporal: turnos.datosPacienteTemporal,
       })
       .from(turnos)
       .leftJoin(pacientes, eq(turnos.pacienteId, pacientes.id))
@@ -237,6 +238,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
             centroMedicoId: turnoOcupante.centroMedicoId,
             userMedicoId: profId,
             turnoInfo: {
+              datosPacienteTemporal: turnoOcupante.datosPacienteTemporal,
               id: turnoOcupante.id,
               pacienteId: turnoOcupante.pacienteId,
               centroMedicoId: turnoOcupante.centroMedicoId,

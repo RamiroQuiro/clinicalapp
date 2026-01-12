@@ -34,6 +34,7 @@
     "moment": "^2.30.1",
     "nanoid": "^5.0.9",
     "nanostores": "^0.11.4",
+    "nodemailer": "^7.0.12",
     "pnpm": "^10.18.3",
     "puppeteer": "^24.19.0",
     "react": "^18.3.1",
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/nodemailer": "^7.0.5",
     "drizzle-kit": "^0.31.4",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1",
