@@ -50,7 +50,7 @@ try {
     class="w-full flex gap-2 flex-wrap lg:flex-nowrap lg:items-start items-strecth justify-between h-full"
   >
     <!-- Columna 1: Calendario -->
-    <Section title="Seleccionar Fecha" classContent="px- py-4 lg:w-1/4 w-full">
+    <Section title="Seleccionar Fecha" classContent="px- py-4 flex-1 md:w-1/4 w-full">
       <ContenedorAgenda
         client:load
         userId={user.id}
@@ -95,12 +95,12 @@ try {
     </Section>
 
     <!-- Columna 2: Turnos Agendados -->
-    <Section title="Turnos del Día" classContent="px- py-4 md:w-[40vw]">
+    <Section title="Turnos del Día" classContent="px- py-4 w-full md:w-[40vw]">
       <ContenedorTurnosDia client:load user={user} />
     </Section>
 
     <!-- Columna 3: Horarios Disponibles -->
-    <Section title="Horarios Disponibles" classContent="px- py-4 md:w-[30vw]">
+    <Section title="Horarios Disponibles" classContent="px- py-4 w-full md:w-[30vw]">
       <ContenedorHorarios client:load />
     </Section>
   </div>

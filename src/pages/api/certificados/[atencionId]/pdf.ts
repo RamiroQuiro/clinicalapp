@@ -11,32 +11,57 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     try {
         const body = await request.json();
-        const { paciente, diagnostico, diasReposo, fechaInicio, presentarA } = body;
+        const {
+            paciente,
+            tipo = 'reposo', // por defecto reposo para compatibilidad
+            diagnostico,
+            diasReposo,
+            fechaInicio,
+            fechaAlta,
+            actividadAptitud,
+            observaciones,
+            presentarA
+        } = body;
 
-        if (!paciente || !diagnostico || !diasReposo || !fechaInicio || !presentarA) {
-            return new Response('Faltan datos requeridos en el cuerpo de la solicitud', { status: 400 });
+        // Validacion basica segun el tipo
+        if (!paciente || !presentarA) {
+            return new Response('Faltan datos basicos requeridos', { status: 400 });
         }
+
+        if (tipo === 'reposo' && (!diagnostico || !diasReposo || !fechaInicio)) {
+            return new Response('Faltan datos para certificado de reposo', { status: 400 });
+        }
+
+        if (tipo === 'alta' && !fechaAlta) {
+            return new Response('Faltan datos para certificado de alta', { status: 400 });
+        }
+
+        const currentUser = user as any;
 
         const certificadoData = {
             doctor: {
-                nombre: user?.nombre || '',
-                apellido: user?.apellido || '',
-                especialidad: user?.especialidad || 'Médico',
-                matricula: user?.mp || 'N/A',
+                nombre: currentUser?.nombre || '',
+                apellido: currentUser?.apellido || '',
+                especialidad: currentUser?.especialidad || 'Medico',
+                matricula: currentUser?.mp || 'N/A',
             },
             paciente: {
                 nombre: paciente.nombre,
                 apellido: paciente.apellido,
                 dni: paciente.dni,
             },
+            tipo,
             diagnostico,
             diasReposo,
             fechaInicio,
+            fechaAlta,
+            actividadAptitud,
+            observaciones,
             presentarA,
-            fechaEmision: formatDate(new Date()),
+            fechaEmision: formatDate(new Date()) || new Date().toLocaleDateString('es-AR'),
         };
-        console.log('datos del ceritifacdo', certificadoData)
-        const htmlContent = generateCertificadoHtml(certificadoData);
+        console.log('datos del certificado', certificadoData)
+        const htmlContent = generateCertificadoHtml(certificadoData as any);
         // 5. Usar Puppeteer para convertir el HTML a PDF
         const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         const page = await browser.newPage();
@@ -45,7 +70,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         await browser.close();
 
 
-        return new Response(pdfBuffer, {
+        return new Response(pdfBuffer as any, {
             status: 200,
             headers: {
                 'Content-Type': 'application/pdf',

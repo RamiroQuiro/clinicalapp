@@ -1,3 +1,5 @@
+export type TipoCertificado = 'reposo' | 'alta' | 'aptitud';
+
 interface DoctorData {
     nombre: string;
     apellido: string;
@@ -11,26 +13,89 @@ interface PacienteData {
     dni: string;
 }
 
-interface CertificadoData {
+export interface CertificadoData {
     doctor: DoctorData;
     paciente: PacienteData;
-    diagnostico: string;
-    diasReposo: string;
-    fechaInicio: string;
+    tipo: TipoCertificado;
+    diagnostico?: string;
+    diasReposo?: string;
+    fechaInicio?: string;
+    fechaAlta?: string;
+    actividadAptitud?: string;
     presentarA: string;
     fechaEmision: string;
+    observaciones?: string;
 }
 
 export const generateCertificadoHtml = (data: CertificadoData) => {
-    const diasReposoNum = parseInt(data.diasReposo, 10);
-    const diasEnPalabras = diasReposoNum === 1 ? 'un (1) día' : `${data.diasReposo} (${data.diasReposo}) días`;
+    let contenidoCuerpo = '';
+
+    // Logica para generar el contenido segun el tipo de certificado
+    switch (data.tipo) {
+        case 'reposo':
+            const diasReposoNum = parseInt(data.diasReposo || '0', 10);
+            const diasEnPalabras = diasReposoNum === 1 ? 'un (1) dia' : `${data.diasReposo} (${data.diasReposo}) dias`;
+            const fechaInicio = data.fechaInicio
+                ? new Date(data.fechaInicio + 'T00:00:00').toLocaleDateString('es-AR')
+                : new Date().toLocaleDateString('es-AR');
+
+            contenidoCuerpo = `
+                <p>
+                    Por medio de la presente, se deja constancia que el/la paciente <strong>${data.paciente.nombre} ${data.paciente.apellido}</strong>,
+                    DNI <strong>${data.paciente.dni}</strong>, fue atendido/a en la fecha, presentando un diagnostico de
+                    <strong>${data.diagnostico}</strong>.
+                </p>
+                <p>
+                    Se indica reposo laboral/escolar por <strong>${diasEnPalabras}</strong> a partir del dia ${fechaInicio}.
+                </p>
+            `;
+            break;
+
+        case 'alta':
+            const fechaAlta = data.fechaAlta
+                ? new Date(data.fechaAlta + 'T00:00:00').toLocaleDateString('es-AR')
+                : new Date().toLocaleDateString('es-AR');
+
+            contenidoCuerpo = `
+                <p>
+                    Por medio de la presente, certifico que el/la paciente <strong>${data.paciente.nombre} ${data.paciente.apellido}</strong>,
+                    DNI <strong>${data.paciente.dni}</strong>, ha recibido el alta medica en la fecha ${fechaAlta}.
+                </p>
+                <p>
+                    Se encuentra en condiciones de retomar sus actividades habituales.
+                </p>
+                ${data.diagnostico ? `<p>Motivo de la baja anterior: <strong>${data.diagnostico}</strong>.</p>` : ''}
+            `;
+            break;
+
+        case 'aptitud':
+            contenidoCuerpo = `
+                <p>
+                    Certifico que he examinado en la fecha a <strong>${data.paciente.nombre} ${data.paciente.apellido}</strong>,
+                    DNI <strong>${data.paciente.dni}</strong>.
+                </p>
+                <p>
+                    Al momento del examen fisico, no se evidencian signos de patologia aguda o cronica descompensada que contraindiquen
+                    la realizacion de <strong>${data.actividadAptitud || 'actividades fisicas habituales'}</strong>.
+                </p>
+                ${data.observaciones ? `<p>Observaciones: ${data.observaciones}</p>` : ''}
+            `;
+            break;
+    }
+
+    // Agregar el parrafo de 'A solicitud de...' que es comun a todos
+    contenidoCuerpo += `
+        <p>
+            Se extiende el presente certificado a solicitud del interesado/a para ser presentado ante <strong>${data.presentarA}</strong>.
+        </p>
+    `;
 
     return `
     <!DOCTYPE html>
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Certificado Médico</title>
+        <title>Certificado Medico</title>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
             body {
@@ -95,20 +160,10 @@ export const generateCertificadoHtml = (data: CertificadoData) => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>Certificado Médico</h1>
+                <h1>Certificado Medico</h1>
             </div>
             <div class="body-section">
-                <p>
-                    Por medio de la presente, se deja constancia que el/la paciente <strong>${data.paciente.nombre} ${data.paciente.apellido}</strong>,
-                    DNI <strong>${data.paciente.dni}</strong>, fue atendido/a en la fecha, presentando un diagnóstico de
-                    <strong>${data.diagnostico}</strong>.
-                </p>
-                <p>
-                    Se indica reposo laboral/escolar por <strong>${diasEnPalabras}</strong> a partir del día ${new Date(data.fechaInicio + 'T00:00:00').toLocaleDateString('es-AR')}.
-                </p>
-                <p>
-                    Se extiende el presente certificado a solicitud del interesado/a para ser presentado ante <strong>${data.presentarA}</strong>.
-                </p>
+                ${contenidoCuerpo}
             </div>
             <div class="footer">
                 <div class="date-info">
