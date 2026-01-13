@@ -47,11 +47,13 @@ export interface DatosTurno {
   estado:
   | 'confirmado'
   | 'pendiente'
+  | 'pendiente_validacion'
   | 'cancelado'
   | 'demorado'
   | 'sala_de_espera'
   | 'en_consulta'
-  | 'finalizado';
+  | 'finalizado'
+  | 'ausente';
 }
 
 interface AgendaStore {
@@ -69,7 +71,11 @@ interface Agenda {
 export const fechaSeleccionada = atom<Date | undefined>(new Date());
 
 
-export const dataStoreAgenda = map({
+export const dataStoreAgenda = map<{
+  isLoading: boolean;
+  error: string | null;
+  data: Agenda[];
+}>({
   isLoading: false,
   error: null,
   data: []
@@ -124,7 +130,7 @@ export const datosNuevoTurno = map<DatosTurno>({
   duracion: 30,
   motivoConsulta: '' as string,
   horaLlegadaPaciente: '' as string,
-  estado: 'pendiente' as string,
+  estado: 'pendiente' as any,
 });
 
 export const agendaStore = map<AgendaStore>({
@@ -158,36 +164,50 @@ export function manejarEventoSSEAgenda(evento: any) {
     agendaStore.setKey('ultimaActualizacion', new Date().toISOString());
   } else if (evento.type === 'turno-agendado') {
     const turnoAgendado = evento.data;
-    const agendaCompleta = dataStoreAgenda.get().data
+    const agendaCompleta = dataStoreAgenda.get().data;
     if (!agendaCompleta.length) return;
 
     console.log('Turno recibido:', turnoAgendado);
-    console.log('Agenda actual:', agendaCompleta);
 
+    // Buscamos el índice del profesional al que pertenece el turno
+    const profesionalIndex = agendaCompleta.findIndex(
+      p => p.profesionalId === (turnoAgendado.userMedicoId || turnoAgendado.turnoInfo?.userMedicoId)
+    );
+
+    if (profesionalIndex === -1) {
+      console.log('El turno recibido no pertenece a ningún profesional en la vista actual.');
+      return;
+    }
 
     // Creamos una copia profunda del estado actual
-    const nuevaAgenda = JSON.parse(JSON.stringify(agendaCompleta));
-    const profesionalIndex = 0; // Asumiendo que trabajamos con el primer profesional
+    const nuevaAgenda = [...agendaCompleta];
+    const agendaProfesional = [...nuevaAgenda[profesionalIndex].agenda];
 
-    // Buscamos si ya existe un turno a la misma hora
-    const turnoIndex = nuevaAgenda[profesionalIndex].agenda.findIndex(slot =>
+    // Buscamos si ya existe un slot para esa hora
+    const turnoIndex = agendaProfesional.findIndex(slot =>
       isEqual(parseISO(slot.hora), parseISO(turnoAgendado.hora))
     );
 
     if (turnoIndex !== -1) {
-      // Si existe, actualizamos el turno
-      nuevaAgenda[profesionalIndex].agenda[turnoIndex] = turnoAgendado;
+      // Si existe, actualizamos el slot
+      agendaProfesional[turnoIndex] = {
+        ...agendaProfesional[turnoIndex],
+        ...turnoAgendado,
+        disponible: false, // Aseguramos que se marque como no disponible
+      };
     } else {
-      // Si no existe, lo agregamos
-      nuevaAgenda[profesionalIndex].agenda.push(turnoAgendado);
+      // Si no existe el slot (ej: sobreturno o fuera de horario), lo agregamos
+      agendaProfesional.push(turnoAgendado);
+      // Ordenamos la agenda por hora
+      agendaProfesional.sort(
+        (a, b) => parseISO(a.hora).getTime() - parseISO(b.hora).getTime()
+      );
     }
 
-    // Ordenamos la agenda por hora
-    nuevaAgenda[profesionalIndex].agenda.sort((a, b) =>
-      parseISO(a.hora).getTime() - parseISO(b.hora).getTime()
-    );
-
-    console.log('Agenda actualizada:', nuevaAgenda);
+    nuevaAgenda[profesionalIndex] = {
+      ...nuevaAgenda[profesionalIndex],
+      agenda: agendaProfesional,
+    };
 
     dataStoreAgenda.setKey('data', nuevaAgenda);
     console.log(`✅ Turno agendado añadido a la agenda via SSE: ${turnoAgendado.turnoInfo?.id}`);

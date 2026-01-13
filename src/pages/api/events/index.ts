@@ -22,7 +22,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const body = new ReadableStream({
     start(ctrl) {
       controller = ctrl;
-      
+
       // --- CONEXIÓN ---
       // Se añade el controller al pool de clientes gestionado por sse.ts
       // que se encargará de los heartbeats y la limpieza.

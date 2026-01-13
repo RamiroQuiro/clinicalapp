@@ -125,7 +125,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         pacienteCelular: isPaciente[0].celular,
         pacienteNombre: isPaciente[0].nombre,
         pacienteApellido: isPaciente[0].apellido,
-        fechaTurno: newTurno.fechaTurno,
+        fechaTurno: newTurno.fechaTurno.toISOString(),
         profesionalNombre: dataProfesional.nombre,
         profesionalApellido: dataProfesional.apellido,
         especialidadProfesional: dataProfesional.especialidad,

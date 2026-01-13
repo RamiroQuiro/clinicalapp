@@ -136,7 +136,7 @@ export function getSSEStats() {
   return {
     totalRegistered: clients.size,
     uniqueUsers: new Set(Array.from(clients.values()).map(c => c.userId)).size,
-    heartbeatActive: !!heartbeatTimer,
+    heartbeatActive: !!getHeartbeatTimer(),
     clients: Array.from(clients.values()).map(c => ({
       id: c.id,
       userId: c.userId,
