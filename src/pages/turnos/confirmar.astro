@@ -1,0 +1,200 @@
+---
+import db from '@/db';
+import { centrosMedicos, turnos, users } from '@/db/schema';
+import Layout from '@/layouts/Layout.astro';
+import { emitEvent } from '@/lib/sse/sse';
+import { eq } from 'drizzle-orm';
+
+const token = Astro.url.searchParams.get('token');
+let status = 'loading'; // loading, success, expired, invalid
+let turnoInfo = null;
+
+if (!token) {
+  status = 'invalid';
+} else {
+  // 1. Buscar el turno por token
+  const queryTurno = await db
+    .select()
+    .from(turnos)
+    .leftJoin(users, eq(turnos.userMedicoId, users.id))
+    .leftJoin(centrosMedicos, eq(turnos.centroMedicoId, centrosMedicos.id))
+    .where(eq(turnos.tokenConfirmacion, token))
+    .limit(1);
+
+  if (queryTurno.length === 0) {
+    status = 'invalid';
+  } else {
+    const data = queryTurno[0];
+
+    // 2. Verificar expiración
+    if (data.turnos.fechaExpiracion && new Date() > data.turnos.fechaExpiracion) {
+      status = 'expired';
+    } else if (data.turnos.estado !== 'pendiente_validacion') {
+      // Si ya fue confirmado o cancelado
+      status = 'success';
+      turnoInfo = data;
+    } else {
+      // 3. Confirmar el turno
+      await db
+        .update(turnos)
+        .set({
+          estado: 'pendiente',
+          tokenConfirmacion: null,
+          fechaExpiracion: null,
+        })
+        .where(eq(turnos.id, data.turnos.id));
+
+      status = 'success';
+      turnoInfo = data;
+
+      emitEvent('turno-confirmado', data, { centroMedicoId: data.turnos.centroMedicoId });
+    }
+  }
+}
+---
+
+<Layout title="Confirmación de Turno">
+  <main class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div class={`h-2 ${status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+
+      <div class="p-8">
+        {
+          status === 'success' && (
+            <div class="text-center">
+              <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-10 w-10"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h1 class="text-2xl font-bold text-slate-900 mb-2">¡Turno Confirmado!</h1>
+              <p class="text-slate-500 mb-8">
+                Tu reserva ha sido procesada correctamente. Te esperamos el día de tu cita.
+              </p>
+
+              <div class="bg-slate-50 rounded-xl p-4 text-left border border-slate-100 space-y-3 mb-8">
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-slate-400 font-medium uppercase tracking-wider text-xs">
+                    Profesional
+                  </span>
+                  <span class="text-slate-700 font-semibold">
+                    {turnoInfo.users?.nombre} {turnoInfo.users?.apellido}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-slate-400 font-medium uppercase tracking-wider text-xs">
+                    Fecha
+                  </span>
+                  <span class="text-slate-700 font-semibold">
+                    {new Date(turnoInfo.turnos.fechaTurno).toLocaleDateString('es-AR')}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-slate-400 font-medium uppercase tracking-wider text-xs">
+                    Hora
+                  </span>
+                  <span class="text-slate-700 font-semibold">
+                    {turnoInfo.turnos.horaAtencion} hs
+                  </span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-slate-400 font-medium uppercase tracking-wider text-xs">
+                    Centro
+                  </span>
+                  <span class="text-slate-700 font-semibold">
+                    {turnoInfo.centrosMedicos?.nombre}
+                  </span>
+                </div>
+              </div>
+
+              <a
+                href="/"
+                class="block w-full bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-slate-800 transition-colors"
+              >
+                Ir al inicio
+              </a>
+            </div>
+          )
+        }
+
+        {
+          status === 'expired' && (
+            <div class="text-center">
+              <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-10 w-10"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h1 class="text-2xl font-bold text-slate-900 mb-2">Link Expirado</h1>
+              <p class="text-slate-500 mb-8">
+                Lo sentimos, el tiempo de confirmación ha terminado. Por favor, solicita un nuevo
+                turno desde el portal.
+              </p>
+              <a
+                href="/turnos"
+                class="block w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors"
+              >
+                Buscar nuevo turno
+              </a>
+            </div>
+          )
+        }
+
+        {
+          status === 'invalid' && (
+            <div class="text-center">
+              <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-10 w-10"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h1 class="text-2xl font-bold text-slate-900 mb-2">Link Inválido</h1>
+              <p class="text-slate-500 mb-8">
+                El código de confirmación no es válido o ya ha sido utilizado.
+              </p>
+              <a
+                href="/"
+                class="block w-full bg-slate-100 text-slate-600 font-semibold py-3 rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                Volver al inicio
+              </a>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </main>
+</Layout>

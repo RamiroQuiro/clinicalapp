@@ -1,12 +1,16 @@
 import db from '@/db';
 import { turnos, users } from '@/db/schema';
+import { sendMailer } from '@/lib/nodemailer';
 import { emitEvent } from '@/lib/sse/sse';
+import { getTemplateConfirmacionTurno } from '@/lib/templates/templatesEmail/templates';
 import { createResponse } from '@/utils/responseAPI';
 import type { APIRoute } from 'astro';
 import { addMinutes } from 'date-fns';
 import { eq } from 'drizzle-orm';
 
-export const POST: APIRoute = async ({ request }) => {
+const { HOST } = import.meta.env;
+
+export const POST: APIRoute = async ({ request, url }) => {
     try {
         const body = await request.json();
         const { centroId, profesionalId, fechaISO, paciente } = body;
@@ -81,6 +85,20 @@ export const POST: APIRoute = async ({ request }) => {
         // 4. Log para facilitar pruebas (antes de configurar correo real)
         console.log(`[RESERVA PÚBLICA] Nueva reserva: ${turnoId}. Confirmar con token: ${token}`);
         emitEvent('turno-agendado', creandoResponse, { centroMedicoId: centroId });
+
+        // 5. Enviar email de confirmación
+        const emailHtml = getTemplateConfirmacionTurno({
+            nombrePaciente: paciente.nombre,
+            nombreProfesional: `${profesional?.nombre || ''} ${profesional?.apellido || ''}`,
+            especialidad: profesional?.especialidad || '',
+            fecha: new Date(newTurno.fechaTurno).toLocaleDateString('es-AR'),
+            hora: newTurno.horaAtencion,
+            token: token,
+            hostUrl: url.origin,
+        });
+
+        // Enviamos el email de forma asíncrona
+        sendMailer(paciente.email, 'Confirma tu turno - ClinicalApp', emailHtml);
 
         return createResponse(201, 'Hemos reservado tu turno. Revisa tu email para confirmarlo.', {
             turnoId,
