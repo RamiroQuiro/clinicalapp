@@ -1,6 +1,0 @@
-2026/01/14-15:40:29.427 3bb8 Reusing MANIFEST E:\ramaCode\clinicalapp\.wwebjs_auth\session-1\Default\Local Storage\leveldb/MANIFEST-000001
-2026/01/14-15:40:29.433 3bb8 Recovering log #3
-2026/01/14-15:40:29.435 3bb8 Reusing old log E:\ramaCode\clinicalapp\.wwebjs_auth\session-1\Default\Local Storage\leveldb/000003.log 
-2026/01/14-16:30:38.802 1fd0 Level-0 table #5: started
-2026/01/14-16:30:38.827 1fd0 Level-0 table #5: 21741 bytes OK
-2026/01/14-16:30:38.851 1fd0 Delete type=0 #3
