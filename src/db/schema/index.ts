@@ -34,3 +34,8 @@ export { pagosSuscripciones } from './pagosSuscripciones';
 export { planes } from './planes';
 export { suscripciones } from './suscripciones';
 
+export { aiCredentials } from './aiCredentials';
+export { whatsappConversaciones, whatsappMensajes } from './whatsappConversaciones';
+export { whatsappSessions } from './whatsappSessions';
+export { whatsappSolicitudes } from './whatsappSolicitudes';
+

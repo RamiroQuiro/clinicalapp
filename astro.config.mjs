@@ -17,14 +17,11 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone',
   }),
-  // vite: {
-  //   server: {
-  //     proxy: {
-  //       '/socket.io': {
-  //         target: 'http://localhost:5000',
-  //         ws: true,
-  //       },
-  //     },
-  //   },
-  // },
+  vite: {
+    server: {
+      watch: {
+        ignored: ['**/.wwebjs_auth/**'],
+      },
+    },
+  },
 });

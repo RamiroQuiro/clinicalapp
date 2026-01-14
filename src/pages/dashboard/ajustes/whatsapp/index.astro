@@ -1,0 +1,59 @@
+---
+import MainDashboard from '@/components/atomos/MainDashboard.astro';
+import LayoutDash from '@/components/layouts/LayoutDash.astro';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/organismo/Card';
+import AISettings from '@/components/organismo/whatsapp/AISettings';
+import WhatsAppSetup from '@/components/organismo/whatsapp/WhatsAppSetup';
+import { Bot, MessageCircle } from 'lucide-react';
+
+const { user, session } = Astro.locals;
+
+if (!session || !user) {
+  return Astro.redirect('/login');
+}
+
+const centroMedicoId = user.centroMedicoId;
+---
+
+<LayoutDash title="WhatsApp - ClinicalApp">
+  <MainDashboard title="Configuracion de WhatsApp" h1="WhatsApp" isBack={true}>
+    <div class="flex md:flex-row flex-col w-full gap-6">
+      <!-- Conexion de WhatsApp -->
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-primary-300" />
+            <span>Conexion WhatsApp</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WhatsAppSetup client:load centroMedicoId={centroMedicoId} />
+        </CardContent>
+      </Card>
+
+      <!-- Configuracion de IA -->
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary-300" />
+            <span>Asistente IA</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AISettings client:load centroMedicoId={centroMedicoId} />
+        </CardContent>
+      </Card>
+    </div>
+
+    <!-- Informacion adicional -->
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg w-full">
+      <h3 class="font-semibold text-blue-900 mb-2">Como funciona</h3>
+      <ul class="text-sm text-blue-800 space-y-1">
+        <li>1. Conecta tu WhatsApp escaneando el QR</li>
+        <li>2. Los pacientes te escriben directamente a tu numero</li>
+        <li>3. Opcionalmente, configura IA para respuestas automaticas</li>
+        <li>4. Todas las conversaciones quedan en tu WhatsApp</li>
+      </ul>
+    </div>
+  </MainDashboard>
+</LayoutDash>

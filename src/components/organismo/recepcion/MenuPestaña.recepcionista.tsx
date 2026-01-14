@@ -9,7 +9,7 @@ const tabs = [
   { id: 'pacientes', name: 'Pacientes' },
 ];
 
-export default function MenuPestañaRecepcionista({ }: Props) {
+export default function MenuPestañaRecepcionista({}: Props) {
   const { pestanaActiva: activeTab } = useStore(recepcionStore);
 
   // console.log('activeTab ->', activeTab);
@@ -23,10 +23,11 @@ export default function MenuPestañaRecepcionista({ }: Props) {
           <button
             key={tab.id}
             onClick={() => setPestanaActiva(tab.id as any)} // Se usa 'as any' por la definición del store
-            className={`${activeTab === tab.id
-              ? 'border-primary-100 text-primary-100'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none`}
+            className={`${
+              activeTab === tab.id
+                ? 'border-primary-100 text-primary-100'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none`}
           >
             {tab.name}
           </button>
