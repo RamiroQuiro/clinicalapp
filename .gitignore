@@ -29,3 +29,7 @@ GEMINI.md
 db.sqlite
 # jetbrains setting folder
 .idea/
+
+# WhatsApp temporal files
+.wwebjs_auth/
+.wwebjs_cache/
