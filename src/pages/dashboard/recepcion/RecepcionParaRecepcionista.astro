@@ -2,7 +2,6 @@
 import MainDashboard from '@/components/atomos/MainDashboard.astro';
 import Modal from '@/components/moleculas/Modal.astro';
 import ContenedeorModal from '@/components/organismo/ContenedeorModal.astro';
-import ContenedorRenderizdoPantallaRecepcionista from '@/components/organismo/recepcion/ContenedorRenderizdoPantalla.recepcionista';
 import ContenedorSelectorProfesional from '@/components/organismo/recepcion/ContenedorSelectorProfesional';
 import ConstendorStatsRec from '@/components/organismo/recepcion/ContenedorStatsRec';
 import { FormularioTurnoRecepcion } from '@/components/organismo/recepcion/FormularioTurnoRecepcion';
@@ -11,6 +10,7 @@ import db from '@/db';
 import { recepcionistaProfesional, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import ContenedorFormularioTurnoRecepcionista from './RecepcionRecepsionista/ContenedorFormularioTurnoRecepcionista';
+import RecepcionMainView from '@/components/organismo/recepcion/RecepcionMainView';
 
 const { user } = Astro.locals;
 let dataProfesionales = [];
@@ -30,8 +30,6 @@ try {
 } catch (error) {
   console.log(error);
 }
-// console.log('datos del user', user);
-// console.log('profesionales relacionados', dataProfesionales);
 ---
 
 <MainDashboard h1="Recepción - Panel de Asistente">
@@ -54,6 +52,6 @@ try {
   </div>
 
   <div class="w-full pt-4 h-full">
-    <ContenedorRenderizdoPantallaRecepcionista client:load user={user} />
+    <RecepcionMainView client:load user={user} />
   </div>
 </MainDashboard>

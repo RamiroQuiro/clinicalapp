@@ -4,6 +4,8 @@ import { manejarEventoSSE, recepcionStore } from '@/context/recepcion.store';
 
 import { recepcionStore as recepcionistaStore } from '@/context/recepcion.recepcionista.store';
 import { sseHandlerRegistry } from '@/context/sse.handler';
+import { addWhatsappSolicitud } from '@/context/whatsapp.store';
+
 class SSEService {
   private eventSource: EventSource | null = null;
   private reconnectAttempts = 0;
@@ -78,6 +80,15 @@ class SSEService {
           });
         } catch (error) {
           console.error('❌ Error parsing turno-eliminado:', error);
+        }
+      });
+
+      this.eventSource.addEventListener('nueva_solicitud_whatsapp', (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          addWhatsappSolicitud(data);
+        } catch (error) {
+          console.error('❌ Error parsing nueva_solicitud_whatsapp:', error);
         }
       });
 
