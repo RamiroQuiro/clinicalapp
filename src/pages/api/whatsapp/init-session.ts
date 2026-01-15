@@ -16,7 +16,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         // Llamar al servidor independiente (whatsapp-server.mjs)
         try {
-            const response = await fetch('http://localhost:5001/init', {
+            const response = await fetch('http://localhost:5003/init', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ centroMedicoId })
@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                 return createResponse(500, err.msg || 'Error en el servidor de WhatsApp');
             }
         } catch (e) {
-            console.error('[API] El servidor de WhatsApp no está corriendo en el puerto 5001');
+            console.error('[API] El servidor de WhatsApp no está corriendo en el puerto 5003');
             return createResponse(503, 'El servicio de WhatsApp está desconectado. Ejecute el servidor independiente.');
         }
 

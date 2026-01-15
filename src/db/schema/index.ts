@@ -39,3 +39,4 @@ export { whatsappConversaciones, whatsappMensajes } from './whatsappConversacion
 export { whatsappSessions } from './whatsappSessions';
 export { whatsappSolicitudes } from './whatsappSolicitudes';
 
+export { agendaGeneralCentroMedico, horariosTrabajo, tiposTurno } from './agenda';
